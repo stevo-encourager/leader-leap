@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Category } from '../utils/assessmentData';
-import { BookOpen, Users, Presentation, User, Lightbulb, MessageSquare, Decision, Smile, Clock, Award } from 'lucide-react';
+import { BookOpen, Users, Presentation, User, Lightbulb, MessageSquare, Scale, Smile, Clock, Award, RefreshCw, Handshake } from 'lucide-react';
 
 interface IntroductionPageProps {
   categories: Category[];
@@ -81,7 +81,7 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
                 
                 <div className="border rounded-md p-4 bg-white">
                   <div className="flex items-center gap-3 mb-2">
-                    <Decision className="text-primary" size={20} />
+                    <Scale className="text-primary" size={20} />
                     <h4 className="font-medium">Decision Making</h4>
                   </div>
                   <p className="text-sm text-slate-600">The ability to make timely and effective decisions based on available information.</p>
@@ -97,7 +97,7 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
                 
                 <div className="border rounded-md p-4 bg-white">
                   <div className="flex items-center gap-3 mb-2">
-                    <Users className="text-primary" size={20} /> {/* Using Users icon for Change Management as there's no direct Change icon */}
+                    <RefreshCw className="text-primary" size={20} />
                     <h4 className="font-medium">Change Management</h4>
                   </div>
                   <p className="text-sm text-slate-600">The ability to effectively lead and support organizational change initiatives.</p>
@@ -105,7 +105,7 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
                 
                 <div className="border rounded-md p-4 bg-white">
                   <div className="flex items-center gap-3 mb-2">
-                    <Users className="text-primary" size={20} /> {/* Using Users icon for Conflict Resolution as there's no direct Conflict icon */}
+                    <Handshake className="text-primary" size={20} />
                     <h4 className="font-medium">Conflict Resolution</h4>
                   </div>
                   <p className="text-sm text-slate-600">The ability to address and resolve disagreements constructively.</p>
@@ -113,7 +113,7 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
                 
                 <div className="border rounded-md p-4 bg-white">
                   <div className="flex items-center gap-3 mb-2">
-                    <Users className="text-primary" size={20} /> {/* Using Users icon for Delegation/Empowerment as there's no direct Handshake icon */}
+                    <Users className="text-primary" size={20} />
                     <h4 className="font-medium">Delegation and Empowerment</h4>
                   </div>
                   <p className="text-sm text-slate-600">The ability to effectively assign responsibilities and empower team members.</p>

@@ -75,6 +75,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
     );
   };
 
+  // We'll still calculate this for informational purposes, but won't use it to disable the button
   const currentCategoryCompleted = isCategoryCompleted(currentCategory);
 
   return (
@@ -118,7 +119,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
         </Button>
         <Button
           onClick={handleNextCategory}
-          disabled={!currentCategoryCompleted}
+          // Removed the disabled attribute based on category completion
         >
           {isLastCategory ? 'View Results' : 'Next'}
         </Button>

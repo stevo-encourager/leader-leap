@@ -26,7 +26,7 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
             <p className="text-sm text-muted-foreground mb-4">{skill.description}</p>
             
             <div className="slider-container">
-              <span className="slider-label">Current:</span>
+              <span className="slider-label">Current ability:</span>
               <div className="flex-1 px-2">
                 <Slider
                   defaultValue={[skill.ratings.current]}
@@ -46,7 +46,7 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
             </div>
             
             <div className="slider-container">
-              <span className="slider-label">Desired:</span>
+              <span className="slider-label">Importance to your role:</span>
               <div className="flex-1 px-2">
                 <Slider
                   defaultValue={[skill.ratings.desired]}
@@ -57,9 +57,9 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
                   className="mb-2"
                 />
                 <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                  <span>Beginner</span>
-                  <span>Advanced</span>
-                  <span>Expert</span>
+                  <span>Low</span>
+                  <span>Medium</span>
+                  <span>High</span>
                 </div>
               </div>
               <span className="w-8 text-center">{skill.ratings.desired}</span>

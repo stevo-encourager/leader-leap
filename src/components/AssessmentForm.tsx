@@ -80,14 +80,14 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
 
   return (
     <div className="fade-in">
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Leadership Assessment</CardTitle>
-          <CardDescription>
+      <Card className="mb-6 encourager-card">
+        <CardHeader className="bg-encourager-lightgray">
+          <CardTitle className="text-2xl encourager-header">Leadership Assessment</CardTitle>
+          <CardDescription className="text-encourager-gray">
             Rate your current and desired leadership skills in each category
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           <div className="flex justify-between mb-4">
             <div className="text-sm text-muted-foreground">
               Category {activeCategory + 1} of {categories.length}
@@ -96,7 +96,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
               {categories.map((_, index) => (
                 <div 
                   key={index}
-                  className={`h-1 w-6 rounded-full ${index === activeCategory ? 'bg-secondary' : 'bg-slate-200'}`}
+                  className={`h-1 w-6 rounded-full ${index === activeCategory ? 'bg-encourager' : 'bg-slate-200'}`}
                 />
               ))}
             </div>
@@ -113,12 +113,14 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
         <Button 
           variant="outline" 
           onClick={handlePrevCategory}
+          className="border-encourager hover:bg-encourager-lightgray hover:text-encourager"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           {isFirstCategory ? 'Back to Demographics' : 'Previous'}
         </Button>
         <Button
           onClick={handleNextCategory}
+          className="bg-encourager hover:bg-encourager-light"
           // Removed the disabled attribute based on category completion
         >
           {isLastCategory ? 'View Results' : 'Next'}

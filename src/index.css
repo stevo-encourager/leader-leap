@@ -1,4 +1,6 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -14,10 +16,10 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 210 64% 24%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 342 95% 28%; /* Encourager maroon */
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 187 61% 33%;
+    --secondary: 45 70% 52%; /* Encourager gold */
     --secondary-foreground: 222.2 47.4% 11.2%;
 
     --muted: 210 40% 96.1%;
@@ -31,7 +33,7 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 342 95% 28%;
 
     --radius: 0.5rem;
 
@@ -91,7 +93,11 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-montserrat;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-playfair;
   }
 }
 
@@ -105,7 +111,7 @@
 }
 
 .skill-gap {
-  @apply bg-blue-200 absolute h-full;
+  @apply bg-encourager-light absolute h-full;
 }
 
 .slider-container {
@@ -130,4 +136,21 @@
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+/* Encourager custom classes */
+.encourager-bg {
+  @apply bg-encourager;
+}
+
+.encourager-text {
+  @apply text-encourager;
+}
+
+.encourager-card {
+  @apply border-encourager-light/30 shadow-md;
+}
+
+.encourager-header {
+  @apply text-encourager font-bold font-playfair;
 }

@@ -16,7 +16,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 342 95% 28%; /* Encourager maroon */
+    --primary: 162 30% 26%; /* Updated to match #2F564D */
     --primary-foreground: 0 0% 98%;
 
     --secondary: 45 70% 52%; /* Encourager gold */
@@ -33,7 +33,7 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 342 95% 28%;
+    --ring: 162 30% 26%;
 
     --radius: 0.5rem;
 
@@ -98,6 +98,10 @@
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-playfair;
+  }
+  
+  .notica-text {
+    @apply font-notica tracking-wider-notica;
   }
 }
 

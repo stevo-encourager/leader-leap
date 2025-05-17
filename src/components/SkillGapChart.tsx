@@ -54,15 +54,15 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
           <Radar
             name="Current Skills"
             dataKey="current"
-            stroke="#1A365D"
-            fill="#1A365D"
+            stroke="#2F564D"
+            fill="#2F564D"
             fillOpacity={0.4}
           />
           <Radar
             name="Desired Skills"
             dataKey="desired"
-            stroke="#2C7A7B"
-            fill="#2C7A7B"
+            stroke="#3d6f63"
+            fill="#3d6f63"
             fillOpacity={0.4}
           />
           <Tooltip />

@@ -54,8 +54,8 @@ export default {
 					foreground: 'hsl(var(--card-foreground))'
 				},
 				encourager: {
-					DEFAULT: '#8C0335', // Deep maroon/burgundy
-					light: '#bb033f', // Lighter maroon for highlights
+					DEFAULT: '#2F564D', // Updated to the new color
+					light: '#3d6f63', // Lighter shade of the base color
 					gold: '#D4AF37', // Gold accent color
 					gray: '#58595b', // Gray from Encourager branding
 					lightgray: '#f5f5f5', // Light gray background
@@ -74,6 +74,10 @@ export default {
 			fontFamily: {
 				'montserrat': ['Montserrat', 'sans-serif'],
 				'playfair': ['Playfair Display', 'serif'],
+				'notica': ['Notica Text', 'sans-serif'],
+			},
+			letterSpacing: {
+				'wider-notica': '1.4px',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

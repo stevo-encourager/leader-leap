@@ -76,7 +76,7 @@ export default {
 				'notica': ['Noto Serif', 'serif'], // Using Noto Serif as a replacement for Notica Text
 			},
 			letterSpacing: {
-				'wider-notica': '0.3em', // Significantly increased for more visible spacing
+				'wider-notica': '0.5em', // Extremely increased spacing
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

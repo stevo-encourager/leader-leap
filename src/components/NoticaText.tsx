@@ -8,7 +8,14 @@ interface NoticaTextProps {
 
 const NoticaText: React.FC<NoticaTextProps> = ({ children, className = '' }) => {
   return (
-    <span className={`notica-text ${className}`} style={{ letterSpacing: '0.3em' }}>
+    <span 
+      className={`notica-text ${className}`} 
+      style={{ 
+        letterSpacing: '0.5em',
+        display: 'inline-block',
+        padding: '0 0.25em'
+      }}
+    >
       {children}
     </span>
   );

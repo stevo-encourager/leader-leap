@@ -47,9 +47,11 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
   const chartData = prepareChartData();
 
   return (
-    <div className="space-y-4">
-      <div className="text-center">
-        <NoticaText className="text-lg text-encourager">LEADERSHIP ASSESSMENT</NoticaText>
+    <div className="space-y-8">
+      <div className="text-center mt-4">
+        <NoticaText className="text-lg text-encourager inline-block">
+          LEADERSHIP ASSESSMENT
+        </NoticaText>
       </div>
       <div className="radar-chart-container">
         <ResponsiveContainer width="100%" height="100%">

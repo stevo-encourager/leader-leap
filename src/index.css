@@ -100,8 +100,10 @@
   }
   
   .notica-text {
-    @apply font-notica tracking-wider-notica;
-    letter-spacing: 0.3em !important; /* Significantly increased for more visible spacing */
+    @apply font-notica;
+    letter-spacing: 0.5em !important; /* Very large spacing */
+    word-spacing: 1em !important; /* Adding word spacing too */
+    text-transform: uppercase; /* Making text uppercase for better visual impact */
   }
 }
 

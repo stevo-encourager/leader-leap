@@ -18,6 +18,12 @@ export interface Category {
   skills: Skill[];
 }
 
+export interface Demographics {
+  role?: string;
+  yearsOfExperience?: string;
+  industry?: string;
+}
+
 export const initialCategories: Category[] = [
   {
     id: "strategic-thinking",
@@ -121,4 +127,5 @@ export const initialCategories: Category[] = [
   }
 ];
 
-export type AssessmentStep = 'intro' | 'assessment' | 'results';
+export type AssessmentStep = 'intro' | 'demographics' | 'assessment' | 'results';
+

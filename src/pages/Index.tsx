@@ -2,22 +2,35 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { initialCategories, AssessmentStep, Category } from '../utils/assessmentData';
+import { initialCategories, AssessmentStep, Category, Demographics } from '../utils/assessmentData';
 import AssessmentForm from '../components/AssessmentForm';
 import ResultsDashboard from '../components/ResultsDashboard';
+import IntroductionPage from '../components/IntroductionPage';
+import DemographicsForm from '../components/DemographicsForm';
 
 const Index = () => {
   const [currentStep, setCurrentStep] = useState<AssessmentStep>('intro');
   const [categories, setCategories] = useState<Category[]>(initialCategories);
-
-  const handleStartAssessment = () => {
-    setCurrentStep('assessment');
-    // Reset categories when starting a new assessment
-    setCategories(JSON.parse(JSON.stringify(initialCategories)));
-  };
+  const [demographics, setDemographics] = useState<Demographics>({});
 
   const handleCategoriesUpdate = (updatedCategories: Category[]) => {
     setCategories(updatedCategories);
+  };
+
+  const handleDemographicsUpdate = (updatedDemographics: Demographics) => {
+    setDemographics(updatedDemographics);
+  };
+
+  const handleStartAssessment = () => {
+    setCurrentStep('demographics');
+  };
+
+  const handleContinueToAssessment = () => {
+    setCurrentStep('assessment');
+  };
+
+  const handleBackToIntro = () => {
+    setCurrentStep('intro');
   };
 
   const handleCompleteAssessment = () => {
@@ -35,39 +48,19 @@ const Index = () => {
 
       <main className="assessment-container">
         {currentStep === 'intro' && (
-          <div className="fade-in">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-2xl">Welcome to the Leadership Assessment</CardTitle>
-                <CardDescription>
-                  This assessment will help you identify gaps between your current leadership skills and where you want to be.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <p>This assessment covers four key areas of leadership:</p>
-                  <ul className="list-disc pl-5 space-y-2">
-                    {categories.map((category) => (
-                      <li key={category.id}>
-                        <strong>{category.title}</strong> - {category.description}
-                      </li>
-                    ))}
-                  </ul>
-                  <p className="mt-4">For each skill, you will rate:</p>
-                  <div className="pl-5">
-                    <p><strong>Current level:</strong> Your current proficiency in this skill</p>
-                    <p><strong>Desired level:</strong> Your target proficiency in this skill</p>
-                  </div>
-                  <p>The difference between these ratings represents your skill gap and potential development area.</p>
-                </div>
-              </CardContent>
-              <CardFooter>
-                <Button size="lg" onClick={handleStartAssessment}>
-                  Start Assessment
-                </Button>
-              </CardFooter>
-            </Card>
-          </div>
+          <IntroductionPage 
+            categories={categories}
+            onStartAssessment={handleStartAssessment}
+          />
+        )}
+
+        {currentStep === 'demographics' && (
+          <DemographicsForm 
+            demographics={demographics}
+            onDemographicsUpdate={handleDemographicsUpdate}
+            onContinue={handleContinueToAssessment}
+            onBack={handleBackToIntro}
+          />
         )}
 
         {currentStep === 'assessment' && (
@@ -81,6 +74,7 @@ const Index = () => {
         {currentStep === 'results' && (
           <ResultsDashboard 
             categories={categories}
+            demographics={demographics}
             onRestart={handleStartAssessment}
           />
         )}

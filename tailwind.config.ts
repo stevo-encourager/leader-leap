@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -73,10 +74,10 @@ export default {
 			fontFamily: {
 				'montserrat': ['Montserrat', 'sans-serif'],
 				'playfair': ['Playfair Display', 'serif'],
-				'notica': ['Noto Serif', 'serif'], // Using Noto Serif as a replacement for Notica Text
+				'notica': ['Notica Text', 'sans-serif'],
 			},
 			letterSpacing: {
-				'wider-notica': '0.5em', // Extremely increased spacing
+				'wider-notica': '1.4px',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

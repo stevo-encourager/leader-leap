@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Noto+Serif:wght@400;500;600&display=swap');
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -100,10 +101,7 @@
   }
   
   .notica-text {
-    @apply font-notica;
-    letter-spacing: 0.5em !important; /* Very large spacing */
-    word-spacing: 1em !important; /* Adding word spacing too */
-    text-transform: uppercase; /* Making text uppercase for better visual impact */
+    @apply font-notica tracking-wider-notica;
   }
 }
 

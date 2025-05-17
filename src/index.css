@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Noto+Serif:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -102,7 +102,7 @@
   
   .notica-text {
     @apply font-notica tracking-wider-notica;
-    letter-spacing: 1.4px !important; /* Force letter-spacing with !important */
+    letter-spacing: 0.18em !important; /* Increased to be more noticeable */
   }
 }
 

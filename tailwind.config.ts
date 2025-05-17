@@ -73,10 +73,10 @@ export default {
 			fontFamily: {
 				'montserrat': ['Montserrat', 'sans-serif'],
 				'playfair': ['Playfair Display', 'serif'],
-				'notica': ['Notica Text', 'sans-serif'],
+				'notica': ['Noto Serif', 'serif'], // Using Noto Serif as a replacement for Notica Text
 			},
 			letterSpacing: {
-				'wider-notica': '0.14em', // Increased to 0.14em (equivalent to 1.4px at 10px font size)
+				'wider-notica': '0.18em', // Increased to 0.18em for more noticeable spacing
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

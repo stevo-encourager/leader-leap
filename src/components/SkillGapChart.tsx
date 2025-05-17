@@ -10,6 +10,7 @@ import {
   Tooltip
 } from 'recharts';
 import { Category, Skill } from '@/utils/assessmentData';
+import NoticaText from './NoticaText';
 
 interface SkillGapChartProps {
   categories: Category[];
@@ -46,29 +47,34 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
   const chartData = prepareChartData();
 
   return (
-    <div className="radar-chart-container">
-      <ResponsiveContainer width="100%" height="100%">
-        <RadarChart outerRadius={150} data={chartData}>
-          <PolarGrid />
-          <PolarAngleAxis dataKey="subject" />
-          <Radar
-            name="Current Skills"
-            dataKey="current"
-            stroke="#2F564D"
-            fill="#2F564D"
-            fillOpacity={0.4}
-          />
-          <Radar
-            name="Desired Skills"
-            dataKey="desired"
-            stroke="#3d6f63"
-            fill="#3d6f63"
-            fillOpacity={0.4}
-          />
-          <Tooltip />
-          <Legend />
-        </RadarChart>
-      </ResponsiveContainer>
+    <div className="space-y-4">
+      <div className="text-center">
+        <NoticaText className="text-lg text-encourager">LEADERSHIP ASSESSMENT</NoticaText>
+      </div>
+      <div className="radar-chart-container">
+        <ResponsiveContainer width="100%" height="100%">
+          <RadarChart outerRadius={150} data={chartData}>
+            <PolarGrid />
+            <PolarAngleAxis dataKey="subject" />
+            <Radar
+              name="Current Skills"
+              dataKey="current"
+              stroke="#2F564D"
+              fill="#2F564D"
+              fillOpacity={0.4}
+            />
+            <Radar
+              name="Desired Skills"
+              dataKey="desired"
+              stroke="#3d6f63"
+              fill="#3d6f63"
+              fillOpacity={0.4}
+            />
+            <Tooltip />
+            <Legend />
+          </RadarChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 };

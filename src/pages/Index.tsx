@@ -43,10 +43,19 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="bg-primary text-white py-6">
-        <div className="max-w-5xl mx-auto px-4">
-          <h1 className="text-2xl md:text-3xl font-bold">Leadership Assessment Tool</h1>
-          <p className="text-slate-200 mt-2">Identify gaps between your current and desired leadership abilities</p>
+      <header className="bg-gradient-to-r from-encourager to-encourager-light text-white py-6 shadow-md">
+        <div className="max-w-5xl mx-auto px-4 flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold">Leadership Assessment Tool</h1>
+            <p className="text-slate-200 mt-1">Identify gaps between your current and desired leadership abilities</p>
+          </div>
+          <div className="hidden md:block">
+            <img 
+              src="/lovable-uploads/8320d514-fba5-4e1b-a658-1563758db943.png" 
+              alt="Encourager Logo" 
+              className="h-16 object-contain" 
+            />
+          </div>
         </div>
       </header>
 
@@ -86,7 +95,7 @@ const Index = () => {
         )}
       </main>
 
-      <footer className="py-6 border-t mt-12">
+      <footer className="py-6 border-t mt-12 bg-white">
         <div className="max-w-5xl mx-auto px-4 text-center text-sm text-slate-500">
           Leadership Assessment Tool &copy; {new Date().getFullYear()}
         </div>

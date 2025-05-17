@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -101,7 +101,7 @@
   }
   
   .notica-text {
-    @apply font-notica tracking-wider-notica;
+    @apply font-['Noto_Sans'] tracking-wider-notica;
   }
 }
 
@@ -157,4 +157,27 @@
 
 .encourager-header {
   @apply text-encourager font-bold font-playfair;
+}
+
+/* Enhanced introduction page styles */
+.intro-card {
+  @apply border-none shadow-lg overflow-hidden relative;
+  background: linear-gradient(to bottom right, #ffffff, #f9f9f9);
+}
+
+.intro-header {
+  @apply bg-gradient-to-r from-encourager to-encourager-light text-white p-8 relative;
+}
+
+.intro-content-card {
+  @apply border border-slate-100 rounded-lg shadow-sm transition-all hover:shadow-md;
+}
+
+.intro-icon {
+  @apply text-encourager-gold;
+}
+
+.intro-cta-button {
+  @apply bg-gradient-to-r from-encourager-gold to-amber-400 text-encourager hover:opacity-90 transition-all 
+  font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5;
 }

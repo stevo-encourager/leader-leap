@@ -74,7 +74,7 @@ export default {
 			fontFamily: {
 				'montserrat': ['Montserrat', 'sans-serif'],
 				'playfair': ['Playfair Display', 'serif'],
-				'notica': ['Notica Text', 'sans-serif'],
+				'notica': ['Noto Sans', 'sans-serif'],
 			},
 			letterSpacing: {
 				'wider-notica': '1.4px',
@@ -100,12 +100,21 @@ export default {
 					to: {
 						height: '0'
 					}
-				}
+				},
+				'pulse-light': {
+					'0%, 100%': { opacity: '1' },
+					'50%': { opacity: '0.8' }
+				},
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
-			}
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-light': 'pulse-light 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+			},
+			boxShadow: {
+				'card': '0px 5px 15px rgba(0, 0, 0, 0.05)',
+				'card-hover': '0px 10px 25px rgba(0, 0, 0, 0.1)',
+			},
 		}
 	},
 	plugins: [require("tailwindcss-animate")],

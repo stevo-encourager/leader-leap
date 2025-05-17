@@ -8,16 +8,21 @@ interface NoticaTextProps {
 
 const NoticaText: React.FC<NoticaTextProps> = ({ children, className = '' }) => {
   return (
-    <span 
-      className={`notica-text ${className}`} 
-      style={{ 
-        letterSpacing: '0.5em',
-        display: 'inline-block',
-        padding: '0 0.25em'
-      }}
-    >
-      {children}
-    </span>
+    <div className={`${className}`}>
+      {String(children).split('').map((char, index) => (
+        <span 
+          key={index} 
+          className="font-notica inline-block uppercase"
+          style={{ 
+            marginRight: '0.75em', 
+            fontSize: '1.2em', 
+            fontWeight: 'bold' 
+          }}
+        >
+          {char === ' ' ? '\u00A0' : char}
+        </span>
+      ))}
+    </div>
   );
 };
 

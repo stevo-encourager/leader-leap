@@ -2,11 +2,10 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Demographics } from '../utils/assessmentData';
-import { Briefcase, Building, User } from 'lucide-react';
+import { Briefcase, Building, User, ArrowLeft } from 'lucide-react';
 
 interface DemographicsFormProps {
   demographics: Demographics;
@@ -14,18 +13,6 @@ interface DemographicsFormProps {
   onContinue: () => void;
   onBack: () => void;
 }
-
-const industryOptions = [
-  "Technology",
-  "Healthcare",
-  "Finance",
-  "Education",
-  "Manufacturing",
-  "Retail",
-  "Government",
-  "Nonprofit",
-  "Other"
-];
 
 const roleOptions = [
   "Individual Contributor",
@@ -36,6 +23,18 @@ const roleOptions = [
   "C-Level",
   "Founder/Owner",
   "Consultant",
+  "Other"
+];
+
+const industryOptions = [
+  "Technology",
+  "Healthcare",
+  "Finance",
+  "Education",
+  "Manufacturing",
+  "Retail",
+  "Government",
+  "Nonprofit",
   "Other"
 ];
 
@@ -133,6 +132,7 @@ const DemographicsForm: React.FC<DemographicsFormProps> = ({ demographics, onDem
         </CardContent>
         <CardFooter className="flex justify-between">
           <Button variant="outline" onClick={onBack}>
+            <ArrowLeft className="mr-2 h-4 w-4" />
             Back
           </Button>
           <Button onClick={onContinue}>

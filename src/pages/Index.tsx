@@ -33,6 +33,10 @@ const Index = () => {
     setCurrentStep('intro');
   };
 
+  const handleBackToDemographics = () => {
+    setCurrentStep('demographics');
+  };
+
   const handleCompleteAssessment = () => {
     setCurrentStep('results');
   };
@@ -68,6 +72,7 @@ const Index = () => {
             categories={categories}
             onCategoriesUpdate={handleCategoriesUpdate}
             onComplete={handleCompleteAssessment}
+            onBack={handleBackToDemographics}
           />
         )}
 
@@ -76,6 +81,7 @@ const Index = () => {
             categories={categories}
             demographics={demographics}
             onRestart={handleStartAssessment}
+            onBack={handleBackToDemographics}
           />
         )}
       </main>

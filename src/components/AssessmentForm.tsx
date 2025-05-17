@@ -4,17 +4,20 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Category, Skill } from '@/utils/assessmentData';
 import LeadershipCategory from './LeadershipCategory';
+import { ArrowLeft } from 'lucide-react';
 
 interface AssessmentFormProps {
   categories: Category[];
   onCategoriesUpdate: (updatedCategories: Category[]) => void;
   onComplete: () => void;
+  onBack: () => void;
 }
 
 const AssessmentForm: React.FC<AssessmentFormProps> = ({
   categories,
   onCategoriesUpdate,
-  onComplete
+  onComplete,
+  onBack
 }) => {
   const [activeCategory, setActiveCategory] = useState<number>(0);
 
@@ -57,11 +60,14 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
     if (activeCategory > 0) {
       setActiveCategory(activeCategory - 1);
       window.scrollTo(0, 0);
+    } else {
+      onBack();
     }
   };
 
   const currentCategory = categories[activeCategory];
   const isLastCategory = activeCategory === categories.length - 1;
+  const isFirstCategory = activeCategory === 0;
 
   const isCategoryCompleted = (category: Category): boolean => {
     return category.skills.every(skill => 
@@ -106,9 +112,9 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
         <Button 
           variant="outline" 
           onClick={handlePrevCategory}
-          disabled={activeCategory === 0}
         >
-          Previous
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          {isFirstCategory ? 'Back to Demographics' : 'Previous'}
         </Button>
         <Button
           onClick={handleNextCategory}

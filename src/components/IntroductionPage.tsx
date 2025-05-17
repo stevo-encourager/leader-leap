@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Category } from '../utils/assessmentData';
-import { BookOpen, Users, Presentation, User } from 'lucide-react';
+import { BookOpen, Users, Presentation, User, Lightbulb, MessageSquare, Decision, Smile, Clock, Award } from 'lucide-react';
 
 interface IntroductionPageProps {
   categories: Category[];
@@ -53,13 +53,87 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
                 Assessment Areas
               </h3>
               <p className="text-slate-700 mb-4">This assessment covers ten key areas of leadership:</p>
-              <div className="grid md:grid-cols-2 gap-4">
-                {categories.map((category) => (
-                  <div key={category.id} className="border rounded-md p-4">
-                    <h4 className="font-medium mb-1">{category.title}</h4>
-                    <p className="text-sm text-slate-600">{category.description}</p>
+              
+              <div className="space-y-4">
+                <div className="border rounded-md p-4 bg-white">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Lightbulb className="text-primary" size={20} />
+                    <h4 className="font-medium">Strategic Thinking/Vision</h4>
                   </div>
-                ))}
+                  <p className="text-sm text-slate-600">The ability to develop a clear vision and identify opportunities for growth and innovation.</p>
+                </div>
+                
+                <div className="border rounded-md p-4 bg-white">
+                  <div className="flex items-center gap-3 mb-2">
+                    <MessageSquare className="text-primary" size={20} />
+                    <h4 className="font-medium">Communication Skills</h4>
+                  </div>
+                  <p className="text-sm text-slate-600">The ability to effectively convey information and ideas to different audiences.</p>
+                </div>
+                
+                <div className="border rounded-md p-4 bg-white">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Users className="text-primary" size={20} />
+                    <h4 className="font-medium">Team Building/Management</h4>
+                  </div>
+                  <p className="text-sm text-slate-600">The ability to build and maintain high-performing teams through effective leadership.</p>
+                </div>
+                
+                <div className="border rounded-md p-4 bg-white">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Decision className="text-primary" size={20} />
+                    <h4 className="font-medium">Decision Making</h4>
+                  </div>
+                  <p className="text-sm text-slate-600">The ability to make timely and effective decisions based on available information.</p>
+                </div>
+                
+                <div className="border rounded-md p-4 bg-white">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Smile className="text-primary" size={20} />
+                    <h4 className="font-medium">Emotional Intelligence</h4>
+                  </div>
+                  <p className="text-sm text-slate-600">The ability to recognize and manage emotions in yourself and others.</p>
+                </div>
+                
+                <div className="border rounded-md p-4 bg-white">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Users className="text-primary" size={20} /> {/* Using Users icon for Change Management as there's no direct Change icon */}
+                    <h4 className="font-medium">Change Management</h4>
+                  </div>
+                  <p className="text-sm text-slate-600">The ability to effectively lead and support organizational change initiatives.</p>
+                </div>
+                
+                <div className="border rounded-md p-4 bg-white">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Users className="text-primary" size={20} /> {/* Using Users icon for Conflict Resolution as there's no direct Conflict icon */}
+                    <h4 className="font-medium">Conflict Resolution</h4>
+                  </div>
+                  <p className="text-sm text-slate-600">The ability to address and resolve disagreements constructively.</p>
+                </div>
+                
+                <div className="border rounded-md p-4 bg-white">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Users className="text-primary" size={20} /> {/* Using Users icon for Delegation/Empowerment as there's no direct Handshake icon */}
+                    <h4 className="font-medium">Delegation and Empowerment</h4>
+                  </div>
+                  <p className="text-sm text-slate-600">The ability to effectively assign responsibilities and empower team members.</p>
+                </div>
+                
+                <div className="border rounded-md p-4 bg-white">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Clock className="text-primary" size={20} />
+                    <h4 className="font-medium">Time/Priority Management</h4>
+                  </div>
+                  <p className="text-sm text-slate-600">The ability to manage time effectively and prioritize tasks appropriately.</p>
+                </div>
+                
+                <div className="border rounded-md p-4 bg-white">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Award className="text-primary" size={20} />
+                    <h4 className="font-medium">Professional Development</h4>
+                  </div>
+                  <p className="text-sm text-slate-600">The ability to continuously improve skills and knowledge for career growth.</p>
+                </div>
               </div>
             </div>
 

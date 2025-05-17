@@ -27,6 +27,18 @@ const industryOptions = [
   "Other"
 ];
 
+const roleOptions = [
+  "Individual Contributor",
+  "Manager",
+  "Team Lead",
+  "Director",
+  "VP",
+  "C-Level",
+  "Founder/Owner",
+  "Consultant",
+  "Other"
+];
+
 const experienceOptions = [
   "Less than 1 year",
   "1-3 years",
@@ -38,8 +50,8 @@ const experienceOptions = [
 
 const DemographicsForm: React.FC<DemographicsFormProps> = ({ demographics, onDemographicsUpdate, onContinue, onBack }) => {
   
-  const handleRoleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onDemographicsUpdate({ ...demographics, role: e.target.value });
+  const handleRoleChange = (value: string) => {
+    onDemographicsUpdate({ ...demographics, role: value });
   };
 
   const handleIndustryChange = (value: string) => {
@@ -66,12 +78,16 @@ const DemographicsForm: React.FC<DemographicsFormProps> = ({ demographics, onDem
                 <User className="text-primary h-4 w-4" />
                 Your Role
               </Label>
-              <Input
-                id="role"
-                placeholder="e.g. Team Lead, Manager, Director"
-                value={demographics.role || ''}
-                onChange={handleRoleChange}
-              />
+              <Select value={demographics.role} onValueChange={handleRoleChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your role" />
+                </SelectTrigger>
+                <SelectContent>
+                  {roleOptions.map((role) => (
+                    <SelectItem key={role} value={role}>{role}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             
             <div className="space-y-2">

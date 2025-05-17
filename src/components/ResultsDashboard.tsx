@@ -16,7 +16,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ categories, demogra
   // Calculate overall skill gap average
   const overallGapAverage = categories.reduce((total, category) => {
     const categoryGap = category.skills.reduce((skillTotal, skill) => 
-      skillTotal + (skill.desiredLevel - skill.currentLevel), 0) / category.skills.length;
+      skillTotal + (skill.ratings.desired - skill.ratings.current), 0) / category.skills.length;
     return total + categoryGap;
   }, 0) / categories.length;
 
@@ -29,10 +29,10 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ categories, demogra
   // Prepare data for category gap chart
   const categoryGapData = categories.map(category => {
     const avgGap = category.skills.reduce((total, skill) => 
-      total + (skill.desiredLevel - skill.currentLevel), 0) / category.skills.length;
+      total + (skill.ratings.desired - skill.ratings.current), 0) / category.skills.length;
     
     return {
-      name: category.name,
+      name: category.title,
       gap: parseFloat(avgGap.toFixed(1)),
       fill: `hsl(${200 + (avgGap * 20)}, 70%, 50%)`,
     };
@@ -43,7 +43,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ categories, demogra
   
   categories.forEach(category => {
     category.skills.forEach(skill => {
-      const gap = skill.desiredLevel - skill.currentLevel;
+      const gap = skill.ratings.desired - skill.ratings.current;
       if (gap >= 0 && gap <= 4) {
         gapDistribution[gap]++;
       }
@@ -79,7 +79,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ categories, demogra
               </div>
               <div className="p-4 bg-slate-50 rounded-md">
                 <p className="text-sm text-slate-500">Years of Experience</p>
-                <p className="font-medium">{getDemographicValue('yearsExperience')}</p>
+                <p className="font-medium">{getDemographicValue('yearsOfExperience')}</p>
               </div>
               <div className="p-4 bg-slate-50 rounded-md">
                 <p className="text-sm text-slate-500">Industry</p>

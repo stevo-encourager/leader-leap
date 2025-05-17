@@ -52,7 +52,7 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
                 <Presentation className="text-primary" />
                 Assessment Areas
               </h3>
-              <p className="text-slate-700 mb-4">This assessment covers four key areas of leadership:</p>
+              <p className="text-slate-700 mb-4">This assessment covers ten key areas of leadership:</p>
               <div className="grid md:grid-cols-2 gap-4">
                 {categories.map((category) => (
                   <div key={category.id} className="border rounded-md p-4">
@@ -70,8 +70,8 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
               </h3>
               <p className="text-slate-700 mb-2">For each skill, you will rate:</p>
               <div className="pl-5 space-y-2">
-                <p><strong>Current level:</strong> Your current proficiency in this skill (1-10)</p>
-                <p><strong>Desired level:</strong> Your target proficiency in this skill (1-10)</p>
+                <p><strong>Current ability:</strong> Your current proficiency in this skill (1-10)</p>
+                <p><strong>Importance to your role:</strong> The level of importance this skill has to your role (1-10)</p>
               </div>
               <p className="mt-3 text-slate-700">The difference between these ratings represents your skill gap and potential development area.</p>
             </div>

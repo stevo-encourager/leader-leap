@@ -102,6 +102,7 @@
   
   .notica-text {
     @apply font-notica tracking-wider-notica;
+    letter-spacing: 1.4px !important; /* Force letter-spacing with !important */
   }
 }
 

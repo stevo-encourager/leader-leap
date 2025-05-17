@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -77,7 +76,7 @@ export default {
 				'notica': ['Notica Text', 'sans-serif'],
 			},
 			letterSpacing: {
-				'wider-notica': '1.4px',
+				'wider-notica': '0.14em', // Increased to 0.14em (equivalent to 1.4px at 10px font size)
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

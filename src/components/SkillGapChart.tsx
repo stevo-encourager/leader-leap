@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   ResponsiveContainer,
@@ -48,8 +47,8 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
 
   return (
     <div className="space-y-8">
-      <div className="text-center mt-6 mb-10">
-        <NoticaText className="text-lg text-encourager flex justify-center">
+      <div className="text-center my-12 py-4 border-y border-encourager/20">
+        <NoticaText className="text-2xl text-encourager flex justify-center">
           LEADERSHIP ASSESSMENT
         </NoticaText>
       </div>

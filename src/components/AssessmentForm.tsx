@@ -77,6 +77,10 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
     }
   };
 
+  const handleCloseMidpointMessage = () => {
+    setShowMidpointMessage(false);
+  };
+
   const currentCategory = categories[activeCategory];
   const isLastCategory = activeCategory === categories.length - 1;
   const isFirstCategory = activeCategory === 0;
@@ -89,10 +93,6 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
 
   // For informational purposes
   const currentCategoryCompleted = isCategoryCompleted(currentCategory);
-  
-  const handleCloseMidpointMessage = () => {
-    setShowMidpointMessage(false);
-  };
 
   return (
     <div className="fade-in">

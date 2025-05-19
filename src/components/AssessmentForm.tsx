@@ -5,11 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Category, Skill } from '@/utils/assessmentData';
 import LeadershipCategory from './LeadershipCategory';
 import { ArrowLeft, CircleGauge } from 'lucide-react';
-import { 
-  Popover, 
-  PopoverContent, 
-  PopoverTrigger 
-} from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
 
 interface AssessmentFormProps {
@@ -26,22 +21,16 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
   onBack
 }) => {
   const [activeCategory, setActiveCategory] = useState<number>(0);
-  const [showEngagementPopover, setShowEngagementPopover] = useState<boolean>(false);
+  const [showMidpointMessage, setShowMidpointMessage] = useState<boolean>(false);
   const { toast } = useToast();
 
-  // Check if we should show the engagement popover when active category changes
+  // Check if we should show the engagement message when active category changes
   useEffect(() => {
     const midpoint = Math.floor(categories.length / 2);
-    if (activeCategory === midpoint && !showEngagementPopover) {
-      setShowEngagementPopover(true);
-      // Show toast notification as a backup in case popover is dismissed
-      toast({
-        title: "Making great progress!",
-        description: "You're halfway through the assessment. Keep going to see your results!",
-        duration: 5000,
-      });
+    if (activeCategory === midpoint && !showMidpointMessage) {
+      setShowMidpointMessage(true);
     }
-  }, [activeCategory, categories.length, showEngagementPopover, toast]);
+  }, [activeCategory, categories.length, showMidpointMessage]);
 
   const handleSkillRating = (categoryId: string, skillId: string, type: 'current' | 'desired', value: number) => {
     const updatedCategories = categories.map(category => {
@@ -163,13 +152,11 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
         </Button>
       </div>
 
-      {/* Engagement Popover - Will auto-open when triggered by the useEffect */}
-      <Popover open={showEngagementPopover} onOpenChange={setShowEngagementPopover}>
-        <PopoverTrigger className="hidden">
-          {/* Hidden trigger, we'll control it programmatically */}
-        </PopoverTrigger>
-        <PopoverContent className="w-80 p-5 border-2 border-encourager bg-white fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-float z-50">
-          <div className="text-center">
+      {/* Centered Midpoint Message */}
+      {showMidpointMessage && (
+        <div className="fixed inset-0 flex items-center justify-center z-50" onClick={() => setShowMidpointMessage(false)}>
+          <div className="fixed inset-0 bg-black/20" aria-hidden="true"></div>
+          <div className="relative bg-white p-6 rounded-lg shadow-lg border-2 border-encourager animate-float max-w-sm w-full text-center">
             <h3 className="text-xl font-semibold text-encourager mb-2">
               Hang in there!
             </h3>
@@ -180,14 +167,14 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
               Keep going to see your full results and leadership infographic.
             </p>
             <Button 
-              onClick={() => setShowEngagementPopover(false)}
+              onClick={() => setShowMidpointMessage(false)}
               className="bg-encourager hover:bg-encourager-light w-full"
             >
               Continue Assessment
             </Button>
           </div>
-        </PopoverContent>
-      </Popover>
+        </div>
+      )}
     </div>
   );
 };

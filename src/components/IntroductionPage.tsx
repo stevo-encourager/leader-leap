@@ -87,6 +87,9 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
         </Card>
       </div>
 
+      {/* Added header for benefits section */}
+      <h2 className="text-2xl font-bold text-encourager mt-8 mb-4">What to Use This Assessment For</h2>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { icon: Smile, title: 'Self-awareness', desc: 'Gain a clear understanding of your leadership strengths and areas for development' },
@@ -108,7 +111,7 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
         ))}
       </div>
 
-      {/* Instructions section */}
+      {/* Instructions section with improved arrow alignment */}
       <Card className="border-none shadow-card bg-white">
         <CardContent className="p-6">
           <div className="flex items-center gap-3 mb-4">
@@ -119,8 +122,8 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
           </div>
           
           <div className="space-y-4">
-            <div className="flex gap-4 items-start">
-              <div className="bg-encourager-accent/10 p-2 rounded-full flex-shrink-0 mt-1">
+            <div className="flex gap-4 items-center">
+              <div className="bg-encourager-accent/10 p-2 rounded-full flex-shrink-0">
                 <ArrowRight className="text-encourager" size={16} strokeWidth={1.5} />
               </div>
               <p className="text-slate-700">
@@ -128,17 +131,17 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
               </p>
             </div>
             
-            <div className="flex gap-4 items-start">
-              <div className="bg-encourager-accent/10 p-2 rounded-full flex-shrink-0 mt-1">
+            <div className="flex gap-4 items-center">
+              <div className="bg-encourager-accent/10 p-2 rounded-full flex-shrink-0">
                 <ArrowRight className="text-encourager" size={16} strokeWidth={1.5} />
               </div>
               <p className="text-slate-700">
-                <span className="font-medium">Consider context:</span> When rating "desired level," think about what's truly important for your current role and career aspirations.
+                <span className="font-medium">Consider context:</span> When rating "desired level," think about what's truly important for your current role and career aspirations (i.e. your desired level might reflect a specific role promotion you are aiming for).
               </p>
             </div>
             
-            <div className="flex gap-4 items-start">
-              <div className="bg-encourager-accent/10 p-2 rounded-full flex-shrink-0 mt-1">
+            <div className="flex gap-4 items-center">
+              <div className="bg-encourager-accent/10 p-2 rounded-full flex-shrink-0">
                 <ArrowRight className="text-encourager" size={16} strokeWidth={1.5} />
               </div>
               <p className="text-slate-700">
@@ -146,8 +149,8 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
               </p>
             </div>
             
-            <div className="flex gap-4 items-start">
-              <div className="bg-encourager-accent/10 p-2 rounded-full flex-shrink-0 mt-1">
+            <div className="flex gap-4 items-center">
+              <div className="bg-encourager-accent/10 p-2 rounded-full flex-shrink-0">
                 <ArrowRight className="text-encourager" size={16} strokeWidth={1.5} />
               </div>
               <p className="text-slate-700">

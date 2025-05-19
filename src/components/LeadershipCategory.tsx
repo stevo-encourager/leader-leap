@@ -1,8 +1,15 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Category, Skill } from '@/utils/assessmentData';
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipProvider, 
+  TooltipTrigger 
+} from '@/components/ui/tooltip';
+import { HelpCircle } from 'lucide-react';
 
 interface LeadershipCategoryProps {
   category: Category;
@@ -15,6 +22,8 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
   onSkillRating,
   hideHeader = false
 }) => {
+  const [hasShownTooltip, setHasShownTooltip] = useState(false);
+
   return (
     <Card className="mb-8">
       {!hideHeader && (
@@ -25,9 +34,23 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
         </CardHeader>
       )}
       <CardContent>
-        {category.skills.map((skill) => (
+        {category.skills.map((skill, index) => (
           <div key={skill.id} className="mb-8 pt-6">
-            <h4 className="text-lg font-medium mb-2 text-[#242323]">{skill.name}</h4>
+            <div className="flex items-center gap-2 mb-2">
+              <h4 className="text-lg font-medium text-[#242323]">{skill.name}</h4>
+              {index === 0 && !hasShownTooltip && (
+                <TooltipProvider>
+                  <Tooltip defaultOpen onOpenChange={() => setHasShownTooltip(true)}>
+                    <TooltipTrigger asChild>
+                      <HelpCircle size={18} className="text-encourager cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent className="bg-encourager text-white max-w-xs">
+                      <p>Use the sliding scale below to rate your current ability and desired target level for this skill.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+            </div>
             <p className="text-sm text-muted-foreground mb-6">{skill.description}</p>
             
             <div className="slider-container">

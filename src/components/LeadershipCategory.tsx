@@ -4,10 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Slider } from "@/components/ui/slider";
 import { Category, Skill } from '@/utils/assessmentData';
 import { 
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger
-} from '@/components/ui/hover-card';
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { HelpCircle } from 'lucide-react';
 
 interface LeadershipCategoryProps {
@@ -26,20 +26,22 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
       {!hideHeader && (
         <CardHeader>
           <div className="flex items-center gap-2">
-            <HoverCard>
-              <HoverCardTrigger asChild>
-                <div className="flex items-center gap-2 cursor-help">
-                  <CardTitle className="text-[#242323]">{category.title}</CardTitle>
+            <CardTitle className="text-[#242323]">{category.title}</CardTitle>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button className="inline-flex cursor-help">
                   <HelpCircle size={18} className="text-encourager" />
-                </div>
-              </HoverCardTrigger>
-              <HoverCardContent 
-                className="bg-encourager text-white w-64 p-3 z-[9999]"
+                </button>
+              </PopoverTrigger>
+              <PopoverContent 
+                className="bg-encourager text-white p-3 z-[9999]"
+                side="right"
+                align="start"
                 sideOffset={10}
               >
                 <p>Use the sliding scales below to rate your current ability and desired target level for each skill.</p>
-              </HoverCardContent>
-            </HoverCard>
+              </PopoverContent>
+            </Popover>
           </div>
           <div className="h-6"></div>
           <CardDescription>{category.description}</CardDescription>

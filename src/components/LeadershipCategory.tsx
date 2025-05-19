@@ -50,6 +50,19 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
           <div key={skill.id} className="mb-8 pt-6">
             <div className="flex items-center gap-2 mb-2">
               <h4 className="text-lg font-medium text-[#242323]">{skill.name}</h4>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button className="cursor-help rounded-full inline-flex focus:outline-none focus:ring-2 focus:ring-primary">
+                    <HelpCircle size={16} className="text-encourager-accent" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent 
+                  className="bg-encourager text-white border-encourager max-w-xs"
+                  sideOffset={5}
+                >
+                  <p>{skill.description}</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
             <p className="text-sm text-muted-foreground mb-6">{skill.description}</p>
             

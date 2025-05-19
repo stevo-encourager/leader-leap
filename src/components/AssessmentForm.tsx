@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Category, Skill } from '@/utils/assessmentData';
+import { Category, Skill } from '@/utils/assessmentTypes';
 import LeadershipCategory from './LeadershipCategory';
 import { ArrowLeft, CircleGauge, Gauge, CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';

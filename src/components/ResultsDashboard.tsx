@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Category, Demographics } from '../utils/assessmentData';
+import { Category, Demographics } from '../utils/assessmentTypes';
 import { ArrowLeft, Download } from 'lucide-react';
 import ProfileSummary from './dashboard/ProfileSummary';
 import DetailedAnalysis from './dashboard/DetailedAnalysis';

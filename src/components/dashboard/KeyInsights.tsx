@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { BookOpen } from 'lucide-react';
-import { Category } from '../../utils/assessmentData';
+import { Category } from '../../utils/assessmentTypes';
 
 interface KeyInsightsProps {
   averageGap: number;

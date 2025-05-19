@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { 
   ResponsiveContainer,
@@ -9,7 +8,7 @@ import {
   Legend, 
   Tooltip
 } from 'recharts';
-import { Category, Skill } from '@/utils/assessmentData';
+import { Category, Skill } from '@/utils/assessmentTypes';
 
 interface SkillGapChartProps {
   categories: Category[];

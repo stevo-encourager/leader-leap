@@ -178,7 +178,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
                 <span>50% Complete</span>
               </div>
               <p className="mt-3 text-encourager-gray">
-                You're making excellent progress on your leadership assessment. Continue to provide thoughtful responses for the most accurate results.
+                You're making excellent progress on your assessment. Keep providing thoughtful responses to ensure you get the most accurate results.
               </p>
             </DialogDescription>
           </DialogHeader>

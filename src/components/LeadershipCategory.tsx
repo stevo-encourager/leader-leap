@@ -19,13 +19,13 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
     <Card className="mb-8">
       {!hideHeader && (
         <CardHeader>
-          <CardTitle className="text-[#242323]">{category.title}</CardTitle>
+          <CardTitle className="text-[#242323] mb-3">{category.title}</CardTitle>
           <CardDescription>{category.description}</CardDescription>
         </CardHeader>
       )}
       <CardContent>
         {category.skills.map((skill) => (
-          <div key={skill.id} className="mb-8">
+          <div key={skill.id} className="mb-8 pt-4">
             <h4 className="text-lg font-medium mb-2">{skill.name}</h4>
             <p className="text-sm text-muted-foreground mb-2">{skill.description}</p>
             

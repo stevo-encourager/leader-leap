@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Category } from '@/utils/assessmentData';
 import LeadershipCategory from './LeadershipCategory';
@@ -119,11 +118,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
         onNext={handleNextCategory}
       />
 
-      {showMidpointMessage && (
-        <MidpointProgressMessage 
-          onClose={handleCloseMidpointMessage} 
-        />
-      )}
+      {showMidpointMessage && <MidpointProgressMessage onClose={handleCloseMidpointMessage} />}
     </div>
   );
 };

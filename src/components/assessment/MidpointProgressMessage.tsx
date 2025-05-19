@@ -2,6 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Gauge, CheckCircle2 } from 'lucide-react';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 
 interface MidpointProgressMessageProps {
   onClose: () => void;
@@ -9,14 +10,8 @@ interface MidpointProgressMessageProps {
 
 const MidpointProgressMessage: React.FC<MidpointProgressMessageProps> = ({ onClose }) => {
   return (
-    <div 
-      className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm bg-black/10 transition-all"
-      onClick={onClose}
-    >
-      <div 
-        className="relative bg-white rounded-lg shadow-xl border border-gray-200 max-w-md w-full overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50">
+      <div className="bg-white rounded-lg shadow-xl border border-gray-200 max-w-md w-full">
         {/* Progress indicator */}
         <div className="bg-encourager h-1.5 w-1/2"></div>
         
@@ -43,10 +38,7 @@ const MidpointProgressMessage: React.FC<MidpointProgressMessageProps> = ({ onClo
           
           <div className="flex flex-col gap-2">
             <Button 
-              onClick={(e) => {
-                e.preventDefault();
-                onClose();
-              }}
+              onClick={onClose}
               className="bg-encourager hover:bg-encourager-light w-full"
             >
               Continue Assessment

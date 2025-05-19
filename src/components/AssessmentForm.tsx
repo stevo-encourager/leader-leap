@@ -122,7 +122,6 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
         <Button
           onClick={handleNextCategory}
           className="bg-encourager hover:bg-encourager-light"
-          // Removed the disabled attribute based on category completion
         >
           {isLastCategory ? 'View Results' : 'Next'}
         </Button>

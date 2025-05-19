@@ -25,7 +25,7 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
       )}
       <CardContent>
         {category.skills.map((skill) => (
-          <div key={skill.id} className="mb-8">
+          <div key={skill.id} className="mb-8 pt-4">
             <h4 className="text-lg font-medium mb-2">{skill.name}</h4>
             <p className="text-sm text-muted-foreground mb-4">{skill.description}</p>
             

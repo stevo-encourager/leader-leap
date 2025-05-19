@@ -43,7 +43,10 @@ const MidpointProgressMessage: React.FC<MidpointProgressMessageProps> = ({ onClo
           
           <div className="flex flex-col gap-2">
             <Button 
-              onClick={onClose}
+              onClick={(e) => {
+                e.preventDefault();
+                onClose();
+              }}
               className="bg-encourager hover:bg-encourager-light w-full"
             >
               Continue Assessment

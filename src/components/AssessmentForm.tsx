@@ -120,7 +120,9 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
       />
 
       {showMidpointMessage && (
-        <MidpointProgressMessage onClose={handleCloseMidpointMessage} />
+        <MidpointProgressMessage 
+          onClose={handleCloseMidpointMessage} 
+        />
       )}
     </div>
   );

@@ -52,9 +52,8 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
           <PolarGrid stroke="#e5e7eb" />
           <PolarAngleAxis 
             dataKey="subject" 
-            tick={{ fill: '#2F564D', fontSize: 12, fontWeight: 500 }}
             tickLine={false}
-            // Adding this property ensures labels are positioned at the center of each segment
+            // Using a custom tick component to position labels at the center of each segment
             tick={(props) => {
               const { x, y, payload, textAnchor, ...rest } = props;
               // Find the angle for this category (0 to 360 degrees)

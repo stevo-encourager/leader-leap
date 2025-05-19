@@ -168,13 +168,13 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
         <PopoverTrigger className="hidden">
           {/* Hidden trigger, we'll control it programmatically */}
         </PopoverTrigger>
-        <PopoverContent className="w-80 p-5 border-2 border-encourager bg-white">
+        <PopoverContent className="w-80 p-5 border-2 border-encourager bg-white fixed top-1/2 left-1/2 transform -translate-x-1/2 animate-float">
           <div className="text-center">
             <h3 className="text-xl font-semibold text-encourager mb-2">
-              Well done!
+              Hang in there!
             </h3>
             <p className="mb-3">
-              You're {progressPercentage}% through the assessment! 
+              You're 50% through the assessment! 
             </p>
             <p className="text-sm text-encourager-gray mb-4">
               Keep going to see your full results and leadership infographic.

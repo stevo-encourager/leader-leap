@@ -63,8 +63,8 @@ export const initialCategories: Category[] = [
       },
       {
         id: "written-communication",
-        name: "Written Communication",
-        description: "Ability to write clearly, concisely, and persuasively.",
+        name: "Written & Visual Communication",
+        description: "Ability to communicate ideas clearly, concisely, and persuasively through text and visual presentations.",
         ratings: { current: 0, desired: 0 }
       },
       {

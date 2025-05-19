@@ -7,7 +7,6 @@ import { HelpCircle } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
@@ -28,21 +27,19 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
         <CardHeader>
           <div className="flex items-center gap-2">
             <CardTitle className="text-[#242323]">{category.title}</CardTitle>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="cursor-help inline-flex">
-                    <HelpCircle size={18} className="text-encourager" />
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent 
-                  className="bg-encourager text-white border-encourager max-w-xs"
-                  sideOffset={5}
-                >
-                  <p>Use the sliding scales below to rate your current ability and desired target level for each skill.</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button className="cursor-help rounded-full inline-flex focus:outline-none focus:ring-2 focus:ring-primary">
+                  <HelpCircle size={18} className="text-encourager" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent 
+                className="bg-encourager text-white border-encourager max-w-xs"
+                sideOffset={5}
+              >
+                <p>Use the sliding scales below to rate your current ability and desired target level for each skill.</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
           <div className="h-6"></div>
           <CardDescription>{category.description}</CardDescription>

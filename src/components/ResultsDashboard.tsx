@@ -38,8 +38,6 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ categories, demogra
     }))
   );
   
-  const topGapSkills = [...allSkills].sort((a, b) => b.gap - a.gap).slice(0, 3);
-  
   // Find strengths (highest current ratings)
   const strengths = [...allSkills]
     .sort((a, b) => (b.ratings.current || 0) - (a.ratings.current || 0))
@@ -69,7 +67,6 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ categories, demogra
           {/* Key Insights */}
           <KeyInsights 
             averageGap={averageGap} 
-            topGapSkills={topGapSkills} 
             strengths={strengths} 
             lowestSkills={lowestSkills} 
           />

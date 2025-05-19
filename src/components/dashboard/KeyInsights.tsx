@@ -37,7 +37,6 @@ interface KeyInsightsProps {
 
 const KeyInsights: React.FC<KeyInsightsProps> = ({ 
   averageGap, 
-  topGapSkills,
   strengths,
   lowestSkills
 }) => {
@@ -53,23 +52,6 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
               Based on your assessment, your average skill gap is <span className="font-bold">{averageGap.toFixed(2)}</span> points.
               This indicates the typical difference between your current abilities and how important these skills are to your role.
             </p>
-          </div>
-          
-          <h4 className="text-md font-medium mb-2">Top Areas for Development</h4>
-          <div className="space-y-3 mb-4">
-            {topGapSkills.map((skill) => (
-              <div key={skill.id} className="bg-secondary/10 p-3 rounded-lg">
-                <div className="flex justify-between">
-                  <div>
-                    <p className="font-medium">{skill.name}</p>
-                    <p className="text-sm text-slate-500">{skill.categoryTitle}</p>
-                  </div>
-                  <div className="bg-primary text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
-                    Gap: {skill.gap.toFixed(2)}
-                  </div>
-                </div>
-              </div>
-            ))}
           </div>
           
           <h4 className="text-md font-medium mt-3 mb-2">Your Highest Scoring Leadership Competencies</h4>
@@ -105,6 +87,14 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
               </div>
             ))}
           </div>
+          
+          <h4 className="text-md font-medium mt-4 mb-2">Recommended Next Steps</h4>
+          <ul className="list-disc list-inside space-y-2 text-slate-700">
+            <li>Focus on developing your top gap areas through targeted learning opportunities</li>
+            <li>Consider seeking a mentor who excels in your development areas</li>
+            <li>Create a 30-day action plan to address your most critical skill gaps</li>
+            <li>Re-assess in 3-6 months to measure your progress</li>
+          </ul>
         </div>
       </div>
     </div>

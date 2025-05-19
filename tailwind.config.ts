@@ -56,7 +56,7 @@ export default {
 				encourager: {
 					DEFAULT: '#2F564D', // Updated to the new color
 					light: '#3d6f63', // Lighter shade of the base color
-					gold: '#D4AF37', // Gold accent color
+					accent: '#8baca5', // New accent color replacing gold
 					gray: '#58595b', // Gray from Encourager branding
 					lightgray: '#f5f5f5', // Light gray background
 				},
@@ -105,15 +105,21 @@ export default {
 					'0%, 100%': { opacity: '1' },
 					'50%': { opacity: '0.8' }
 				},
+				'float': {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-10px)' }
+				},
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
-				'pulse-light': 'pulse-light 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+				'pulse-light': 'pulse-light 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+				'float': 'float 3s ease-in-out infinite',
 			},
 			boxShadow: {
 				'card': '0px 5px 15px rgba(0, 0, 0, 0.05)',
 				'card-hover': '0px 10px 25px rgba(0, 0, 0, 0.1)',
+				'elevated': '0px 10px 30px rgba(0, 0, 0, 0.08)',
 			},
 		}
 	},

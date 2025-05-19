@@ -19,7 +19,7 @@
     --primary: 162 30% 26%; /* Updated to match #2F564D */
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 45 70% 52%; /* Encourager gold */
+    --secondary: 162 15% 60%; /* Encourager accent - updated to match #8baca5 */
     --secondary-foreground: 222.2 47.4% 11.2%;
 
     --muted: 210 40% 96.1%;
@@ -138,8 +138,8 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* Encourager custom classes */
@@ -159,10 +159,9 @@
   @apply text-encourager font-bold font-playfair;
 }
 
-/* Enhanced introduction page styles */
+/* Updated styles for the sleek design */
 .intro-card {
-  @apply border-none shadow-lg overflow-hidden relative;
-  background: linear-gradient(to bottom right, #ffffff, #f9f9f9);
+  @apply border-none shadow-lg overflow-hidden relative bg-white;
 }
 
 .intro-header {
@@ -170,14 +169,14 @@
 }
 
 .intro-content-card {
-  @apply border border-slate-100 rounded-lg shadow-sm transition-all hover:shadow-md;
+  @apply border border-slate-100 rounded-xl shadow-sm transition-all hover:shadow-md bg-white;
 }
 
 .intro-icon {
-  @apply text-encourager-gold;
+  @apply text-encourager-accent;
 }
 
 .intro-cta-button {
-  @apply bg-gradient-to-r from-encourager-gold to-amber-400 text-encourager hover:opacity-90 transition-all 
+  @apply bg-encourager text-white hover:bg-encourager-light transition-all 
   font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5;
 }

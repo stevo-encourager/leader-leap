@@ -1,8 +1,29 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Category } from '../utils/assessmentData';
-import { BookOpen, User, CircleCheck, Clock, Award, Smile, FileBarChart, Target, Lightbulb, ArrowRight, TrendingUp } from 'lucide-react';
+import { 
+  BookOpen, 
+  User, 
+  CircleCheck, 
+  Clock, 
+  Award, 
+  Smile, 
+  FileBarChart, 
+  Target, 
+  Lightbulb, 
+  ArrowRight, 
+  TrendingUp,
+  HelpCircle 
+} from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 
 interface IntroductionPageProps {
   categories: Category[];
@@ -28,13 +49,30 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
             Identify gaps between your current leadership skills and where you want to be.
           </p>
           
-          <Button 
-            size="lg"
-            onClick={onStartAssessment}
-            className="bg-encourager hover:bg-encourager-light text-white px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 font-medium"
-          >
-            Start Your Assessment
-          </Button>
+          <div className="relative">
+            <HoverCard openDelay={100} closeDelay={200}>
+              <HoverCardTrigger asChild>
+                <Button 
+                  size="lg"
+                  onClick={onStartAssessment}
+                  className="bg-encourager hover:bg-encourager-light text-white px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 font-medium"
+                >
+                  Start Your Assessment
+                </Button>
+              </HoverCardTrigger>
+              <HoverCardContent className="w-80 p-4 bg-white border border-slate-200 shadow-lg rounded-lg">
+                <div className="flex gap-2 items-start">
+                  <HelpCircle className="text-encourager h-5 w-5 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="text-sm font-semibold text-encourager mb-1">Starting Your Assessment</h4>
+                    <p className="text-sm text-slate-600">
+                      First, you'll enter some demographic information, then rate your current skill level and desired level for each leadership competency on a scale of 1-10.
+                    </p>
+                  </div>
+                </div>
+              </HoverCardContent>
+            </HoverCard>
+          </div>
         </div>
       </Card>
 
@@ -161,13 +199,30 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
       </div>
 
       <CardFooter className="flex justify-center pt-4 pb-8">
-        <Button 
-          size="lg"
-          onClick={onStartAssessment}
-          className="bg-encourager hover:bg-encourager-light text-white px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 font-medium"
-        >
-          Start Your Assessment
-        </Button>
+        <div className="relative">
+          <HoverCard>
+            <HoverCardTrigger asChild>
+              <Button 
+                size="lg"
+                onClick={onStartAssessment}
+                className="bg-encourager hover:bg-encourager-light text-white px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 font-medium"
+              >
+                Start Your Assessment
+              </Button>
+            </HoverCardTrigger>
+            <HoverCardContent className="w-80 p-4 bg-white border border-slate-200 shadow-lg rounded-lg">
+              <div className="flex gap-2 items-start">
+                <HelpCircle className="text-encourager h-5 w-5 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h4 className="text-sm font-semibold text-encourager mb-1">Starting Your Assessment</h4>
+                  <p className="text-sm text-slate-600">
+                    First, you'll enter some demographic information, then rate your current skill level and desired level for each leadership competency on a scale of 1-10.
+                  </p>
+                </div>
+              </div>
+            </HoverCardContent>
+          </HoverCard>
+        </div>
       </CardFooter>
     </div>
   );

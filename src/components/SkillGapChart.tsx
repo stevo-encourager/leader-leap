@@ -69,7 +69,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
             }}
           />
           <Radar
-            name="Current Skills"
+            name="Current Level"
             dataKey="current"
             stroke="#2F564D"
             fill="#2F564D"
@@ -77,7 +77,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
             dot={{ stroke: '#2F564D', strokeWidth: 2, fill: '#fff', r: 3 }}
           />
           <Radar
-            name="Desired Skills"
+            name="Desired Level"
             dataKey="desired"
             stroke="#8baca5"
             fill="#8baca5"

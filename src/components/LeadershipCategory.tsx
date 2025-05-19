@@ -7,18 +7,22 @@ import { Category, Skill } from '@/utils/assessmentData';
 interface LeadershipCategoryProps {
   category: Category;
   onSkillRating: (categoryId: string, skillId: string, type: 'current' | 'desired', value: number) => void;
+  hideHeader?: boolean;
 }
 
 const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({ 
   category, 
-  onSkillRating 
+  onSkillRating,
+  hideHeader = false
 }) => {
   return (
     <Card className="mb-8">
-      <CardHeader>
-        <CardTitle>{category.title}</CardTitle>
-        <CardDescription>{category.description}</CardDescription>
-      </CardHeader>
+      {!hideHeader && (
+        <CardHeader>
+          <CardTitle>{category.title}</CardTitle>
+          <CardDescription>{category.description}</CardDescription>
+        </CardHeader>
+      )}
       <CardContent>
         {category.skills.map((skill) => (
           <div key={skill.id} className="mb-8">
@@ -70,7 +74,7 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
                 className="skill-gap" 
                 style={{ 
                   width: `${skill.ratings.current * 10}%`,
-                  backgroundColor: 'rgba(36, 99, 235, 0.2)'
+                  backgroundColor: 'rgba(139, 172, 165, 0.2)' // Changed to #8baca5 with opacity
                 }}
               ></div>
               <div 

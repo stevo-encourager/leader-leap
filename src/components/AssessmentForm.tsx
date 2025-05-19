@@ -80,7 +80,14 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
 
   return (
     <div className="fade-in">
-      <h1 className="text-3xl font-bold mb-6 text-[#242323]">Leadership Assessment Tool</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold text-[#242323]">Leadership Assessment Tool</h1>
+        <img 
+          src="/lovable-uploads/8320d514-fba5-4e1b-a658-1563758db943.png" 
+          alt="Company Logo" 
+          className="h-12" 
+        />
+      </div>
       
       <Card className="mb-6 encourager-card">
         <CardHeader className="bg-encourager-lightgray">
@@ -109,7 +116,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
       <LeadershipCategory 
         category={currentCategory}
         onSkillRating={handleSkillRating}
-        hideHeader={false}
+        hideHeader={true}
       />
 
       <div className="flex justify-between mt-6">

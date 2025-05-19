@@ -41,19 +41,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="bg-white border-b border-slate-200 py-6 shadow-sm">
-        <div className="max-w-5xl mx-auto px-4 flex justify-between items-center">
-          <div className="flex items-center space-x-3">
-            <img 
-              src="/lovable-uploads/8320d514-fba5-4e1b-a658-1563758db943.png" 
-              alt="Encourager Logo" 
-              className="h-12 object-contain" 
-            />
-            <h1 className="text-2xl md:text-3xl font-bold text-encourager">Leadership Assessment</h1>
-          </div>
-        </div>
-      </header>
-
       <main className="assessment-container">
         {currentStep === 'intro' && (
           <IntroductionPage 

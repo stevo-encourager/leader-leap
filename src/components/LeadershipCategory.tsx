@@ -55,7 +55,7 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
             </div>
             
             <div className="slider-container">
-              <span className="slider-label">Importance to your role:</span>
+              <span className="slider-label">Target level:</span>
               <div className="flex-1 px-2">
                 <div className="flex items-center">
                   <div className="flex-1">

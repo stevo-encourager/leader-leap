@@ -35,9 +35,14 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ categories, demogra
   
   const topGapSkills = [...allSkills].sort((a, b) => b.gap - a.gap).slice(0, 3);
   
-  // Find strengths (lowest gaps or highest current ratings)
+  // Find strengths (highest current ratings)
   const strengths = [...allSkills]
     .sort((a, b) => (a.ratings.current || 0) > (b.ratings.current || 0) ? -1 : 1)
+    .slice(0, 3);
+    
+  // Find lowest scoring competencies
+  const lowestSkills = [...allSkills]
+    .sort((a, b) => (a.ratings.current || 0) < (b.ratings.current || 0) ? -1 : 1)
     .slice(0, 3);
 
   return (
@@ -77,6 +82,16 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ categories, demogra
             </div>
           )}
 
+          {/* Detailed Analysis - Moved to top as requested */}
+          <div>
+            <h3 className="text-lg font-medium mb-3">Detailed Analysis</h3>
+            <div className="bg-white rounded-lg p-3 border w-full">
+              <div className="w-full h-[500px]">
+                <SkillGapChart categories={categories} />
+              </div>
+            </div>
+          </div>
+
           {/* Key Insights */}
           <div>
             <h3 className="text-lg font-medium mb-3">Key Insights</h3>
@@ -105,16 +120,6 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ categories, demogra
             </div>
           </div>
 
-          {/* Skills Gap Chart */}
-          <div>
-            <h3 className="text-lg font-medium mb-3">Detailed Analysis</h3>
-            <div className="bg-white rounded-lg p-3 border w-full">
-              <div className="w-full h-[500px]">
-                <SkillGapChart categories={categories} />
-              </div>
-            </div>
-          </div>
-
           {/* Strengths-Based Coaching Approach */}
           <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
             <div className="flex items-start gap-3">
@@ -135,19 +140,43 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ categories, demogra
             </div>
           </div>
 
-          {/* Coaching Recommendations */}
+          {/* Coaching Recommendations - Updated as requested */}
           <div className="bg-encourager/5 p-4 rounded-lg border border-encourager/20">
             <div className="flex items-start gap-3">
               <BookOpen className="text-encourager h-5 w-5 mt-1" />
               <div>
                 <h3 className="text-lg font-medium mb-2">Coaching Recommendations</h3>
                 
-                <h4 className="text-sm font-medium mt-3 mb-2">Your Leadership Strengths</h4>
+                <h4 className="text-sm font-medium mt-3 mb-2">Your Highest Scoring Leadership Competencies</h4>
                 <div className="space-y-2 mb-4">
                   {strengths.map((strength, index) => (
                     <div key={`strength-${strength.id}`} className="bg-white p-2 rounded border border-slate-100">
-                      <p className="font-medium text-sm">{strength.name}</p>
-                      <p className="text-xs text-slate-500">{strength.categoryTitle}</p>
+                      <div className="flex justify-between">
+                        <div>
+                          <p className="font-medium text-sm">{strength.name}</p>
+                          <p className="text-xs text-slate-500">{strength.categoryTitle}</p>
+                        </div>
+                        <div className="bg-green-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
+                          Score: {(strength.ratings.current || 0).toFixed(2)}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                <h4 className="text-sm font-medium mt-4 mb-2">Your Lowest Scoring Leadership Competencies</h4>
+                <div className="space-y-2 mb-4">
+                  {lowestSkills.map((skill, index) => (
+                    <div key={`lowest-${skill.id}`} className="bg-white p-2 rounded border border-slate-100">
+                      <div className="flex justify-between">
+                        <div>
+                          <p className="font-medium text-sm">{skill.name}</p>
+                          <p className="text-xs text-slate-500">{skill.categoryTitle}</p>
+                        </div>
+                        <div className="bg-red-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
+                          Score: {(skill.ratings.current || 0).toFixed(2)}
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>

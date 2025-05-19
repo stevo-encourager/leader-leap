@@ -5,6 +5,7 @@ import AssessmentForm from '../components/AssessmentForm';
 import ResultsDashboard from '../components/ResultsDashboard';
 import IntroductionPage from '../components/IntroductionPage';
 import DemographicsForm from '../components/DemographicsForm';
+import { CircleGauge } from 'lucide-react';
 
 const Index = () => {
   const [currentStep, setCurrentStep] = useState<AssessmentStep>('intro');
@@ -79,7 +80,10 @@ const Index = () => {
 
       <footer className="py-6 border-t mt-12 bg-white">
         <div className="max-w-5xl mx-auto px-4 text-center text-sm text-slate-500">
-          Leadership Assessment Tool &copy; {new Date().getFullYear()}
+          <div className="flex items-center justify-center gap-2">
+            <CircleGauge className="text-encourager-accent" size={18} strokeWidth={1.5} />
+            Leadership Assessment Tool &copy; {new Date().getFullYear()}
+          </div>
         </div>
       </footer>
     </div>

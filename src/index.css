@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600&display=swap');
 
 @tailwind base;
@@ -150,6 +151,11 @@
   animation: float 3s ease-in-out infinite;
 }
 
+/* Dialog backdrop and animation */
+.backdrop-blur-sm {
+  backdrop-filter: blur(4px);
+}
+
 /* Encourager custom classes */
 .encourager-text {
   @apply text-encourager;
@@ -162,3 +168,4 @@
 .encourager-header {
   @apply text-encourager font-bold font-playfair;
 }
+

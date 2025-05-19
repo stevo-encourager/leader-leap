@@ -84,7 +84,7 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
                 </div>
                 <div className="relative flex text-xs text-muted-foreground mt-1 h-5">
                   <span style={{ position: 'absolute', left: '5%', transform: 'translateX(-50%)' }} className="text-center">Beginner</span>
-                  <span style={{ position: 'absolute', left: '35%', transform: 'translateX(-50%)' }} className="text-center">Competent</span>
+                  <span style={{ position: 'absolute', left: '35%', transform: 'translateX(-50%)' }} className="text-center">Proficient</span>
                   <span style={{ position: 'absolute', left: '65%', transform: 'translateX(-50%)' }} className="text-center">Advanced</span>
                   <span style={{ position: 'absolute', left: '90%', transform: 'translateX(-50%)' }} className="text-center">Expert</span>
                 </div>
@@ -109,7 +109,7 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
                 </div>
                 <div className="relative flex text-xs text-muted-foreground mt-1 h-5">
                   <span style={{ position: 'absolute', left: '5%', transform: 'translateX(-50%)' }} className="text-center">Beginner</span>
-                  <span style={{ position: 'absolute', left: '35%', transform: 'translateX(-50%)' }} className="text-center">Competent</span>
+                  <span style={{ position: 'absolute', left: '35%', transform: 'translateX(-50%)' }} className="text-center">Proficient</span>
                   <span style={{ position: 'absolute', left: '65%', transform: 'translateX(-50%)' }} className="text-center">Advanced</span>
                   <span style={{ position: 'absolute', left: '90%', transform: 'translateX(-50%)' }} className="text-center">Expert</span>
                 </div>

@@ -22,30 +22,30 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
   onSkillRating,
   hideHeader = false
 }) => {
-  const [hasShownTooltip, setHasShownTooltip] = useState(false);
-
   return (
     <Card className="mb-8">
       {!hideHeader && (
         <CardHeader>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex items-center gap-2 cursor-help">
-                  <CardTitle className="text-[#242323]">{category.title}</CardTitle>
-                  <HelpCircle size={18} className="text-encourager" />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent 
-                side="right" 
-                align="start" 
-                className="bg-encourager text-white max-w-xs z-[100] p-3"
-                sideOffset={10}
-              >
-                <p>Use the sliding scales below to rate your current ability and desired target level for each skill.</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <div className="flex items-center gap-2">
+            <TooltipProvider>
+              <Tooltip defaultOpen>
+                <TooltipTrigger asChild>
+                  <div className="flex items-center gap-2 cursor-help">
+                    <CardTitle className="text-[#242323]">{category.title}</CardTitle>
+                    <HelpCircle size={18} className="text-encourager" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent 
+                  side="right" 
+                  align="start" 
+                  className="bg-encourager text-white max-w-xs z-[999] p-3"
+                  sideOffset={20}
+                >
+                  <p>Use the sliding scales below to rate your current ability and desired target level for each skill.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
           <div className="h-6"></div>
           <CardDescription>{category.description}</CardDescription>
         </CardHeader>

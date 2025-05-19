@@ -109,7 +109,10 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
               borderRadius: '4px',
               boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
             }} 
-            formatter={(value, name) => [`${value.toFixed(1)}`, name]}
+            formatter={(value, name) => {
+              // Check if value is a number before calling toFixed
+              return [typeof value === 'number' ? value.toFixed(1) : value, name];
+            }}
           />
           <Legend 
             iconType="circle" 

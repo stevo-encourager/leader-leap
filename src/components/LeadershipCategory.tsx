@@ -1,14 +1,13 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Category, Skill } from '@/utils/assessmentData';
 import { 
-  Tooltip, 
-  TooltipContent, 
-  TooltipProvider, 
-  TooltipTrigger 
-} from '@/components/ui/tooltip';
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger
+} from '@/components/ui/hover-card';
 import { HelpCircle } from 'lucide-react';
 
 interface LeadershipCategoryProps {
@@ -27,24 +26,20 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
       {!hideHeader && (
         <CardHeader>
           <div className="flex items-center gap-2">
-            <TooltipProvider>
-              <Tooltip defaultOpen>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center gap-2 cursor-help">
-                    <CardTitle className="text-[#242323]">{category.title}</CardTitle>
-                    <HelpCircle size={18} className="text-encourager" />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent 
-                  side="right" 
-                  align="start" 
-                  className="bg-encourager text-white max-w-xs z-[999] p-3"
-                  sideOffset={20}
-                >
-                  <p>Use the sliding scales below to rate your current ability and desired target level for each skill.</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <HoverCard>
+              <HoverCardTrigger asChild>
+                <div className="flex items-center gap-2 cursor-help">
+                  <CardTitle className="text-[#242323]">{category.title}</CardTitle>
+                  <HelpCircle size={18} className="text-encourager" />
+                </div>
+              </HoverCardTrigger>
+              <HoverCardContent 
+                className="bg-encourager text-white w-64 p-3 z-[9999]"
+                sideOffset={10}
+              >
+                <p>Use the sliding scales below to rate your current ability and desired target level for each skill.</p>
+              </HoverCardContent>
+            </HoverCard>
           </div>
           <div className="h-6"></div>
           <CardDescription>{category.description}</CardDescription>

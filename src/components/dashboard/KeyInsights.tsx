@@ -5,21 +5,11 @@ import { Category } from '../../utils/assessmentData';
 
 interface KeyInsightsProps {
   averageGap: number;
-  // Make topGapSkills optional by adding ? to the property name
-  topGapSkills?: Array<{
-    id: string;
-    name: string;
-    categoryTitle: string;
-    gap: number;
-    ratings: {
-      current: number;
-      desired: number;
-    };
-  }>;
   strengths: Array<{
     id: string;
     name: string;
     categoryTitle: string;
+    gap?: number;
     ratings: {
       current: number;
       desired: number;
@@ -38,7 +28,6 @@ interface KeyInsightsProps {
 
 const KeyInsights: React.FC<KeyInsightsProps> = ({ 
   averageGap, 
-  topGapSkills,
   strengths,
   lowestSkills
 }) => {
@@ -51,8 +40,8 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
           
           <div className="bg-primary/5 p-4 rounded-lg mb-4">
             <p className="text-sm">
-              Based on your assessment, your average skill gap is <span className="font-bold">{averageGap.toFixed(2)}</span> points.
-              This indicates the typical difference between your current abilities and how important these skills are to your role.
+              Based on your assessment, your average competency gap is <span className="font-bold">{averageGap.toFixed(2)}</span> points.
+              This indicates the typical difference between your current abilities and how important these competencies are to your role.
             </p>
           </div>
           
@@ -94,7 +83,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
           <ul className="list-disc list-inside space-y-2 text-slate-700">
             <li>Focus on developing your top gap areas through targeted learning opportunities</li>
             <li>Consider seeking a mentor who excels in your development areas</li>
-            <li>Create a 30-day action plan to address your most critical skill gaps</li>
+            <li>Create a 30-day action plan to address your most critical competency gaps</li>
             <li>Re-assess in 3-6 months to measure your progress</li>
           </ul>
         </div>

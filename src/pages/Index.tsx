@@ -119,6 +119,10 @@ const Index = () => {
     setShowAuthForm(false);
   };
 
+  const handleShowSignupForm = () => {
+    setShowAuthForm(true);
+  };
+
   // Wait for auth to initialize before rendering
   if (loading) {
     return (
@@ -195,27 +199,28 @@ const Index = () => {
 
             {currentStep === 'results' && (
               <>
-                {!user && (
-                  <div className="mb-6 bg-white p-4 border border-slate-200 rounded-lg shadow-sm">
-                    <p className="text-slate-700 mb-2">
-                      <strong>Want to save your results and access them later?</strong>
-                    </p>
-                    <Button 
-                      variant="encourager" 
-                      size="sm" 
-                      onClick={() => setShowAuthForm(true)}
-                    >
-                      Create an Account
-                    </Button>
-                  </div>
-                )}
-                
                 <ResultsDashboard 
                   categories={categories}
                   demographics={demographics}
                   onRestart={handleStartAssessment}
                   onBack={handleBackToDemographics}
+                  onSignup={handleShowSignupForm}
                 />
+                
+                {!user && (
+                  <div className="mt-6 bg-white p-4 border border-slate-200 rounded-lg shadow-sm">
+                    <p className="text-slate-700 mb-4">
+                      <strong>Want to save your results, download as PDF, and access them later?</strong> 
+                      Create an account to unlock all features of the Leadership Assessment Tool.
+                    </p>
+                    <Button 
+                      variant="encourager" 
+                      onClick={handleShowSignupForm}
+                    >
+                      Create an Account
+                    </Button>
+                  </div>
+                )}
               </>
             )}
           </>

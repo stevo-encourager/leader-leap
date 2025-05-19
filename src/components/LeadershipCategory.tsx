@@ -3,12 +3,13 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Category, Skill } from '@/utils/assessmentData';
-import { 
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { HelpCircle } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface LeadershipCategoryProps {
   category: Category;
@@ -27,21 +28,21 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
         <CardHeader>
           <div className="flex items-center gap-2">
             <CardTitle className="text-[#242323]">{category.title}</CardTitle>
-            <Popover>
-              <PopoverTrigger asChild>
-                <button className="inline-flex cursor-help">
-                  <HelpCircle size={18} className="text-encourager" />
-                </button>
-              </PopoverTrigger>
-              <PopoverContent 
-                className="bg-encourager text-white p-3 z-[9999]"
-                side="right"
-                align="start"
-                sideOffset={10}
-              >
-                <p>Use the sliding scales below to rate your current ability and desired target level for each skill.</p>
-              </PopoverContent>
-            </Popover>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span className="cursor-help inline-flex">
+                    <HelpCircle size={18} className="text-encourager" />
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent 
+                  className="bg-encourager text-white border-encourager max-w-xs"
+                  sideOffset={5}
+                >
+                  <p>Use the sliding scales below to rate your current ability and desired target level for each skill.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
           <div className="h-6"></div>
           <CardDescription>{category.description}</CardDescription>

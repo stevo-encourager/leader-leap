@@ -34,8 +34,8 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
       
       allSkills.push({
         subject: category.title,
-        current: categoryAvgCurrent,
-        desired: categoryAvgDesired,
+        current: parseFloat(categoryAvgCurrent.toFixed(2)),
+        desired: parseFloat(categoryAvgDesired.toFixed(2)),
         fullMark: 10
       });
     });
@@ -45,9 +45,9 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
 
   const chartData = prepareChartData();
 
-  // Custom formatter for the tooltip to ensure numbers display properly
+  // Custom formatter for the tooltip to ensure numbers display properly with 2 decimal points
   const tooltipFormatter = (value: string | number) => {
-    return typeof value === 'number' ? value.toFixed(1) : value;
+    return typeof value === 'number' ? value.toFixed(2) : value;
   };
 
   return (

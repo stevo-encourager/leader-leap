@@ -22,14 +22,14 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ categories, demogra
     }, 0);
   }, 0);
   
-  const averageGap = totalGap / totalSkills;
+  const averageGap = parseFloat((totalGap / totalSkills).toFixed(2));
 
   // Find the top 3 skills with the largest gaps
   const allSkills = categories.flatMap(category => 
     category.skills.map(skill => ({
       ...skill,
       categoryTitle: category.title,
-      gap: Math.abs((skill.ratings.desired || 0) - (skill.ratings.current || 0))
+      gap: parseFloat(Math.abs((skill.ratings.desired || 0) - (skill.ratings.current || 0)).toFixed(2))
     }))
   );
   
@@ -77,7 +77,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ categories, demogra
             <h3 className="text-lg font-medium mb-3">Key Insights</h3>
             <div className="bg-primary/5 p-4 rounded-lg mb-4">
               <p className="text-sm">
-                Based on your assessment, your average skill gap is <span className="font-bold">{averageGap.toFixed(1)}</span> points.
+                Based on your assessment, your average skill gap is <span className="font-bold">{averageGap.toFixed(2)}</span> points.
                 This indicates the typical difference between your current abilities and how important these skills are to your role.
               </p>
             </div>
@@ -92,7 +92,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ categories, demogra
                       <p className="text-sm text-slate-500">{skill.categoryTitle}</p>
                     </div>
                     <div className="bg-primary text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
-                      Gap: {skill.gap}
+                      Gap: {skill.gap.toFixed(2)}
                     </div>
                   </div>
                 </div>

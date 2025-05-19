@@ -85,7 +85,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
         <img 
           src="/lovable-uploads/8320d514-fba5-4e1b-a658-1563758db943.png" 
           alt="Company Logo" 
-          className="h-12" 
+          className="h-16" 
         />
       </div>
       
@@ -113,11 +113,13 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
         </CardContent>
       </Card>
 
-      <LeadershipCategory 
-        category={currentCategory}
-        onSkillRating={handleSkillRating}
-        hideHeader={true}
-      />
+      <div className="mt-10">
+        <LeadershipCategory 
+          category={currentCategory}
+          onSkillRating={handleSkillRating}
+          hideHeader={true}
+        />
+      </div>
 
       <div className="flex justify-between mt-6">
         <Button 

@@ -73,13 +73,13 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
           </div>
           
           <h4 className="text-md font-medium mt-3 mb-2">Your Highest Scoring Leadership Competencies</h4>
-          <div className="space-y-2 mb-4">
+          <div className="space-y-3 mb-4">
             {strengths.map((strength) => (
-              <div key={`strength-${strength.id}`} className="bg-white p-2 rounded border border-slate-100">
+              <div key={`strength-${strength.id}`} className="bg-secondary/10 p-3 rounded-lg">
                 <div className="flex justify-between">
                   <div>
-                    <p className="font-medium text-sm">{strength.name}</p>
-                    <p className="text-xs text-slate-500">{strength.categoryTitle}</p>
+                    <p className="font-medium">{strength.name}</p>
+                    <p className="text-sm text-slate-500">{strength.categoryTitle}</p>
                   </div>
                   <div className="bg-green-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
                     Score: {(strength.ratings.current || 0).toFixed(2)}
@@ -90,13 +90,13 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
           </div>
           
           <h4 className="text-md font-medium mt-4 mb-2">Your Lowest Scoring Leadership Competencies</h4>
-          <div className="space-y-2 mb-4">
+          <div className="space-y-3 mb-4">
             {lowestSkills.map((skill) => (
-              <div key={`lowest-${skill.id}`} className="bg-white p-2 rounded border border-slate-100">
+              <div key={`lowest-${skill.id}`} className="bg-secondary/10 p-3 rounded-lg">
                 <div className="flex justify-between">
                   <div>
-                    <p className="font-medium text-sm">{skill.name}</p>
-                    <p className="text-xs text-slate-500">{skill.categoryTitle}</p>
+                    <p className="font-medium">{skill.name}</p>
+                    <p className="text-sm text-slate-500">{skill.categoryTitle}</p>
                   </div>
                   <div className="bg-red-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
                     Score: {(skill.ratings.current || 0).toFixed(2)}

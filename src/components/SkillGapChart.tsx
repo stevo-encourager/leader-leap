@@ -46,40 +46,33 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
   const chartData = prepareChartData();
 
   return (
-    <div className="radar-chart-container">
+    <div className="radar-chart-container h-[500px]">
       <ResponsiveContainer width="100%" height="100%">
         <RadarChart outerRadius={150} data={chartData}>
           <PolarGrid stroke="#e5e7eb" />
           <PolarAngleAxis 
             dataKey="subject" 
             tickLine={false}
-            // Using a custom tick component to position labels at the center of each segment
             tick={(props) => {
-              const { x, y, payload, textAnchor, ...rest } = props;
-              // Find the angle for this category (0 to 360 degrees)
-              const angleIndex = chartData.findIndex(item => item.subject === payload.value);
+              const { x, y, payload, textAnchor } = props;
+              const index = chartData.findIndex(item => item.subject === payload.value);
               const totalCategories = chartData.length;
-              const angle = (angleIndex / totalCategories) * 360;
               
-              // Adjust position to center the label in each segment
-              // This offsets the label position to be midway between grid lines
-              const adjustedAngle = angle + (360 / (totalCategories * 2));
-              
-              // Convert angle to radians and calculate the adjusted position
-              const angleRad = (adjustedAngle * Math.PI) / 180;
-              const radius = 170; // Slightly larger than chart radius for labels
-              const newX = Math.cos(angleRad) * radius;
-              const newY = Math.sin(angleRad) * radius;
+              // Calculate position on the circle
+              const angle = ((index * 360) / totalCategories) * Math.PI / 180;
+              // Add a little extra distance for the label from the edge
+              const radius = 170;
+              const cx = Math.sin(angle) * radius;
+              const cy = -Math.cos(angle) * radius;
               
               return (
-                <g transform={`translate(${newX},${newY})`}>
+                <g transform={`translate(${cx},${cy})`}>
                   <text 
-                    {...rest}
-                    textAnchor={textAnchor} 
+                    textAnchor="middle"
                     fill="#2F564D" 
                     fontSize={12} 
                     fontWeight={500}
-                    dy={3}
+                    dy={0}
                   >
                     {payload.value}
                   </text>

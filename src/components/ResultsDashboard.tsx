@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Category, Demographics } from '../utils/assessmentData';
 import SkillGapChart from './SkillGapChart';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, BookOpen, User, ListCheck } from 'lucide-react';
 
 interface ResultsDashboardProps {
   categories: Category[];
@@ -34,6 +34,11 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ categories, demogra
   );
   
   const topGapSkills = [...allSkills].sort((a, b) => b.gap - a.gap).slice(0, 3);
+  
+  // Find strengths (lowest gaps or highest current ratings)
+  const strengths = [...allSkills]
+    .sort((a, b) => (a.ratings.current || 0) > (b.ratings.current || 0) ? -1 : 1)
+    .slice(0, 3);
 
   return (
     <div className="fade-in space-y-6">
@@ -82,7 +87,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ categories, demogra
               </p>
             </div>
             
-            <h4 className="text-md font-medium mb-2">Top Development Opportunities</h4>
+            <h4 className="text-md font-medium mb-2">Top Areas for Development</h4>
             <div className="space-y-3">
               {topGapSkills.map((skill, index) => (
                 <div key={skill.id} className="bg-secondary/10 p-3 rounded-lg">
@@ -106,6 +111,65 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ categories, demogra
             <div className="bg-white rounded-lg p-3 border w-full">
               <div className="w-full h-[500px]">
                 <SkillGapChart categories={categories} />
+              </div>
+            </div>
+          </div>
+
+          {/* Strengths-Based Coaching Approach */}
+          <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+            <div className="flex items-start gap-3">
+              <User className="text-encourager h-5 w-5 mt-1" />
+              <div>
+                <h3 className="text-lg font-medium mb-2">Strengths-Based Approach</h3>
+                <p className="text-sm text-slate-600 mb-3">
+                  Strengths and skills are two different things. Strengths are natural behaviors that energize you, 
+                  while skills are learned capabilities. The most effective leadership development leverages your 
+                  innate strengths to address gaps in your leadership skillset.
+                </p>
+                <p className="text-sm text-slate-600">
+                  By understanding how to apply your natural strengths to develop new skills, you can achieve more 
+                  sustainable growth and performance. This approach focuses on what you do well rather than solely 
+                  fixing deficiencies.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Coaching Recommendations */}
+          <div className="bg-encourager/5 p-4 rounded-lg border border-encourager/20">
+            <div className="flex items-start gap-3">
+              <BookOpen className="text-encourager h-5 w-5 mt-1" />
+              <div>
+                <h3 className="text-lg font-medium mb-2">Coaching Recommendations</h3>
+                
+                <h4 className="text-sm font-medium mt-3 mb-2">Your Leadership Strengths</h4>
+                <div className="space-y-2 mb-4">
+                  {strengths.map((strength, index) => (
+                    <div key={`strength-${strength.id}`} className="bg-white p-2 rounded border border-slate-100">
+                      <p className="font-medium text-sm">{strength.name}</p>
+                      <p className="text-xs text-slate-500">{strength.categoryTitle}</p>
+                    </div>
+                  ))}
+                </div>
+                
+                <p className="text-sm text-slate-600 mb-4">
+                  A leadership coach can help you be the best version of yourself by creating awareness around how 
+                  you can leverage these strengths while developing your areas for growth. Through structured 
+                  reflection and targeted practice, coaching helps translate insights into practical leadership behaviors.
+                </p>
+                
+                <div className="bg-white p-3 rounded-md border border-slate-200">
+                  <h4 className="text-sm font-medium flex items-center gap-2 mb-2">
+                    <ListCheck className="h-4 w-4 text-encourager" />
+                    Next Steps with a Coach
+                  </h4>
+                  <ul className="list-disc list-inside space-y-1 text-xs text-slate-600">
+                    <li>Create awareness about your leadership patterns</li>
+                    <li>Design experiments to apply strengths to development areas</li>
+                    <li>Establish accountability for practice and reflection</li>
+                    <li>Measure progress through regular reassessment</li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>

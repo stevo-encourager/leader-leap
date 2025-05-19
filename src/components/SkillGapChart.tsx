@@ -46,35 +46,43 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
   const chartData = prepareChartData();
 
   return (
-    <div className="radar-chart-container h-[500px]">
+    <div className="radar-chart-container h-[550px] w-full">
       <ResponsiveContainer width="100%" height="100%">
-        <RadarChart outerRadius={150} data={chartData}>
+        <RadarChart 
+          cx="50%" 
+          cy="50%" 
+          outerRadius={150} 
+          data={chartData}
+        >
           <PolarGrid stroke="#e5e7eb" />
           <PolarAngleAxis 
-            dataKey="subject" 
+            dataKey="subject"
             tickLine={false}
-            tick={(props) => {
-              const { x, y, payload, textAnchor } = props;
-              const index = chartData.findIndex(item => item.subject === payload.value);
-              const totalCategories = chartData.length;
+            tick={props => {
+              const { payload, x, y } = props;
+              const categoryName = payload.value;
               
-              // Calculate position on the circle
-              const angle = ((index * 360) / totalCategories) * Math.PI / 180;
-              // Add a little extra distance for the label from the edge
-              const radius = 170;
-              const cx = Math.sin(angle) * radius;
-              const cy = -Math.cos(angle) * radius;
+              // Make the category name more readable if it's too long
+              const displayName = categoryName.length > 15 
+                ? categoryName.substring(0, 12) + '...' 
+                : categoryName;
+              
+              // Calculate text anchor position based on angle
+              const isSideLabel = Math.abs(x - 300) < 30; // Close to center horizontal line
+              const textAnchor = x < 300 ? "end" : (x > 300 ? "start" : "middle");
               
               return (
-                <g transform={`translate(${cx},${cy})`}>
-                  <text 
-                    textAnchor="middle"
-                    fill="#2F564D" 
-                    fontSize={12} 
+                <g>
+                  <text
+                    x={x}
+                    y={y}
+                    textAnchor={textAnchor}
+                    fill="#2F564D"
+                    fontSize={12}
                     fontWeight={500}
-                    dy={0}
+                    dy={3}
                   >
-                    {payload.value}
+                    {displayName}
                   </text>
                 </g>
               );
@@ -94,12 +102,24 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
             fill="#8baca5"
             fillOpacity={0.4}
           />
-          <Tooltip contentStyle={{ backgroundColor: 'white', borderColor: '#e5e7eb' }} />
+          <Tooltip 
+            contentStyle={{ 
+              backgroundColor: 'white', 
+              borderColor: '#e5e7eb',
+              borderRadius: '4px',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+            }} 
+            formatter={(value, name) => [`${value.toFixed(1)}`, name]}
+          />
           <Legend 
             iconType="circle" 
+            layout="horizontal"
+            verticalAlign="bottom"
+            align="center"
             wrapperStyle={{ 
               paddingTop: 20,
-              fontSize: '14px'
+              fontSize: '14px',
+              fontWeight: 500
             }}
           />
         </RadarChart>

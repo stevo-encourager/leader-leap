@@ -113,7 +113,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
         </CardContent>
       </Card>
 
-      <div className="mt-10">
+      <div className="mt-16">
         <LeadershipCategory 
           category={currentCategory}
           onSkillRating={handleSkillRating}

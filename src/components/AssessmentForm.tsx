@@ -168,7 +168,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
         <PopoverTrigger className="hidden">
           {/* Hidden trigger, we'll control it programmatically */}
         </PopoverTrigger>
-        <PopoverContent className="w-80 p-5 border-2 border-encourager bg-white fixed top-1/2 left-1/2 transform -translate-x-1/2 animate-float">
+        <PopoverContent className="w-80 p-5 border-2 border-encourager bg-white fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-float z-50">
           <div className="text-center">
             <h3 className="text-xl font-semibold text-encourager mb-2">
               Hang in there!

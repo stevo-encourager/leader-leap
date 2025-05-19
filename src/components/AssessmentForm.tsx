@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -90,14 +89,8 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
       </div>
       
       <Card className="mb-6 encourager-card">
-        <CardHeader className="bg-encourager-lightgray">
-          <CardTitle className="text-2xl text-[#242323] encourager-header">{currentCategory.title}</CardTitle>
-          <CardDescription className="text-encourager-gray">
-            {currentCategory.description}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="pt-6">
-          <div className="flex justify-between mb-4">
+        <CardContent className="p-6 bg-encourager-lightgray">
+          <div className="flex justify-between mb-6">
             <div className="text-sm text-muted-foreground">
               Category {activeCategory + 1} of {categories.length}
             </div>
@@ -110,6 +103,11 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
               ))}
             </div>
           </div>
+
+          <CardTitle className="text-2xl text-[#242323] encourager-header">{currentCategory.title}</CardTitle>
+          <CardDescription className="text-encourager-gray">
+            {currentCategory.description}
+          </CardDescription>
         </CardContent>
       </Card>
 

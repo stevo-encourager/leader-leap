@@ -80,6 +80,8 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
 
   return (
     <div className="fade-in">
+      <h1 className="text-3xl font-bold mb-6 text-[#242323]">Leadership Assessment Tool</h1>
+      
       <Card className="mb-6 encourager-card">
         <CardHeader className="bg-encourager-lightgray">
           <CardTitle className="text-2xl text-[#242323] encourager-header">{currentCategory.title}</CardTitle>

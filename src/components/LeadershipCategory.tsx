@@ -18,9 +18,8 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
   return (
     <Card className="mb-8">
       {!hideHeader && (
-        <CardHeader>
+        <CardHeader className="space-y-6">
           <CardTitle className="text-[#242323]">{category.title}</CardTitle>
-          <div className="h-6"></div> {/* This adds empty space between title and description */}
           <CardDescription className="mt-4">{category.description}</CardDescription>
         </CardHeader>
       )}

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
@@ -25,7 +26,7 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
           </h1>
           
           <p className="text-xl text-slate-600 max-w-2xl text-center mb-10">
-            Identify gaps between your current leadership skills and where you want to be.
+            Identify gaps between your current leadership competencies and where you want to be.
           </p>
           
           <Button 
@@ -64,7 +65,7 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
               <h2 className="text-2xl font-bold text-encourager">How It Works</h2>
             </div>
             <p className="text-slate-700 leading-relaxed mb-4">
-              For each leadership skill, you will rate:
+              For each leadership competency, you will rate:
             </p>
             <div className="space-y-3">
               <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
@@ -120,7 +121,7 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
                 <ArrowRight className="text-encourager" size={16} strokeWidth={1.5} />
               </div>
               <p className="text-slate-700">
-                <span className="font-medium">Take your time:</span> Reflect on each skill carefully. The assessment takes approximately 10-15 minutes to complete.
+                <span className="font-medium">Take your time:</span> Reflect on each competency carefully. The assessment takes approximately 10-15 minutes to complete.
               </p>
             </div>
             
@@ -141,10 +142,10 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { icon: Smile, title: 'Self-awareness', desc: 'Gain a clear understanding of your leadership strengths and areas for development' },
-          { icon: Target, title: 'Targeted growth', desc: 'Focus your development efforts on skills with the greatest gaps' },
+          { icon: Smile, title: 'Self-awareness', desc: 'Gain a clear understanding of your existing leadership competencies and your areas for development' },
+          { icon: Target, title: 'Targeted growth', desc: 'Focus your development efforts on competencies with the greatest gaps' },
           { icon: FileBarChart, title: 'Progress tracking', desc: 'Establish a baseline to measure your growth over time' },
-          { icon: Lightbulb, title: 'Career advancement', desc: 'Develop the leadership skills required for your next career move' }
+          { icon: Lightbulb, title: 'Career advancement', desc: 'Develop the leadership competencies required for your next career move' }
         ].map((benefit, idx) => (
           <Card key={idx} className="border-none shadow-card hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300">
             <CardContent className="p-5">

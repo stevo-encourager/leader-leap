@@ -19,7 +19,8 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
     <Card className="mb-8">
       {!hideHeader && (
         <CardHeader>
-          <CardTitle className="text-[#242323] mb-8">{category.title}</CardTitle>
+          <CardTitle className="text-[#242323]">{category.title}</CardTitle>
+          <div className="h-6"></div>
           <CardDescription>{category.description}</CardDescription>
         </CardHeader>
       )}

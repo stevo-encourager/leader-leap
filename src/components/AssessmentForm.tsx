@@ -81,7 +81,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
   return (
     <div className="fade-in">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-encourager flex items-center gap-2">
+        <h1 className="text-3xl font-bold text-[#242323] flex items-center gap-2">
           <CircleGauge className="text-encourager-accent" size={28} strokeWidth={1.5} />
           Leadership Assessment Tool
         </h1>

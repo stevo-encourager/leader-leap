@@ -53,6 +53,40 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
           <PolarAngleAxis 
             dataKey="subject" 
             tick={{ fill: '#2F564D', fontSize: 12, fontWeight: 500 }}
+            tickLine={false}
+            // Adding this property ensures labels are positioned at the center of each segment
+            tick={(props) => {
+              const { x, y, payload, textAnchor, ...rest } = props;
+              // Find the angle for this category (0 to 360 degrees)
+              const angleIndex = chartData.findIndex(item => item.subject === payload.value);
+              const totalCategories = chartData.length;
+              const angle = (angleIndex / totalCategories) * 360;
+              
+              // Adjust position to center the label in each segment
+              // This offsets the label position to be midway between grid lines
+              const adjustedAngle = angle + (360 / (totalCategories * 2));
+              
+              // Convert angle to radians and calculate the adjusted position
+              const angleRad = (adjustedAngle * Math.PI) / 180;
+              const radius = 170; // Slightly larger than chart radius for labels
+              const newX = Math.cos(angleRad) * radius;
+              const newY = Math.sin(angleRad) * radius;
+              
+              return (
+                <g transform={`translate(${newX},${newY})`}>
+                  <text 
+                    {...rest}
+                    textAnchor={textAnchor} 
+                    fill="#2F564D" 
+                    fontSize={12} 
+                    fontWeight={500}
+                    dy={3}
+                  >
+                    {payload.value}
+                  </text>
+                </g>
+              );
+            }}
           />
           <Radar
             name="Current Skills"

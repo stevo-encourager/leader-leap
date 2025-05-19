@@ -37,4 +37,5 @@ export {
   professionalDevelopmentCategory
 };
 
-export { Category };
+// Using export type for type re-export
+export type { Category };

@@ -1,7 +1,5 @@
 
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { initialCategories, AssessmentStep, Category, Demographics } from '../utils/assessmentData';
 import AssessmentForm from '../components/AssessmentForm';
 import ResultsDashboard from '../components/ResultsDashboard';
@@ -43,18 +41,15 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="bg-gradient-to-r from-encourager to-encourager-light text-white py-6 shadow-md">
+      <header className="bg-white border-b border-slate-200 py-6 shadow-sm">
         <div className="max-w-5xl mx-auto px-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold">Leadership Assessment Tool</h1>
-            <p className="text-slate-200 mt-1">Identify gaps between your current and desired leadership abilities</p>
-          </div>
-          <div className="hidden md:block">
+          <div className="flex items-center space-x-3">
             <img 
               src="/lovable-uploads/8320d514-fba5-4e1b-a658-1563758db943.png" 
               alt="Encourager Logo" 
-              className="h-16 object-contain" 
+              className="h-12 object-contain" 
             />
+            <h1 className="text-2xl md:text-3xl font-bold text-encourager">Leadership Assessment</h1>
           </div>
         </div>
       </header>

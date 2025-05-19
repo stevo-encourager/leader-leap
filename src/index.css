@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600&display=swap');
 
 @tailwind base;
@@ -142,11 +141,16 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Encourager custom classes */
-.encourager-bg {
-  @apply bg-encourager;
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
 }
 
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Encourager custom classes */
 .encourager-text {
   @apply text-encourager;
 }
@@ -157,26 +161,4 @@
 
 .encourager-header {
   @apply text-encourager font-bold font-playfair;
-}
-
-/* Updated styles for the sleek design */
-.intro-card {
-  @apply border-none shadow-lg overflow-hidden relative bg-white;
-}
-
-.intro-header {
-  @apply bg-gradient-to-r from-encourager to-encourager-light text-white p-8 relative;
-}
-
-.intro-content-card {
-  @apply border border-slate-100 rounded-xl shadow-sm transition-all hover:shadow-md bg-white;
-}
-
-.intro-icon {
-  @apply text-encourager-accent;
-}
-
-.intro-cta-button {
-  @apply bg-encourager text-white hover:bg-encourager-light transition-all 
-  font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5;
 }

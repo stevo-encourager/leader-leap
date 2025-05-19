@@ -123,7 +123,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ categories, demogra
                   ))}
                 </div>
                 
-                <h4 className="text-sm font-medium mt-3 mb-2">Your Highest Scoring Leadership Competencies</h4>
+                <h4 className="text-md font-medium mt-3 mb-2">Your Highest Scoring Leadership Competencies</h4>
                 <div className="space-y-2 mb-4">
                   {strengths.map((strength, index) => (
                     <div key={`strength-${strength.id}`} className="bg-white p-2 rounded border border-slate-100">
@@ -140,7 +140,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ categories, demogra
                   ))}
                 </div>
                 
-                <h4 className="text-sm font-medium mt-4 mb-2">Your Lowest Scoring Leadership Competencies</h4>
+                <h4 className="text-md font-medium mt-4 mb-2">Your Lowest Scoring Leadership Competencies</h4>
                 <div className="space-y-2 mb-4">
                   {lowestSkills.map((skill, index) => (
                     <div key={`lowest-${skill.id}`} className="bg-white p-2 rounded border border-slate-100">
@@ -156,7 +156,16 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ categories, demogra
                     </div>
                   ))}
                 </div>
-                
+              </div>
+            </div>
+          </div>
+
+          {/* Coaching Support - New separate section */}
+          <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+            <div className="flex items-start gap-3">
+              <User className="text-encourager h-5 w-5 mt-1" />
+              <div>
+                <h3 className="text-lg font-medium mb-2">Coaching Support</h3>
                 <p className="text-sm text-slate-600 mb-4">
                   A leadership coach can help you be the best version of yourself by creating awareness around how 
                   you can leverage these strengths while developing your areas for growth. Through structured 

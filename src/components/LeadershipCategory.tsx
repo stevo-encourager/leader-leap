@@ -46,10 +46,10 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
                   </div>
                   <span className="w-8 text-center font-medium ml-2">{skill.ratings.current}</span>
                 </div>
-                <div className="relative text-xs text-muted-foreground mt-1 h-5">
-                  <span className="absolute left-[2px]">Beginner</span>
-                  <span className="absolute left-1/2 transform -translate-x-1/2">Advanced</span>
-                  <span className="absolute right-[2px]">Expert</span>
+                <div className="flex justify-between text-xs text-muted-foreground mt-1 h-5">
+                  <span className="w-16 text-left">Beginner</span>
+                  <span className="w-16 text-center">Advanced</span>
+                  <span className="w-16 text-right">Expert</span>
                 </div>
               </div>
             </div>
@@ -70,10 +70,10 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
                   </div>
                   <span className="w-8 text-center font-medium ml-2">{skill.ratings.desired}</span>
                 </div>
-                <div className="relative text-xs text-muted-foreground mt-1 h-5">
-                  <span className="absolute left-[2px]">Beginner</span>
-                  <span className="absolute left-1/2 transform -translate-x-1/2">Advanced</span>
-                  <span className="absolute right-[2px]">Expert</span>
+                <div className="flex justify-between text-xs text-muted-foreground mt-1 h-5">
+                  <span className="w-16 text-left">Beginner</span>
+                  <span className="w-16 text-center">Advanced</span>
+                  <span className="w-16 text-right">Expert</span>
                 </div>
               </div>
             </div>

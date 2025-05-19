@@ -3,8 +3,13 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Category, Demographics } from '../utils/assessmentData';
-import SkillGapChart from './SkillGapChart';
-import { ArrowLeft, BookOpen, User, ListCheck } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import ProfileSummary from './dashboard/ProfileSummary';
+import DetailedAnalysis from './dashboard/DetailedAnalysis';
+import KeyInsights from './dashboard/KeyInsights';
+import CoachingSupport from './dashboard/CoachingSupport';
+import StrengthsBasedApproach from './dashboard/StrengthsBasedApproach';
+import DevelopmentRecommendations from './dashboard/DevelopmentRecommendations';
 
 interface ResultsDashboardProps {
   categories: Category[];
@@ -37,12 +42,12 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ categories, demogra
   
   // Find strengths (highest current ratings)
   const strengths = [...allSkills]
-    .sort((a, b) => (a.ratings.current || 0) > (b.ratings.current || 0) ? -1 : 1)
+    .sort((a, b) => (b.ratings.current || 0) - (a.ratings.current || 0))
     .slice(0, 3);
     
   // Find lowest scoring competencies
   const lowestSkills = [...allSkills]
-    .sort((a, b) => (a.ratings.current || 0) < (b.ratings.current || 0) ? -1 : 1)
+    .sort((a, b) => (a.ratings.current || 0) - (b.ratings.current || 0))
     .slice(0, 3);
 
   return (
@@ -56,168 +61,27 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ categories, demogra
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Profile Summary */}
-          {(demographics.role || demographics.industry || demographics.yearsOfExperience) && (
-            <div className="bg-slate-50 p-4 rounded-lg">
-              <h3 className="text-lg font-medium mb-2">Your Profile</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {demographics.role && (
-                  <div>
-                    <p className="text-sm text-slate-500">Role</p>
-                    <p className="font-medium">{demographics.role}</p>
-                  </div>
-                )}
-                {demographics.industry && (
-                  <div>
-                    <p className="text-sm text-slate-500">Industry</p>
-                    <p className="font-medium">{demographics.industry}</p>
-                  </div>
-                )}
-                {demographics.yearsOfExperience && (
-                  <div>
-                    <p className="text-sm text-slate-500">Leadership Experience</p>
-                    <p className="font-medium">{demographics.yearsOfExperience}</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+          <ProfileSummary demographics={demographics} />
 
-          {/* Detailed Analysis - Moved to top as requested */}
-          <div>
-            <h3 className="text-lg font-medium mb-3">Detailed Analysis</h3>
-            <div className="bg-white rounded-lg p-3 border w-full">
-              <div className="w-full h-[500px]">
-                <SkillGapChart categories={categories} />
-              </div>
-            </div>
-          </div>
+          {/* Detailed Analysis */}
+          <DetailedAnalysis categories={categories} />
 
-          {/* Key Insights (merged from both sections) */}
-          <div className="bg-encourager/5 p-4 rounded-lg border border-encourager/20">
-            <div className="flex items-start gap-3">
-              <BookOpen className="text-encourager h-5 w-5 mt-1" />
-              <div>
-                <h3 className="text-lg font-medium mb-2">Key Insights</h3>
-                
-                <div className="bg-primary/5 p-4 rounded-lg mb-4">
-                  <p className="text-sm">
-                    Based on your assessment, your average skill gap is <span className="font-bold">{averageGap.toFixed(2)}</span> points.
-                    This indicates the typical difference between your current abilities and how important these skills are to your role.
-                  </p>
-                </div>
-                
-                <h4 className="text-md font-medium mb-2">Top Areas for Development</h4>
-                <div className="space-y-3 mb-4">
-                  {topGapSkills.map((skill, index) => (
-                    <div key={skill.id} className="bg-secondary/10 p-3 rounded-lg">
-                      <div className="flex justify-between">
-                        <div>
-                          <p className="font-medium">{skill.name}</p>
-                          <p className="text-sm text-slate-500">{skill.categoryTitle}</p>
-                        </div>
-                        <div className="bg-primary text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
-                          Gap: {skill.gap.toFixed(2)}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                
-                <h4 className="text-md font-medium mt-3 mb-2">Your Highest Scoring Leadership Competencies</h4>
-                <div className="space-y-2 mb-4">
-                  {strengths.map((strength, index) => (
-                    <div key={`strength-${strength.id}`} className="bg-white p-2 rounded border border-slate-100">
-                      <div className="flex justify-between">
-                        <div>
-                          <p className="font-medium text-sm">{strength.name}</p>
-                          <p className="text-xs text-slate-500">{strength.categoryTitle}</p>
-                        </div>
-                        <div className="bg-green-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
-                          Score: {(strength.ratings.current || 0).toFixed(2)}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                
-                <h4 className="text-md font-medium mt-4 mb-2">Your Lowest Scoring Leadership Competencies</h4>
-                <div className="space-y-2 mb-4">
-                  {lowestSkills.map((skill, index) => (
-                    <div key={`lowest-${skill.id}`} className="bg-white p-2 rounded border border-slate-100">
-                      <div className="flex justify-between">
-                        <div>
-                          <p className="font-medium text-sm">{skill.name}</p>
-                          <p className="text-xs text-slate-500">{skill.categoryTitle}</p>
-                        </div>
-                        <div className="bg-red-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
-                          Score: {(skill.ratings.current || 0).toFixed(2)}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Key Insights */}
+          <KeyInsights 
+            averageGap={averageGap} 
+            topGapSkills={topGapSkills} 
+            strengths={strengths} 
+            lowestSkills={lowestSkills} 
+          />
 
-          {/* Coaching Support - New separate section */}
-          <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-            <div className="flex items-start gap-3">
-              <User className="text-encourager h-5 w-5 mt-1" />
-              <div>
-                <h3 className="text-lg font-medium mb-2">Coaching Support</h3>
-                <p className="text-sm text-slate-600 mb-4">
-                  A leadership coach can help you be the best version of yourself by creating awareness around how 
-                  you can leverage these strengths while developing your areas for growth. Through structured 
-                  reflection and targeted practice, coaching helps translate insights into practical leadership behaviors.
-                </p>
-                
-                <div className="bg-white p-3 rounded-md border border-slate-200">
-                  <h4 className="text-sm font-medium flex items-center gap-2 mb-2">
-                    <ListCheck className="h-4 w-4 text-encourager" />
-                    Next Steps with a Coach
-                  </h4>
-                  <ul className="list-disc list-inside space-y-1 text-xs text-slate-600">
-                    <li>Create awareness about your leadership patterns</li>
-                    <li>Design experiments to apply strengths to development areas</li>
-                    <li>Establish accountability for practice and reflection</li>
-                    <li>Measure progress through regular reassessment</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Coaching Support */}
+          <CoachingSupport />
 
           {/* Strengths-Based Coaching Approach */}
-          <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-            <div className="flex items-start gap-3">
-              <User className="text-encourager h-5 w-5 mt-1" />
-              <div>
-                <h3 className="text-lg font-medium mb-2">Strengths-Based Approach</h3>
-                <p className="text-sm text-slate-600 mb-3">
-                  Strengths and skills are two different things. Strengths are natural behaviors that energize you, 
-                  while skills are learned capabilities. The most effective leadership development leverages your 
-                  innate strengths to address gaps in your leadership skillset.
-                </p>
-                <p className="text-sm text-slate-600">
-                  By understanding how to apply your natural strengths to develop new skills, you can achieve more 
-                  sustainable growth and performance. This approach focuses on what you do well rather than solely 
-                  fixing deficiencies.
-                </p>
-              </div>
-            </div>
-          </div>
+          <StrengthsBasedApproach />
 
           {/* Development Recommendations */}
-          <div>
-            <h3 className="text-lg font-medium mb-2">Recommended Next Steps</h3>
-            <ul className="list-disc list-inside space-y-2 text-slate-700">
-              <li>Focus on developing your top gap areas through targeted learning opportunities</li>
-              <li>Consider seeking a mentor who excels in your development areas</li>
-              <li>Create a 30-day action plan to address your most critical skill gaps</li>
-              <li>Re-assess in 3-6 months to measure your progress</li>
-            </ul>
-          </div>
+          <DevelopmentRecommendations />
         </CardContent>
         <CardFooter className="flex justify-between">
           <Button variant="outline" onClick={onBack}>

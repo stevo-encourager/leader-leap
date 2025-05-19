@@ -33,41 +33,49 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
             <div className="slider-container">
               <span className="slider-label">Current ability:</span>
               <div className="flex-1 px-2">
-                <Slider
-                  defaultValue={[skill.ratings.current]}
-                  max={10}
-                  step={1}
-                  value={[skill.ratings.current]}
-                  onValueChange={(value) => onSkillRating(category.id, skill.id, 'current', value[0])}
-                  className="mb-2"
-                />
+                <div className="flex items-center">
+                  <div className="flex-1">
+                    <Slider
+                      defaultValue={[skill.ratings.current]}
+                      max={10}
+                      step={1}
+                      value={[skill.ratings.current]}
+                      onValueChange={(value) => onSkillRating(category.id, skill.id, 'current', value[0])}
+                      className="mb-2"
+                    />
+                  </div>
+                  <span className="w-8 text-center font-medium ml-2">{skill.ratings.current}</span>
+                </div>
                 <div className="flex justify-between text-xs text-muted-foreground mt-1">
                   <span>Beginner</span>
                   <span>Advanced</span>
                   <span>Expert</span>
                 </div>
               </div>
-              <span className="w-8 text-center font-medium">{skill.ratings.current}</span>
             </div>
             
             <div className="slider-container">
               <span className="slider-label">Importance to your role:</span>
               <div className="flex-1 px-2">
-                <Slider
-                  defaultValue={[skill.ratings.desired]}
-                  max={10}
-                  step={1}
-                  value={[skill.ratings.desired]}
-                  onValueChange={(value) => onSkillRating(category.id, skill.id, 'desired', value[0])}
-                  className="mb-2"
-                />
+                <div className="flex items-center">
+                  <div className="flex-1">
+                    <Slider
+                      defaultValue={[skill.ratings.desired]}
+                      max={10}
+                      step={1}
+                      value={[skill.ratings.desired]}
+                      onValueChange={(value) => onSkillRating(category.id, skill.id, 'desired', value[0])}
+                      className="mb-2"
+                    />
+                  </div>
+                  <span className="w-8 text-center font-medium ml-2">{skill.ratings.desired}</span>
+                </div>
                 <div className="flex justify-between text-xs text-muted-foreground mt-1">
                   <span>Low</span>
                   <span>Medium</span>
                   <span>High</span>
                 </div>
               </div>
-              <span className="w-8 text-center font-medium">{skill.ratings.desired}</span>
             </div>
             
             <div className="skill-rating mt-2">

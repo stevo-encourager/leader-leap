@@ -27,8 +27,8 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
       <CardContent>
         {category.skills.map((skill) => (
           <div key={skill.id} className="mb-8 pt-6">
-            <h4 className="text-lg font-medium mb-3">{skill.name}</h4>
-            <p className="text-sm text-muted-foreground mb-4">{skill.description}</p>
+            <h4 className="text-lg font-medium mb-2">{skill.name}</h4>
+            <p className="text-sm text-muted-foreground mb-6">{skill.description}</p>
             
             <div className="slider-container">
               <span className="slider-label">Current ability:</span>
@@ -47,7 +47,7 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
                   <span>Expert</span>
                 </div>
               </div>
-              <span className="w-8 text-center">{skill.ratings.current}</span>
+              <span className="w-8 text-center font-medium">{skill.ratings.current}</span>
             </div>
             
             <div className="slider-container">
@@ -67,7 +67,7 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
                   <span>High</span>
                 </div>
               </div>
-              <span className="w-8 text-center">{skill.ratings.desired}</span>
+              <span className="w-8 text-center font-medium">{skill.ratings.desired}</span>
             </div>
             
             <div className="skill-rating mt-2">

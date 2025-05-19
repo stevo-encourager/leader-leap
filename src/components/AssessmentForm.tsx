@@ -12,7 +12,8 @@ import {
   DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle
+  DialogTitle,
+  DialogOverlay
 } from "@/components/ui/dialog";
 
 interface AssessmentFormProps {
@@ -160,8 +161,9 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
         </Button>
       </div>
 
-      {/* Midpoint Dialog using shadcn/ui Dialog component */}
+      {/* Midpoint Dialog with blurred backdrop */}
       <Dialog open={showMidpointDialog} onOpenChange={setShowMidpointDialog}>
+        <DialogOverlay className="backdrop-blur-md bg-black/30" />
         <DialogContent className="max-w-md">
           <div className="bg-encourager h-1.5 w-1/2 absolute top-0 left-0"></div>
           

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
@@ -50,7 +49,7 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
             </div>
             <p className="text-slate-700 leading-relaxed">
               This leadership assessment tool is designed to help you identify the gaps between current 
-              leadership abilities and where you aspire to be. Ten key leadership competencies are measured. 
+              leadership abilities and where you aspire to be. Ten leadership competencies are measured. 
               By understanding these gaps, you can create focused development plans that target your specific growth areas.
             </p>
           </CardContent>

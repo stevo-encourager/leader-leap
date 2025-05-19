@@ -6,6 +6,14 @@ import { Category, Skill } from '@/utils/assessmentData';
 import LeadershipCategory from './LeadershipCategory';
 import { ArrowLeft, CircleGauge, Gauge, CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog";
 
 interface AssessmentFormProps {
   categories: Category[];
@@ -21,16 +29,16 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
   onBack
 }) => {
   const [activeCategory, setActiveCategory] = useState<number>(0);
-  const [showMidpointMessage, setShowMidpointMessage] = useState<boolean>(false);
+  const [showMidpointDialog, setShowMidpointDialog] = useState<boolean>(false);
   const { toast } = useToast();
 
   // Check if we should show the engagement message when active category changes
   useEffect(() => {
     const midpoint = Math.floor(categories.length / 2);
-    if (activeCategory === midpoint && !showMidpointMessage) {
-      setShowMidpointMessage(true);
+    if (activeCategory === midpoint) {
+      setShowMidpointDialog(true);
     }
-  }, [activeCategory, categories.length, showMidpointMessage]);
+  }, [activeCategory, categories.length]);
 
   const handleSkillRating = (categoryId: string, skillId: string, type: 'current' | 'desired', value: number) => {
     const updatedCategories = categories.map(category => {
@@ -152,52 +160,39 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
         </Button>
       </div>
 
-      {/* Professional Midpoint Message Dialog */}
-      {showMidpointMessage && (
-        <div 
-          className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm bg-black/10 transition-all"
-          onClick={() => setShowMidpointMessage(false)}
-        >
-          <div 
-            className="relative bg-white rounded-lg shadow-xl border border-gray-200 max-w-md w-full overflow-hidden"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Progress indicator */}
-            <div className="bg-encourager h-1.5 w-1/2"></div>
-            
-            <div className="p-8">
-              <div className="flex justify-center mb-4">
-                <div className="h-16 w-16 rounded-full bg-encourager-lightgray flex items-center justify-center text-encourager">
-                  <Gauge className="h-8 w-8" />
-                </div>
-              </div>
-              
-              <h3 className="text-2xl font-playfair font-semibold text-center text-encourager-gray mb-2">
-                Halfway There!
-              </h3>
-              
-              <div className="text-center mb-6">
-                <div className="flex items-center justify-center gap-1 text-encourager font-medium">
-                  <CheckCircle2 className="h-4 w-4" />
-                  <span>50% Complete</span>
-                </div>
-                <p className="mt-3 text-encourager-gray">
-                  You're making excellent progress on your leadership assessment. Continue to provide thoughtful responses for the most accurate results.
-                </p>
-              </div>
-              
-              <div className="flex flex-col gap-2">
-                <Button 
-                  onClick={() => setShowMidpointMessage(false)}
-                  className="bg-encourager hover:bg-encourager-light w-full"
-                >
-                  Continue Assessment
-                </Button>
-              </div>
+      {/* Midpoint Dialog using shadcn/ui Dialog component */}
+      <Dialog open={showMidpointDialog} onOpenChange={setShowMidpointDialog}>
+        <DialogContent className="max-w-md">
+          <div className="bg-encourager h-1.5 w-1/2 absolute top-0 left-0"></div>
+          
+          <DialogHeader className="pt-4 items-center">
+            <div className="h-16 w-16 rounded-full bg-encourager-lightgray flex items-center justify-center text-encourager mb-4">
+              <Gauge className="h-8 w-8" />
             </div>
-          </div>
-        </div>
-      )}
+            <DialogTitle className="text-2xl font-playfair font-semibold text-center text-encourager-gray">
+              Halfway There!
+            </DialogTitle>
+            <DialogDescription className="text-center">
+              <div className="flex items-center justify-center gap-1 text-encourager font-medium">
+                <CheckCircle2 className="h-4 w-4" />
+                <span>50% Complete</span>
+              </div>
+              <p className="mt-3 text-encourager-gray">
+                You're making excellent progress on your leadership assessment. Continue to provide thoughtful responses for the most accurate results.
+              </p>
+            </DialogDescription>
+          </DialogHeader>
+          
+          <DialogFooter className="flex-col">
+            <Button 
+              onClick={() => setShowMidpointDialog(false)}
+              className="bg-encourager hover:bg-encourager-light w-full"
+            >
+              Continue Assessment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

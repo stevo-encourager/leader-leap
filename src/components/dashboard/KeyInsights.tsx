@@ -5,7 +5,8 @@ import { Category } from '../../utils/assessmentData';
 
 interface KeyInsightsProps {
   averageGap: number;
-  topGapSkills: Array<{
+  // Make topGapSkills optional by adding ? to the property name
+  topGapSkills?: Array<{
     id: string;
     name: string;
     categoryTitle: string;
@@ -37,6 +38,7 @@ interface KeyInsightsProps {
 
 const KeyInsights: React.FC<KeyInsightsProps> = ({ 
   averageGap, 
+  topGapSkills,
   strengths,
   lowestSkills
 }) => {

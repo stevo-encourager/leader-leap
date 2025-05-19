@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -84,7 +85,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
         <img 
           src="/lovable-uploads/8320d514-fba5-4e1b-a658-1563758db943.png" 
           alt="Company Logo" 
-          className="h-16" 
+          className="h-24" // Increased from h-16 to h-24
         />
       </div>
       

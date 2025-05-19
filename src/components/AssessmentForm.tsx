@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Category, Skill } from '@/utils/assessmentData';
 import LeadershipCategory from './LeadershipCategory';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, CircleGauge } from 'lucide-react';
 
 interface AssessmentFormProps {
   categories: Category[];
@@ -81,11 +81,14 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
   return (
     <div className="fade-in">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-[#242323]">Leadership Assessment Tool</h1>
+        <h1 className="text-3xl font-bold text-[#242323] flex items-center gap-2">
+          <CircleGauge className="text-encourager-accent" size={28} strokeWidth={1.5} />
+          Leadership Assessment Tool
+        </h1>
         <img 
           src="/lovable-uploads/8320d514-fba5-4e1b-a658-1563758db943.png" 
           alt="Company Logo" 
-          className="h-24" // Increased from h-16 to h-24
+          className="h-24" 
         />
       </div>
       

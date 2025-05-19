@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Category } from '../utils/assessmentData';
-import { BookOpen, User, CircleCheck, Clock, Award, Smile, FileBarChart, Target, Lightbulb, ArrowRight, CircleGauge, TrendingUp } from 'lucide-react';
+import { BookOpen, User, CircleCheck, Clock, Award, Smile, FileBarChart, Target, Lightbulb, ArrowRight, TrendingUp } from 'lucide-react';
 
 interface IntroductionPageProps {
   categories: Category[];
@@ -20,8 +20,7 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
             className="h-24 object-contain mb-6 animate-float" 
           />
           
-          <h1 className="text-4xl md:text-5xl font-bold text-encourager mb-4 text-center flex items-center gap-3">
-            <CircleGauge className="text-encourager-accent" size={44} strokeWidth={1.5} />
+          <h1 className="text-4xl md:text-5xl font-bold text-encourager mb-4 text-center">
             Leadership Assessment Tool
           </h1>
           

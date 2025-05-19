@@ -78,7 +78,7 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
               <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
                 <div className="w-3 h-3 rounded-full bg-encourager-accent"></div>
                 <div>
-                  <strong className="text-encourager">Desired level</strong>
+                  <strong className="text-encourager">Target level</strong>
                   <span className="text-slate-600 ml-2">(1-10)</span>
                 </div>
               </div>
@@ -112,7 +112,7 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
                 <ArrowRight className="text-encourager" size={16} strokeWidth={1.5} />
               </div>
               <p className="text-slate-700">
-                <span className="font-medium">Consider context:</span> When rating "desired level," think about what's truly important for your current role and career aspirations (i.e. your desired level might reflect a specific role promotion you are aiming for).
+                <span className="font-medium">Consider context:</span> When rating "target level," think about what's truly important for your current role or your next step (i.e. a specific role or promotion you are aiming for).
               </p>
             </div>
             

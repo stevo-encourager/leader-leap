@@ -1,10 +1,16 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Category, Skill } from '@/utils/assessmentData';
 import LeadershipCategory from './LeadershipCategory';
 import { ArrowLeft, CircleGauge } from 'lucide-react';
+import { 
+  Popover, 
+  PopoverContent, 
+  PopoverTrigger 
+} from '@/components/ui/popover';
+import { useToast } from '@/hooks/use-toast';
 
 interface AssessmentFormProps {
   categories: Category[];
@@ -20,6 +26,22 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
   onBack
 }) => {
   const [activeCategory, setActiveCategory] = useState<number>(0);
+  const [showEngagementPopover, setShowEngagementPopover] = useState<boolean>(false);
+  const { toast } = useToast();
+
+  // Check if we should show the engagement popover when active category changes
+  useEffect(() => {
+    const midpoint = Math.floor(categories.length / 2);
+    if (activeCategory === midpoint && !showEngagementPopover) {
+      setShowEngagementPopover(true);
+      // Show toast notification as a backup in case popover is dismissed
+      toast({
+        title: "Making great progress!",
+        description: "You're halfway through the assessment. Keep going to see your results!",
+        duration: 5000,
+      });
+    }
+  }, [activeCategory, categories.length, showEngagementPopover, toast]);
 
   const handleSkillRating = (categoryId: string, skillId: string, type: 'current' | 'desired', value: number) => {
     const updatedCategories = categories.map(category => {
@@ -77,6 +99,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
 
   // We'll still calculate this for informational purposes, but won't use it to disable the button
   const currentCategoryCompleted = isCategoryCompleted(currentCategory);
+  const progressPercentage = Math.round(((activeCategory + 1) / categories.length) * 100);
 
   return (
     <div className="fade-in">
@@ -139,6 +162,32 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
           {isLastCategory ? 'View Results' : 'Next'}
         </Button>
       </div>
+
+      {/* Engagement Popover - Will auto-open when triggered by the useEffect */}
+      <Popover open={showEngagementPopover} onOpenChange={setShowEngagementPopover}>
+        <PopoverTrigger className="hidden">
+          {/* Hidden trigger, we'll control it programmatically */}
+        </PopoverTrigger>
+        <PopoverContent className="w-80 p-5 border-2 border-encourager bg-white">
+          <div className="text-center">
+            <h3 className="text-xl font-semibold text-encourager mb-2">
+              Well done!
+            </h3>
+            <p className="mb-3">
+              You're {progressPercentage}% through the assessment! 
+            </p>
+            <p className="text-sm text-encourager-gray mb-4">
+              Keep going to see your full results and leadership infographic.
+            </p>
+            <Button 
+              onClick={() => setShowEngagementPopover(false)}
+              className="bg-encourager hover:bg-encourager-light w-full"
+            >
+              Continue Assessment
+            </Button>
+          </div>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 };

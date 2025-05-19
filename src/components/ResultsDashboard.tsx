@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -103,7 +102,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ categories, demogra
           {/* Skills Gap Chart */}
           <div>
             <h3 className="text-lg font-medium mb-3">Detailed Analysis</h3>
-            <div className="bg-white rounded-lg p-3 border">
+            <div className="bg-white rounded-lg p-4 border">
               <SkillGapChart categories={categories} />
             </div>
           </div>

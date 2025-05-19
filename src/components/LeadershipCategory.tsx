@@ -28,19 +28,24 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
     <Card className="mb-8">
       {!hideHeader && (
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <CardTitle className="text-[#242323]">{category.title}</CardTitle>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <HelpCircle size={18} className="text-encourager cursor-help" />
-                </TooltipTrigger>
-                <TooltipContent side="right" align="start" className="bg-encourager text-white max-w-xs z-50">
-                  <p>Use the sliding scales below to rate your current ability and desired target level for each skill.</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="flex items-center gap-2 cursor-help">
+                  <CardTitle className="text-[#242323]">{category.title}</CardTitle>
+                  <HelpCircle size={18} className="text-encourager" />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent 
+                side="right" 
+                align="start" 
+                className="bg-encourager text-white max-w-xs z-[100] p-3"
+                sideOffset={10}
+              >
+                <p>Use the sliding scales below to rate your current ability and desired target level for each skill.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <div className="h-6"></div>
           <CardDescription>{category.description}</CardDescription>
         </CardHeader>

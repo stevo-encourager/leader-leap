@@ -70,10 +70,10 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
                   </div>
                   <span className="w-8 text-center font-medium ml-2">{skill.ratings.desired}</span>
                 </div>
-                <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                  <span>Beginner</span>
+                <div className="flex justify-between text-xs text-muted-foreground mt-1 px-0">
+                  <span className="ml-0">Beginner</span>
                   <span>Advanced</span>
-                  <span>Expert</span>
+                  <span className="mr-0">Expert</span>
                 </div>
               </div>
             </div>

@@ -17,7 +17,7 @@ interface ResultsDashboardProps {
 }
 
 const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ categories, demographics, onRestart, onBack }) => {
-  // Calculate the average gap for all categories
+  // Calculate the average gap for all competencies
   const totalSkills = categories.reduce((sum, category) => sum + category.skills.length, 0);
   const totalGap = categories.reduce((sum, category) => {
     return sum + category.skills.reduce((catSum, skill) => {

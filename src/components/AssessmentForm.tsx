@@ -117,7 +117,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
         <CardContent className="p-6 bg-encourager-lightgray">
           <div className="flex justify-between mb-6">
             <div className="text-sm text-muted-foreground">
-              Category {activeCategory + 1} of {categories.length}
+              Competency {activeCategory + 1} of {categories.length}
             </div>
             <div className="flex space-x-1">
               {categories.map((_, index) => (

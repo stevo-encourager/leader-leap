@@ -60,7 +60,7 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
                   className="bg-encourager text-white border-encourager max-w-xs"
                   sideOffset={5}
                 >
-                  <p>Use the sliding scales below to rate your current ability (top slider) and desired target level (bottom slider) for this skill.</p>
+                  <p>Use the sliding scales below to rate your current ability (top slider) and desired target level (bottom slider).</p>
                 </TooltipContent>
               </Tooltip>
             </div>

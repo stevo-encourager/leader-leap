@@ -55,7 +55,7 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
             </div>
             
             <div className="slider-container">
-              <span className="slider-label">Target level:</span>
+              <span className="slider-label">Target<br />level:</span>
               <div className="flex-1 px-2">
                 <div className="flex items-center">
                   <div className="flex-1">
@@ -71,9 +71,9 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
                   <span className="w-8 text-center font-medium ml-2">{skill.ratings.desired}</span>
                 </div>
                 <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                  <span>Low</span>
-                  <span>Medium</span>
-                  <span>High</span>
+                  <span>Beginner</span>
+                  <span>Advanced</span>
+                  <span>Expert</span>
                 </div>
               </div>
             </div>

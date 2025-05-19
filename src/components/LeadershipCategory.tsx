@@ -28,7 +28,19 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
     <Card className="mb-8">
       {!hideHeader && (
         <CardHeader>
-          <CardTitle className="text-[#242323]">{category.title}</CardTitle>
+          <div className="flex items-center gap-2">
+            <CardTitle className="text-[#242323]">{category.title}</CardTitle>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <HelpCircle size={18} className="text-encourager cursor-help" />
+                </TooltipTrigger>
+                <TooltipContent side="right" align="start" className="bg-encourager text-white max-w-xs z-50">
+                  <p>Use the sliding scales below to rate your current ability and desired target level for each skill.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
           <div className="h-6"></div>
           <CardDescription>{category.description}</CardDescription>
         </CardHeader>
@@ -38,18 +50,6 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
           <div key={skill.id} className="mb-8 pt-6">
             <div className="flex items-center gap-2 mb-2">
               <h4 className="text-lg font-medium text-[#242323]">{skill.name}</h4>
-              {index === 0 && !hasShownTooltip && (
-                <TooltipProvider>
-                  <Tooltip defaultOpen onOpenChange={() => setHasShownTooltip(true)}>
-                    <TooltipTrigger asChild>
-                      <HelpCircle size={18} className="text-encourager cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent className="bg-encourager text-white max-w-xs">
-                      <p>Use the sliding scale below to rate your current ability and desired target level for this skill.</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
             </div>
             <p className="text-sm text-muted-foreground mb-6">{skill.description}</p>
             

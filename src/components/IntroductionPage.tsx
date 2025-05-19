@@ -87,31 +87,7 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
         </Card>
       </div>
 
-      {/* Added header for benefits section */}
-      <h2 className="text-2xl font-bold text-encourager mt-8 mb-4">What to Use This Assessment For</h2>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { icon: Smile, title: 'Self-awareness', desc: 'Gain a clear understanding of your leadership strengths and areas for development' },
-          { icon: Target, title: 'Targeted growth', desc: 'Focus your development efforts on skills with the greatest gaps' },
-          { icon: FileBarChart, title: 'Progress tracking', desc: 'Establish a baseline to measure your growth over time' },
-          { icon: Lightbulb, title: 'Career advancement', desc: 'Develop the leadership skills required for your next career move' }
-        ].map((benefit, idx) => (
-          <Card key={idx} className="border-none shadow-card hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300">
-            <CardContent className="p-5">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="bg-encourager-accent/20 p-2 rounded-full">
-                  <benefit.icon className="text-encourager" size={18} strokeWidth={1.5} />
-                </div>
-                <h3 className="font-bold text-encourager">{benefit.title}</h3>
-              </div>
-              <p className="text-slate-600 text-sm">{benefit.desc}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Instructions section with improved arrow alignment */}
+      {/* Instructions section moved above the benefits section */}
       <Card className="border-none shadow-card bg-white">
         <CardContent className="p-6">
           <div className="flex items-center gap-3 mb-4">
@@ -160,6 +136,30 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
           </div>
         </CardContent>
       </Card>
+
+      {/* Added header for benefits section */}
+      <h2 className="text-2xl font-bold text-encourager mt-8 mb-4">What to Use This Assessment For</h2>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { icon: Smile, title: 'Self-awareness', desc: 'Gain a clear understanding of your leadership strengths and areas for development' },
+          { icon: Target, title: 'Targeted growth', desc: 'Focus your development efforts on skills with the greatest gaps' },
+          { icon: FileBarChart, title: 'Progress tracking', desc: 'Establish a baseline to measure your growth over time' },
+          { icon: Lightbulb, title: 'Career advancement', desc: 'Develop the leadership skills required for your next career move' }
+        ].map((benefit, idx) => (
+          <Card key={idx} className="border-none shadow-card hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="bg-encourager-accent/20 p-2 rounded-full">
+                  <benefit.icon className="text-encourager" size={18} strokeWidth={1.5} />
+                </div>
+                <h3 className="font-bold text-encourager">{benefit.title}</h3>
+              </div>
+              <p className="text-slate-600 text-sm">{benefit.desc}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
       <CardFooter className="flex justify-center pt-4 pb-8">
         <Button 

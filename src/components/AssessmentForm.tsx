@@ -90,6 +90,11 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
   const currentCategoryCompleted = isCategoryCompleted(currentCategory);
   const progressPercentage = Math.round(((activeCategory + 1) / categories.length) * 100);
 
+  // Function to handle closing the midpoint message
+  const handleCloseMidpointMessage = () => {
+    setShowMidpointMessage(false);
+  };
+
   return (
     <div className="fade-in">
       <div className="flex justify-between items-center mb-8">
@@ -156,7 +161,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
       {showMidpointMessage && (
         <div 
           className="fixed inset-0 flex items-center justify-center z-50 backdrop-blur-sm bg-black/10 transition-all"
-          onClick={() => setShowMidpointMessage(false)}
+          onClick={handleCloseMidpointMessage}
         >
           <div 
             className="relative bg-white rounded-lg shadow-xl border border-gray-200 max-w-md w-full overflow-hidden"
@@ -188,7 +193,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
               
               <div className="flex flex-col gap-2">
                 <Button 
-                  onClick={() => setShowMidpointMessage(false)}
+                  onClick={handleCloseMidpointMessage}
                   className="bg-encourager hover:bg-encourager-light w-full"
                 >
                   Continue Assessment

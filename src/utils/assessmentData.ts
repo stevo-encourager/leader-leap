@@ -52,7 +52,7 @@ export const initialCategories: Category[] = [
   },
   {
     id: "communication-skills",
-    title: "Communication Skills",
+    title: "Communication",
     description: "The ability to effectively convey information and ideas to different audiences.",
     skills: [
       {

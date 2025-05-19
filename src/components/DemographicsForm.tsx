@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,14 +26,22 @@ const roleOptions = [
 ];
 
 const industryOptions = [
-  "Technology",
-  "Healthcare",
-  "Finance",
+  "Consulting",
   "Education",
-  "Manufacturing",
-  "Retail",
+  "Energy",
+  "Finance",
   "Government",
+  "Healthcare",
+  "Logistics",
+  "Manufacturing",
+  "Media and Entertainment",
   "Nonprofit",
+  "Real Estate",
+  "Retail",
+  "Technology",
+  "Telecommunications",
+  "Travel & Hospitality",
+  "Wellbeing",
   "Other"
 ];
 

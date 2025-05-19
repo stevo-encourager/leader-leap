@@ -48,19 +48,19 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
       <CardContent>
         {category.skills.map((skill, index) => (
           <div key={skill.id} className="mb-8 pt-6">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex justify-between items-center mb-2">
               <h4 className="text-lg font-medium text-[#242323]">{skill.name}</h4>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button className="cursor-help rounded-full inline-flex focus:outline-none focus:ring-2 focus:ring-primary">
-                    <HelpCircle size={16} className="text-encourager-accent" />
+                  <button className="cursor-help rounded-full inline-flex focus:outline-none focus:ring-2 focus:ring-encourager">
+                    <HelpCircle size={18} className="text-encourager" />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent 
                   className="bg-encourager text-white border-encourager max-w-xs"
                   sideOffset={5}
                 >
-                  <p>{skill.description}</p>
+                  <p>Use the sliding scales below to rate your current ability (top slider) and desired target level (bottom slider) for this skill.</p>
                 </TooltipContent>
               </Tooltip>
             </div>

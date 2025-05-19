@@ -7,9 +7,7 @@ import { ArrowLeft } from 'lucide-react';
 import ProfileSummary from './dashboard/ProfileSummary';
 import DetailedAnalysis from './dashboard/DetailedAnalysis';
 import KeyInsights from './dashboard/KeyInsights';
-import CoachingSupport from './dashboard/CoachingSupport';
-import StrengthsBasedApproach from './dashboard/StrengthsBasedApproach';
-import DevelopmentRecommendations from './dashboard/DevelopmentRecommendations';
+import EncouragerCoaching from './dashboard/EncouragerCoaching';
 
 interface ResultsDashboardProps {
   categories: Category[];
@@ -71,14 +69,9 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ categories, demogra
             lowestSkills={lowestSkills} 
           />
 
-          {/* Coaching Support */}
-          <CoachingSupport />
+          {/* Combined Encourager Coaching section (replacing both CoachingSupport and StrengthsBasedApproach) */}
+          <EncouragerCoaching />
 
-          {/* Strengths-Based Coaching Approach */}
-          <StrengthsBasedApproach />
-
-          {/* Development Recommendations */}
-          <DevelopmentRecommendations />
         </CardContent>
         <CardFooter className="flex justify-between">
           <Button variant="outline" onClick={onBack}>

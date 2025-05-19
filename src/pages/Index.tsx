@@ -5,14 +5,12 @@ import AssessmentForm from '../components/AssessmentForm';
 import ResultsDashboard from '../components/ResultsDashboard';
 import IntroductionPage from '../components/IntroductionPage';
 import DemographicsForm from '../components/DemographicsForm';
-import { CircleGauge, AlertCircle } from 'lucide-react';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { CircleGauge } from 'lucide-react';
 
 const Index = () => {
   const [currentStep, setCurrentStep] = useState<AssessmentStep>('intro');
   const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [demographics, setDemographics] = useState<Demographics>({});
-  const [showGuidance, setShowGuidance] = useState(true);
 
   const handleCategoriesUpdate = (updatedCategories: Category[]) => {
     setCategories(updatedCategories);
@@ -24,12 +22,10 @@ const Index = () => {
 
   const handleStartAssessment = () => {
     setCurrentStep('demographics');
-    setShowGuidance(true);
   };
 
   const handleContinueToAssessment = () => {
     setCurrentStep('assessment');
-    setShowGuidance(true);
   };
 
   const handleBackToIntro = () => {
@@ -44,10 +40,6 @@ const Index = () => {
     setCurrentStep('results');
   };
 
-  const dismissGuidance = () => {
-    setShowGuidance(false);
-  };
-
   return (
     <div className="min-h-screen bg-slate-50">
       <main className="assessment-container">
@@ -59,60 +51,21 @@ const Index = () => {
         )}
 
         {currentStep === 'demographics' && (
-          <>
-            {showGuidance && (
-              <Alert 
-                className="mb-6 bg-encourager/5 border-encourager/20 animate-fade-in"
-              >
-                <AlertCircle className="h-4 w-4 text-encourager" />
-                <AlertTitle className="text-encourager">Getting Started</AlertTitle>
-                <AlertDescription className="text-slate-700">
-                  Please provide some basic information about yourself. This helps customize your assessment experience.
-                </AlertDescription>
-                <button 
-                  onClick={dismissGuidance} 
-                  className="absolute top-2 right-2 text-slate-500 hover:text-slate-700"
-                >
-                  ×
-                </button>
-              </Alert>
-            )}
-            <DemographicsForm 
-              demographics={demographics}
-              onDemographicsUpdate={handleDemographicsUpdate}
-              onContinue={handleContinueToAssessment}
-              onBack={handleBackToIntro}
-            />
-          </>
+          <DemographicsForm 
+            demographics={demographics}
+            onDemographicsUpdate={handleDemographicsUpdate}
+            onContinue={handleContinueToAssessment}
+            onBack={handleBackToIntro}
+          />
         )}
 
         {currentStep === 'assessment' && (
-          <>
-            {showGuidance && (
-              <Alert 
-                className="mb-6 bg-encourager/5 border-encourager/20 animate-fade-in"
-              >
-                <AlertCircle className="h-4 w-4 text-encourager" />
-                <AlertTitle className="text-encourager">Rate Your Leadership Skills</AlertTitle>
-                <AlertDescription className="text-slate-700">
-                  For each leadership skill, rate your current ability and target level on a scale from 1 to 10.
-                  Be honest with yourself - this will help identify your most important development areas.
-                </AlertDescription>
-                <button 
-                  onClick={dismissGuidance} 
-                  className="absolute top-2 right-2 text-slate-500 hover:text-slate-700"
-                >
-                  ×
-                </button>
-              </Alert>
-            )}
-            <AssessmentForm 
-              categories={categories}
-              onCategoriesUpdate={handleCategoriesUpdate}
-              onComplete={handleCompleteAssessment}
-              onBack={handleBackToDemographics}
-            />
-          </>
+          <AssessmentForm 
+            categories={categories}
+            onCategoriesUpdate={handleCategoriesUpdate}
+            onComplete={handleCompleteAssessment}
+            onBack={handleBackToDemographics}
+          />
         )}
 
         {currentStep === 'results' && (

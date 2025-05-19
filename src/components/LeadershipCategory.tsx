@@ -46,11 +46,11 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
                   </div>
                   <span className="w-8 text-center font-medium ml-2">{skill.ratings.current}</span>
                 </div>
-                <div className="grid grid-cols-4 text-xs text-muted-foreground mt-1 h-5">
-                  <span className="text-left">Beginner</span>
-                  <span className="text-center">Competent</span>
-                  <span className="text-center">Advanced</span>
-                  <span className="text-right">Expert</span>
+                <div className="flex justify-between text-xs text-muted-foreground mt-1 h-5">
+                  <div className="w-1/4 text-left">Beginner</div>
+                  <div className="w-1/4 text-center">Competent</div>
+                  <div className="w-1/4 text-center">Advanced</div>
+                  <div className="w-1/4 text-right">Expert</div>
                 </div>
               </div>
             </div>
@@ -71,11 +71,11 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
                   </div>
                   <span className="w-8 text-center font-medium ml-2">{skill.ratings.desired}</span>
                 </div>
-                <div className="grid grid-cols-4 text-xs text-muted-foreground mt-1 h-5">
-                  <span className="text-left">Beginner</span>
-                  <span className="text-center">Competent</span>
-                  <span className="text-center">Advanced</span>
-                  <span className="text-right">Expert</span>
+                <div className="flex justify-between text-xs text-muted-foreground mt-1 h-5">
+                  <div className="w-1/4 text-left">Beginner</div>
+                  <div className="w-1/4 text-center">Competent</div>
+                  <div className="w-1/4 text-center">Advanced</div>
+                  <div className="w-1/4 text-right">Expert</div>
                 </div>
               </div>
             </div>

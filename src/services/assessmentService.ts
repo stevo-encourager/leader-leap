@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Demographics } from '@/utils/assessmentData';
+import { Json } from '@/integrations/supabase/types';
 
 export const saveAssessmentResults = async (categories: Category[], demographics: Demographics) => {
   try {
@@ -12,11 +13,11 @@ export const saveAssessmentResults = async (categories: Category[], demographics
     
     const { error } = await supabase
       .from('assessment_results')
-      .insert({
+      .insert([{  // Fixed: Wrapped the object in an array
         user_id: session.session.user.id,
-        categories,
-        demographics
-      });
+        categories: categories as unknown as Json,
+        demographics: demographics as unknown as Json
+      }]);
       
     if (error) throw error;
     
@@ -48,8 +49,8 @@ export const getLatestAssessmentResults = async () => {
     return { 
       success: true, 
       data: {
-        categories: data.categories as Category[],
-        demographics: data.demographics as Demographics,
+        categories: data.categories as unknown as Category[],
+        demographics: data.demographics as unknown as Demographics,
         created_at: data.created_at
       }
     };

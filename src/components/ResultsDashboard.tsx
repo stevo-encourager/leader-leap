@@ -51,10 +51,10 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
           {/* Profile Summary */}
           <ProfileSummary demographics={demographics} />
 
-          {/* Detailed Analysis */}
+          {/* Detailed Analysis - Now displayed first */}
           <DetailedAnalysis categories={categories} />
 
-          {/* Key Insights */}
+          {/* Key Insights - Now displayed after Detailed Analysis */}
           <KeyInsights 
             averageGap={averageGap} 
             strengths={strengths} 

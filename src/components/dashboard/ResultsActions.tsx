@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ArrowLeft, Download } from 'lucide-react';
+import { ArrowLeft, Download, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
@@ -42,7 +42,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
   };
   
   return (
-    <div className="flex justify-between">
+    <div className="flex justify-between w-full">
       <Button variant="outline" onClick={onBack}>
         <ArrowLeft className="mr-2 h-4 w-4" />
         Back to Assessment
@@ -57,6 +57,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
           {user ? 'Download PDF' : 'Save as PDF'}
         </Button>
         <Button onClick={onRestart}>
+          <Plus className="mr-2 h-4 w-4" />
           Start New Assessment
         </Button>
       </div>

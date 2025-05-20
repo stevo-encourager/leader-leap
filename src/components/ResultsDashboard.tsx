@@ -5,7 +5,7 @@ import { Category, Demographics } from '../utils/assessmentTypes';
 import ProfileSummary from './dashboard/ProfileSummary';
 import DetailedAnalysis from './dashboard/DetailedAnalysis';
 import KeyInsights from './dashboard/KeyInsights';
-import EncouragerCoaching from './dashboard/EncouragerCoaching';
+import CoachingSupport from './dashboard/CoachingSupport';
 import ResultsActions from './dashboard/ResultsActions';
 import RecommendedSteps from './dashboard/RecommendedSteps';
 import { calculateAverageGap, getTopStrengths, getLowestSkills } from '../utils/assessmentCalculations';
@@ -52,28 +52,53 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
           {/* Profile Summary */}
           <ProfileSummary demographics={demographics} />
 
-          {/* Detailed Analysis - Now displayed first */}
+          {/* Detailed Analysis */}
           <DetailedAnalysis categories={categories} />
 
-          {/* Key Insights - Now displayed after Detailed Analysis */}
+          {/* Key Insights */}
           <KeyInsights 
             averageGap={averageGap} 
             strengths={strengths} 
             lowestSkills={lowestSkills} 
           />
           
-          {/* Recommended Next Steps - Now a separate component */}
-          <RecommendedSteps />
+          {/* Coaching Support and Sign Up side by side */}
+          <div className="grid grid-cols-5 gap-4">
+            <div className="col-span-3">
+              <CoachingSupport />
+            </div>
+            <div className="col-span-2">
+              {!onSignup ? null : (
+                <div className="bg-white p-4 h-full border border-slate-200 rounded-lg shadow-sm">
+                  <p className="text-slate-700 mb-4">
+                    <strong>Want to save your results, download as PDF, and access them later?</strong><br />
+                    Create an account to unlock all features of the Leadership Assessment Tool. <strong>IT'S FREE</strong>
+                  </p>
+                  <button 
+                    className="bg-encourager hover:bg-encourager-light text-white px-4 py-2 rounded-md transition-colors"
+                    onClick={onSignup}
+                  >
+                    Create an Account
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
 
-          {/* Encourager Coaching section with simplified text */}
-          <EncouragerCoaching />
+          {/* Recommended Next Steps */}
+          <RecommendedSteps />
         </CardContent>
-        <CardFooter>
-          <ResultsActions 
-            onBack={onBack} 
-            onRestart={onRestart} 
-            onSignup={onSignup} 
-          />
+        <CardFooter className="pt-4 pb-6 mt-4 border-t">
+          {/* Actions moved to bottom */}
+          <div className="w-full">
+            <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 w-full">
+              <ResultsActions 
+                onBack={onBack} 
+                onRestart={onRestart} 
+                onSignup={onSignup} 
+              />
+            </div>
+          </div>
         </CardFooter>
       </Card>
     </div>

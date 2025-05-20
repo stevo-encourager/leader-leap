@@ -38,7 +38,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true })
       email: '',
       password: '',
       fullName: '',
-      receiveEmails: false
+      receiveEmails: true // Changed default to true
     }
   });
 
@@ -183,8 +183,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true })
           </div>
           
           <div className="flex items-center space-x-2">
-            <Checkbox id="receiveEmails" {...register('receiveEmails')} />
-            <Label htmlFor="receiveEmails" className="text-sm">Receive emails about leadership tips and updates</Label>
+            <Checkbox id="receiveEmails" defaultChecked {...register('receiveEmails')} />
+            <Label htmlFor="receiveEmails" className="text-sm">Receive emails about leadership tips and updates. MAX ONE EMAIL MONTH</Label>
           </div>
           
           <Button type="submit" className="w-full" disabled={isLoading}>

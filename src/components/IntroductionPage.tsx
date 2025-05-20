@@ -17,7 +17,7 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
           <img 
             src="/lovable-uploads/8320d514-fba5-4e1b-a658-1563758db943.png" 
             alt="Encourager Logo" 
-            className="h-20 object-contain mb-6 animate-float" 
+            className="h-32 object-contain mb-6 animate-float" 
           />
           
           <h1 className="text-4xl md:text-5xl font-bold text-encourager mb-4 text-center">

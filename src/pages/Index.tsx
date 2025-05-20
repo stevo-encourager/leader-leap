@@ -1,33 +1,22 @@
 
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { initialCategories } from '../utils/assessmentData'; 
-import UserHeader from '../components/auth/UserHeader';
 import { CircleGauge } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import LoadResultsButton from '@/components/assessment/LoadResultsButton';
-import AuthSection from '@/components/assessment/AuthSection';
-import AssessmentContent from '@/components/assessment/AssessmentContent';
-import Footer from '@/components/layout/Footer';
 import Navigation from '@/components/layout/Navigation';
+import Footer from '@/components/layout/Footer';
+import IntroductionPage from '@/components/IntroductionPage';
 import { useAssessment } from '@/hooks/useAssessment';
 
 const Index = () => {
+  const navigate = useNavigate();
   const {
-    currentStep,
-    categories,
-    demographics,
-    showAuthForm,
-    loadingPreviousResults,
     handleCategoriesUpdate,
-    handleDemographicsUpdate,
     handleStartAssessment,
-    handleContinueToAssessment,
-    handleBackToIntro,
-    handleBackToDemographics,
-    handleCompleteAssessment,
     handleLoadPreviousResults,
-    handleCloseAuthForm,
-    handleShowSignupForm
+    loadingPreviousResults
   } = useAssessment();
   
   const { user, loading } = useAuth();
@@ -36,6 +25,12 @@ const Index = () => {
   useEffect(() => {
     handleCategoriesUpdate(initialCategories);
   }, []);
+
+  // Custom start assessment handler to navigate to assessment page
+  const startAssessmentHandler = () => {
+    handleStartAssessment();
+    navigate('/assessment');
+  };
 
   // Wait for auth to initialize before rendering
   if (loading) {
@@ -55,40 +50,17 @@ const Index = () => {
         <Navigation />
       </div>
       <main className="assessment-container max-w-5xl mx-auto px-4 py-8">
-        {/* User header (when logged in) */}
-        <UserHeader />
-        
-        {/* Show auth form when user tries to save results without being logged in */}
-        {showAuthForm && (
-          <AuthSection onClose={handleCloseAuthForm} />
+        {user && (
+          <LoadResultsButton 
+            onLoadPreviousResults={handleLoadPreviousResults}
+            isLoading={loadingPreviousResults}
+          />
         )}
         
-        {/* Main content */}
-        {!showAuthForm && (
-          <>
-            {user && currentStep === 'intro' && (
-              <LoadResultsButton 
-                onLoadPreviousResults={handleLoadPreviousResults}
-                isLoading={loadingPreviousResults}
-              />
-            )}
-            
-            <AssessmentContent
-              currentStep={currentStep}
-              categories={categories}
-              demographics={demographics}
-              onStartAssessment={handleStartAssessment}
-              onDemographicsUpdate={handleDemographicsUpdate}
-              onContinueToAssessment={handleContinueToAssessment}
-              onBackToIntro={handleBackToIntro}
-              onBackToDemographics={handleBackToDemographics}
-              onCategoriesUpdate={handleCategoriesUpdate}
-              onCompleteAssessment={handleCompleteAssessment}
-              onShowSignupForm={handleShowSignupForm}
-              isAuthenticated={!!user}
-            />
-          </>
-        )}
+        <IntroductionPage 
+          categories={initialCategories}
+          onStartAssessment={startAssessmentHandler}
+        />
       </main>
 
       <Footer />

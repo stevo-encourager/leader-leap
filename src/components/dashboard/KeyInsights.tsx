@@ -28,7 +28,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
             </p>
           </div>
           
-          <h4 className="text-md font-medium mt-3 mb-2">Your Highest Scoring Leadership Competencies</h4>
+          <h4 className="text-md font-medium mt-3 mb-2">Your Smallest Competency Gaps</h4>
           <div className="space-y-3 mb-4">
             {strengths.map((strength) => (
               <div key={`strength-${strength.id}`} className="bg-secondary/10 p-3 rounded-lg">
@@ -45,7 +45,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
             ))}
           </div>
           
-          <h4 className="text-md font-medium mt-4 mb-2">Your Lowest Scoring Leadership Competencies</h4>
+          <h4 className="text-md font-medium mt-4 mb-2">Your Biggest Competency Gaps (areas that need the greatest improvement)</h4>
           <div className="space-y-3 mb-4">
             {lowestSkills.map((skill) => (
               <div key={`lowest-${skill.id}`} className="bg-secondary/10 p-3 rounded-lg">
@@ -64,10 +64,9 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
           
           <h4 className="text-md font-medium mt-4 mb-2">Recommended Next Steps</h4>
           <ul className="list-disc list-inside space-y-2 text-slate-700">
-            <li>Focus on developing your top gap areas through targeted learning opportunities</li>
-            <li>Consider seeking a mentor who excels in your development areas</li>
-            <li>Create a 30-day action plan to address your most critical competency gaps</li>
-            <li>Re-assess in 3-6 months to measure your progress</li>
+            <li>Consider using this report in your next 1:1 with your manager or mentor as a guide for your professional development</li>
+            <li>Create a 6 month action plan to address your most critical competency gaps and schedule a time to re-take this assessment to track your progress</li>
+            <li>Focus on developing your Biggest Competency Gaps through targeted learning opportunities and stretch assignments</li>
           </ul>
         </div>
       </div>

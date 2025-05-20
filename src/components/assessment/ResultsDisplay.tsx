@@ -35,7 +35,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
         <div className="mt-6 bg-white p-4 border border-slate-200 rounded-lg shadow-sm">
           <p className="text-slate-700 mb-4">
             <strong>Want to save your results, download as PDF, and access them later?</strong><br />
-            Create an account to unlock all features of the Leadership Assessment Tool.
+            Create an account to unlock all features of the Leadership Assessment Tool. <strong>IT'S FREE</strong>
           </p>
           <Button 
             variant="encourager" 

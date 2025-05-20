@@ -1,7 +1,5 @@
 
 import React from 'react';
-import { User } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const CoachingSupport: React.FC = () => {
   return (

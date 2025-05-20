@@ -62,7 +62,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
             lowestSkills={lowestSkills} 
           />
           
-          {/* Recommended Next Steps moved above coaching and signup */}
+          {/* Recommended Next Steps - moved above coaching support */}
           <RecommendedSteps />
           
           {/* Coaching Support and Sign Up side by side */}
@@ -73,12 +73,12 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
             <div className="col-span-2">
               {!onSignup ? null : (
                 <div className="bg-white p-4 h-full border border-slate-200 rounded-lg shadow-sm flex flex-col justify-between">
-                  <p className="text-slate-700 mb-8">
+                  <p className="text-slate-700 mb-6">
                     <strong>Want to save your results, download as PDF, and access them later?</strong><br />
                     Create an account to unlock all features of the Leadership Assessment Tool.
                   </p>
                   <button 
-                    className="bg-encourager hover:bg-encourager-light text-white px-4 py-2 rounded-md transition-colors mt-auto"
+                    className="bg-encourager hover:bg-encourager-light text-white px-4 py-2 rounded-md transition-colors w-full mt-auto"
                     onClick={onSignup}
                   >
                     Create a free Account

@@ -21,7 +21,7 @@ export const emotionalIntelligenceCategory: Category = {
     {
       id: "relationship-management",
       name: "Relationship Management",
-      description: "Ability to develop and maintain healthy professional relationships.",
+      description: "Ability to develop and maintain healthy professional relationships, managing up as well as down.",
       ratings: { current: 0, desired: 0 }
     }
   ]

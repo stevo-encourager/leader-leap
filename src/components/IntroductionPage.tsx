@@ -15,10 +15,16 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
   const navigate = useNavigate();
   
   const handleStartAssessment = () => {
-    // Call the provided function and ensure navigation happens
+    // Call the provided function
     onStartAssessment();
-    // Add direct navigation as a fallback to ensure we go to the assessment page
-    navigate('/assessment');
+    
+    // Ensure we navigate to the assessment page directly
+    setTimeout(() => {
+      // Use a small timeout to ensure the state update happens first
+      if (window.location.pathname === '/') {
+        navigate('/assessment', { replace: true });
+      }
+    }, 50);
   };
 
   return (
@@ -189,7 +195,7 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
       <CardFooter className="flex justify-center pt-4 pb-8">
         <Button 
           size="lg"
-          onClick={onStartAssessment}
+          onClick={handleStartAssessment}
           className="bg-encourager hover:bg-encourager-light text-white px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 font-medium"
         >
           Start Your Assessment

@@ -32,7 +32,8 @@ export const useAssessment = () => {
 
   const handleStartAssessment = () => {
     setCurrentStep('demographics');
-    navigate('/assessment');
+    // Use replace to prevent going back to intro
+    navigate('/assessment', { replace: true });
   };
 
   const handleContinueToAssessment = () => {
@@ -41,17 +42,16 @@ export const useAssessment = () => {
 
   const handleBackToIntro = () => {
     setCurrentStep('intro');
-    navigate('/');
+    navigate('/', { replace: true });
   };
 
   const handleBackToDemographics = () => {
     setCurrentStep('demographics');
-    navigate('/assessment');
   };
 
   const handleCompleteAssessment = () => {
     setCurrentStep('results');
-    navigate('/results');
+    navigate('/results', { replace: true });
     
     // If user is logged in, save results automatically
     if (user) {

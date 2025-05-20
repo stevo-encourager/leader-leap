@@ -7,6 +7,7 @@ import DetailedAnalysis from './dashboard/DetailedAnalysis';
 import KeyInsights from './dashboard/KeyInsights';
 import EncouragerCoaching from './dashboard/EncouragerCoaching';
 import ResultsActions from './dashboard/ResultsActions';
+import RecommendedSteps from './dashboard/RecommendedSteps';
 import { calculateAverageGap, getTopStrengths, getLowestSkills } from '../utils/assessmentCalculations';
 
 interface ResultsDashboardProps {
@@ -60,8 +61,11 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
             strengths={strengths} 
             lowestSkills={lowestSkills} 
           />
+          
+          {/* Recommended Next Steps - Now a separate component */}
+          <RecommendedSteps />
 
-          {/* Combined Encourager Coaching section */}
+          {/* Encourager Coaching section with simplified text */}
           <EncouragerCoaching />
         </CardContent>
         <CardFooter>

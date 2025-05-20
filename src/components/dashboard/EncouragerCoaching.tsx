@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ListCheck, User } from 'lucide-react';
+import { User } from 'lucide-react';
 
 const EncouragerCoaching: React.FC = () => {
   return (
@@ -8,23 +8,11 @@ const EncouragerCoaching: React.FC = () => {
       <div className="flex items-start gap-3">
         <User className="text-encourager h-5 w-5 mt-1" />
         <div>
-          <h3 className="text-lg font-medium mb-2">Get Support from Encourager Coaching</h3>
-          
-          <p className="text-sm text-slate-600 mb-3">
-            Strengths and skills are two different things. Strengths are natural behaviors that energize you, 
-            while skills are learned capabilities. The most effective leadership development leverages your 
-            innate strengths to address gaps in your leadership skillset.
-          </p>
-          
-          <p className="text-sm text-slate-600 mb-4">
-            A leadership coach can help you be the best version of yourself by creating awareness around how 
-            you can leverage these strengths while developing your areas for growth. Through structured 
-            reflection and targeted practice, coaching helps translate insights into practical leadership behaviors.
-          </p>
+          <h3 className="text-lg font-medium mb-2">Consider Coaching</h3>
           
           <div className="bg-white p-3 rounded-md border border-slate-200">
             <h4 className="text-sm font-medium flex items-center gap-2 mb-2">
-              <ListCheck className="h-4 w-4 text-encourager" />
+              <User className="h-4 w-4 text-encourager" />
               Next Steps with a Coach
             </h4>
             <ul className="list-disc list-inside space-y-1 text-xs text-slate-600">

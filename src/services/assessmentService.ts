@@ -10,15 +10,20 @@ import { Category, Demographics } from '../utils/assessmentData';
  */
 export const saveAssessmentResults = async (categories: Category[], demographics: Demographics) => {
   try {
+    // Get the current user ID first
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      return { success: false, error: 'User not authenticated' };
+    }
+    
     const { data, error } = await supabase
-      .from('assessment_results')  // Updated to match the actual table name in Supabase
-      .insert([
-        { 
-          categories, 
-          demographics,
-          user_id: supabase.auth.getUser().then(({ data }) => data.user?.id) // Updated auth method
-        }
-      ]);
+      .from('assessment_results')  // Use the correct table name
+      .insert({
+        categories, 
+        demographics,
+        user_id: user.id
+      });
 
     if (error) {
       console.error('Error saving assessment results:', error);
@@ -38,9 +43,17 @@ export const saveAssessmentResults = async (categories: Category[], demographics
  */
 export const getLatestAssessmentResults = async () => {
   try {
+    // Get the current user ID first
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      return { success: false, error: 'User not authenticated' };
+    }
+    
     const { data: assessments, error } = await supabase
-      .from('assessment_results')  // Updated to match the actual table name
+      .from('assessment_results')
       .select('*')
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(1);
 
@@ -66,9 +79,17 @@ export const getLatestAssessmentResults = async () => {
  */
 export const getAssessmentHistory = async () => {
   try {
+    // Get the current user ID first
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      return { success: false, error: 'User not authenticated' };
+    }
+    
     const { data: assessments, error } = await supabase
-      .from('assessment_results')  // Updated to match the actual table name
+      .from('assessment_results')
       .select('*')
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
     if (error) {

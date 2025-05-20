@@ -82,8 +82,12 @@ export const useAssessment = () => {
       const result = await getLatestAssessmentResults();
       
       if (result.success && result.data) {
-        setCategories(result.data.categories);
-        setDemographics(result.data.demographics);
+        // Convert the JSON data to the expected type
+        const categoriesData = result.data.categories as unknown as Category[];
+        const demographicsData = result.data.demographics as unknown as Demographics;
+        
+        setCategories(categoriesData);
+        setDemographics(demographicsData || {});
         setCurrentStep('results');
         
         toast({

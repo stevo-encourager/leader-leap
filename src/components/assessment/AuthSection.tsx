@@ -10,7 +10,7 @@ interface AuthSectionProps {
 const AuthSection: React.FC<AuthSectionProps> = ({ onClose }) => {
   return (
     <div className="mb-8">
-      <AuthForm defaultTab="signup" />
+      <AuthForm onSuccess={onClose} />
       <div className="text-center mt-4">
         <Button variant="ghost" onClick={onClose}>
           Skip Sign Up for Now

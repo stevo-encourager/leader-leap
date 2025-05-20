@@ -26,7 +26,7 @@ const Login = () => {
             Access your previous assessment results
           </p>
         </div>
-        <AuthForm onSuccess={() => navigate('/')} showGoogleAuth={false} />
+        <AuthForm onSuccess={() => navigate('/')} showGoogleAuth={true} />
       </Card>
     </div>
   );

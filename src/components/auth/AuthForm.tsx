@@ -8,7 +8,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from '@/hooks/use-toast';
@@ -17,6 +16,7 @@ import { Eye, EyeOff, Loader2 } from 'lucide-react';
 // Define the props interface with onSuccess
 export interface AuthFormProps {
   onSuccess?: () => void;
+  showGoogleAuth?: boolean;
 }
 
 const authSchema = z.object({
@@ -26,7 +26,7 @@ const authSchema = z.object({
   receiveEmails: z.boolean().optional(),
 });
 
-const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
+const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('signin');
   const [showPassword, setShowPassword] = useState(false);
@@ -123,19 +123,21 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
           </Button>
         </form>
         
-        <div className="mt-4 text-center text-sm">
-          <p className="text-muted-foreground mb-4">Or continue with</p>
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={handleGoogleSignIn}
-            disabled={isLoading}
-            className="w-full"
-          >
-            <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" className="h-5 w-5 mr-2" />
-            Google
-          </Button>
-        </div>
+        {showGoogleAuth && (
+          <div className="mt-4 text-center text-sm">
+            <p className="text-muted-foreground mb-4">Or continue with</p>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={handleGoogleSignIn}
+              disabled={isLoading}
+              className="w-full"
+            >
+              <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" className="h-5 w-5 mr-2" />
+              Google
+            </Button>
+          </div>
+        )}
       </TabsContent>
       
       <TabsContent value="signup">

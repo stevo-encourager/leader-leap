@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Demographics } from '../utils/assessmentData';
+import { Json } from '@/integrations/supabase/types';
 
 /**
  * Saves the assessment results to the database
@@ -18,10 +19,10 @@ export const saveAssessmentResults = async (categories: Category[], demographics
     }
     
     const { data, error } = await supabase
-      .from('assessment_results')  // Use the correct table name
+      .from('assessment_results')
       .insert({
-        categories, 
-        demographics,
+        categories: categories as unknown as Json,
+        demographics: demographics as unknown as Json,
         user_id: user.id
       });
 

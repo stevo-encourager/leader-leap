@@ -62,6 +62,9 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
             lowestSkills={lowestSkills} 
           />
           
+          {/* Recommended Next Steps - Moved above the coaching and signup tiles */}
+          <RecommendedSteps />
+          
           {/* Coaching Support and Sign Up side by side */}
           <div className="grid grid-cols-5 gap-4">
             <div className="col-span-3">
@@ -84,9 +87,6 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
               )}
             </div>
           </div>
-
-          {/* Recommended Next Steps */}
-          <RecommendedSteps />
         </CardContent>
         <CardFooter className="pt-4 pb-6 mt-4 border-t">
           {/* Actions moved to bottom */}

@@ -1,8 +1,10 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Category } from '../utils/assessmentData';
 import { BookOpen, User, CircleCheck, Clock, Award, Smile, FileBarChart, Target, Lightbulb, ArrowRight, TrendingUp, Star } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface IntroductionPageProps {
   categories: Category[];
@@ -10,6 +12,15 @@ interface IntroductionPageProps {
 }
 
 const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStartAssessment }) => {
+  const navigate = useNavigate();
+  
+  const handleStartAssessment = () => {
+    // Call the provided function and ensure navigation happens
+    onStartAssessment();
+    // Add direct navigation as a fallback to ensure we go to the assessment page
+    navigate('/assessment');
+  };
+
   return (
     <div className="fade-in space-y-6 pt-0">
       <Card className="border-none overflow-hidden shadow-elevated bg-white">
@@ -30,7 +41,7 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
           
           <Button 
             size="lg"
-            onClick={onStartAssessment}
+            onClick={handleStartAssessment}
             className="bg-encourager hover:bg-encourager-light text-white px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 font-medium"
           >
             Start Your Assessment

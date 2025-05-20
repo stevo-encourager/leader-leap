@@ -1,28 +1,12 @@
+
 import React from 'react';
 import { BookOpen } from 'lucide-react';
-import { Category } from '../../utils/assessmentTypes';
+import { SkillWithMetadata } from '@/utils/assessmentCalculations';
 
 interface KeyInsightsProps {
   averageGap: number;
-  strengths: Array<{
-    id: string;
-    name: string;
-    categoryTitle: string;
-    gap?: number;
-    ratings: {
-      current: number;
-      desired: number;
-    };
-  }>;
-  lowestSkills: Array<{
-    id: string;
-    name: string;
-    categoryTitle: string;
-    ratings: {
-      current: number;
-      desired: number;
-    };
-  }>;
+  strengths: SkillWithMetadata[];
+  lowestSkills: SkillWithMetadata[];
 }
 
 const KeyInsights: React.FC<KeyInsightsProps> = ({ 

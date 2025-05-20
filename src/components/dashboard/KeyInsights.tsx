@@ -61,23 +61,6 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
               </div>
             ))}
           </div>
-          
-          <h4 className="text-md font-medium mt-4 mb-2">Your Biggest Skills Gaps <span className="font-normal">(individual skills needing most improvement)</span></h4>
-          <div className="space-y-3 mb-4">
-            {lowestSkills.map((skill) => (
-              <div key={`skill-gap-${skill.id}`} className="bg-secondary/10 p-3 rounded-lg">
-                <div className="flex justify-between">
-                  <div>
-                    <p className="font-medium">{skill.name}</p>
-                    <p className="text-sm text-slate-500">{skill.categoryTitle}</p>
-                  </div>
-                  <div className="bg-orange-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
-                    Gap: {skill.gap.toFixed(2)}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
     </div>

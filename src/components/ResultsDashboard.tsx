@@ -62,9 +62,6 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
             lowestSkills={lowestSkills} 
           />
           
-          {/* Recommended Next Steps - Moved above the coaching and signup tiles */}
-          <RecommendedSteps />
-          
           {/* Coaching Support and Sign Up side by side */}
           <div className="grid grid-cols-5 gap-4">
             <div className="col-span-3">
@@ -75,18 +72,21 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
                 <div className="bg-white p-4 h-full border border-slate-200 rounded-lg shadow-sm">
                   <p className="text-slate-700 mb-4">
                     <strong>Want to save your results, download as PDF, and access them later?</strong><br />
-                    Create an account to unlock all features of the Leadership Assessment Tool.
+                    Create an account to unlock all features of the Leadership Assessment Tool. <strong>IT'S FREE</strong>
                   </p>
                   <button 
                     className="bg-encourager hover:bg-encourager-light text-white px-4 py-2 rounded-md transition-colors"
                     onClick={onSignup}
                   >
-                    Create a free Account
+                    Create an Account
                   </button>
                 </div>
               )}
             </div>
           </div>
+
+          {/* Recommended Next Steps */}
+          <RecommendedSteps />
         </CardContent>
         <CardFooter className="pt-4 pb-6 mt-4 border-t">
           {/* Actions moved to bottom */}

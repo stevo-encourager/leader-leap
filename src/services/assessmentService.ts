@@ -1,4 +1,5 @@
-import { supabase } from '../supabaseClient';
+
+import { supabase } from '@/integrations/supabase/client';
 import { Category, Demographics } from '../utils/assessmentData';
 
 /**
@@ -10,12 +11,12 @@ import { Category, Demographics } from '../utils/assessmentData';
 export const saveAssessmentResults = async (categories: Category[], demographics: Demographics) => {
   try {
     const { data, error } = await supabase
-      .from('assessments')
+      .from('assessment_results')  // Updated to match the actual table name in Supabase
       .insert([
         { 
           categories, 
           demographics,
-          user_id: supabase.auth.user()?.id // Ensure user is logged in
+          user_id: supabase.auth.getUser().then(({ data }) => data.user?.id) // Updated auth method
         }
       ]);
 
@@ -38,7 +39,7 @@ export const saveAssessmentResults = async (categories: Category[], demographics
 export const getLatestAssessmentResults = async () => {
   try {
     const { data: assessments, error } = await supabase
-      .from('assessments')
+      .from('assessment_results')  // Updated to match the actual table name
       .select('*')
       .order('created_at', { ascending: false })
       .limit(1);
@@ -66,7 +67,7 @@ export const getLatestAssessmentResults = async () => {
 export const getAssessmentHistory = async () => {
   try {
     const { data: assessments, error } = await supabase
-      .from('assessments')
+      .from('assessment_results')  // Updated to match the actual table name
       .select('*')
       .order('created_at', { ascending: false });
 

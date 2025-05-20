@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Assessment from "./pages/Assessment";
+import Results from "./pages/Results";
 import PreviousAssessments from "./pages/PreviousAssessments";
 import NotFound from "./pages/NotFound";
 
@@ -22,6 +23,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/assessment" element={<Assessment />} />
+            <Route path="/results" element={<Results />} />
             <Route path="/previous-assessments" element={<PreviousAssessments />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

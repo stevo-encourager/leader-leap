@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AssessmentStep, Category, Demographics } from '../utils/assessmentData';
 import { saveAssessmentResults, getLatestAssessmentResults } from '@/services/assessmentService';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,6 +13,7 @@ export const useAssessment = () => {
   const [showAuthForm, setShowAuthForm] = useState(false);
   const [loadingPreviousResults, setLoadingPreviousResults] = useState(false);
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // When user logs in, check if they have previous results
@@ -30,6 +32,7 @@ export const useAssessment = () => {
 
   const handleStartAssessment = () => {
     setCurrentStep('demographics');
+    navigate('/assessment');
   };
 
   const handleContinueToAssessment = () => {
@@ -38,14 +41,17 @@ export const useAssessment = () => {
 
   const handleBackToIntro = () => {
     setCurrentStep('intro');
+    navigate('/');
   };
 
   const handleBackToDemographics = () => {
     setCurrentStep('demographics');
+    navigate('/assessment');
   };
 
   const handleCompleteAssessment = () => {
     setCurrentStep('results');
+    navigate('/results');
     
     // If user is logged in, save results automatically
     if (user) {
@@ -89,6 +95,7 @@ export const useAssessment = () => {
         setCategories(categoriesData);
         setDemographics(demographicsData || {});
         setCurrentStep('results');
+        navigate('/results');
         
         toast({
           title: "Previous results loaded",

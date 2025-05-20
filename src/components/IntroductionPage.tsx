@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
@@ -12,13 +11,13 @@ interface IntroductionPageProps {
 
 const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStartAssessment }) => {
   return (
-    <div className="fade-in space-y-6 pt-2">
+    <div className="fade-in space-y-6 pt-0">
       <Card className="border-none overflow-hidden shadow-elevated bg-white">
         <div className="p-8 flex flex-col items-center">
           <img 
             src="/lovable-uploads/8320d514-fba5-4e1b-a658-1563758db943.png" 
             alt="Encourager Logo" 
-            className="h-30 object-contain mb-6 animate-float" 
+            className="h-20 object-contain mb-6 animate-float" 
           />
           
           <h1 className="text-4xl md:text-5xl font-bold text-encourager mb-4 text-center">
@@ -102,7 +101,7 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
         </Card>
       </div>
 
-      {/* Instructions section moved above the benefits section */}
+      {/* Instructions section */}
       <Card className="border-none shadow-card bg-white">
         <CardContent className="p-6">
           <div className="flex items-center gap-3 mb-4">

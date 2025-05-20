@@ -3,38 +3,31 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CircleGauge } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import UserHeader from '../components/auth/UserHeader';
+import UserHeader from '@/components/auth/UserHeader';
 import AuthSection from '@/components/assessment/AuthSection';
 import Navigation from '@/components/layout/Navigation';
 import Footer from '@/components/layout/Footer';
-import DemographicsForm from '@/components/DemographicsForm';
-import AssessmentForm from '@/components/AssessmentForm';
+import ResultsDisplay from '@/components/assessment/ResultsDisplay';
 import { useAssessment } from '@/hooks/useAssessment';
 
-const Assessment = () => {
+const Results = () => {
   const navigate = useNavigate();
   const {
     currentStep,
     categories,
     demographics,
     showAuthForm,
-    handleDemographicsUpdate,
-    handleCategoriesUpdate,
-    handleContinueToAssessment,
-    handleBackToIntro,
     handleBackToDemographics,
-    handleCompleteAssessment,
-    handleCloseAuthForm
+    handleCloseAuthForm,
+    handleShowSignupForm
   } = useAssessment();
   
   const { user, loading } = useAuth();
 
-  // Redirect to home if we're on the intro step
+  // Redirect if not on results step
   useEffect(() => {
-    if (currentStep === 'intro') {
-      navigate('/');
-    } else if (currentStep === 'results') {
-      navigate('/results');
+    if (currentStep !== 'results') {
+      navigate('/assessment');
     }
   }, [currentStep, navigate]);
 
@@ -64,27 +57,16 @@ const Assessment = () => {
           <AuthSection onClose={handleCloseAuthForm} />
         )}
         
-        {/* Main content */}
+        {/* Results content */}
         {!showAuthForm && (
-          <>
-            {currentStep === 'demographics' && (
-              <DemographicsForm 
-                demographics={demographics}
-                onDemographicsUpdate={handleDemographicsUpdate}
-                onContinue={handleContinueToAssessment}
-                onBack={handleBackToIntro}
-              />
-            )}
-            
-            {currentStep === 'assessment' && (
-              <AssessmentForm 
-                categories={categories}
-                onCategoriesUpdate={handleCategoriesUpdate}
-                onComplete={handleCompleteAssessment}
-                onBack={handleBackToDemographics}
-              />
-            )}
-          </>
+          <ResultsDisplay
+            categories={categories}
+            demographics={demographics}
+            onRestart={() => navigate('/')}
+            onBack={() => navigate('/assessment')}
+            onSignup={handleShowSignupForm}
+            isAuthenticated={!!user}
+          />
         )}
       </main>
 
@@ -93,4 +75,4 @@ const Assessment = () => {
   );
 };
 
-export default Assessment;
+export default Results;

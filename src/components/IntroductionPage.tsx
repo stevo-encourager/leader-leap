@@ -12,13 +12,13 @@ interface IntroductionPageProps {
 
 const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStartAssessment }) => {
   return (
-    <div className="fade-in space-y-8 pt-6">
+    <div className="fade-in space-y-6">
       <Card className="border-none overflow-hidden shadow-elevated bg-white">
         <div className="p-8 flex flex-col items-center">
           <img 
             src="/lovable-uploads/8320d514-fba5-4e1b-a658-1563758db943.png" 
             alt="Encourager Logo" 
-            className="h-24 object-contain mb-6 animate-float" 
+            className="h-30 object-contain mb-6 animate-float" 
           />
           
           <h1 className="text-4xl md:text-5xl font-bold text-encourager mb-4 text-center">
@@ -50,8 +50,8 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
             </div>
             <p className="text-slate-700 leading-relaxed">
               This leadership assessment tool is designed to help you identify the gaps between current 
-              leadership abilities and where you aspire to be. Ten leadership competencies are measured. 
-              By understanding these gaps, you can create focused development plans that target your specific growth areas.
+              leadership competencies (10 in total) and where you aspire to be. By understanding these gaps, 
+              you can create focused development plans that target your specific growth areas.
             </p>
           </CardContent>
         </Card>
@@ -64,36 +64,36 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
               </div>
               <h2 className="text-2xl font-bold text-encourager">Who is this for?</h2>
             </div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-100">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 p-1.5 bg-slate-50 rounded-lg border border-slate-100">
                 <div className="text-encourager">
-                  <Star size={16} />
+                  <Star size={14} />
                 </div>
-                <div className="text-slate-700 text-sm">
+                <div className="text-slate-700 text-xs">
                   Aspiring Leaders
                 </div>
               </div>
-              <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-100">
+              <div className="flex items-center gap-2 p-1.5 bg-slate-50 rounded-lg border border-slate-100">
                 <div className="text-encourager">
-                  <Star size={16} />
+                  <Star size={14} />
                 </div>
-                <div className="text-slate-700 text-sm">
+                <div className="text-slate-700 text-xs">
                   Mid-Career Execs
                 </div>
               </div>
-              <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-100">
+              <div className="flex items-center gap-2 p-1.5 bg-slate-50 rounded-lg border border-slate-100">
                 <div className="text-encourager">
-                  <Star size={16} />
+                  <Star size={14} />
                 </div>
-                <div className="text-slate-700 text-sm">
+                <div className="text-slate-700 text-xs">
                   C-Suite
                 </div>
               </div>
-              <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-100">
+              <div className="flex items-center gap-2 p-1.5 bg-slate-50 rounded-lg border border-slate-100">
                 <div className="text-encourager">
-                  <Star size={16} />
+                  <Star size={14} />
                 </div>
-                <div className="text-slate-700 text-sm">
+                <div className="text-slate-700 text-xs">
                   Entrepreneurs & Business Owners
                 </div>
               </div>
@@ -118,7 +118,7 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
                 <ArrowRight className="text-encourager" size={16} strokeWidth={1.5} />
               </div>
               <p className="text-slate-700">
-                <span className="font-medium">Be honest:</span> This assessment is for your development, so rate your abilities as they truly are, not how you wish they were.
+                <span className="font-medium text-slate-900">Be honest:</span> This assessment is for your development, so rate your abilities as they truly are, not how you wish they were.
               </p>
             </div>
             
@@ -127,7 +127,7 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
                 <ArrowRight className="text-encourager" size={16} strokeWidth={1.5} />
               </div>
               <p className="text-slate-700">
-                <span className="font-medium">Consider context:</span> When rating "target level," think about what's truly important for your current role or your next step (i.e. a specific role or promotion you are aiming for).
+                <span className="font-medium text-slate-900">Consider context:</span> When rating "target level," think about what's truly important for your current role or your next step (i.e. a specific role or promotion you are aiming for).
               </p>
             </div>
             
@@ -136,7 +136,7 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
                 <ArrowRight className="text-encourager" size={16} strokeWidth={1.5} />
               </div>
               <p className="text-slate-700">
-                <span className="font-medium">Take your time:</span> Reflect on each competency carefully. The assessment takes approximately 10-15 minutes to complete.
+                <span className="font-medium text-slate-900">Take your time:</span> Reflect on each competency carefully. The assessment takes approximately 10-15 minutes to complete.
               </p>
             </div>
             
@@ -145,7 +145,7 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
                 <ArrowRight className="text-encourager" size={16} strokeWidth={1.5} />
               </div>
               <p className="text-slate-700">
-                <span className="font-medium">Focus on development:</span> Remember that the goal is to identify areas for growth, not to achieve a perfect score.
+                <span className="font-medium text-slate-900">Focus on development:</span> Remember that the goal is to identify areas for growth, not to achieve a perfect score.
               </p>
             </div>
           </div>

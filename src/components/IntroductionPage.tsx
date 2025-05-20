@@ -64,36 +64,36 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
               </div>
               <h2 className="text-2xl font-bold text-encourager">Who is this for?</h2>
             </div>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-100">
                 <div className="text-encourager">
-                  <Star size={18} />
+                  <Star size={16} />
                 </div>
-                <div className="text-slate-700">
+                <div className="text-slate-700 text-sm">
                   Aspiring Leaders
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
+              <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-100">
                 <div className="text-encourager">
-                  <Star size={18} />
+                  <Star size={16} />
                 </div>
-                <div className="text-slate-700">
+                <div className="text-slate-700 text-sm">
                   Mid-Career Execs
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
+              <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-100">
                 <div className="text-encourager">
-                  <Star size={18} />
+                  <Star size={16} />
                 </div>
-                <div className="text-slate-700">
+                <div className="text-slate-700 text-sm">
                   C-Suite
                 </div>
               </div>
-              <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
+              <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-100">
                 <div className="text-encourager">
-                  <Star size={18} />
+                  <Star size={16} />
                 </div>
-                <div className="text-slate-700">
+                <div className="text-slate-700 text-sm">
                   Entrepreneurs & Business Owners
                 </div>
               </div>

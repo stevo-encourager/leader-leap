@@ -9,7 +9,7 @@ const Navigation: React.FC = () => {
   const { user } = useAuth();
   
   return (
-    <nav className="flex justify-end items-center gap-4 py-2">
+    <nav className="flex justify-end items-center gap-4 py-1">
       {user ? (
         <Button variant="ghost" size="sm" asChild className="flex items-center gap-2">
           <Link to="/previous-assessments">

@@ -3,7 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Category } from '../utils/assessmentData';
-import { BookOpen, User, CircleCheck, Clock, Award, Smile, FileBarChart, Target, Lightbulb, ArrowRight, TrendingUp } from 'lucide-react';
+import { BookOpen, User, CircleCheck, Clock, Award, Smile, FileBarChart, Target, Lightbulb, ArrowRight, TrendingUp, Star } from 'lucide-react';
 
 interface IntroductionPageProps {
   categories: Category[];
@@ -66,21 +66,35 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
             </div>
             <div className="space-y-3">
               <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
-                <div className="w-3 h-3 rounded-full bg-encourager-accent"></div>
+                <div className="text-encourager">
+                  <Star size={18} />
+                </div>
                 <div className="text-slate-700">
-                  Aspiring leaders building essential leadership skills
+                  Aspiring Leaders
                 </div>
               </div>
               <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
-                <div className="w-3 h-3 rounded-full bg-encourager-accent"></div>
+                <div className="text-encourager">
+                  <Star size={18} />
+                </div>
                 <div className="text-slate-700">
-                  Mid-career executives refining leadership capabilities
+                  Mid-Career Execs
                 </div>
               </div>
               <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
-                <div className="w-3 h-3 rounded-full bg-encourager-accent"></div>
+                <div className="text-encourager">
+                  <Star size={18} />
+                </div>
                 <div className="text-slate-700">
-                  Entrepreneurs and business owners seeking personal development
+                  C-Suite
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
+                <div className="text-encourager">
+                  <Star size={18} />
+                </div>
+                <div className="text-slate-700">
+                  Entrepreneurs & Business Owners
                 </div>
               </div>
             </div>
@@ -99,15 +113,6 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
           </div>
           
           <div className="space-y-4">
-            <div className="flex gap-4 items-center">
-              <div className="bg-encourager-accent/10 p-2 rounded-full flex-shrink-0">
-                <ArrowRight className="text-encourager" size={16} strokeWidth={1.5} />
-              </div>
-              <p className="text-slate-700">
-                <span className="font-medium">Ten Competencies:</span> For each skill listed within the competency you will rate your current ability and your target level
-              </p>
-            </div>
-            
             <div className="flex gap-4 items-center">
               <div className="bg-encourager-accent/10 p-2 rounded-full flex-shrink-0">
                 <ArrowRight className="text-encourager" size={16} strokeWidth={1.5} />

@@ -1,5 +1,3 @@
-
-// Update the AuthForm component to include the onSuccess prop
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';

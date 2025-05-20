@@ -1,61 +1,83 @@
+import { supabase } from '../supabaseClient';
+import { Category, Demographics } from '../utils/assessmentData';
 
-import { supabase } from '@/integrations/supabase/client';
-import { Category, Demographics } from '@/utils/assessmentData';
-import { Json } from '@/integrations/supabase/types';
-
+/**
+ * Saves the assessment results to the database
+ * @param categories An array of categories with their respective scores
+ * @param demographics An object containing the user's demographic information
+ * @returns A success or error message
+ */
 export const saveAssessmentResults = async (categories: Category[], demographics: Demographics) => {
   try {
-    const { data: session } = await supabase.auth.getSession();
-    
-    if (!session.session?.user) {
-      throw new Error('User not authenticated');
+    const { data, error } = await supabase
+      .from('assessments')
+      .insert([
+        { 
+          categories, 
+          demographics,
+          user_id: supabase.auth.user()?.id // Ensure user is logged in
+        }
+      ]);
+
+    if (error) {
+      console.error('Error saving assessment results:', error);
+      return { success: false, error: error.message };
     }
-    
-    const { error } = await supabase
-      .from('assessment_results')
-      .insert([{  // Fixed: Wrapped the object in an array
-        user_id: session.session.user.id,
-        categories: categories as unknown as Json,
-        demographics: demographics as unknown as Json
-      }]);
-      
-    if (error) throw error;
-    
-    return { success: true };
-  } catch (error: any) {
-    console.error('Error saving assessment results:', error);
-    return { success: false, error: error.message };
+
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error in saveAssessmentResults:', error);
+    return { success: false, error: 'Failed to save assessment results' };
   }
 };
 
+/**
+ * Retrieves the latest assessment results for the logged-in user
+ * @returns An array of categories with their respective scores, or null if no results are found
+ */
 export const getLatestAssessmentResults = async () => {
   try {
-    const { data: session } = await supabase.auth.getSession();
-    
-    if (!session.session?.user) {
-      return { success: false, error: 'User not authenticated' };
-    }
-    
-    const { data, error } = await supabase
-      .from('assessment_results')
+    const { data: assessments, error } = await supabase
+      .from('assessments')
       .select('*')
-      .eq('user_id', session.session.user.id)
       .order('created_at', { ascending: false })
-      .limit(1)
-      .single();
-      
-    if (error) throw error;
-    
-    return { 
-      success: true, 
-      data: {
-        categories: data.categories as unknown as Category[],
-        demographics: data.demographics as unknown as Demographics,
-        created_at: data.created_at
-      }
-    };
-  } catch (error: any) {
-    console.error('Error getting assessment results:', error);
-    return { success: false, error: error.message };
+      .limit(1);
+
+    if (error) {
+      console.error('Error fetching latest assessment results:', error);
+      return { success: false, error: error.message };
+    }
+
+    if (!assessments || assessments.length === 0) {
+      return { success: false, data: null };
+    }
+
+    return { success: true, data: assessments[0] };
+  } catch (error) {
+    console.error('Error in getLatestAssessmentResults:', error);
+    return { success: false, error: 'Failed to fetch latest assessment results' };
+  }
+};
+
+/**
+ * Fetches the user's assessment history
+ * @returns An array of assessment objects with their results
+ */
+export const getAssessmentHistory = async () => {
+  try {
+    const { data: assessments, error } = await supabase
+      .from('assessments')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching assessment history:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, data: assessments };
+  } catch (error) {
+    console.error('Error in getAssessmentHistory:', error);
+    return { success: false, error: 'Failed to fetch assessment history' };
   }
 };

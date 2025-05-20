@@ -8,6 +8,7 @@ import LoadResultsButton from '@/components/assessment/LoadResultsButton';
 import AuthSection from '@/components/assessment/AuthSection';
 import AssessmentContent from '@/components/assessment/AssessmentContent';
 import Footer from '@/components/layout/Footer';
+import Navigation from '@/components/layout/Navigation';
 import { useAssessment } from '@/hooks/useAssessment';
 
 const Index = () => {
@@ -50,6 +51,9 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      <div className="max-w-5xl mx-auto px-4 py-2">
+        <Navigation />
+      </div>
       <main className="assessment-container max-w-5xl mx-auto px-4 py-8">
         {/* User header (when logged in) */}
         <UserHeader />

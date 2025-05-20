@@ -22,7 +22,7 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
           />
           
           <h1 className="text-4xl md:text-5xl font-bold text-encourager mb-4 text-center">
-            Leadership Assessment Tool
+            Leadership Gap Assessment Tool
           </h1>
           
           <p className="text-xl text-slate-600 max-w-2xl text-center mb-10">
@@ -62,24 +62,25 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
               <div className="bg-encourager-accent/20 p-3 rounded-full">
                 <User className="text-encourager" size={24} strokeWidth={1.5} />
               </div>
-              <h2 className="text-2xl font-bold text-encourager">How It Works</h2>
+              <h2 className="text-2xl font-bold text-encourager">Who is this for?</h2>
             </div>
-            <p className="text-slate-700 leading-relaxed mb-4">
-              For each leadership competency, you will rate:
-            </p>
             <div className="space-y-3">
               <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
                 <div className="w-3 h-3 rounded-full bg-encourager-accent"></div>
-                <div>
-                  <strong className="text-encourager">Current ability</strong>
-                  <span className="text-slate-600 ml-2">(1-10)</span>
+                <div className="text-slate-700">
+                  Aspiring leaders building essential leadership skills
                 </div>
               </div>
               <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
                 <div className="w-3 h-3 rounded-full bg-encourager-accent"></div>
-                <div>
-                  <strong className="text-encourager">Target level</strong>
-                  <span className="text-slate-600 ml-2">(1-10)</span>
+                <div className="text-slate-700">
+                  Mid-career executives refining leadership capabilities
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-100">
+                <div className="w-3 h-3 rounded-full bg-encourager-accent"></div>
+                <div className="text-slate-700">
+                  Entrepreneurs and business owners seeking personal development
                 </div>
               </div>
             </div>
@@ -98,6 +99,15 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
           </div>
           
           <div className="space-y-4">
+            <div className="flex gap-4 items-center">
+              <div className="bg-encourager-accent/10 p-2 rounded-full flex-shrink-0">
+                <ArrowRight className="text-encourager" size={16} strokeWidth={1.5} />
+              </div>
+              <p className="text-slate-700">
+                <span className="font-medium">Ten Competencies:</span> For each skill listed within the competency you will rate your current ability and your target level
+              </p>
+            </div>
+            
             <div className="flex gap-4 items-center">
               <div className="bg-encourager-accent/10 p-2 rounded-full flex-shrink-0">
                 <ArrowRight className="text-encourager" size={16} strokeWidth={1.5} />

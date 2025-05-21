@@ -1,7 +1,7 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import ResultsDashboard from '../ResultsDashboard';
-import { Category, Demographics } from '../../utils/assessmentData';
+import { Category, Demographics } from '../../utils/assessmentTypes';
 
 interface ResultsDisplayProps {
   categories: Category[];
@@ -20,6 +20,10 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   onSignup,
   isAuthenticated
 }) => {
+  useEffect(() => {
+    console.log("ResultsDisplay categories:", categories);
+  }, [categories]);
+
   return (
     <ResultsDashboard 
       categories={categories}

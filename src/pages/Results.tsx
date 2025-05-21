@@ -25,6 +25,10 @@ const Results = () => {
   
   const { user, loading } = useAuth();
 
+  useEffect(() => {
+    console.log("Results page categories:", categories);
+  }, [categories]);
+
   // Wait for auth to initialize before rendering
   if (loading) {
     return (

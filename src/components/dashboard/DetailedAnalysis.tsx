@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Category } from '../../utils/assessmentTypes';
 import SkillGapChart from '../SkillGapChart';
 
@@ -8,6 +8,10 @@ interface DetailedAnalysisProps {
 }
 
 const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({ categories }) => {
+  useEffect(() => {
+    console.log("DetailedAnalysis categories:", categories);
+  }, [categories]);
+
   return (
     <div>
       <h3 className="text-lg font-medium mb-3">Detailed Analysis</h3>

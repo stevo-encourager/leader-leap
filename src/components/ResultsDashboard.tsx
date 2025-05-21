@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Category, Demographics } from '../utils/assessmentTypes';
 import ProfileSummary from './dashboard/ProfileSummary';
@@ -29,6 +29,10 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   const averageGap = calculateAverageGap(categories);
   const strengths = getTopStrengths(categories, 3);
   const lowestSkills = getLowestSkills(categories, 3);
+  
+  useEffect(() => {
+    console.log("ResultsDashboard categories:", categories);
+  }, [categories]);
 
   return (
     <div className="fade-in space-y-6">

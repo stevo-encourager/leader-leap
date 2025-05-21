@@ -16,6 +16,11 @@ export const useAssessment = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Log categories whenever they change
+  useEffect(() => {
+    console.log("useAssessment hook - current categories:", categories);
+  }, [categories]);
+
   // Update the current step based on the route when component mounts
   useEffect(() => {
     if (location.pathname === '/') {
@@ -24,8 +29,27 @@ export const useAssessment = () => {
       setCurrentStep(prevStep => prevStep === 'intro' ? 'demographics' : prevStep);
     } else if (location.pathname === '/results') {
       setCurrentStep('results');
+      
+      // Initialize with dummy data for testing if categories are empty
+      if (!categories || (categories.length > 0 && categories[0].skills.length > 0 && 
+          !categories[0].skills[0].ratings)) {
+        console.log("Initializing categories with test data for results page");
+        const testCategories = JSON.parse(JSON.stringify(initialCategories));
+        
+        // Add some random ratings to each skill
+        testCategories.forEach((category: Category) => {
+          category.skills.forEach((skill) => {
+            skill.ratings = {
+              current: Math.floor(Math.random() * 8) + 1,
+              desired: Math.floor(Math.random() * 3) + 7
+            };
+          });
+        });
+        
+        setCategories(testCategories);
+      }
     }
-  }, [location.pathname]);
+  }, [location.pathname, categories]);
 
   // Effect to handle result saving when user logs in
   useEffect(() => {
@@ -36,6 +60,7 @@ export const useAssessment = () => {
 
   // Basic data management functions
   const handleCategoriesUpdate = useCallback((updatedCategories: Category[]) => {
+    console.log("Updating categories:", updatedCategories);
     setCategories(updatedCategories);
   }, []);
 

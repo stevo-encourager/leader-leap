@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import IntroductionPage from '../IntroductionPage';
 import DemographicsForm from '../DemographicsForm';
 import AssessmentForm from '../AssessmentForm';
@@ -35,11 +36,16 @@ const AssessmentContent: React.FC<AssessmentContentProps> = ({
   onShowSignupForm,
   isAuthenticated
 }) => {
+  const navigate = useNavigate();
+  
   if (currentStep === 'intro') {
     return (
       <IntroductionPage 
         categories={categories}
-        onStartAssessment={onStartAssessment}
+        onStartAssessment={() => {
+          onStartAssessment();
+          navigate('/assessment');
+        }}
       />
     );
   }
@@ -60,7 +66,10 @@ const AssessmentContent: React.FC<AssessmentContentProps> = ({
       <AssessmentForm 
         categories={categories}
         onCategoriesUpdate={onCategoriesUpdate}
-        onComplete={onCompleteAssessment}
+        onComplete={() => {
+          onCompleteAssessment();
+          navigate('/results');
+        }}
         onBack={onBackToDemographics}
       />
     );
@@ -71,8 +80,14 @@ const AssessmentContent: React.FC<AssessmentContentProps> = ({
       <ResultsDisplay
         categories={categories}
         demographics={demographics}
-        onRestart={onStartAssessment}
-        onBack={onBackToDemographics}
+        onRestart={() => {
+          onStartAssessment();
+          navigate('/assessment');
+        }}
+        onBack={() => {
+          onBackToDemographics();
+          navigate('/assessment');
+        }}
         onSignup={onShowSignupForm}
         isAuthenticated={isAuthenticated}
       />

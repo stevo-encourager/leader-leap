@@ -17,20 +17,13 @@ const Results = () => {
     categories,
     demographics,
     showAuthForm,
-    handleBackToDemographics,
     handleCloseAuthForm,
     handleShowSignupForm,
-    handleStartAssessment
+    handleStartAssessment,
+    handleBackToDemographics
   } = useAssessment();
   
   const { user, loading } = useAuth();
-
-  // Redirect if not on results step
-  useEffect(() => {
-    if (currentStep !== 'results') {
-      navigate('/');
-    }
-  }, [currentStep, navigate]);
 
   // Wait for auth to initialize before rendering
   if (loading) {
@@ -63,8 +56,14 @@ const Results = () => {
           <ResultsDisplay
             categories={categories}
             demographics={demographics}
-            onRestart={handleStartAssessment}
-            onBack={() => navigate('/assessment')}
+            onRestart={() => {
+              handleStartAssessment();
+              navigate('/assessment');
+            }}
+            onBack={() => {
+              handleBackToDemographics();
+              navigate('/assessment');
+            }}
             onSignup={handleShowSignupForm}
             isAuthenticated={!!user}
           />

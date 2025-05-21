@@ -29,15 +29,6 @@ const Assessment = () => {
   
   const { user, loading } = useAuth();
 
-  // Ensure we're on the right step for this page
-  useEffect(() => {
-    if (currentStep === 'intro') {
-      navigate('/');
-    } else if (currentStep === 'results') {
-      navigate('/results');
-    }
-  }, [currentStep, navigate]);
-
   // Wait for auth to initialize before rendering
   if (loading) {
     return (
@@ -72,7 +63,10 @@ const Assessment = () => {
                 demographics={demographics}
                 onDemographicsUpdate={handleDemographicsUpdate}
                 onContinue={handleContinueToAssessment}
-                onBack={handleBackToIntro}
+                onBack={() => {
+                  handleBackToIntro();
+                  navigate('/');
+                }}
               />
             )}
             
@@ -80,7 +74,10 @@ const Assessment = () => {
               <AssessmentForm 
                 categories={categories}
                 onCategoriesUpdate={handleCategoriesUpdate}
-                onComplete={handleCompleteAssessment}
+                onComplete={() => {
+                  handleCompleteAssessment();
+                  navigate('/results');
+                }}
                 onBack={handleBackToDemographics}
               />
             )}

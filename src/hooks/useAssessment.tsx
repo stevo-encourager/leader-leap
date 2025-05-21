@@ -1,19 +1,31 @@
 
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { AssessmentStep, Category, Demographics } from '../utils/assessmentData';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { AssessmentStep, Category, Demographics, initialCategories } from '../utils/assessmentData';
 import { saveAssessmentResults, getLatestAssessmentResults } from '@/services/assessmentService';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
 export const useAssessment = () => {
   const [currentStep, setCurrentStep] = useState<AssessmentStep>('intro');
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<Category[]>(initialCategories);
   const [demographics, setDemographics] = useState<Demographics>({});
   const [showAuthForm, setShowAuthForm] = useState(false);
   const [loadingPreviousResults, setLoadingPreviousResults] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Update the current step based on the route when component mounts
+  useEffect(() => {
+    if (location.pathname === '/') {
+      setCurrentStep('intro');
+    } else if (location.pathname === '/assessment') {
+      setCurrentStep(prevStep => prevStep === 'intro' ? 'demographics' : prevStep);
+    } else if (location.pathname === '/results') {
+      setCurrentStep('results');
+    }
+  }, [location.pathname]);
 
   // Effect to handle result saving when user logs in
   useEffect(() => {
@@ -23,41 +35,41 @@ export const useAssessment = () => {
   }, [user, currentStep]);
 
   // Basic data management functions
-  const handleCategoriesUpdate = (updatedCategories: Category[]) => {
+  const handleCategoriesUpdate = useCallback((updatedCategories: Category[]) => {
     setCategories(updatedCategories);
-  };
+  }, []);
 
-  const handleDemographicsUpdate = (updatedDemographics: Demographics) => {
+  const handleDemographicsUpdate = useCallback((updatedDemographics: Demographics) => {
     setDemographics(updatedDemographics);
-  };
+  }, []);
 
-  // Navigation functions - simplified to do one thing well
-  const handleStartAssessment = () => {
+  // Navigation functions - simplified to align with React Router
+  const handleStartAssessment = useCallback(() => {
     setCurrentStep('demographics');
     navigate('/assessment');
-  };
+  }, [navigate]);
 
-  const handleContinueToAssessment = () => {
+  const handleContinueToAssessment = useCallback(() => {
     setCurrentStep('assessment');
-  };
+  }, []);
 
-  const handleBackToIntro = () => {
+  const handleBackToIntro = useCallback(() => {
     setCurrentStep('intro');
     navigate('/');
-  };
+  }, [navigate]);
 
-  const handleBackToDemographics = () => {
+  const handleBackToDemographics = useCallback(() => {
     setCurrentStep('demographics');
-  };
+  }, []);
 
-  const handleCompleteAssessment = () => {
+  const handleCompleteAssessment = useCallback(() => {
     setCurrentStep('results');
     navigate('/results');
     
     if (user) {
       handleSaveResults();
     }
-  };
+  }, [navigate, user]);
   
   // Results management functions
   const handleSaveResults = async () => {
@@ -118,13 +130,13 @@ export const useAssessment = () => {
     }
   };
   
-  const handleCloseAuthForm = () => {
+  const handleCloseAuthForm = useCallback(() => {
     setShowAuthForm(false);
-  };
+  }, []);
 
-  const handleShowSignupForm = () => {
+  const handleShowSignupForm = useCallback(() => {
     setShowAuthForm(true);
-  };
+  }, []);
 
   return {
     currentStep,

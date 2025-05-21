@@ -1,5 +1,6 @@
 
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { initialCategories } from '../utils/assessmentData'; 
 import { CircleGauge } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,6 +11,7 @@ import IntroductionPage from '@/components/IntroductionPage';
 import { useAssessment } from '@/hooks/useAssessment';
 
 const Index = () => {
+  const navigate = useNavigate();
   const {
     handleCategoriesUpdate,
     handleStartAssessment,
@@ -22,7 +24,7 @@ const Index = () => {
   // Initialize categories from initial data
   useEffect(() => {
     handleCategoriesUpdate(initialCategories);
-  }, []);
+  }, [handleCategoriesUpdate]);
 
   // Wait for auth to initialize before rendering
   if (loading) {
@@ -51,7 +53,10 @@ const Index = () => {
         
         <IntroductionPage 
           categories={initialCategories}
-          onStartAssessment={handleStartAssessment}
+          onStartAssessment={() => {
+            handleStartAssessment();
+            navigate('/assessment');
+          }}
         />
       </main>
 

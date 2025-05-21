@@ -30,10 +30,10 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
   categories
 }) => {
   const [openSections, setOpenSections] = useState({
-    largestGaps: true,
-    skillsToImprove: true,
-    smallestGaps: true,
-    skillsMeeting: true
+    largestGaps: false,
+    skillsToImprove: false,
+    smallestGaps: false,
+    skillsMeeting: false
   });
 
   const toggleSection = (section: keyof typeof openSections) => {
@@ -93,7 +93,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
             className="mb-4"
           >
             <CollapsibleTrigger className="flex justify-between items-center w-full text-left">
-              <h4 className="text-md font-medium text-encourager">Your Largest Competency Gaps <span className="font-normal">(areas with greatest difference between current and desired)</span></h4>
+              <h4 className="text-md font-medium text-encourager">Your Largest Competency Gaps <span className="font-normal text-slate-600">(areas with greatest difference between current and desired)</span></h4>
               {openSections.largestGaps ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-2 space-y-3">
@@ -128,7 +128,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
             className="mb-4"
           >
             <CollapsibleTrigger className="flex justify-between items-center w-full text-left">
-              <h4 className="text-md font-medium text-encourager">Individual Skills You Want to Improve <span className="font-normal">(skills with high desired values)</span></h4>
+              <h4 className="text-md font-medium text-encourager">Individual Skills You Want to Improve <span className="font-normal text-slate-600">(skills with high desired values)</span></h4>
               {openSections.skillsToImprove ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-2 space-y-3">
@@ -138,7 +138,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
                     <div className="flex justify-between">
                       <div>
                         <p className="font-medium">{skill.name}</p>
-                        <p className="text-sm text-slate-500">{skill.categoryTitle}</p>
+                        <p className="text-sm text-slate-500">Related Competency: {skill.categoryTitle}</p>
                       </div>
                       <div className="bg-amber-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
                         Desired: {formatNumber(skill.ratings.desired)}
@@ -163,7 +163,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
             className="mb-4"
           >
             <CollapsibleTrigger className="flex justify-between items-center w-full text-left">
-              <h4 className="text-md font-medium text-encourager">Your Smallest Competency Gaps <span className="font-normal">(areas with smallest difference between current and desired)</span></h4>
+              <h4 className="text-md font-medium text-encourager">Your Smallest Competency Gaps <span className="font-normal text-slate-600">(areas with smallest difference between current and desired)</span></h4>
               {openSections.smallestGaps ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-2 space-y-3">
@@ -197,7 +197,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
             onOpenChange={() => toggleSection('skillsMeeting')}
           >
             <CollapsibleTrigger className="flex justify-between items-center w-full text-left">
-              <h4 className="text-md font-medium text-encourager">Individual Skills Meeting Your Expectations <span className="font-normal">(skills with high current values)</span></h4>
+              <h4 className="text-md font-medium text-encourager">Individual Skills Meeting Your Expectations <span className="font-normal text-slate-600">(skills with high current values)</span></h4>
               {openSections.skillsMeeting ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-2 space-y-3">
@@ -207,7 +207,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
                     <div className="flex justify-between">
                       <div>
                         <p className="font-medium">{skill.name}</p>
-                        <p className="text-sm text-slate-500">{skill.categoryTitle}</p>
+                        <p className="text-sm text-slate-500">Related Competency: {skill.categoryTitle}</p>
                       </div>
                       <div className="bg-blue-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
                         Current: {formatNumber(skill.ratings.current)}

@@ -24,11 +24,9 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
     // Call the provided function to set up state
     onStartAssessment();
     
-    // Navigate with a slight delay to ensure state is updated
-    setTimeout(() => {
-      console.log("Navigating to /assessment from IntroductionPage");
-      navigate('/assessment');
-    }, 50);
+    // Navigate directly without setTimeout
+    console.log("Navigating to /assessment from IntroductionPage");
+    navigate('/assessment');
   };
 
   return (

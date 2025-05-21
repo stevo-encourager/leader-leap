@@ -1,6 +1,6 @@
 
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { CircleGauge } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import UserHeader from '@/components/auth/UserHeader';
@@ -26,8 +26,10 @@ const Results = () => {
 
   // Redirect if not on results step
   useEffect(() => {
+    console.log(`Current step in Results: ${currentStep}`);
     if (currentStep !== 'results') {
-      navigate('/assessment');
+      console.log("Redirecting to / from Results page because not on results step");
+      navigate('/');
     }
   }, [currentStep, navigate]);
 

@@ -16,11 +16,9 @@ const IntroductionHeader: React.FC<IntroductionHeaderProps> = ({ onStartAssessme
     // First call the provided function to set up state
     onStartAssessment();
     
-    // Then navigate after a brief delay to ensure state is updated
-    setTimeout(() => {
-      console.log("Navigating to /assessment from IntroductionHeader");
-      navigate('/assessment');
-    }, 50);
+    // Then navigate directly without using setTimeout
+    console.log("Navigating to /assessment from IntroductionHeader");
+    navigate('/assessment');
   };
   
   return (

@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { getAssessmentHistory } from '@/services/assessmentService';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -39,12 +39,6 @@ const PreviousAssessments = () => {
     fetchAssessments();
   }, [user, navigate]);
 
-  const handleNavigateHome = (e: React.MouseEvent) => {
-    e.preventDefault();
-    console.log("Navigating to home from previous assessments");
-    navigate('/');
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -62,19 +56,23 @@ const PreviousAssessments = () => {
         <Navigation />
       </div>
       <main className="max-w-4xl mx-auto px-4 py-8">
-        <Button variant="ghost" onClick={handleNavigateHome} className="mb-6 flex items-center gap-2">
-          <ArrowLeft size={16} />
-          <span>Back to Home</span>
-        </Button>
+        <Link to="/">
+          <Button variant="ghost" className="mb-6 flex items-center gap-2">
+            <ArrowLeft size={16} />
+            <span>Back to Home</span>
+          </Button>
+        </Link>
 
         <h1 className="text-3xl font-bold text-encourager mb-8">Your Previous Assessments</h1>
 
         {assessments.length === 0 ? (
           <Card className="p-6 text-center">
             <p className="mb-4 text-slate-600">You haven't completed any assessments yet.</p>
-            <Button onClick={handleNavigateHome} className="bg-encourager hover:bg-encourager-light">
-              Start an Assessment
-            </Button>
+            <Link to="/">
+              <Button className="bg-encourager hover:bg-encourager-light">
+                Start an Assessment
+              </Button>
+            </Link>
           </Card>
         ) : (
           <div className="space-y-4">
@@ -92,16 +90,14 @@ const PreviousAssessments = () => {
                         Completed on {formatDate(assessment.created_at)}
                       </p>
                     </div>
-                    <Button 
-                      size="sm" 
-                      className="bg-encourager hover:bg-encourager-light"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        navigate(`/results/${assessment.id}`);
-                      }}
-                    >
-                      View Results
-                    </Button>
+                    <Link to={`/results/${assessment.id}`}>
+                      <Button 
+                        size="sm" 
+                        className="bg-encourager hover:bg-encourager-light"
+                      >
+                        View Results
+                      </Button>
+                    </Link>
                   </div>
                 </CardContent>
               </Card>

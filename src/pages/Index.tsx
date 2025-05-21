@@ -26,16 +26,12 @@ const Index = () => {
     handleCategoriesUpdate(initialCategories);
   }, []);
 
-  // Handle assessment start with navigation
+  // Handle assessment start with direct navigation
   const startAssessmentHandler = () => {
     console.log("Start assessment handler triggered in Index.tsx");
     handleStartAssessment();
-    
-    // Navigate after state update
-    setTimeout(() => {
-      console.log("Navigating to /assessment from Index.tsx");
-      navigate('/assessment');
-    }, 100); // Increased delay to ensure state updates
+    console.log("Navigating to /assessment from Index.tsx");
+    navigate('/assessment');
   };
 
   // Wait for auth to initialize before rendering

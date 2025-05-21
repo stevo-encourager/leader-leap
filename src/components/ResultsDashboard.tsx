@@ -25,33 +25,29 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   onBack,
   onSignup
 }) => {
-  // Initialize categories with default values for testing if all zeros
+  // Debug received categories
   useEffect(() => {
-    console.log("ResultsDashboard - Initial categories:", categories);
+    console.log("DASHBOARD - Received categories count:", categories?.length || 0);
     
-    // Check if we have actual data or just zeros
-    const hasActualData = categories.some(cat => 
-      cat.skills && cat.skills.some(skill => 
-        skill.ratings && (skill.ratings.current > 0 || skill.ratings.desired > 0)
-      )
-    );
-    
-    console.log("ResultsDashboard - Has actual data:", hasActualData);
-    
-    if (!hasActualData && categories.length > 0) {
-      console.log("ResultsDashboard - Setting default non-zero values for testing");
-      // This is only for debugging - we'll use random values between 1-10
-      const updatedCategories = categories.map(cat => ({
-        ...cat,
-        skills: (cat.skills || []).map(skill => ({
-          ...skill,
-          ratings: {
-            current: Math.floor(Math.random() * 5) + 1, // 1-5
-            desired: Math.floor(Math.random() * 5) + 6  // 6-10
-          }
-        }))
-      }));
-      console.log("ResultsDashboard - Updated categories with test values:", updatedCategories);
+    // Check if categories have skills and ratings
+    if (categories && categories.length > 0) {
+      const firstCategory = categories[0];
+      console.log(`DASHBOARD - First category: ${firstCategory.title}`);
+      
+      if (firstCategory.skills && firstCategory.skills.length > 0) {
+        const firstSkill = firstCategory.skills[0];
+        console.log(`DASHBOARD - First skill: ${firstSkill.name}`);
+        console.log(`DASHBOARD - First skill ratings:`, firstSkill.ratings);
+      }
+      
+      // Check data quality for calculations
+      const hasActualData = categories.some(cat => 
+        cat.skills && cat.skills.some(skill => 
+          skill.ratings && (skill.ratings.current > 0 || skill.ratings.desired > 0)
+        )
+      );
+      
+      console.log(`DASHBOARD - Has actual rating data: ${hasActualData}`);
     }
   }, [categories]);
   
@@ -60,15 +56,11 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   const strengths = getTopStrengths(categories, 3);
   const lowestSkills = getLowestSkills(categories, 3);
   
-  console.log("ResultsDashboard - Calculated metrics:", { 
+  console.log("DASHBOARD - Calculated metrics:", { 
     averageGap, 
     strengthsCount: strengths?.length || 0, 
     lowestSkillsCount: lowestSkills?.length || 0 
   });
-
-  useEffect(() => {
-    console.log("ResultsDashboard categories:", categories);
-  }, [categories]);
 
   return (
     <div className="fade-in space-y-6">

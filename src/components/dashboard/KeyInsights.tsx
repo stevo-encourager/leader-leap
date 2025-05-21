@@ -29,11 +29,12 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
   lowestSkills,
   categories
 }) => {
+  // Open all sections by default for debugging
   const [openSections, setOpenSections] = useState({
-    largestGaps: true, // Open by default for debugging
-    skillsToImprove: true, // Open this too for better debugging
-    smallestGaps: false,
-    skillsMeeting: false
+    largestGaps: true,
+    skillsToImprove: true,
+    smallestGaps: true,
+    skillsMeeting: true
   });
 
   const toggleSection = (section: keyof typeof openSections) => {
@@ -43,9 +44,17 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
     }));
   };
 
-  // Calculate insights data with debug logs
-  console.log("KeyInsights - Calculating insights from categories:", categories);
-  console.log("KeyInsights - First category skills sample:", categories[0]?.skills);
+  // Calculate insights data with extensive debugging
+  console.log("KEY_INSIGHTS - Calculating insights from categories:", categories.length);
+  if (categories.length > 0) {
+    console.log("KEY_INSIGHTS - First category:", categories[0].title);
+    console.log("KEY_INSIGHTS - First category skills count:", categories[0].skills?.length || 0);
+    if (categories[0]?.skills?.length > 0) {
+      const firstSkill = categories[0].skills[0];
+      console.log("KEY_INSIGHTS - First skill sample:", firstSkill);
+      console.log("KEY_INSIGHTS - First skill ratings:", firstSkill.ratings);
+    }
+  }
   
   const largestCategoryGaps = getLargestCategoryGaps(categories, 3);
   const smallestCategoryGaps = getSmallestCategoryGaps(categories, 3);
@@ -53,20 +62,21 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
   const skillsMeetingExpectations = getSkillsMeetingExpectations(categories, 3);
   
   useEffect(() => {
-    console.log("KeyInsights - DETAILED DEBUG INFO:");
-    console.log("Average Gap:", averageGap);
-    console.log("Largest Gaps:", largestCategoryGaps);
-    console.log("Smallest Gaps:", smallestCategoryGaps);
-    console.log("Skills to Improve:", skillsToImprove);
-    console.log("Skills Meeting Expectations:", skillsMeetingExpectations);
+    console.log("KEY_INSIGHTS - DETAILED DEBUG INFO:");
+    console.log("KEY_INSIGHTS - Average Gap:", averageGap);
+    console.log("KEY_INSIGHTS - Largest Gaps:", largestCategoryGaps);
+    console.log("KEY_INSIGHTS - Smallest Gaps:", smallestCategoryGaps);
+    console.log("KEY_INSIGHTS - Skills to Improve:", skillsToImprove);
+    console.log("KEY_INSIGHTS - Skills Meeting Expectations:", skillsMeetingExpectations);
     
-    // Debug raw categories data
+    // Debug raw categories data for comprehensive analysis
     if (categories && categories.length > 0) {
       categories.forEach(category => {
-        console.log(`Category: ${category.title}`);
+        console.log(`KEY_INSIGHTS - Category: ${category.title}`);
         if (category.skills && category.skills.length > 0) {
           category.skills.forEach(skill => {
-            console.log(`  Skill: ${skill.name}, Current: ${skill.ratings?.current}, Desired: ${skill.ratings?.desired}, Gap: ${Math.abs((skill.ratings?.desired || 0) - (skill.ratings?.current || 0))}`);
+            const gap = Math.abs((skill.ratings?.desired || 0) - (skill.ratings?.current || 0));
+            console.log(`KEY_INSIGHTS - Skill: ${skill.name}, Current: ${skill.ratings?.current}, Desired: ${skill.ratings?.desired}, Gap: ${gap}`);
           });
         }
       });
@@ -81,10 +91,8 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
     return String(num);
   };
 
-  // Only display "Calculating..." if we have data but the average is actually zero
-  const displayAverageGap = averageGap === 0 && categories?.some(c => 
-    c.skills?.some(s => s.ratings?.current > 0 || s.ratings?.desired > 0)
-  ) ? 'Calculating...' : formatNumber(averageGap);
+  // Use actual gap value
+  const displayAverageGap = formatNumber(averageGap);
 
   return (
     <div className="bg-encourager/5 p-4 rounded-lg border border-encourager/20">
@@ -94,7 +102,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
           <h3 className="text-lg font-medium mb-2">Key Insights</h3>
           <p className="text-sm text-slate-500 mb-3">Based on your 1-10 rating scale assessment</p>
           
-          {/* Debug output for troubleshooting */}
+          {/* Debug output */}
           <div className="bg-amber-50 p-2 mb-4 rounded text-xs">
             <p><strong>Debug Info:</strong> Raw Average Gap: {averageGap}</p>
             <p>Top Category Gap: {largestCategoryGaps[0]?.gap || 'N/A'}</p>

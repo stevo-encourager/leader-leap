@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { CircleGauge } from 'lucide-react';
@@ -12,6 +11,7 @@ import { useAssessment } from '@/hooks/useAssessment';
 import { getAssessmentById } from '@/services/assessmentService';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { toast } from '@/hooks/use-toast';
+import { Button } from '@/components/ui/button';
 
 const Results = () => {
   const navigate = useNavigate();

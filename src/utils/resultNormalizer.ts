@@ -5,7 +5,7 @@ import { Category, Skill } from './assessmentTypes';
  * Normalizes categories data to ensure consistent format for display
  */
 export const normalizeCategories = (categories: any[]): Category[] => {
-  console.log("NORMALIZER - Input categories data:", categories);
+  console.log("NORMALIZER - Input categories data:", JSON.stringify(categories).substring(0, 200) + "...");
   
   if (!categories) {
     console.error("NORMALIZER - Categories is undefined or null");
@@ -99,7 +99,7 @@ export const normalizeSkills = (skills: any[], categoryTitle: string): Skill[] =
 
   // Log first skill for debugging
   if (skills.length > 0) {
-    console.log(`NORMALIZER - First skill sample for ${categoryTitle}:`, skills[0]);
+    console.log(`NORMALIZER - First skill sample for ${categoryTitle}:`, JSON.stringify(skills[0]));
   }
   
   return skills.map((skill, index) => {
@@ -124,17 +124,19 @@ export const normalizeSkills = (skills: any[], categoryTitle: string): Skill[] =
     // Get original ratings directly - preserve original values
     if (skill.ratings) {
       if (typeof skill.ratings === 'object') {
-        // Get ratings directly as numbers
+        // Handle ratings properly, ensuring they're converted to numbers
+        // This is CRITICAL for the calculations to work correctly
         const currentRating = Number(skill.ratings.current);
         const desiredRating = Number(skill.ratings.desired);
         
         console.log(`NORMALIZER - Original ratings for ${normalizedSkill.name}: Current=${skill.ratings.current} (${typeof skill.ratings.current}), Desired=${skill.ratings.desired} (${typeof skill.ratings.desired})`);
+        console.log(`NORMALIZER - Converted ratings: Current=${currentRating}, Desired=${desiredRating}`);
         
-        // Preserve original values without any conversion if valid
+        // Preserve original values, ensuring they're numbers
         normalizedSkill.ratings.current = !isNaN(currentRating) ? currentRating : 0;
         normalizedSkill.ratings.desired = !isNaN(desiredRating) ? desiredRating : 0;
         
-        console.log(`NORMALIZER - Normalized ratings for ${normalizedSkill.name}: Current=${normalizedSkill.ratings.current}, Desired=${normalizedSkill.ratings.desired}, Gap=${Math.abs(normalizedSkill.ratings.desired - normalizedSkill.ratings.current)}`);
+        console.log(`NORMALIZER - Final ratings for ${normalizedSkill.name}: Current=${normalizedSkill.ratings.current}, Desired=${normalizedSkill.ratings.desired}, Gap=${Math.abs(normalizedSkill.ratings.desired - normalizedSkill.ratings.current)}`);
       } else {
         console.warn(`NORMALIZER - Invalid ratings object for skill ${normalizedSkill.name}:`, skill.ratings);
       }

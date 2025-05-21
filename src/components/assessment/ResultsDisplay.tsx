@@ -23,14 +23,20 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   isAuthenticated
 }) => {
   useEffect(() => {
-    console.log("RESULTS_DISPLAY - Categories received:", categories);
+    console.log("RESULTS_DISPLAY - INITIAL Categories received:", JSON.stringify(categories));
     
     // Debug category ratings
     if (categories && categories.length > 0) {
       console.log(`RESULTS_DISPLAY - First category: ${categories[0].title}`);
       if (categories[0].skills && categories[0].skills.length > 0) {
-        console.log(`RESULTS_DISPLAY - First skill: ${categories[0].skills[0].name}`);
-        console.log(`RESULTS_DISPLAY - First skill ratings:`, categories[0].skills[0].ratings);
+        const firstSkill = categories[0].skills[0];
+        console.log(`RESULTS_DISPLAY - First skill: ${firstSkill.name}`);
+        console.log(`RESULTS_DISPLAY - First skill ratings:`, firstSkill.ratings);
+        console.log(`RESULTS_DISPLAY - First skill ratings type:`, typeof firstSkill.ratings);
+        if (firstSkill.ratings) {
+          console.log(`RESULTS_DISPLAY - Current rating type: ${typeof firstSkill.ratings.current}`);
+          console.log(`RESULTS_DISPLAY - Desired rating type: ${typeof firstSkill.ratings.desired}`);
+        }
       }
     }
   }, [categories]);
@@ -46,9 +52,13 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   
   // Confirm data after normalization
   console.log("RESULTS_DISPLAY - Categories after normalization:", normalizedCategories.length);
+  console.log("RESULTS_DISPLAY - Full normalized categories:", JSON.stringify(normalizedCategories));
+  
   if (normalizedCategories.length > 0 && normalizedCategories[0].skills.length > 0) {
     console.log("RESULTS_DISPLAY - First normalized skill ratings:", 
       normalizedCategories[0].skills[0].ratings);
+    console.log("RESULTS_DISPLAY - First normalized skill ratings type:", 
+      typeof normalizedCategories[0].skills[0].ratings);
   }
 
   return (

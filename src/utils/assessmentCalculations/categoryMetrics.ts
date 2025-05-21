@@ -6,6 +6,7 @@ import { CategoryWithMetadata } from './types';
 export const getCategoriesWithMetadata = (categories: Category[]): CategoryWithMetadata[] => {
   try {
     console.log(`CATEGORY_METRICS - Processing ${categories?.length || 0} categories`);
+    console.log(`CATEGORY_METRICS - First category:`, categories[0]?.title);
     
     if (!categories || categories.length === 0) return [];
     
@@ -30,22 +31,28 @@ export const getCategoriesWithMetadata = (categories: Category[]): CategoryWithM
       // Log the first skill for debugging
       if (category.skills.length > 0) {
         const firstSkill = category.skills[0];
-        console.log(`CATEGORY_METRICS - First skill example: ${firstSkill.name}, Ratings:`, firstSkill.ratings);
+        console.log(`CATEGORY_METRICS - First skill example:`, JSON.stringify(firstSkill));
       }
       
       category.skills.forEach(skill => {
-        // Get actual rating values directly
-        const current = typeof skill.ratings?.current === 'number' ? skill.ratings.current : 0;
-        const desired = typeof skill.ratings?.desired === 'number' ? skill.ratings.desired : 0;
+        // Get actual rating values directly, ensuring they're numbers
+        const current = Number(skill.ratings?.current);
+        const desired = Number(skill.ratings?.desired);
         
-        // Only include skills with at least one rating
+        // Log every skill's ratings to find potential issues
+        console.log(`CATEGORY_METRICS - Skill ${skill.name} ratings:`, 
+                   `current=${skill.ratings?.current} (${typeof skill.ratings?.current})`, 
+                   `desired=${skill.ratings?.desired} (${typeof skill.ratings?.desired})`,
+                   `converted: current=${current}, desired=${desired}`);
+        
+        // Only include skills with valid ratings (at least one value is greater than 0)
         if (current > 0 || desired > 0) {
           console.log(`CATEGORY_METRICS - Valid skill: ${skill.name}, Current: ${current}, Desired: ${desired}`);
           totalCurrentRating += current;
           totalDesiredRating += desired;
           validSkillCount++;
         } else {
-          console.log(`CATEGORY_METRICS - Skipping skill with no ratings: ${skill.name}`);
+          console.log(`CATEGORY_METRICS - Skipping skill with no valid ratings: ${skill.name}`);
         }
       });
       
@@ -66,7 +73,7 @@ export const getCategoriesWithMetadata = (categories: Category[]): CategoryWithM
       // Calculate the gap as absolute difference
       const gap = parseFloat(Math.abs(avgDesired - avgCurrent).toFixed(2));
       
-      console.log(`CATEGORY_METRICS - Category ${category.title}: Avg Current: ${avgCurrent}, Avg Desired: ${avgDesired}, Gap: ${gap}`);
+      console.log(`CATEGORY_METRICS - Category ${category.title} results: Avg Current: ${avgCurrent}, Avg Desired: ${avgDesired}, Gap: ${gap}, Valid Skills: ${validSkillCount}`);
       
       return {
         id: category.id,
@@ -98,7 +105,17 @@ export const getLargestCategoryGaps = (categories: Category[], count: number = 3
       console.log(`CATEGORY_METRICS - Before sort: ${cat.title}, Gap: ${cat.gap}`);
     });
     
-    const sorted = [...categoriesWithMetadata].sort((a, b) => b.gap - a.gap);
+    // Filter out any categories with zero gap (happens when current and desired are equal)
+    const validCategories = categoriesWithMetadata.filter(cat => cat.gap > 0);
+    
+    console.log(`CATEGORY_METRICS - Valid categories with gaps > 0: ${validCategories.length}`);
+    
+    if (validCategories.length === 0) {
+      console.log(`CATEGORY_METRICS - No categories with gaps > 0 found`);
+      return categoriesWithMetadata.slice(0, count); // Return something anyway
+    }
+    
+    const sorted = [...validCategories].sort((a, b) => b.gap - a.gap);
     
     // Log top results
     console.log(`CATEGORY_METRICS - Top ${count} gaps after sorting:`);
@@ -122,7 +139,23 @@ export const getSmallestCategoryGaps = (categories: Category[], count: number = 
     // Filter out categories with zero gap to avoid showing meaningless results
     const nonZeroGapCategories = categoriesWithMetadata.filter(category => category.gap > 0);
     
+    // Log filtered categories
+    console.log(`CATEGORY_METRICS - Non-zero gap categories: ${nonZeroGapCategories.length}`);
+    nonZeroGapCategories.forEach(cat => {
+      console.log(`CATEGORY_METRICS - Non-zero: ${cat.title}, Gap: ${cat.gap}`);
+    });
+    
+    if (nonZeroGapCategories.length === 0) {
+      return categoriesWithMetadata.slice(0, count); // Return something anyway
+    }
+    
     const sorted = [...nonZeroGapCategories].sort((a, b) => a.gap - b.gap);
+    
+    // Log sorted result
+    console.log(`CATEGORY_METRICS - Smallest gaps sorted:`);
+    sorted.slice(0, count).forEach(cat => {
+      console.log(`CATEGORY_METRICS - ${cat.title}: Gap ${cat.gap}`);
+    });
     
     return sorted.slice(0, count);
   } catch (error) {

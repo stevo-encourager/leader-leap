@@ -5,6 +5,7 @@ import { Category } from '../assessmentTypes';
 export const calculateAverageGap = (categories: Category[]): number => {
   try {
     console.log("AVERAGES - Starting calculateAverageGap with", categories.length, "categories");
+    console.log("AVERAGES - First category sample:", categories[0]?.title);
     
     if (!categories || categories.length === 0) {
       console.warn("No categories provided to calculateAverageGap");
@@ -18,10 +19,7 @@ export const calculateAverageGap = (categories: Category[]): number => {
     categories.forEach((cat, idx) => {
       console.log(`AVERAGES - Category ${idx}: ${cat.title} with ${cat.skills?.length || 0} skills`);
       if (cat.skills && cat.skills.length > 0) {
-        cat.skills.forEach((skill, i) => {
-          console.log(`AVERAGES - Skill ${i} in ${cat.title}: ${skill.name}, Ratings:`, 
-                      JSON.stringify(skill.ratings));
-        });
+        console.log(`AVERAGES - First skill in ${cat.title}:`, JSON.stringify(cat.skills[0]));
       }
     });
     
@@ -33,19 +31,19 @@ export const calculateAverageGap = (categories: Category[]): number => {
       
       category.skills.forEach(skill => {
         // Get ratings directly, ensuring they're treated as numbers
-        const current = typeof skill.ratings?.current === 'number' ? skill.ratings.current : 0;
-        const desired = typeof skill.ratings?.desired === 'number' ? skill.ratings.desired : 0;
+        const current = Number(skill.ratings?.current);
+        const desired = Number(skill.ratings?.desired);
         
-        // Calculate gap only for skills with valid ratings
+        // Only calculate gap for skills with valid ratings (greater than 0)
         if (current > 0 || desired > 0) {
           const gap = Math.abs(desired - current);
           
-          console.log(`AVERAGES - Processing: ${skill.name}, Current: ${current}, Desired: ${desired}, Gap: ${gap}`);
+          console.log(`AVERAGES - Valid skill found: ${skill.name}, Current: ${current}, Desired: ${desired}, Gap: ${gap}`);
           
           totalSkillCount++;
           totalGapValue += gap;
         } else {
-          console.log(`AVERAGES - Skipping skill ${skill.name} with invalid ratings`);
+          console.log(`AVERAGES - Skipping skill ${skill.name} with invalid ratings: current=${current}, desired=${desired}`);
         }
       });
     });
@@ -57,7 +55,7 @@ export const calculateAverageGap = (categories: Category[]): number => {
     
     // Calculate the average gap
     const calculatedGap = parseFloat((totalGapValue / totalSkillCount).toFixed(2));
-    console.log(`AVERAGES - Final: Average gap ${calculatedGap} from ${totalSkillCount} skills with total gap value ${totalGapValue}`);
+    console.log(`AVERAGES - Final calculation: Average gap ${calculatedGap} from ${totalSkillCount} skills with total gap value ${totalGapValue}`);
     
     return calculatedGap;
   } catch (error) {

@@ -51,10 +51,26 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
     console.log("KEY_INSIGHTS - First category skills count:", categories[0].skills?.length || 0);
     if (categories[0]?.skills?.length > 0) {
       const firstSkill = categories[0].skills[0];
-      console.log("KEY_INSIGHTS - First skill sample:", firstSkill);
-      console.log("KEY_INSIGHTS - First skill ratings:", firstSkill.ratings);
+      console.log("KEY_INSIGHTS - First skill sample:", JSON.stringify(firstSkill));
+      console.log("KEY_INSIGHTS - First skill ratings:", JSON.stringify(firstSkill.ratings));
+      console.log("KEY_INSIGHTS - First skill ratings types - current:", typeof firstSkill.ratings.current, "desired:", typeof firstSkill.ratings.desired);
     }
   }
+  
+  // Generate raw data counts for debugging
+  const skillsWithRatings = categories.reduce((count, category) => {
+    if (!category.skills) return count;
+    return count + category.skills.filter(skill => 
+      (skill.ratings?.current > 0 || skill.ratings?.desired > 0)
+    ).length;
+  }, 0);
+  
+  const categoriesWithRatings = categories.filter(category => 
+    category.skills?.some(skill => skill.ratings?.current > 0 || skill.ratings?.desired > 0)
+  ).length;
+  
+  console.log(`KEY_INSIGHTS - Skills with ratings: ${skillsWithRatings}/${categories.reduce((acc, cat) => acc + (cat.skills?.length || 0), 0)}`);
+  console.log(`KEY_INSIGHTS - Categories with ratings: ${categoriesWithRatings}/${categories.length}`);
   
   const largestCategoryGaps = getLargestCategoryGaps(categories, 3);
   const smallestCategoryGaps = getSmallestCategoryGaps(categories, 3);
@@ -75,8 +91,10 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
         console.log(`KEY_INSIGHTS - Category: ${category.title}`);
         if (category.skills && category.skills.length > 0) {
           category.skills.forEach(skill => {
-            const gap = Math.abs((skill.ratings?.desired || 0) - (skill.ratings?.current || 0));
-            console.log(`KEY_INSIGHTS - Skill: ${skill.name}, Current: ${skill.ratings?.current}, Desired: ${skill.ratings?.desired}, Gap: ${gap}`);
+            const current = Number(skill.ratings?.current || 0);
+            const desired = Number(skill.ratings?.desired || 0);
+            const gap = Math.abs(desired - current);
+            console.log(`KEY_INSIGHTS - Skill: ${skill.name}, Current: ${current}, Desired: ${desired}, Gap: ${gap}`);
           });
         }
       });
@@ -102,12 +120,21 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
           <h3 className="text-lg font-medium mb-2">Key Insights</h3>
           <p className="text-sm text-slate-500 mb-3">Based on your 1-10 rating scale assessment</p>
           
-          {/* Debug output */}
-          <div className="bg-amber-50 p-2 mb-4 rounded text-xs">
+          {/* Enhanced debug output */}
+          <div className="bg-amber-50 p-3 mb-4 rounded text-xs">
             <p><strong>Debug Info:</strong> Raw Average Gap: {averageGap}</p>
             <p>Top Category Gap: {largestCategoryGaps[0]?.gap || 'N/A'}</p>
             <p>Skill count: {categories.reduce((acc, cat) => acc + (cat.skills?.length || 0), 0)}</p>
-            <p>Categories with data: {categories.filter(cat => cat.skills?.some(s => s.ratings?.current > 0 || s.ratings?.desired > 0)).length}/{categories.length}</p>
+            <p>Skills with ratings: {skillsWithRatings}</p>
+            <p>Categories with data: {categoriesWithRatings}/{categories.length}</p>
+            {categories.length > 0 && categories[0].skills?.length > 0 && (
+              <>
+                <p className="mt-1"><strong>First skill sample:</strong></p>
+                <p>Name: {categories[0].skills[0].name}</p>
+                <p>Current: {categories[0].skills[0].ratings?.current} ({typeof categories[0].skills[0].ratings?.current})</p>
+                <p>Desired: {categories[0].skills[0].ratings?.desired} ({typeof categories[0].skills[0].ratings?.desired})</p>
+              </>
+            )}
           </div>
           
           <InsightSummary averageGap={displayAverageGap} />

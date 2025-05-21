@@ -21,9 +21,18 @@ const PreviousAssessments = () => {
   const navigate = useNavigate();
   const [assessments, setAssessments] = useState<AssessmentRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    if (!user) {
+    // Wait for auth to initialize before checking user
+    if (user === undefined) {
+      return;
+    }
+    
+    setAuthChecked(true);
+    
+    // Only redirect if we've checked auth and there's no user
+    if (authChecked && user === null) {
       navigate('/login');
       return;
     }
@@ -31,12 +40,11 @@ const PreviousAssessments = () => {
     const fetchAssessments = async () => {
       setLoading(true);
       try {
-        console.log('Fetching assessment history for user:', user.id);
+        console.log('Fetching assessment history for user:', user?.id);
         const result = await getAssessmentHistory();
         console.log('Assessment history fetch result:', result);
         
         if (result.success && result.data) {
-          // Simply use the data directly as we've filtered it in the service layer
           setAssessments(result.data);
           console.log('Setting assessments:', result.data);
         } else {
@@ -55,15 +63,19 @@ const PreviousAssessments = () => {
           description: "An unexpected error occurred",
           variant: "destructive",
         });
+        setAssessments([]);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAssessments();
-  }, [user, navigate]);
+    if (user) {
+      fetchAssessments();
+    }
+  }, [user, navigate, authChecked]);
 
-  if (loading) {
+  // Show loading state while auth is initializing
+  if (!authChecked || loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">

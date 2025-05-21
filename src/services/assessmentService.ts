@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { Category, Demographics } from '../utils/assessmentData';
+import { Category, Demographics } from '../utils/assessmentTypes';
 import { Json } from '@/integrations/supabase/types';
 
 /**
@@ -38,7 +38,8 @@ export const saveAssessmentResults = async (categories: Category[], demographics
           demographics: demographics as unknown as Json,
           completed: true
         })
-        .eq('id', existingAssessments[0].id);
+        .eq('id', existingAssessments[0].id)
+        .select();
         
       if (error) {
         console.error('Error updating assessment results:', error);
@@ -56,7 +57,8 @@ export const saveAssessmentResults = async (categories: Category[], demographics
         demographics: demographics as unknown as Json,
         user_id: user.id,
         completed: true
-      });
+      })
+      .select();
 
     if (error) {
       console.error('Error saving assessment results:', error);
@@ -154,7 +156,6 @@ export const getAssessmentById = async (id: string) => {
       .from('assessment_results')
       .select('*')
       .eq('id', id)
-      .eq('completed', true)
       .single();
 
     if (error) {
@@ -162,6 +163,7 @@ export const getAssessmentById = async (id: string) => {
       return { success: false, error: error.message };
     }
 
+    console.log('Successfully retrieved assessment by ID:', assessment);
     return { success: true, data: assessment };
   } catch (error) {
     console.error('Error in getAssessmentById:', error);

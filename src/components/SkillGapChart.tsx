@@ -72,6 +72,34 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
     return <div className="text-center p-6">No data available for chart</div>;
   }
 
+  // Custom tooltip component to handle type safety
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length > 0) {
+      const subject = payload[0]?.payload?.subject || '';
+      
+      // Safely extract values
+      const current = typeof payload[0]?.value === 'number' ? payload[0].value : 0;
+      const desired = typeof payload[1]?.value === 'number' ? payload[1].value : 0;
+      const gap = Math.abs(desired - current);
+      
+      return (
+        <div className="bg-white p-3 rounded shadow-md border border-gray-200">
+          <p className="font-medium">{subject}</p>
+          <p className="text-sm text-gray-700">
+            Current: <span className="font-medium">{current.toFixed(2)}</span>
+          </p>
+          <p className="text-sm text-gray-700">
+            Desired: <span className="font-medium">{desired.toFixed(2)}</span>
+          </p>
+          <p className="text-sm text-gray-700">
+            Gap: <span className="font-medium">{gap.toFixed(2)}</span>
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="radar-chart-container w-full">
       <ResponsiveContainer width="100%" height={500}>
@@ -108,39 +136,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
             dot={{ stroke: '#8baca5', strokeWidth: 2, fill: '#fff', r: 3 }}
             isAnimationActive={true}
           />
-          <Tooltip 
-            content={(props) => {
-              if (props.active && props.payload && props.payload.length > 1) {
-                // Get the subject name
-                const subject = props.payload[0]?.payload?.subject || '';
-                
-                // Parse values as numbers for calculation safety
-                const currentValue = props.payload[0]?.value;
-                const desiredValue = props.payload[1]?.value;
-                
-                // Ensure values are numbers before calculation
-                const current = typeof currentValue === 'number' ? currentValue : 0;
-                const desired = typeof desiredValue === 'number' ? desiredValue : 0;
-                const gap = Math.abs(desired - current);
-                
-                return (
-                  <div className="bg-white p-3 rounded shadow-md border border-gray-200">
-                    <p className="font-medium">{subject}</p>
-                    <p className="text-sm text-gray-700">
-                      Current: <span className="font-medium">{current.toFixed(2)}</span>
-                    </p>
-                    <p className="text-sm text-gray-700">
-                      Desired: <span className="font-medium">{desired.toFixed(2)}</span>
-                    </p>
-                    <p className="text-sm text-gray-700">
-                      Gap: <span className="font-medium">{gap.toFixed(2)}</span>
-                    </p>
-                  </div>
-                );
-              }
-              return null;
-            }}
-          />
+          <Tooltip content={<CustomTooltip />} />
           <Legend 
             iconType="circle" 
             wrapperStyle={{ 

@@ -23,7 +23,7 @@ const CoachingSupport: React.FC = () => {
           href="https://www.encouragercoaching.com" 
           target="_blank" 
           rel="noopener noreferrer"
-          className="text-encourager hover:underline text-sm block mb-2 font-bold"
+          className="text-encourager hover:underline text-base block mb-3 font-bold"
         >
           www.encouragercoaching.com
         </a>
@@ -31,7 +31,7 @@ const CoachingSupport: React.FC = () => {
           href="https://calendar.app.google/PwZrr2JJXVi1Uwrq7" 
           target="_blank" 
           rel="noopener noreferrer"
-          className="text-encourager hover:underline text-sm hover:scale-105 transition-transform duration-700 inline-block"
+          className="text-encourager hover:underline text-base hover:scale-105 transition-transform duration-700 inline-block"
         >
           Book a free 30 minute discovery call
         </a>

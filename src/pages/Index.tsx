@@ -8,10 +8,8 @@ import Navigation from '@/components/layout/Navigation';
 import Footer from '@/components/layout/Footer';
 import IntroductionPage from '@/components/IntroductionPage';
 import { useAssessment } from '@/hooks/useAssessment';
-import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
-  const navigate = useNavigate();
   const {
     handleCategoriesUpdate,
     handleStartAssessment,
@@ -25,14 +23,6 @@ const Index = () => {
   useEffect(() => {
     handleCategoriesUpdate(initialCategories);
   }, []);
-
-  // Handle assessment start with direct navigation
-  const startAssessmentHandler = () => {
-    console.log("Start assessment handler triggered in Index.tsx");
-    handleStartAssessment();
-    console.log("Navigating to /assessment from Index.tsx");
-    navigate('/assessment');
-  };
 
   // Wait for auth to initialize before rendering
   if (loading) {
@@ -61,7 +51,7 @@ const Index = () => {
         
         <IntroductionPage 
           categories={initialCategories}
-          onStartAssessment={startAssessmentHandler}
+          onStartAssessment={handleStartAssessment}
         />
       </main>
 

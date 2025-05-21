@@ -16,7 +16,6 @@ export const useAssessment = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // When user logs in, check if they have previous results
     if (user && currentStep === 'results') {
       handleSaveResults();
     }
@@ -31,29 +30,32 @@ export const useAssessment = () => {
   };
 
   const handleStartAssessment = () => {
+    console.log("Setting state to demographics and navigating to assessment");
     setCurrentStep('demographics');
-    // Use replace to prevent going back to intro
-    navigate('/assessment', { replace: true });
+    navigate('/assessment');
   };
 
   const handleContinueToAssessment = () => {
+    console.log("Setting state to assessment");
     setCurrentStep('assessment');
   };
 
   const handleBackToIntro = () => {
+    console.log("Setting state to intro and navigating to home");
     setCurrentStep('intro');
-    navigate('/', { replace: true });
+    navigate('/');
   };
 
   const handleBackToDemographics = () => {
+    console.log("Setting state to demographics");
     setCurrentStep('demographics');
   };
 
   const handleCompleteAssessment = () => {
+    console.log("Setting state to results and navigating to results");
     setCurrentStep('results');
-    navigate('/results', { replace: true });
+    navigate('/results');
     
-    // If user is logged in, save results automatically
     if (user) {
       handleSaveResults();
     }
@@ -88,7 +90,6 @@ export const useAssessment = () => {
       const result = await getLatestAssessmentResults();
       
       if (result.success && result.data) {
-        // Convert the JSON data to the expected type
         const categoriesData = result.data.categories as unknown as Category[];
         const demographicsData = result.data.demographics as unknown as Demographics;
         

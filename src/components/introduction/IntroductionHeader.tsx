@@ -10,11 +10,11 @@ interface IntroductionHeaderProps {
 const IntroductionHeader: React.FC<IntroductionHeaderProps> = ({ onStartAssessment }) => {
   const navigate = useNavigate();
   
-  const handleClick = (e: React.MouseEvent) => {
-    // First set up state
+  const handleClick = () => {
+    // Call the handler first
     onStartAssessment();
     
-    // Then navigate 
+    // Then directly navigate to the assessment page
     navigate('/assessment');
   };
   

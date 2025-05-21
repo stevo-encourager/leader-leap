@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -44,7 +44,8 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
   };
 
   const handleNewAssessment = () => {
-    onRestart();
+    console.log("Starting new assessment from ResultsActions");
+    onRestart(); // This calls handleStartAssessment in the hook
     navigate('/');
   };
   

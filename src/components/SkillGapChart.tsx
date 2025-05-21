@@ -1,15 +1,15 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import { 
   ResponsiveContainer,
   RadarChart, 
   PolarGrid, 
   PolarAngleAxis, 
   Radar, 
-  Legend, 
   Tooltip
 } from 'recharts';
 import { Category } from '@/utils/assessmentTypes';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 
 interface SkillGapChartProps {
   categories: Category[];
@@ -23,97 +23,101 @@ interface ChartData {
 }
 
 const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
-  const [chartData, setChartData] = useState<ChartData[]>([]);
-
-  useEffect(() => {
-    console.log("SkillGapChart - Categories received:", categories);
+  // Memoize chart data processing for performance
+  const chartData = useMemo(() => {
+    if (!categories?.length) return [];
     
-    // Process the data for the chart
-    const preparedData: ChartData[] = categories
-      .filter(category => category && category.title && Array.isArray(category.skills))
+    return categories
+      .filter(category => category?.title && Array.isArray(category.skills) && category.skills.length > 0)
       .map(category => {
-        // Calculate average for each category
-        const skills = category.skills.filter(skill => skill && skill.ratings);
-        const validSkillCount = skills.length;
+        // Get valid skills with defined ratings
+        const validSkills = category.skills.filter(
+          skill => skill && typeof skill.ratings?.current === 'number' && typeof skill.ratings?.desired === 'number'
+        );
         
-        if (validSkillCount === 0) {
+        if (!validSkills.length) {
           return {
-            subject: category.title,
+            subject: category.title || 'Unknown',
             current: 0,
             desired: 0,
             fullMark: 10
           };
         }
         
-        const sumCurrent = skills.reduce((sum, skill) => {
-          const currentRating = typeof skill.ratings.current === 'number' 
-            ? skill.ratings.current 
-            : parseFloat(String(skill.ratings.current || '0'));
-          return sum + (isNaN(currentRating) ? 0 : currentRating);
-        }, 0);
-        
-        const sumDesired = skills.reduce((sum, skill) => {
-          const desiredRating = typeof skill.ratings.desired === 'number' 
-            ? skill.ratings.desired 
-            : parseFloat(String(skill.ratings.desired || '0'));
-          return sum + (isNaN(desiredRating) ? 0 : desiredRating);
-        }, 0);
-        
-        const categoryAvgCurrent = validSkillCount > 0 ? sumCurrent / validSkillCount : 0;
-        const categoryAvgDesired = validSkillCount > 0 ? sumDesired / validSkillCount : 0;
+        // Calculate averages more efficiently
+        const totalCurrent = validSkills.reduce((sum, skill) => sum + skill.ratings.current, 0);
+        const totalDesired = validSkills.reduce((sum, skill) => sum + skill.ratings.desired, 0);
         
         return {
           subject: category.title,
-          current: parseFloat(categoryAvgCurrent.toFixed(2)),
-          desired: parseFloat(categoryAvgDesired.toFixed(2)),
+          current: parseFloat((totalCurrent / validSkills.length).toFixed(1)),
+          desired: parseFloat((totalDesired / validSkills.length).toFixed(1)),
           fullMark: 10
         };
       });
-    
-    console.log("SkillGapChart - Prepared chart data:", preparedData);
-    setChartData(preparedData);
   }, [categories]);
 
   // Create a placeholder if no data is available
-  if (!categories || categories.length === 0) {
+  if (!chartData.length) {
     return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-gray-500">No assessment data available</p>
+      <div className="flex items-center justify-center h-full bg-slate-50 rounded-lg p-6">
+        <p className="text-gray-500 text-center">
+          No assessment data available for visualization
+        </p>
       </div>
     );
   }
 
-  // Always display the chart even if all values are zero
+  const chartConfig = {
+    current: { 
+      label: "Current Level",
+      theme: { light: '#2F564D', dark: '#3a6a5f' }
+    },
+    desired: { 
+      label: "Desired Level",
+      theme: { light: '#8baca5', dark: '#a3c6bf' }
+    }
+  };
+
   return (
-    <ResponsiveContainer width="100%" height="100%">
-      <RadarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 10 }}>
-        <PolarGrid />
+    <ChartContainer className="w-full h-full" config={chartConfig}>
+      <RadarChart 
+        data={chartData} 
+        margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
+      >
+        <PolarGrid strokeDasharray="3 3" />
         <PolarAngleAxis 
           dataKey="subject"
           tick={{ 
-            fill: '#333', 
-            fontSize: 12
+            fill: 'currentColor', 
+            fontSize: 12,
+            fontWeight: 500
           }}
         />
         <Radar
-          name="Current Level"
+          name="current"
           dataKey="current"
-          stroke="#2F564D"
-          fill="#2F564D"
+          stroke="var(--color-current, #2F564D)"
+          fill="var(--color-current, #2F564D)"
           fillOpacity={0.6}
         />
         <Radar
-          name="Desired Level"
+          name="desired"
           dataKey="desired"
-          stroke="#8baca5"
-          fill="#8baca5"
+          stroke="var(--color-desired, #8baca5)"
+          fill="var(--color-desired, #8baca5)"
           fillOpacity={0.6}
         />
-        <Tooltip />
-        <Legend />
+        <ChartTooltip 
+          content={<ChartTooltipContent />} 
+        />
+        <ChartLegend 
+          content={<ChartLegendContent />} 
+          verticalAlign="bottom" 
+        />
       </RadarChart>
-    </ResponsiveContainer>
+    </ChartContainer>
   );
 };
 
-export default SkillGapChart;
+export default React.memo(SkillGapChart);

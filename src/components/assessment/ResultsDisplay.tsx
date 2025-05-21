@@ -1,7 +1,7 @@
 
 import React, { useEffect } from 'react';
 import ResultsDashboard from '../ResultsDashboard';
-import { Category, Demographics } from '../../utils/assessmentTypes';
+import { Category, Demographics, Skill } from '../../utils/assessmentTypes';
 
 interface ResultsDisplayProps {
   categories: Category[];
@@ -33,7 +33,12 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
         
         if (category.skills) {
           category.skills.forEach((skill, j) => {
-            console.log(`Skill ${j}:`, skill.name, "Ratings:", skill.ratings ? "Yes" : "No");
+            // Check if the skill object has expected properties
+            if (!skill.name && (skill as any).competency) {
+              console.log(`Skill ${j} uses 'competency' instead of 'name':`, (skill as any).competency);
+            } else {
+              console.log(`Skill ${j}:`, skill.name, "Ratings:", skill.ratings ? "Yes" : "No");
+            }
           });
         }
       });
@@ -49,14 +54,33 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
     );
   }
 
+  // Map any skills with 'competency' instead of 'name' if needed
+  const normalizedCategories = categories.map(category => {
+    if (!category.skills || !Array.isArray(category.skills)) return category;
+    
+    const normalizedSkills = category.skills.map(skill => {
+      if (!skill.name && (skill as any).competency) {
+        // Create a new skill object with the correct property name
+        const normalizedSkill: Skill = {
+          ...skill,
+          name: (skill as any).competency,
+        };
+        return normalizedSkill;
+      }
+      return skill;
+    });
+    
+    return { ...category, skills: normalizedSkills };
+  });
+
   // Additional validation for skills and ratings
-  const hasValidSkills = categories.every(category => 
+  const hasValidSkills = normalizedCategories.every(category => 
     category.skills && 
     Array.isArray(category.skills) && 
     category.skills.length > 0
   );
 
-  const hasValidRatings = categories.every(category =>
+  const hasValidRatings = normalizedCategories.every(category =>
     category.skills && 
     category.skills.every(skill => 
       skill.ratings && 
@@ -77,7 +101,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
 
   return (
     <ResultsDashboard 
-      categories={categories}
+      categories={normalizedCategories}
       demographics={demographics || {}}
       onRestart={onRestart}
       onBack={onBack}

@@ -41,7 +41,17 @@ const PreviousAssessments = () => {
         console.log('Assessment history fetch result:', result);
         
         if (result.success && result.data) {
-          setAssessments(result.data);
+          // Filter out duplicates by creating a Map with assessment IDs as keys
+          const uniqueAssessments = new Map();
+          result.data.forEach(assessment => {
+            uniqueAssessments.set(assessment.id, assessment);
+          });
+          
+          // Convert Map values back to array
+          const uniqueAssessmentsArray = Array.from(uniqueAssessments.values());
+          console.log('Unique assessments:', uniqueAssessmentsArray.length);
+          
+          setAssessments(uniqueAssessmentsArray);
         } else {
           console.error('Failed to fetch assessment history:', result.error);
           toast({

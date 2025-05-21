@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
@@ -41,18 +40,12 @@ const PreviousAssessments = () => {
       console.log('Assessment history fetch result:', result);
       
       if (result.success && result.data) {
-        // Make absolutely sure we have unique entries by ID
-        const uniqueIds = new Set();
-        const uniqueAssessments = result.data.filter(assessment => {
-          // Only include each ID once
-          if (!uniqueIds.has(assessment.id)) {
-            uniqueIds.add(assessment.id);
-            return true;
-          }
-          return false;
-        });
+        // Additional deduplication check to ensure no duplicates
+        const uniqueAssessments = Array.from(
+          new Map(result.data.map(item => [item.id, item])).values()
+        );
         
-        console.log('Unique assessments (final check):', uniqueAssessments.length);
+        console.log('Final deduplicated assessments:', uniqueAssessments);
         setAssessments(uniqueAssessments);
       } else {
         console.error('Failed to fetch assessment history:', result.error);

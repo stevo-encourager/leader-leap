@@ -46,7 +46,16 @@ const Results = () => {
     ? specificAssessmentData.demographics 
     : demographics;
 
-  console.log("Rendering Results with categories:", displayCategories);
+  console.log("Results page - Display categories:", displayCategories);
+  console.log("Results page - Categories data type:", Array.isArray(displayCategories) ? "Array" : typeof displayCategories);
+  
+  if (displayCategories && Array.isArray(displayCategories)) {
+    console.log("Results page - Number of categories:", displayCategories.length);
+    displayCategories.forEach((cat, i) => {
+      console.log(`Results page - Category ${i} (${cat.title}):`, cat);
+      console.log(`Results page - Category ${i} has ${cat.skills?.length || 0} skills`);
+    });
+  }
 
   // Check if we have valid categories data to display
   const hasValidCategories = displayCategories && 

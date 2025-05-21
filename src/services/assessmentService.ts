@@ -155,17 +155,17 @@ export const getAssessmentHistory = async () => {
     // Log the raw data for debugging
     console.log('Raw assessment history:', assessments);
 
-    // Deduplicate by ID using a Map (preserves insertion order)
-    const uniqueAssessmentsMap = new Map();
-    assessments.forEach(assessment => {
-      if (!uniqueAssessmentsMap.has(assessment.id)) {
-        uniqueAssessmentsMap.set(assessment.id, assessment);
+    // Use Set to track unique IDs to ensure we don't have duplicates
+    const uniqueIds = new Set<string>();
+    const uniqueAssessments = assessments.filter(assessment => {
+      if (uniqueIds.has(assessment.id)) {
+        return false;
       }
+      uniqueIds.add(assessment.id);
+      return true;
     });
     
-    const uniqueAssessments = Array.from(uniqueAssessmentsMap.values());
-    console.log('Deduplicated assessments count:', uniqueAssessments.length);
-
+    console.log('Deduplicated assessments:', uniqueAssessments);
     return { success: true, data: uniqueAssessments };
   } catch (error) {
     console.error('Error in getAssessmentHistory:', error);

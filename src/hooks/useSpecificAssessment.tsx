@@ -4,6 +4,7 @@ import { getAssessmentById } from '@/services/assessmentService';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { normalizeCategories } from '@/utils/resultNormalizer';
 
 interface UseSpecificAssessmentReturn {
   loadingSpecificAssessment: boolean;
@@ -39,19 +40,9 @@ export const useSpecificAssessment = (assessmentId: string | undefined): UseSpec
           if (categoriesData && Array.isArray(categoriesData)) {
             console.log("Successfully loaded assessment data with categories:", categoriesData);
             
-            // Normalize categories to ensure all skills have proper ratings
-            const normalizedCategories = categoriesData.map(category => ({
-              ...category,
-              skills: (category.skills || []).map(skill => ({
-                ...skill,
-                id: skill.id || `skill-${Math.random().toString(36).substring(2, 9)}`,
-                name: skill.name || (skill as any).competency || 'Unnamed Skill',
-                ratings: {
-                  current: typeof skill.ratings?.current === 'number' ? skill.ratings.current : 0,
-                  desired: typeof skill.ratings?.desired === 'number' ? skill.ratings.desired : 0
-                }
-              }))
-            }));
+            // Use the normalizeCategories utility to process the data properly
+            const normalizedCategories = normalizeCategories(categoriesData);
+            console.log("Normalized categories:", normalizedCategories);
             
             setSpecificAssessmentData({
               categories: normalizedCategories,
@@ -64,6 +55,7 @@ export const useSpecificAssessment = (assessmentId: string | undefined): UseSpec
               description: "The assessment data format is invalid",
               variant: "destructive",
             });
+            navigate('/previous-assessments');
           }
         } else {
           console.error("Failed to fetch assessment:", result.error);

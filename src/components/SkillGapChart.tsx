@@ -5,8 +5,7 @@ import {
   RadarChart, 
   PolarGrid, 
   PolarAngleAxis, 
-  Radar, 
-  Tooltip
+  Radar
 } from 'recharts';
 import { Category } from '@/utils/assessmentTypes';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
@@ -23,17 +22,25 @@ interface ChartData {
 }
 
 const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
+  // Add console logs to debug the incoming data
+  console.log("SkillGapChart - received categories:", categories);
+  
   // Memoize chart data processing for performance
   const chartData = useMemo(() => {
-    if (!categories?.length) return [];
+    if (!categories?.length) {
+      console.log("SkillGapChart - No categories data available");
+      return [];
+    }
     
-    return categories
+    const processedData = categories
       .filter(category => category?.title && Array.isArray(category.skills) && category.skills.length > 0)
       .map(category => {
         // Get valid skills with defined ratings
         const validSkills = category.skills.filter(
           skill => skill && typeof skill.ratings?.current === 'number' && typeof skill.ratings?.desired === 'number'
         );
+        
+        console.log(`SkillGapChart - Processing category ${category.title}, valid skills:`, validSkills.length);
         
         if (!validSkills.length) {
           return {
@@ -55,10 +62,14 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
           fullMark: 10
         };
       });
+      
+    console.log("SkillGapChart - Processed chart data:", processedData);
+    return processedData;
   }, [categories]);
 
   // Create a placeholder if no data is available
   if (!chartData.length) {
+    console.log("SkillGapChart - No chart data available, showing placeholder");
     return (
       <div className="flex items-center justify-center h-full bg-slate-50 rounded-lg p-6">
         <p className="text-gray-500 text-center">
@@ -79,11 +90,14 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
     }
   };
 
+  console.log("SkillGapChart - Rendering chart with data:", chartData);
+
   return (
     <ChartContainer className="w-full h-full" config={chartConfig}>
       <RadarChart 
         data={chartData} 
         margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
+        style={{overflow: 'visible'}}
       >
         <PolarGrid strokeDasharray="3 3" />
         <PolarAngleAxis 

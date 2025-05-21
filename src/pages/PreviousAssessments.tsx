@@ -17,36 +17,31 @@ interface AssessmentRecord {
 }
 
 const PreviousAssessments = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [assessments, setAssessments] = useState<AssessmentRecord[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [authChecked, setAuthChecked] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Wait for auth to initialize before checking user
-    if (user === undefined) {
-      return;
+    // Check if user is authenticated
+    if (loading) {
+      return; // Wait for auth to initialize
     }
     
-    setAuthChecked(true);
-    
-    // Only redirect if we've checked auth and there's no user
-    if (authChecked && user === null) {
+    if (!user) {
       navigate('/login');
       return;
     }
 
+    // Fetch assessment history if user is authenticated
     const fetchAssessments = async () => {
-      setLoading(true);
+      setIsLoading(true);
       try {
-        console.log('Fetching assessment history for user:', user?.id);
         const result = await getAssessmentHistory();
         console.log('Assessment history fetch result:', result);
         
         if (result.success && result.data) {
           setAssessments(result.data);
-          console.log('Setting assessments:', result.data);
         } else {
           console.error('Failed to fetch assessment history:', result.error);
           toast({
@@ -65,17 +60,15 @@ const PreviousAssessments = () => {
         });
         setAssessments([]);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
-    if (user) {
-      fetchAssessments();
-    }
-  }, [user, navigate, authChecked]);
+    fetchAssessments();
+  }, [user, navigate, loading]);
 
-  // Show loading state while auth is initializing
-  if (!authChecked || loading) {
+  // Show loading state while auth is initializing or fetching data
+  if (loading || isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
@@ -104,7 +97,7 @@ const PreviousAssessments = () => {
         {assessments.length === 0 ? (
           <Card className="p-6 text-center">
             <p className="mb-4 text-slate-600">You haven't completed any assessments yet.</p>
-            <Link to="/">
+            <Link to="/assessment">
               <Button className="bg-encourager hover:bg-encourager-light">
                 Start an Assessment
               </Button>

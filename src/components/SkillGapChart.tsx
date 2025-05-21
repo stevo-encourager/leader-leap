@@ -43,7 +43,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
           return false;
         }
         
-        if (!category.skills || !Array.isArray(category.skills) || category.skills.length === 0) {
+        if (!category.skills || !Array.isArray(category.skills)) {
           console.warn(`Category ${category.title} has no skills array or it's not an array`);
           return false;
         }
@@ -86,6 +86,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
           }
         });
         
+        // If no valid skills found, use zeros
         const categoryAvgCurrent = validSkillCount > 0 ? sumCurrent / validSkillCount : 0;
         const categoryAvgDesired = validSkillCount > 0 ? sumDesired / validSkillCount : 0;
         
@@ -103,17 +104,16 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
     setChartData(preparedData);
   }, [categories]);
 
-  // Handle empty data cases
+  // Create a placeholder if no data is available
   if (!categories || categories.length === 0) {
-    return <div className="text-center p-6">No assessment data available</div>;
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p className="text-gray-500">No assessment data available</p>
+      </div>
+    );
   }
 
-  if (chartData.length === 0) {
-    return <div className="text-center p-6">Processing chart data...</div>;
-  }
-  
-  // Always display the chart if we have any data
-  // Remove the hasValidData check that was preventing display when all values were zeros
+  // Always display the chart even if all values are zero
   return (
     <ResponsiveContainer width="100%" height="100%">
       <RadarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 10 }}>

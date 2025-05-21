@@ -17,6 +17,21 @@ export const saveAssessmentResults = async (categories: Category[], demographics
     if (!user) {
       return { success: false, error: 'User not authenticated' };
     }
+
+    console.log('Saving assessment with categories:', categories);
+    
+    // Check if the categories have valid ratings before saving
+    const hasValidRatings = categories.some(category => 
+      category.skills && category.skills.some(skill => 
+        skill.ratings && typeof skill.ratings.current === 'number' && 
+        typeof skill.ratings.desired === 'number'
+      )
+    );
+    
+    if (!hasValidRatings) {
+      console.error('Cannot save assessment: No valid ratings found in categories');
+      return { success: false, error: 'No valid ratings found in assessment data' };
+    }
     
     // Check if the user already has a pending assessment
     const { data: existingAssessments, error: checkError } = await supabase
@@ -66,6 +81,7 @@ export const saveAssessmentResults = async (categories: Category[], demographics
       return { success: false, error: error.message };
     }
 
+    console.log('Successfully saved assessment results:', data);
     return { success: true, data };
   } catch (error) {
     console.error('Error in saveAssessmentResults:', error);
@@ -123,7 +139,7 @@ export const getAssessmentHistory = async () => {
       return { success: false, error: 'User not authenticated' };
     }
     
-    // Only get completed assessments with distinct IDs
+    // Only get completed assessments with distinct created_at timestamps
     const { data: assessments, error } = await supabase
       .from('assessment_results')
       .select('id, created_at')
@@ -139,7 +155,7 @@ export const getAssessmentHistory = async () => {
     // Log the raw data for debugging
     console.log('Raw assessment history:', assessments);
 
-    // Deduplicate by ID here in the service layer
+    // Deduplicate by ID using a Map (preserves insertion order)
     const uniqueAssessmentsMap = new Map();
     assessments.forEach(assessment => {
       if (!uniqueAssessmentsMap.has(assessment.id)) {
@@ -173,6 +189,23 @@ export const getAssessmentById = async (id: string) => {
     if (error) {
       console.error('Error fetching assessment by ID:', error);
       return { success: false, error: error.message };
+    }
+
+    // Fix any potential issues with the data format
+    if (assessment && assessment.categories) {
+      // Ensure all categories have properly formatted skills and ratings
+      const fixedCategories = (assessment.categories as unknown as Category[]).map(category => ({
+        ...category,
+        skills: (category.skills || []).map(skill => ({
+          ...skill,
+          ratings: {
+            current: typeof skill.ratings?.current === 'number' ? skill.ratings.current : 0,
+            desired: typeof skill.ratings?.desired === 'number' ? skill.ratings.desired : 0
+          }
+        }))
+      }));
+      
+      assessment.categories = fixedCategories as unknown as Json;
     }
 
     console.log('Successfully retrieved assessment by ID:', assessment);

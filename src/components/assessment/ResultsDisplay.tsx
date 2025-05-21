@@ -22,60 +22,16 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
 }) => {
   useEffect(() => {
     console.log("ResultsDisplay - Categories received:", categories);
-    
-    // Validate categories data
-    if (!categories || !Array.isArray(categories)) {
-      console.error("Invalid categories data:", categories);
-    } else {
-      console.log("Categories count:", categories.length);
-      categories.forEach((category, i) => {
-        if (!category) {
-          console.error(`Category at index ${i} is undefined or null`);
-          return;
-        }
-        
-        console.log(`Category ${i}: ${category.title}, Skills: ${category.skills?.length || 0}`);
-        
-        if (!category.skills || !Array.isArray(category.skills)) {
-          console.warn(`Category ${category.title} has no skills array or it's not an array`);
-          return;
-        }
-        
-        if (category.skills.length === 0) {
-          console.warn(`Category ${category.title} has 0 skills`);
-          return;
-        }
-        
-        category.skills.forEach((skill, j) => {
-          if (!skill) {
-            console.error(`Skill at index ${j} in category ${category.title} is undefined or null`);
-            return;
-          }
-          
-          // Verify ratings exist and are numbers
-          const current = skill.ratings?.current;
-          const desired = skill.ratings?.desired;
-          const skillName = skill.name || (skill as any).competency || 'Unknown';
-          console.log(`Skill ${j}: ${skillName}, ` + 
-                     `Ratings: ${skill.ratings ? `current=${current}, desired=${desired}` : "Missing"}`);
-          
-          if (!skill.ratings) {
-            console.error(`Missing ratings for skill:`, skill);
-          } else if (isNaN(Number(current)) || isNaN(Number(desired))) {
-            console.error(`Invalid ratings for skill:`, skill);
-          }
-        });
-      });
-    }
   }, [categories]);
 
   // Check if categories is valid before rendering
   if (!categories || !Array.isArray(categories) || categories.length === 0) {
     return (
-      <div className="p-6 text-center">
+      <div className="p-6 text-center border border-red-200 rounded-lg bg-red-50">
         <p className="text-lg text-red-500 mb-4">Unable to display results: Invalid assessment data</p>
+        <p className="text-sm text-gray-600 mb-4">This may be due to incomplete assessment data or a problem during the assessment process.</p>
         <button 
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+          className="bg-encourager hover:bg-encourager-light text-white px-4 py-2 rounded"
           onClick={onRestart}
         >
           Start New Assessment
@@ -154,8 +110,6 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
     
     return { ...category, skills: normalizedSkills };
   });
-
-  console.log("ResultsDisplay - Normalized categories:", normalizedCategories);
 
   return (
     <ResultsDashboard 

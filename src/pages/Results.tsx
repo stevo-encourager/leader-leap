@@ -39,7 +39,6 @@ const Results = () => {
   useEffect(() => {
     console.log("Results page - assessment ID:", assessmentId);
     console.log("Results page - current categories from context:", categories);
-    console.log("Results page - current step:", currentStep);
     
     // If there's an assessment ID in the URL, fetch that specific assessment
     if (assessmentId) {
@@ -52,11 +51,27 @@ const Results = () => {
           if (result.success && result.data) {
             // Extract categories and demographics from the result
             const { categories, demographics } = result.data;
-            console.log("Loaded specific assessment categories:", categories);
             
+            // Ensure categories is an array
             if (categories && Array.isArray(categories)) {
+              console.log("Successfully loaded assessment data with categories:", categories);
+              
+              // Normalize categories to ensure all skills have proper ratings
+              const normalizedCategories = categories.map(category => ({
+                ...category,
+                skills: (category.skills || []).map(skill => ({
+                  ...skill,
+                  id: skill.id || `skill-${Math.random().toString(36).substring(2, 9)}`,
+                  name: skill.name || (skill as any).competency || 'Unnamed Skill',
+                  ratings: {
+                    current: typeof skill.ratings?.current === 'number' ? skill.ratings.current : 0,
+                    desired: typeof skill.ratings?.desired === 'number' ? skill.ratings.desired : 0
+                  }
+                }))
+              }));
+              
               setSpecificAssessmentData({
-                categories: categories as unknown as Category[],
+                categories: normalizedCategories as unknown as Category[],
                 demographics: demographics as unknown as Demographics || {}
               });
             } else {
@@ -90,25 +105,7 @@ const Results = () => {
       
       fetchSpecificAssessment();
     }
-    // Check current assessment data if no assessmentId - debugging info
-    else if (categories) {
-      console.log("Current assessment data check - number of categories:", categories.length);
-      if (categories.length > 0) {
-        console.log("First category:", categories[0].title);
-        console.log("Skills in first category:", categories[0].skills?.length || 0);
-        
-        // Check if there are any skills with ratings
-        const skillsWithRatings = categories.flatMap(cat => 
-          (cat.skills || []).filter(skill => skill.ratings?.current !== undefined)
-        );
-        
-        console.log("Number of skills with ratings:", skillsWithRatings.length);
-        if (skillsWithRatings.length > 0) {
-          console.log("Sample skill with ratings:", skillsWithRatings[0]);
-        }
-      }
-    }
-  }, [assessmentId, navigate, categories, currentStep]);
+  }, [assessmentId, navigate, categories]);
 
   // Wait for auth and data to initialize before rendering
   if (loading || loadingSpecificAssessment) {
@@ -132,13 +129,6 @@ const Results = () => {
     : demographics;
 
   console.log("Rendering Results with categories:", displayCategories);
-  // Debug log to see if we have any categories with skills
-  if (displayCategories && displayCategories.length > 0) {
-    console.log("First category skills count:", displayCategories[0].skills?.length || 0);
-    if (displayCategories[0].skills?.length > 0) {
-      console.log("Sample skill from first category:", displayCategories[0].skills[0]);
-    }
-  }
 
   // Check if we have valid categories data to display
   const hasValidCategories = displayCategories && 

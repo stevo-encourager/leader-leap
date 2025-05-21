@@ -27,30 +27,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
       largestGaps,
       categoriesCount: categories?.length || 0 
     });
-    
-    // Validate the skill data we've received
-    if (lowestSkills?.length) {
-      console.log("First lowest skill:", lowestSkills[0]);
-    }
-    if (largestGaps?.length) {
-      console.log("First largest gap skill:", largestGaps[0]);
-    }
   }, [averageGap, strengths, lowestSkills, largestGaps, categories]);
-
-  // If we don't have valid categories data, show a placeholder
-  if (!categories || !Array.isArray(categories) || categories.length === 0) {
-    return (
-      <div className="bg-encourager/5 p-4 rounded-lg border border-encourager/20">
-        <div className="flex items-start gap-3">
-          <BookOpen className="text-encourager h-5 w-5 mt-1" />
-          <div>
-            <h3 className="text-lg font-medium mb-2">Key Insights</h3>
-            <p className="text-sm">No assessment data available. Please complete an assessment to see insights.</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="bg-encourager/5 p-4 rounded-lg border border-encourager/20">
@@ -83,9 +60,11 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
                 </div>
               ))
             ) : (
-              <p className="text-sm text-slate-500">
-                All skills have the same rating. Try adjusting your assessment to better identify areas for improvement.
-              </p>
+              <div className="bg-secondary/10 p-3 rounded-lg">
+                <p className="text-sm text-slate-500">
+                  No significant differences in skill ratings found. Try adjusting your assessment to better identify areas for improvement.
+                </p>
+              </div>
             )}
           </div>
           
@@ -106,9 +85,11 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
                 </div>
               ))
             ) : (
-              <p className="text-sm text-slate-500">
-                No significant gaps found. Try setting different current and desired levels to identify areas with larger gaps.
-              </p>
+              <div className="bg-secondary/10 p-3 rounded-lg">
+                <p className="text-sm text-slate-500">
+                  No significant gaps found between current and desired skill levels. Try setting different values to identify areas with larger gaps.
+                </p>
+              </div>
             )}
           </div>
         </div>

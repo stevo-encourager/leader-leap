@@ -32,11 +32,9 @@ const normalizeSkill = (skill: any, categoryTitle: string): SkillWithMetadata | 
         : parseFloat(String(skill.ratings.desired || '0'));
     }
     
-    // Skip invalid ratings
-    if (isNaN(current) || isNaN(desired)) {
-      console.warn(`Invalid ratings for skill: ${skillName}`, skill);
-      return null;
-    }
+    // Accept zero as a valid rating value
+    if (isNaN(current)) current = 0;
+    if (isNaN(desired)) desired = 0;
     
     const gap = parseFloat(Math.abs(desired - current).toFixed(2));
     
@@ -91,25 +89,18 @@ export const getAllSkillsWithMetadata = (categories: Category[]): SkillWithMetad
     const result: SkillWithMetadata[] = [];
     
     categories.forEach(category => {
-      console.log(`Processing category: ${category.title}, skills:`, category.skills);
-      
       if (!category.skills || !Array.isArray(category.skills)) {
-        console.warn(`Category ${category.title} has no skills or skills is not an array`);
         return;
       }
       
       category.skills.forEach(skill => {
-        console.log(`Processing skill in ${category.title}:`, skill);
         const normalizedSkill = normalizeSkill(skill, category.title);
         if (normalizedSkill) {
           result.push(normalizedSkill);
-        } else {
-          console.warn(`Failed to normalize skill in ${category.title}:`, skill);
         }
       });
     });
     
-    console.log(`getAllSkillsWithMetadata result:`, result);
     return result;
   } catch (error) {
     console.error("Error in getAllSkillsWithMetadata:", error);

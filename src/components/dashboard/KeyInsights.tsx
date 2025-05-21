@@ -28,24 +28,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
             </p>
           </div>
           
-          <h4 className="text-md font-medium mt-3 mb-2">Your Smallest Competency Gaps <span className="font-normal">(areas that need least improvement)</span></h4>
-          <div className="space-y-3 mb-4">
-            {strengths.map((strength) => (
-              <div key={`strength-${strength.id}`} className="bg-secondary/10 p-3 rounded-lg">
-                <div className="flex justify-between">
-                  <div>
-                    <p className="font-medium">{strength.name}</p>
-                    <p className="text-sm text-slate-500">{strength.categoryTitle}</p>
-                  </div>
-                  <div className="bg-green-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
-                    Gap: {strength.gap.toFixed(2)}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          <h4 className="text-md font-medium mt-4 mb-2">Your Biggest Competency Gaps <span className="font-normal">(categories that need the greatest improvement)</span></h4>
+          <h4 className="text-md font-medium mt-4 mb-2">Your Largest Competency Gaps <span className="font-normal">(categories that need the greatest improvement)</span></h4>
           <div className="space-y-3 mb-4">
             {lowestSkills.map((skill) => (
               <div key={`lowest-${skill.id}`} className="bg-secondary/10 p-3 rounded-lg">
@@ -62,7 +45,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
             ))}
           </div>
           
-          <h4 className="text-md font-medium mt-4 mb-2">Your Biggest Skills Gaps <span className="font-normal">(individual skills that need the greatest improvement)</span></h4>
+          <h4 className="text-md font-medium mt-4 mb-2">Your Largest Skills Gaps <span className="font-normal">(individual skills that need the greatest improvement)</span></h4>
           <div className="space-y-3 mb-4">
             {lowestSkills.map((skill) => (
               <div key={`skill-gap-${skill.id}`} className="bg-secondary/10 p-3 rounded-lg">

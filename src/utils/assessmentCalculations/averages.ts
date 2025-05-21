@@ -18,10 +18,11 @@ export const calculateAverageGap = (categories: Category[]): number => {
       // Skip skills without valid ratings
       if (!skill.ratings) continue;
       
-      const current = Number(skill.ratings.current);
-      const desired = Number(skill.ratings.desired);
+      // Convert ratings to numbers and ensure they're valid
+      const current = Number(skill.ratings.current) || 0;
+      const desired = Number(skill.ratings.desired) || 0;
       
-      // Only count skills where both ratings have valid values (greater than 0)
+      // Only count skills where at least one rating has a value
       if (current > 0 || desired > 0) {
         const gap = Math.abs(desired - current);
         totalGapValue += gap;

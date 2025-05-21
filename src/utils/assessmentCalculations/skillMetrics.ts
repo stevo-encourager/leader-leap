@@ -6,9 +6,16 @@ import { getAllSkillsWithMetadata } from './normalizers';
 // Get top strengths (highest current rating)
 export const getTopStrengths = (categories: Category[], count: number = 3): SkillWithMetadata[] => {
   const allSkills = getAllSkillsWithMetadata(categories);
-  if (allSkills.length === 0) return [];
+  if (!allSkills || allSkills.length === 0) return [];
   
-  return [...allSkills]
+  // Filter out any invalid skills first
+  const validSkills = allSkills.filter(skill => 
+    skill && typeof skill.ratings?.current === 'number' && skill.ratings.current > 0
+  );
+  
+  if (validSkills.length === 0) return [];
+  
+  return [...validSkills]
     .sort((a, b) => b.ratings.current - a.ratings.current)
     .slice(0, count);
 };
@@ -16,10 +23,14 @@ export const getTopStrengths = (categories: Category[], count: number = 3): Skil
 // Get lowest skills (lowest current rating)
 export const getLowestSkills = (categories: Category[], count: number = 3): SkillWithMetadata[] => {
   const allSkills = getAllSkillsWithMetadata(categories);
-  if (allSkills.length === 0) return [];
+  if (!allSkills || allSkills.length === 0) return [];
   
   // Only include skills with non-zero current ratings
-  const nonZeroSkills = allSkills.filter(skill => skill.ratings.current > 0);
+  const nonZeroSkills = allSkills.filter(skill => 
+    skill && typeof skill.ratings?.current === 'number' && skill.ratings.current > 0
+  );
+  
+  if (nonZeroSkills.length === 0) return [];
   
   return [...nonZeroSkills]
     .sort((a, b) => a.ratings.current - b.ratings.current)
@@ -29,10 +40,16 @@ export const getLowestSkills = (categories: Category[], count: number = 3): Skil
 // Get skills with largest gaps
 export const getLargestGaps = (categories: Category[], count: number = 3): SkillWithMetadata[] => {
   const allSkills = getAllSkillsWithMetadata(categories);
-  if (allSkills.length === 0) return [];
+  if (!allSkills || allSkills.length === 0) return [];
   
-  return [...allSkills]
-    .filter(skill => skill.gap > 0)
+  // Only include skills with actual gaps
+  const validSkills = allSkills.filter(skill => 
+    skill && typeof skill.gap === 'number' && skill.gap > 0
+  );
+  
+  if (validSkills.length === 0) return [];
+  
+  return [...validSkills]
     .sort((a, b) => b.gap - a.gap)
     .slice(0, count);
 };
@@ -40,10 +57,14 @@ export const getLargestGaps = (categories: Category[], count: number = 3): Skill
 // Get skills with smallest gaps
 export const getSmallestGaps = (categories: Category[], count: number = 3): SkillWithMetadata[] => {
   const allSkills = getAllSkillsWithMetadata(categories);
-  if (allSkills.length === 0) return [];
+  if (!allSkills || allSkills.length === 0) return [];
   
   // Filter out skills with zero gap
-  const nonZeroGapSkills = allSkills.filter(skill => skill.gap > 0);
+  const nonZeroGapSkills = allSkills.filter(skill => 
+    skill && typeof skill.gap === 'number' && skill.gap > 0
+  );
+  
+  if (nonZeroGapSkills.length === 0) return [];
   
   return [...nonZeroGapSkills]
     .sort((a, b) => a.gap - b.gap)
@@ -53,11 +74,20 @@ export const getSmallestGaps = (categories: Category[], count: number = 3): Skil
 // Get skills to improve (highest desired rating with a gap)
 export const getSkillsToImprove = (categories: Category[], count: number = 3): SkillWithMetadata[] => {
   const allSkills = getAllSkillsWithMetadata(categories);
-  if (allSkills.length === 0) return [];
+  if (!allSkills || allSkills.length === 0) return [];
   
   // Focus on skills with meaningful gaps
-  return [...allSkills]
-    .filter(skill => skill.gap > 0)
+  const validSkills = allSkills.filter(skill => 
+    skill && 
+    typeof skill.gap === 'number' && 
+    skill.gap > 0 && 
+    typeof skill.ratings?.desired === 'number' && 
+    skill.ratings.desired > 0
+  );
+  
+  if (validSkills.length === 0) return [];
+  
+  return [...validSkills]
     .sort((a, b) => b.ratings.desired - a.ratings.desired)
     .slice(0, count);
 };
@@ -65,11 +95,18 @@ export const getSkillsToImprove = (categories: Category[], count: number = 3): S
 // Get skills meeting expectations (smallest gap)
 export const getSkillsMeetingExpectations = (categories: Category[], count: number = 3): SkillWithMetadata[] => {
   const allSkills = getAllSkillsWithMetadata(categories);
-  if (allSkills.length === 0) return [];
+  if (!allSkills || allSkills.length === 0) return [];
   
   // Sort by gap (smallest to largest) among skills with positive current ratings
-  return [...allSkills]
-    .filter(skill => skill.ratings.current > 0)
+  const validSkills = allSkills.filter(skill => 
+    skill && 
+    typeof skill.ratings?.current === 'number' && 
+    skill.ratings.current > 0
+  );
+  
+  if (validSkills.length === 0) return [];
+  
+  return [...validSkills]
     .sort((a, b) => a.gap - b.gap)
     .slice(0, count);
 };

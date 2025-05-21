@@ -8,7 +8,8 @@ import KeyInsights from './dashboard/KeyInsights';
 import CoachingSupport from './dashboard/CoachingSupport';
 import ResultsActions from './dashboard/ResultsActions';
 import RecommendedSteps from './dashboard/RecommendedSteps';
-import { calculateAverageGap, getTopStrengths, getLowestSkills } from '../utils/assessmentCalculations';
+import { calculateAverageGap } from '../utils/assessmentCalculations/averages';
+import { getTopStrengths, getLowestSkills } from '../utils/assessmentCalculations/skillMetrics';
 
 interface ResultsDashboardProps {
   categories: Category[];
@@ -28,6 +29,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   // Debug received categories
   useEffect(() => {
     console.log("DASHBOARD - Received categories count:", categories?.length || 0);
+    console.log("DASHBOARD - Categories data:", categories);
     
     // Check if categories have skills and ratings
     if (categories && categories.length > 0) {
@@ -43,7 +45,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
       // Check data quality for calculations
       const hasActualData = categories.some(cat => 
         cat.skills && cat.skills.some(skill => 
-          skill.ratings && (skill.ratings.current > 0 || skill.ratings.desired > 0)
+          skill.ratings && (Number(skill.ratings.current) > 0 || Number(skill.ratings.desired) > 0)
         )
       );
       
@@ -51,10 +53,18 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
     }
   }, [categories]);
   
-  // Calculate metrics using utility functions
-  const averageGap = calculateAverageGap(categories);
-  const strengths = getTopStrengths(categories, 3);
-  const lowestSkills = getLowestSkills(categories, 3);
+  // Calculate metrics safely with fallbacks
+  let averageGap = 0;
+  let strengths = [];
+  let lowestSkills = [];
+  
+  try {
+    averageGap = calculateAverageGap(categories);
+    strengths = getTopStrengths(categories, 3);
+    lowestSkills = getLowestSkills(categories, 3);
+  } catch (error) {
+    console.error("Error calculating dashboard metrics:", error);
+  }
   
   console.log("DASHBOARD - Calculated metrics:", { 
     averageGap, 

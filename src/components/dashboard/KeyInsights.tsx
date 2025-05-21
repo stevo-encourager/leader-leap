@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BookOpen } from 'lucide-react';
 import { 
   SkillWithMetadata,
@@ -36,6 +36,49 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
     smallestGaps: true,
     skillsMeeting: true
   });
+  
+  const [insightData, setInsightData] = useState({
+    largestCategoryGaps: [] as CategoryWithMetadata[],
+    smallestCategoryGaps: [] as CategoryWithMetadata[],
+    skillsToImprove: [] as SkillWithMetadata[],
+    skillsMeetingExpectations: [] as SkillWithMetadata[]
+  });
+  
+  // Compute derived data once categories are available
+  useEffect(() => {
+    if (categories && Array.isArray(categories) && categories.length > 0) {
+      try {
+        // Safely calculate insights
+        const largestCategoryGaps = getLargestCategoryGaps(categories, 3) || [];
+        const smallestCategoryGaps = getSmallestCategoryGaps(categories, 3) || [];
+        const skillsToImprove = getSkillsToImprove(categories, 3) || [];
+        const skillsMeetingExpectations = getSkillsMeetingExpectations(categories, 3) || [];
+        
+        console.log("KeyInsights - Calculated values:", {
+          largestCategoryGaps: largestCategoryGaps.length,
+          smallestCategoryGaps: smallestCategoryGaps.length,
+          skillsToImprove: skillsToImprove.length,
+          skillsMeetingExpectations: skillsMeetingExpectations.length
+        });
+        
+        setInsightData({
+          largestCategoryGaps,
+          smallestCategoryGaps,
+          skillsToImprove,
+          skillsMeetingExpectations
+        });
+      } catch (error) {
+        console.error("Error calculating insights:", error);
+        // Set empty arrays as fallback
+        setInsightData({
+          largestCategoryGaps: [],
+          smallestCategoryGaps: [],
+          skillsToImprove: [],
+          skillsMeetingExpectations: []
+        });
+      }
+    }
+  }, [categories]);
 
   const toggleSection = (section: keyof typeof openSections) => {
     setOpenSections(prev => ({
@@ -43,12 +86,6 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
       [section]: !prev[section]
     }));
   };
-  
-  // Calculate insights data
-  const largestCategoryGaps = getLargestCategoryGaps(categories, 3);
-  const smallestCategoryGaps = getSmallestCategoryGaps(categories, 3);
-  const skillsToImprove = getSkillsToImprove(categories, 3);
-  const skillsMeetingExpectations = getSkillsMeetingExpectations(categories, 3);
 
   // Format numbers to display with 2 decimal places
   const formatNumber = (num: number | string): string => {
@@ -96,7 +133,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
           
           {/* Largest Competency Gaps */}
           <LargestGapsSection 
-            categoryGaps={largestCategoryGaps}
+            categoryGaps={insightData.largestCategoryGaps}
             isOpen={openSections.largestGaps}
             onToggle={() => toggleSection('largestGaps')}
             formatNumber={formatNumber}
@@ -104,7 +141,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
           
           {/* Individual Skills You Want to Improve */}
           <SkillsToImproveSection 
-            skills={skillsToImprove}
+            skills={insightData.skillsToImprove}
             isOpen={openSections.skillsToImprove}
             onToggle={() => toggleSection('skillsToImprove')}
             formatNumber={formatNumber}
@@ -112,7 +149,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
           
           {/* Your Smallest Competency Gaps */}
           <SmallestGapsSection 
-            categoryGaps={smallestCategoryGaps}
+            categoryGaps={insightData.smallestCategoryGaps}
             isOpen={openSections.smallestGaps}
             onToggle={() => toggleSection('smallestGaps')}
             formatNumber={formatNumber}
@@ -120,7 +157,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
           
           {/* Individual Skills Meeting Your Expectations */}
           <SkillsMeetingExpectationsSection 
-            skills={skillsMeetingExpectations}
+            skills={insightData.skillsMeetingExpectations}
             isOpen={openSections.skillsMeeting}
             onToggle={() => toggleSection('skillsMeeting')}
             formatNumber={formatNumber}

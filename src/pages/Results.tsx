@@ -53,8 +53,8 @@ const Results = () => {
             console.log("Loaded specific assessment categories:", categories);
             
             setSpecificAssessmentData({
-              categories: categories as Category[],
-              demographics: demographics as Demographics || {}
+              categories: categories as unknown as Category[],
+              demographics: demographics as unknown as Demographics || {}
             });
           } else {
             console.error("Failed to fetch assessment:", result.error);

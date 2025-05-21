@@ -12,6 +12,7 @@ export type Database = {
       assessment_results: {
         Row: {
           categories: Json
+          completed: boolean | null
           created_at: string
           demographics: Json | null
           id: string
@@ -19,6 +20,7 @@ export type Database = {
         }
         Insert: {
           categories: Json
+          completed?: boolean | null
           created_at?: string
           demographics?: Json | null
           id?: string
@@ -26,6 +28,7 @@ export type Database = {
         }
         Update: {
           categories?: Json
+          completed?: boolean | null
           created_at?: string
           demographics?: Json | null
           id?: string

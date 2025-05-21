@@ -18,14 +18,13 @@ interface IntroductionPageProps {
 const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStartAssessment }) => {
   const navigate = useNavigate();
   
-  const handleStartAssessment = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
+  const handleStartAssessment = () => {
     console.log("Start assessment button clicked in IntroductionPage");
     
     // Call the provided function to set up state
     onStartAssessment();
     
-    // Delay navigation slightly to ensure state updates first
+    // Navigate with a slight delay to ensure state is updated
     setTimeout(() => {
       console.log("Navigating to /assessment from IntroductionPage");
       navigate('/assessment');

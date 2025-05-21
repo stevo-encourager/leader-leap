@@ -29,12 +29,15 @@ const Assessment = () => {
   
   const { user, loading } = useAuth();
 
-  // Redirect to home if we're on the intro step
+  // Enforce correct navigation based on current step
   useEffect(() => {
+    console.log(`Current step in Assessment page: ${currentStep}`);
     if (currentStep === 'intro') {
-      navigate('/');
+      console.log("Redirecting to / from Assessment page");
+      navigate('/', { replace: true });
     } else if (currentStep === 'results') {
-      navigate('/results');
+      console.log("Redirecting to /results from Assessment page");
+      navigate('/results', { replace: true });
     }
   }, [currentStep, navigate]);
 

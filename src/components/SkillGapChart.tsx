@@ -5,10 +5,11 @@ import {
   RadarChart, 
   PolarGrid, 
   PolarAngleAxis, 
-  Radar
+  Radar,
+  Tooltip,
+  Legend
 } from 'recharts';
 import { Category } from '@/utils/assessmentTypes';
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 
 interface SkillGapChartProps {
   categories: Category[];
@@ -22,9 +23,15 @@ interface ChartData {
 }
 
 const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
-  // Memoize chart data processing for performance
+  console.log("SkillGapChart - Received categories:", categories?.length || 0);
+  
+  // Process chart data with detailed logging
   const chartData = useMemo(() => {
+    console.log("SkillGapChart - Processing chart data for categories:", 
+      categories?.map(c => c.title) || []);
+    
     if (!categories || !Array.isArray(categories) || categories.length === 0) {
+      console.log("SkillGapChart - No valid categories");
       return [];
     }
     
@@ -36,24 +43,38 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
       
       // Process skills if they exist
       if (category.skills && Array.isArray(category.skills) && category.skills.length > 0) {
+        console.log(`SkillGapChart - Processing skills for ${category.title}`);
+        let totalCurrent = 0;
+        let totalDesired = 0;
+        
         // Count valid skills and sum ratings
         for (const skill of category.skills) {
           if (!skill.ratings) continue;
           
-          const current = Number(skill.ratings.current);
-          const desired = Number(skill.ratings.desired);
+          const current = typeof skill.ratings.current === 'number' 
+            ? skill.ratings.current 
+            : Number(skill.ratings.current || 0);
+            
+          const desired = typeof skill.ratings.desired === 'number' 
+            ? skill.ratings.desired 
+            : Number(skill.ratings.desired || 0);
+          
+          console.log(`SkillGapChart - Skill ${skill.name}: current=${current}, desired=${desired}`);
           
           if (current > 0 || desired > 0) {
-            avgCurrent += current;
-            avgDesired += desired;
+            totalCurrent += current;
+            totalDesired += desired;
             skillCount++;
           }
         }
         
         // Calculate averages
         if (skillCount > 0) {
-          avgCurrent = parseFloat((avgCurrent / skillCount).toFixed(1));
-          avgDesired = parseFloat((avgDesired / skillCount).toFixed(1));
+          avgCurrent = parseFloat((totalCurrent / skillCount).toFixed(1));
+          avgDesired = parseFloat((totalDesired / skillCount).toFixed(1));
+          console.log(`SkillGapChart - Category ${category.title}: avgCurrent=${avgCurrent}, avgDesired=${avgDesired}, from ${skillCount} skills`);
+        } else {
+          console.log(`SkillGapChart - Category ${category.title}: No skills with ratings`);
         }
       }
       
@@ -65,6 +86,8 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
       };
     });
   }, [categories]);
+
+  console.log("SkillGapChart - Final chart data:", chartData);
 
   // Create a placeholder if no data is available
   if (!chartData || chartData.length === 0) {
@@ -82,6 +105,8 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
     item => item.current > 0 || item.desired > 0
   );
   
+  console.log("SkillGapChart - Valid chart data items:", validChartData.length);
+  
   if (validChartData.length === 0) {
     return (
       <div className="flex items-center justify-center h-full bg-slate-50 rounded-lg p-6">
@@ -92,58 +117,40 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
     );
   }
 
-  const chartConfig = {
-    current: { 
-      label: "Current Level",
-      theme: { light: '#2F564D', dark: '#3a6a5f' }
-    },
-    desired: { 
-      label: "Desired Level",
-      theme: { light: '#8baca5', dark: '#a3c6bf' }
-    }
-  };
-
+  // Simplified radar chart implementation
   return (
-    <ChartContainer className="w-full h-full" config={chartConfig}>
-      <ResponsiveContainer width="100%" height="100%">
-        <RadarChart 
-          data={validChartData} 
-          margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
-          style={{overflow: 'visible'}}
-        >
-          <PolarGrid strokeDasharray="3 3" />
-          <PolarAngleAxis 
-            dataKey="subject"
-            tick={{ 
-              fill: 'currentColor', 
-              fontSize: 12,
-              fontWeight: 500
-            }}
-          />
-          <Radar
-            name="current"
-            dataKey="current"
-            stroke="var(--color-current, #2F564D)"
-            fill="var(--color-current, #2F564D)"
-            fillOpacity={0.6}
-          />
-          <Radar
-            name="desired"
-            dataKey="desired"
-            stroke="var(--color-desired, #8baca5)"
-            fill="var(--color-desired, #8baca5)"
-            fillOpacity={0.6}
-          />
-          <ChartTooltip 
-            content={<ChartTooltipContent />} 
-          />
-          <ChartLegend 
-            content={<ChartLegendContent />} 
-            verticalAlign="bottom" 
-          />
-        </RadarChart>
-      </ResponsiveContainer>
-    </ChartContainer>
+    <ResponsiveContainer width="100%" height="100%">
+      <RadarChart 
+        data={validChartData} 
+        margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
+      >
+        <PolarGrid strokeDasharray="3 3" />
+        <PolarAngleAxis 
+          dataKey="subject"
+          tick={{ 
+            fill: '#4B5563', 
+            fontSize: 12,
+            fontWeight: 500
+          }}
+        />
+        <Radar
+          name="Current Level"
+          dataKey="current"
+          stroke="#2F564D"
+          fill="#2F564D"
+          fillOpacity={0.6}
+        />
+        <Radar
+          name="Desired Level"
+          dataKey="desired"
+          stroke="#8baca5"
+          fill="#8baca5"
+          fillOpacity={0.6}
+        />
+        <Tooltip />
+        <Legend />
+      </RadarChart>
+    </ResponsiveContainer>
   );
 };
 

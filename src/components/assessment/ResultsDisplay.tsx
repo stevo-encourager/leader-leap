@@ -2,7 +2,6 @@
 import React, { useEffect } from 'react';
 import ResultsDashboard from '../ResultsDashboard';
 import { Category, Demographics } from '../../utils/assessmentTypes';
-import { normalizeCategories } from '../../utils/resultNormalizer';
 import InvalidResultsMessage from './InvalidResultsMessage';
 
 interface ResultsDisplayProps {
@@ -22,45 +21,36 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   onSignup,
   isAuthenticated
 }) => {
-  // Log categories for debugging
+  // Debug logging for the incoming data
   useEffect(() => {
-    console.log("ResultsDisplay - Raw categories:", categories);
-    console.log("ResultsDisplay - Categories type:", Array.isArray(categories) ? "Array" : typeof categories);
-    console.log("ResultsDisplay - Categories length:", Array.isArray(categories) ? categories.length : 0);
+    console.log("ResultsDisplay - Categories:", categories);
+    console.log("ResultsDisplay - Categories length:", categories?.length || 0);
+    console.log("ResultsDisplay - First category sample:", categories && categories.length > 0 ? categories[0] : "none");
+    
+    // Check if we have any ratings data
+    if (categories && categories.length > 0) {
+      const hasAnyRatings = categories.some(category => 
+        category.skills && category.skills.some(skill => 
+          skill.ratings && (
+            (typeof skill.ratings.current === 'number' && skill.ratings.current > 0) || 
+            (typeof skill.ratings.desired === 'number' && skill.ratings.desired > 0)
+          )
+        )
+      );
+      
+      console.log("ResultsDisplay - Has any ratings data:", hasAnyRatings);
+    }
   }, [categories]);
 
-  // Quick validation of input data
+  // Basic validation of input data
   if (!categories || !Array.isArray(categories) || categories.length === 0) {
     console.warn("ResultsDisplay - Invalid categories data:", categories);
     return <InvalidResultsMessage onRestart={onRestart} />;
   }
 
-  // Normalize the categories data to ensure consistent format
-  const normalizedCategories = normalizeCategories(categories);
-  
-  // Log normalized categories
-  console.log("ResultsDisplay - Normalized categories:", normalizedCategories);
-  console.log("ResultsDisplay - Normalized categories length:", normalizedCategories?.length || 0);
-  
-  // Check for valid normalized data
-  if (!normalizedCategories || normalizedCategories.length === 0) {
-    console.warn("ResultsDisplay - Normalization failed to produce valid categories");
-    return <InvalidResultsMessage onRestart={onRestart} />;
-  }
-
-  // Additional validation for skills
-  const hasValidSkills = normalizedCategories.some(
-    cat => cat.skills && Array.isArray(cat.skills) && cat.skills.length > 0
-  );
-  
-  if (!hasValidSkills) {
-    console.warn("ResultsDisplay - No valid skills found in normalized categories");
-    return <InvalidResultsMessage onRestart={onRestart} />;
-  }
-
   return (
     <ResultsDashboard 
-      categories={normalizedCategories}
+      categories={categories}
       demographics={demographics || {}}
       onRestart={onRestart}
       onBack={onBack}

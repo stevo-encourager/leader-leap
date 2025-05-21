@@ -28,49 +28,48 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
 }) => {
   // Debug received categories
   useEffect(() => {
-    console.log("DASHBOARD - Received categories count:", categories?.length || 0);
-    console.log("DASHBOARD - Categories data:", categories);
+    console.log("ResultsDashboard - Received categories:", categories);
     
     // Check if categories have skills and ratings
     if (categories && categories.length > 0) {
-      const firstCategory = categories[0];
-      console.log(`DASHBOARD - First category: ${firstCategory.title}`);
+      console.log("ResultsDashboard - First category:", categories[0]);
       
-      if (firstCategory.skills && firstCategory.skills.length > 0) {
-        const firstSkill = firstCategory.skills[0];
-        console.log(`DASHBOARD - First skill: ${firstSkill.name}`);
-        console.log(`DASHBOARD - First skill ratings:`, firstSkill.ratings);
+      if (categories[0].skills && categories[0].skills.length > 0) {
+        console.log("ResultsDashboard - First skill:", categories[0].skills[0]);
       }
       
       // Check data quality for calculations
       const hasActualData = categories.some(cat => 
         cat.skills && cat.skills.some(skill => 
-          skill.ratings && (Number(skill.ratings.current) > 0 || Number(skill.ratings.desired) > 0)
+          skill.ratings && (
+            (typeof skill.ratings.current === 'number' && skill.ratings.current > 0) || 
+            (typeof skill.ratings.desired === 'number' && skill.ratings.desired > 0)
+          )
         )
       );
       
-      console.log(`DASHBOARD - Has actual rating data: ${hasActualData}`);
+      console.log(`ResultsDashboard - Has actual rating data: ${hasActualData}`);
     }
   }, [categories]);
   
-  // Calculate metrics safely with fallbacks
+  // Calculate metrics with extra error handling
   let averageGap = 0;
   let strengths = [];
   let lowestSkills = [];
   
   try {
+    console.log("ResultsDashboard - Calculating metrics...");
     averageGap = calculateAverageGap(categories);
+    console.log("ResultsDashboard - Average gap calculated:", averageGap);
+    
     strengths = getTopStrengths(categories, 3);
+    console.log("ResultsDashboard - Strengths calculated:", strengths?.length || 0);
+    
     lowestSkills = getLowestSkills(categories, 3);
+    console.log("ResultsDashboard - Lowest skills calculated:", lowestSkills?.length || 0);
   } catch (error) {
-    console.error("Error calculating dashboard metrics:", error);
+    console.error("ResultsDashboard - Error calculating metrics:", error);
   }
-  
-  console.log("DASHBOARD - Calculated metrics:", { 
-    averageGap, 
-    strengthsCount: strengths?.length || 0, 
-    lowestSkillsCount: lowestSkills?.length || 0 
-  });
 
   return (
     <div className="fade-in space-y-6">
@@ -105,10 +104,10 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
             categories={categories}
           />
           
-          {/* Recommended Next Steps - moved above coaching support */}
+          {/* Recommended Next Steps */}
           <RecommendedSteps />
           
-          {/* Coaching Support and Sign Up side by side with adjusted proportions */}
+          {/* Coaching Support and Sign Up side by side */}
           <div className="grid grid-cols-3 gap-4">
             <div className="col-span-2">
               <CoachingSupport />
@@ -140,7 +139,6 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
           </div>
         </CardContent>
         <CardFooter className="pt-4 pb-6 mt-4 border-t">
-          {/* Actions moved to bottom */}
           <div className="w-full">
             <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 w-full">
               <ResultsActions 

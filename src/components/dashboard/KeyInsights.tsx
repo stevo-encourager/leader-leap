@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { BookOpen } from 'lucide-react';
+import { BookOpen, AlertTriangle } from 'lucide-react';
 import { 
   SkillWithMetadata,
   CategoryWithMetadata,
@@ -34,7 +34,8 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
     largestGaps: true,
     skillsToImprove: true,
     smallestGaps: true,
-    skillsMeeting: true
+    skillsMeeting: true,
+    debug: false // Debug section closed by default
   });
   
   const [insightData, setInsightData] = useState({
@@ -44,10 +45,52 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
     skillsMeetingExpectations: [] as SkillWithMetadata[]
   });
   
+  // Detailed logging for debugging
+  useEffect(() => {
+    console.log("KeyInsights - Component mounted with categories:", categories?.length || 0);
+    console.log("KeyInsights - Average gap:", averageGap);
+    console.log("KeyInsights - Strengths count:", strengths?.length || 0);
+    console.log("KeyInsights - Lowest skills count:", lowestSkills?.length || 0);
+    
+    // Log first category details if available
+    if (categories && categories.length > 0) {
+      const firstCategory = categories[0];
+      console.log("KeyInsights - First category:", firstCategory?.title);
+      
+      if (firstCategory.skills && firstCategory.skills.length > 0) {
+        const firstSkill = firstCategory.skills[0];
+        console.log("KeyInsights - First skill:", firstSkill?.name);
+        console.log("KeyInsights - First skill ratings:", firstSkill?.ratings);
+      }
+    }
+  }, []);
+  
   // Compute derived data once categories are available
   useEffect(() => {
-    if (categories && Array.isArray(categories) && categories.length > 0) {
-      try {
+    if (!categories || !Array.isArray(categories) || categories.length === 0) {
+      console.log("KeyInsights - No valid categories provided");
+      return;
+    }
+    
+    console.log("KeyInsights - Computing insights from categories");
+    
+    try {
+      // Count skills with ratings for diagnostic purposes
+      const skillsWithRatings = categories.reduce((count, category) => {
+        if (!category.skills) return count;
+        
+        const categoryCount = category.skills.filter(skill => 
+          (Number(skill.ratings?.current) > 0 || Number(skill.ratings?.desired) > 0)
+        ).length;
+        
+        console.log(`KeyInsights - Category ${category.title} has ${categoryCount} skills with ratings`);
+        return count + categoryCount;
+      }, 0);
+      
+      console.log(`KeyInsights - Total skills with ratings: ${skillsWithRatings}`);
+      
+      // Only calculate insights if we have actual data
+      if (skillsWithRatings > 0) {
         // Safely calculate insights
         const largestCategoryGaps = getLargestCategoryGaps(categories, 3) || [];
         const smallestCategoryGaps = getSmallestCategoryGaps(categories, 3) || [];
@@ -67,16 +110,18 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
           skillsToImprove,
           skillsMeetingExpectations
         });
-      } catch (error) {
-        console.error("Error calculating insights:", error);
-        // Set empty arrays as fallback
-        setInsightData({
-          largestCategoryGaps: [],
-          smallestCategoryGaps: [],
-          skillsToImprove: [],
-          skillsMeetingExpectations: []
-        });
+      } else {
+        console.log("KeyInsights - No skills with ratings, skipping calculations");
       }
+    } catch (error) {
+      console.error("KeyInsights - Error calculating insights:", error);
+      // Set empty arrays as fallback
+      setInsightData({
+        largestCategoryGaps: [],
+        smallestCategoryGaps: [],
+        skillsToImprove: [],
+        skillsMeetingExpectations: []
+      });
     }
   }, [categories]);
 
@@ -94,9 +139,6 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
     }
     return String(num);
   };
-
-  // Use actual gap value
-  const displayAverageGap = formatNumber(averageGap);
 
   // Calculate some diagnostic info
   const skillCount = categories.reduce((acc, cat) => acc + (cat.skills?.length || 0), 0);
@@ -117,51 +159,94 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
     <div className="bg-encourager/5 p-4 rounded-lg border border-encourager/20">
       <div className="flex items-start gap-3">
         <BookOpen className="text-encourager h-5 w-5 mt-1" />
-        <div>
+        <div className="w-full">
           <h3 className="text-lg font-medium mb-2">Key Insights</h3>
           <p className="text-sm text-slate-500 mb-3">Based on your 1-10 rating scale assessment</p>
           
-          {/* Quick diagnostic info panel */}
-          <div className="bg-amber-50 p-3 mb-4 rounded text-xs">
-            <p><strong>Assessment Status:</strong> {categoriesWithRatings > 0 ? "Data Available" : "No Data"}</p>
-            <p>Categories with data: {categoriesWithRatings}/{categories.length}</p>
-            <p>Skills with ratings: {skillsWithRatings}/{skillCount}</p>
-            <p>Average gap: {averageGap}</p>
+          {/* Assessment status panel */}
+          <div className="bg-amber-50 p-3 mb-4 rounded text-sm">
+            <div className="flex items-center gap-2 mb-2">
+              <AlertTriangle className="h-4 w-4 text-amber-600" />
+              <strong className="text-amber-800">Assessment Status</strong>
+            </div>
+            
+            {skillsWithRatings > 0 ? (
+              <div>
+                <p>Data available for analysis</p>
+                <p className="text-xs text-slate-600">Categories with data: {categoriesWithRatings}/{categories.length}</p>
+                <p className="text-xs text-slate-600">Skills with ratings: {skillsWithRatings}/{skillCount}</p>
+                <p className="text-xs text-slate-600">Average competency gap: {formatNumber(averageGap)}</p>
+              </div>
+            ) : (
+              <div>
+                <p className="text-amber-700">No assessment data available</p>
+                <p className="text-xs text-amber-600 mt-1">
+                  To see insights, please complete the assessment by providing ratings for your current and desired skill levels.
+                </p>
+                <button 
+                  className="mt-2 text-xs bg-amber-200 hover:bg-amber-300 text-amber-900 px-3 py-1 rounded"
+                  onClick={() => toggleSection('debug')}
+                >
+                  {openSections.debug ? 'Hide Debug Info' : 'Show Debug Info'}
+                </button>
+                
+                {openSections.debug && (
+                  <div className="mt-2 p-2 bg-amber-100 rounded text-xs font-mono overflow-auto">
+                    <pre>
+                      Categories: {JSON.stringify(categories.map(c => c.title), null, 2)}
+                    </pre>
+                    <pre className="mt-1">
+                      averageGap: {averageGap}
+                    </pre>
+                    <pre className="mt-1">
+                      strengths: {JSON.stringify(strengths.map(s => s.name), null, 2)}
+                    </pre>
+                    <pre className="mt-1">
+                      lowestSkills: {JSON.stringify(lowestSkills.map(s => s.name), null, 2)}
+                    </pre>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           
-          <InsightSummary averageGap={displayAverageGap} />
-          
-          {/* Largest Competency Gaps */}
-          <LargestGapsSection 
-            categoryGaps={insightData.largestCategoryGaps}
-            isOpen={openSections.largestGaps}
-            onToggle={() => toggleSection('largestGaps')}
-            formatNumber={formatNumber}
-          />
-          
-          {/* Individual Skills You Want to Improve */}
-          <SkillsToImproveSection 
-            skills={insightData.skillsToImprove}
-            isOpen={openSections.skillsToImprove}
-            onToggle={() => toggleSection('skillsToImprove')}
-            formatNumber={formatNumber}
-          />
-          
-          {/* Your Smallest Competency Gaps */}
-          <SmallestGapsSection 
-            categoryGaps={insightData.smallestCategoryGaps}
-            isOpen={openSections.smallestGaps}
-            onToggle={() => toggleSection('smallestGaps')}
-            formatNumber={formatNumber}
-          />
-          
-          {/* Individual Skills Meeting Your Expectations */}
-          <SkillsMeetingExpectationsSection 
-            skills={insightData.skillsMeetingExpectations}
-            isOpen={openSections.skillsMeeting}
-            onToggle={() => toggleSection('skillsMeeting')}
-            formatNumber={formatNumber}
-          />
+          {skillsWithRatings > 0 && (
+            <>
+              <InsightSummary averageGap={formatNumber(averageGap)} />
+              
+              {/* Largest Competency Gaps */}
+              <LargestGapsSection 
+                categoryGaps={insightData.largestCategoryGaps}
+                isOpen={openSections.largestGaps}
+                onToggle={() => toggleSection('largestGaps')}
+                formatNumber={formatNumber}
+              />
+              
+              {/* Individual Skills You Want to Improve */}
+              <SkillsToImproveSection 
+                skills={insightData.skillsToImprove}
+                isOpen={openSections.skillsToImprove}
+                onToggle={() => toggleSection('skillsToImprove')}
+                formatNumber={formatNumber}
+              />
+              
+              {/* Your Smallest Competency Gaps */}
+              <SmallestGapsSection 
+                categoryGaps={insightData.smallestCategoryGaps}
+                isOpen={openSections.smallestGaps}
+                onToggle={() => toggleSection('smallestGaps')}
+                formatNumber={formatNumber}
+              />
+              
+              {/* Individual Skills Meeting Your Expectations */}
+              <SkillsMeetingExpectationsSection 
+                skills={insightData.skillsMeetingExpectations}
+                isOpen={openSections.skillsMeeting}
+                onToggle={() => toggleSection('skillsMeeting')}
+                formatNumber={formatNumber}
+              />
+            </>
+          )}
         </div>
       </div>
     </div>

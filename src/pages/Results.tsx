@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import UserHeader from '@/components/auth/UserHeader';
@@ -32,11 +32,23 @@ const Results = () => {
     specificAssessmentData
   } = useSpecificAssessment(assessmentId);
 
-  console.log("Results page - Auth loading:", loading);
-  console.log("Results page - Specific assessment loading:", loadingSpecificAssessment);
-  console.log("Results page - AssessmentId:", assessmentId);
-  console.log("Results page - specificAssessmentData:", specificAssessmentData);
-  console.log("Results page - categories from useAssessment:", categories);
+  // Add detailed logging for debugging
+  useEffect(() => {
+    console.log("Results Page Mount - Route params:", { assessmentId });
+    console.log("Results Page - Auth loading:", loading);
+    console.log("Results Page - Assessment loading:", loadingSpecificAssessment);
+    console.log("Results Page - Has assessment data:", !!specificAssessmentData);
+    console.log("Results Page - Has categories from hook:", !!categories && Array.isArray(categories));
+    
+    if (categories && Array.isArray(categories)) {
+      console.log("Results Page - Categories from hook count:", categories.length);
+      console.log("Results Page - Categories from hook sample:", categories[0]);
+    }
+    
+    if (specificAssessmentData) {
+      console.log("Results Page - Specific assessment data:", specificAssessmentData);
+    }
+  }, [assessmentId, loading, loadingSpecificAssessment, specificAssessmentData, categories]);
 
   // Wait for auth and data to initialize before rendering
   if (loading || loadingSpecificAssessment) {
@@ -44,6 +56,7 @@ const Results = () => {
   }
 
   // Determine which categories and demographics to display
+  // Use specific assessment data if we have an ID, otherwise use the current assessment data
   const displayCategories = assessmentId && specificAssessmentData 
     ? specificAssessmentData.categories 
     : categories;
@@ -52,21 +65,10 @@ const Results = () => {
     ? specificAssessmentData.demographics 
     : demographics;
 
-  console.log("Results page - Display categories:", displayCategories);
-  console.log("Results page - Categories data type:", Array.isArray(displayCategories) ? "Array" : typeof displayCategories);
+  // Log what we're actually going to display
+  console.log("Results Page - Display categories:", displayCategories);
+  console.log("Results Page - Display categories count:", displayCategories?.length || 0);
   
-  if (displayCategories && Array.isArray(displayCategories)) {
-    console.log("Results page - Number of categories:", displayCategories.length);
-    displayCategories.forEach((cat, i) => {
-      console.log(`Results page - Category ${i} (${cat.title}):`, cat);
-      if (cat.skills && Array.isArray(cat.skills)) {
-        console.log(`Results page - Category ${i} has ${cat.skills.length} skills`);
-      } else {
-        console.log(`Results page - Category ${i} has invalid skills array`);
-      }
-    });
-  }
-
   // Check if we have valid categories data to display
   const hasValidCategories = displayCategories && 
     Array.isArray(displayCategories) && 

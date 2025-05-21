@@ -44,7 +44,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
             <img 
               src="/lovable-uploads/8320d514-fba5-4e1b-a658-1563758db943.png" 
               alt="Leadership Assessment Logo" 
-              className="h-20 w-auto" 
+              className="h-24 w-auto" 
             />
           </div>
         </CardHeader>
@@ -71,7 +71,15 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
               <CoachingSupport />
             </div>
             <div className="col-span-2">
-              {!onSignup ? null : (
+              {!onSignup ? (
+                <div className="bg-white p-4 h-full border border-slate-200 rounded-lg shadow-sm flex flex-col justify-between">
+                  <img 
+                    src="/lovable-uploads/66b73182-df6e-4125-982e-94535db930ad.png" 
+                    alt="Coach Image" 
+                    className="rounded-lg w-full h-auto object-cover" 
+                  />
+                </div>
+              ) : (
                 <div className="bg-white p-4 h-full border border-slate-200 rounded-lg shadow-sm flex flex-col justify-between">
                   <p className="text-slate-700 mb-6">
                     <strong>Want to save your results, download as PDF, and access them later?</strong><br />

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { 
   ResponsiveContainer,
@@ -24,12 +25,31 @@ interface ChartData {
 const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
   // Prepare chart data from categories
   const prepareChartData = (): ChartData[] => {
+    if (!categories || categories.length === 0) {
+      console.warn("No categories provided to SkillGapChart");
+      return [];
+    }
+    
     const allSkills: ChartData[] = [];
     
     categories.forEach(category => {
+      if (!category.skills || category.skills.length === 0) {
+        console.warn(`Category ${category.title} has no skills`);
+        return;
+      }
+      
       // Calculate average for each category
-      const categoryAvgCurrent = category.skills.reduce((sum, skill) => sum + skill.ratings.current, 0) / category.skills.length;
-      const categoryAvgDesired = category.skills.reduce((sum, skill) => sum + skill.ratings.desired, 0) / category.skills.length;
+      const totalSkills = category.skills.length;
+      let sumCurrent = 0;
+      let sumDesired = 0;
+      
+      category.skills.forEach(skill => {
+        sumCurrent += skill.ratings.current || 0;
+        sumDesired += skill.ratings.desired || 0;
+      });
+      
+      const categoryAvgCurrent = totalSkills > 0 ? sumCurrent / totalSkills : 0;
+      const categoryAvgDesired = totalSkills > 0 ? sumDesired / totalSkills : 0;
       
       allSkills.push({
         subject: category.title,
@@ -39,10 +59,15 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
       });
     });
     
+    console.log("Chart data prepared:", allSkills);
     return allSkills;
   };
 
   const chartData = prepareChartData();
+
+  if (chartData.length === 0) {
+    return <div className="text-center p-6">No data available for chart</div>;
+  }
 
   // Custom formatter for the tooltip to ensure numbers display properly with 2 decimal points
   const tooltipFormatter = (value: string | number) => {

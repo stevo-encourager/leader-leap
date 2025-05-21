@@ -23,7 +23,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
           
           <div className="bg-primary/5 p-4 rounded-lg mb-4">
             <p className="text-sm">
-              Based on your assessment, your average competency gap is <span className="font-bold">{averageGap.toFixed(2)}</span> points.
+              Based on your assessment, your average competency gap is <span className="font-bold">{averageGap}</span> points.
               This indicates the typical difference between your current abilities and how important these competencies are to your role.
             </p>
           </div>
@@ -38,7 +38,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
                     <p className="text-sm text-slate-500">{skill.categoryTitle}</p>
                   </div>
                   <div className="bg-red-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
-                    Gap: {skill.gap.toFixed(2)}
+                    Gap: {skill.gap}
                   </div>
                 </div>
               </div>
@@ -55,7 +55,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
                     <p className="text-sm text-slate-500">{skill.categoryTitle}</p>
                   </div>
                   <div className="bg-red-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
-                    Gap: {skill.gap.toFixed(2)}
+                    Gap: {skill.gap}
                   </div>
                 </div>
               </div>

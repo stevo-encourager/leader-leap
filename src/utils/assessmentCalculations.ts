@@ -13,24 +13,53 @@ export interface SkillWithMetadata {
 }
 
 export const calculateAverageGap = (categories: Category[]): number => {
-  const totalSkills = categories.reduce((sum, category) => sum + category.skills.length, 0);
-  const totalGap = categories.reduce((sum, category) => {
-    return sum + category.skills.reduce((catSum, skill) => {
-      return catSum + Math.abs((skill.ratings.desired || 0) - (skill.ratings.current || 0));
-    }, 0);
-  }, 0);
+  if (!categories || categories.length === 0) {
+    console.warn("No categories provided to calculateAverageGap");
+    return 0;
+  }
   
-  return parseFloat((totalGap / totalSkills).toFixed(2));
+  let totalSkillCount = 0;
+  let totalGapValue = 0;
+  
+  categories.forEach(category => {
+    if (!category.skills || category.skills.length === 0) return;
+    
+    category.skills.forEach(skill => {
+      const current = skill.ratings.current || 0;
+      const desired = skill.ratings.desired || 0;
+      const gap = Math.abs(desired - current);
+      
+      totalSkillCount++;
+      totalGapValue += gap;
+    });
+  });
+  
+  if (totalSkillCount === 0) return 0;
+  return parseFloat((totalGapValue / totalSkillCount).toFixed(2));
 };
 
 export const getAllSkillsWithMetadata = (categories: Category[]): SkillWithMetadata[] => {
-  return categories.flatMap(category => 
-    category.skills.map(skill => ({
-      ...skill,
-      categoryTitle: category.title,
-      gap: parseFloat(Math.abs((skill.ratings.desired || 0) - (skill.ratings.current || 0)).toFixed(2))
-    }))
-  );
+  if (!categories || categories.length === 0) return [];
+  
+  const result: SkillWithMetadata[] = [];
+  
+  categories.forEach(category => {
+    if (!category.skills) return;
+    
+    category.skills.forEach(skill => {
+      const current = skill.ratings.current || 0;
+      const desired = skill.ratings.desired || 0;
+      const gap = parseFloat(Math.abs(desired - current).toFixed(2));
+      
+      result.push({
+        ...skill,
+        categoryTitle: category.title,
+        gap: gap
+      });
+    });
+  });
+  
+  return result;
 };
 
 export const getTopStrengths = (categories: Category[], count: number = 3): SkillWithMetadata[] => {

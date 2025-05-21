@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Demographics } from '../utils/assessmentTypes';
 import { Json } from '@/integrations/supabase/types';
@@ -122,7 +123,7 @@ export const getAssessmentHistory = async () => {
       return { success: false, error: 'User not authenticated' };
     }
     
-    // Only get completed assessments
+    // Only get completed assessments with distinct IDs
     const { data: assessments, error } = await supabase
       .from('assessment_results')
       .select('id, created_at')
@@ -138,7 +139,18 @@ export const getAssessmentHistory = async () => {
     // Log the raw data for debugging
     console.log('Raw assessment history:', assessments);
 
-    return { success: true, data: assessments };
+    // Deduplicate by ID here in the service layer
+    const uniqueAssessmentsMap = new Map();
+    assessments.forEach(assessment => {
+      if (!uniqueAssessmentsMap.has(assessment.id)) {
+        uniqueAssessmentsMap.set(assessment.id, assessment);
+      }
+    });
+    
+    const uniqueAssessments = Array.from(uniqueAssessmentsMap.values());
+    console.log('Deduplicated assessments count:', uniqueAssessments.length);
+
+    return { success: true, data: uniqueAssessments };
   } catch (error) {
     console.error('Error in getAssessmentHistory:', error);
     return { success: false, error: 'Failed to fetch assessment history' };

@@ -13,19 +13,19 @@ export const normalizeSkill = (skill: any, categoryTitle: string): SkillWithMeta
     let desired = 0;
     
     if (skill.ratings) {
-      // Try to parse numeric values, default to 1 if the value is 0 to avoid all zeros
+      // Try to parse numeric values, preserve actual values instead of defaulting to small numbers
       current = typeof skill.ratings.current === 'number' 
-        ? skill.ratings.current || 1 // Default to 1 if 0
+        ? skill.ratings.current 
         : parseFloat(String(skill.ratings.current || '1'));
         
       desired = typeof skill.ratings.desired === 'number' 
-        ? skill.ratings.desired || 2 // Default to 2 if 0, ensuring a gap exists
-        : parseFloat(String(skill.ratings.desired || '2'));
+        ? skill.ratings.desired 
+        : parseFloat(String(skill.ratings.desired || '5'));
     }
     
-    // If both values are still 0 after parsing, set defaults
+    // If both values are still 0 after parsing, set defaults that show a reasonable gap
     if (current === 0) current = 1;
-    if (desired === 0) desired = 2;
+    if (desired === 0) desired = 5;
     
     // Ensure gap is formatted to 2 decimal places
     const gap = parseFloat((Math.abs(desired - current)).toFixed(2));

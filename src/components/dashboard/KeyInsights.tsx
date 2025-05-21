@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { BookOpen } from 'lucide-react';
 import { 
@@ -77,6 +78,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
         <BookOpen className="text-encourager h-5 w-5 mt-1" />
         <div>
           <h3 className="text-lg font-medium mb-2">Key Insights</h3>
+          <p className="text-sm text-slate-500 mb-3">Based on your 1-10 rating scale assessment</p>
           
           <InsightSummary averageGap={displayAverageGap} />
           

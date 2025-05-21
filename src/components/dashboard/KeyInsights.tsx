@@ -46,10 +46,18 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
     }
   }, [averageGap, strengths, lowestSkills, largestGaps, categories]);
 
+  // Format numbers to display with 2 decimal places
+  const formatNumber = (num: number | string): string => {
+    if (typeof num === 'number') {
+      return num.toFixed(2);
+    }
+    return String(num);
+  };
+
   // Fallback to meaningful default values if zeros are detected
   const displayAverageGap = averageGap === 0 && categories?.some(c => 
     c.skills?.some(s => s.ratings?.current > 0 || s.ratings?.desired > 0)
-  ) ? 'Calculating...' : averageGap;
+  ) ? 'Calculating...' : formatNumber(averageGap);
 
   return (
     <div className="bg-encourager/5 p-4 rounded-lg border border-encourager/20">
@@ -76,7 +84,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
                       <p className="text-sm text-slate-500">{skill.categoryTitle}</p>
                     </div>
                     <div className="bg-red-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
-                      Current: {skill.ratings.current}
+                      Gap: {formatNumber(skill.gap)}
                     </div>
                   </div>
                 </div>
@@ -101,7 +109,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
                       <p className="text-sm text-slate-500">{skill.categoryTitle}</p>
                     </div>
                     <div className="bg-red-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
-                      Gap: {skill.gap}
+                      Gap: {formatNumber(skill.gap)}
                     </div>
                   </div>
                 </div>

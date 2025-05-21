@@ -1,3 +1,4 @@
+
 import { Category } from './assessmentTypes';
 
 export interface SkillWithMetadata {
@@ -36,14 +37,18 @@ const normalizeSkill = (skill: any, categoryTitle: string): SkillWithMetadata | 
     if (current === 0) current = 1;
     if (desired === 0) desired = 2;
     
-    const gap = parseFloat(Math.abs(desired - current).toFixed(2));
+    // Ensure gap is formatted to 2 decimal places
+    const gap = parseFloat((Math.abs(desired - current)).toFixed(2));
     
     return {
       id: skill.id || `skill-${Math.random().toString(36).substring(2, 9)}`,
       name: skillName,
       categoryTitle,
       gap,
-      ratings: { current, desired }
+      ratings: { 
+        current: parseFloat(current.toFixed(2)), 
+        desired: parseFloat(desired.toFixed(2)) 
+      }
     };
   } catch (error) {
     console.error(`Error normalizing skill:`, error, skill);
@@ -76,6 +81,7 @@ export const calculateAverageGap = (categories: Category[]): number => {
     
     if (totalSkillCount === 0) return 1; // Default to 1 instead of 0
     
+    // Ensure average gap is formatted to 2 decimal places
     const calculatedGap = parseFloat((totalGapValue / totalSkillCount).toFixed(2));
     console.log("Calculated average gap:", calculatedGap, "from", totalSkillCount, "skills with total gap value:", totalGapValue);
     

@@ -1,6 +1,5 @@
 
 import { Category } from '../assessmentTypes';
-import { normalizeSkill } from './normalizers';
 
 // Calculate average gap across all skills
 export const calculateAverageGap = (categories: Category[]): number => {
@@ -13,7 +12,7 @@ export const calculateAverageGap = (categories: Category[]): number => {
     let totalSkillCount = 0;
     let totalGapValue = 0;
     
-    // Log categories to help with debugging
+    // Log categories for debugging
     console.log("calculateAverageGap - Input categories:", JSON.stringify(categories.map(c => ({
       title: c.title,
       skillCount: c.skills?.length || 0
@@ -23,13 +22,13 @@ export const calculateAverageGap = (categories: Category[]): number => {
       if (!category.skills || !Array.isArray(category.skills) || category.skills.length === 0) return;
       
       category.skills.forEach(skill => {
-        // Get original ratings directly without normalization
-        const current = typeof skill.ratings?.current === 'number' ? skill.ratings.current : 0;
-        const desired = typeof skill.ratings?.desired === 'number' ? skill.ratings.desired : 0;
+        // Get ratings, ensuring they are numbers
+        const current = Number(skill.ratings?.current) || 0;
+        const desired = Number(skill.ratings?.desired) || 0;
         
-        // Only count skills with valid ratings
+        // Only include skills with valid ratings
         if (current > 0 && desired > 0) {
-          // Calculate gap directly as absolute difference
+          // Calculate absolute gap
           const gap = Math.abs(desired - current);
           
           console.log(`Skill: ${skill.name}, Current: ${current}, Desired: ${desired}, Gap: ${gap}`);
@@ -45,7 +44,7 @@ export const calculateAverageGap = (categories: Category[]): number => {
       return 0;
     }
     
-    // Calculate the actual average gap
+    // Calculate the average gap
     const calculatedGap = parseFloat((totalGapValue / totalSkillCount).toFixed(2));
     console.log("Calculated average gap:", calculatedGap, 
                 "from", totalSkillCount, "skills with total gap value:", totalGapValue);

@@ -30,7 +30,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
   categories
 }) => {
   const [openSections, setOpenSections] = useState({
-    largestGaps: false,
+    largestGaps: true, // Open by default for debugging
     skillsToImprove: false,
     smallestGaps: false,
     skillsMeeting: false
@@ -43,20 +43,34 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
     }));
   };
 
+  // Calculate insights data with debug logs
+  console.log("KeyInsights - Calculating insights from categories:", categories);
+  console.log("KeyInsights - First category skills sample:", categories[0]?.skills);
+  
   const largestCategoryGaps = getLargestCategoryGaps(categories, 3);
   const smallestCategoryGaps = getSmallestCategoryGaps(categories, 3);
   const skillsToImprove = getSkillsToImprove(categories, 3);
   const skillsMeetingExpectations = getSkillsMeetingExpectations(categories, 3);
   
   useEffect(() => {
-    console.log("KeyInsights - Props received:", { 
-      averageGap, 
-      largestCategoryGaps,
-      smallestCategoryGaps,
-      skillsToImprove,
-      skillsMeetingExpectations,
-      categoriesCount: categories?.length || 0 
-    });
+    console.log("KeyInsights - DETAILED DEBUG INFO:");
+    console.log("Average Gap:", averageGap);
+    console.log("Largest Gaps:", largestCategoryGaps);
+    console.log("Smallest Gaps:", smallestCategoryGaps);
+    console.log("Skills to Improve:", skillsToImprove);
+    console.log("Skills Meeting Expectations:", skillsMeetingExpectations);
+    
+    // Debug raw categories data
+    if (categories && categories.length > 0) {
+      categories.forEach(category => {
+        console.log(`Category: ${category.title}`);
+        if (category.skills && category.skills.length > 0) {
+          category.skills.forEach(skill => {
+            console.log(`  Skill: ${skill.name}, Current: ${skill.ratings?.current}, Desired: ${skill.ratings?.desired}, Gap: ${Math.abs((skill.ratings?.desired || 0) - (skill.ratings?.current || 0))}`);
+          });
+        }
+      });
+    }
   }, [averageGap, largestCategoryGaps, smallestCategoryGaps, skillsToImprove, skillsMeetingExpectations, categories]);
 
   // Format numbers to display with 2 decimal places
@@ -67,7 +81,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
     return String(num);
   };
 
-  // Fallback to meaningful default values if zeros are detected
+  // Only display "Calculating..." if we have data but the average is actually zero
   const displayAverageGap = averageGap === 0 && categories?.some(c => 
     c.skills?.some(s => s.ratings?.current > 0 || s.ratings?.desired > 0)
   ) ? 'Calculating...' : formatNumber(averageGap);
@@ -79,6 +93,13 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
         <div>
           <h3 className="text-lg font-medium mb-2">Key Insights</h3>
           <p className="text-sm text-slate-500 mb-3">Based on your 1-10 rating scale assessment</p>
+          
+          {/* Debug output for troubleshooting */}
+          <div className="bg-amber-50 p-2 mb-4 rounded text-xs">
+            <p><strong>Debug Info:</strong> Raw Average Gap: {averageGap}</p>
+            <p>Top Category Gap: {largestCategoryGaps[0]?.gap || 'N/A'}</p>
+            <p>Calculated using 1-10 scale where current and desired ratings create a gap.</p>
+          </div>
           
           <InsightSummary averageGap={displayAverageGap} />
           

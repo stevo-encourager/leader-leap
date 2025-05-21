@@ -10,11 +10,6 @@ import {
   Tooltip
 } from 'recharts';
 import { Category } from '@/utils/assessmentTypes';
-import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent
-} from '@/components/ui/chart';
 
 interface SkillGapChartProps {
   categories: Category[];
@@ -31,8 +26,11 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
   const [chartData, setChartData] = useState<ChartData[]>([]);
 
   useEffect(() => {
+    console.log("Categories received in SkillGapChart:", categories);
+    
     // If no categories, return early
     if (!categories || categories.length === 0) {
+      console.log("No categories to display in chart");
       return;
     }
 
@@ -63,6 +61,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
         };
       });
     
+    console.log("Prepared chart data:", preparedData);
     setChartData(preparedData);
   }, [categories]);
 
@@ -70,64 +69,35 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
     return <div className="text-center p-6">No data available for chart</div>;
   }
 
-  const chartConfig = {
-    current: {
-      label: "Current Level",
-      theme: {
-        light: "#2F564D",
-        dark: "#2F564D",
-      },
-    },
-    desired: {
-      label: "Desired Level",
-      theme: {
-        light: "#8baca5",
-        dark: "#8baca5",
-      },
-    },
-  };
-
   return (
-    <ChartContainer className="w-full h-[400px]" config={chartConfig}>
+    <ResponsiveContainer width="100%" height="100%">
       <RadarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 10 }}>
-        <PolarGrid gridType="circle" />
+        <PolarGrid />
         <PolarAngleAxis 
           dataKey="subject"
           tick={{ 
-            fill: 'currentColor', 
+            fill: '#333', 
             fontSize: 12
           }}
         />
         <Radar
-          dataKey="current"
           name="Current Level"
-          stroke="var(--color-current)"
-          fill="var(--color-current)"
+          dataKey="current"
+          stroke="#2F564D"
+          fill="#2F564D"
           fillOpacity={0.6}
         />
         <Radar
-          dataKey="desired"
           name="Desired Level"
-          stroke="var(--color-desired)"
-          fill="var(--color-desired)"
+          dataKey="desired"
+          stroke="#8baca5"
+          fill="#8baca5"
           fillOpacity={0.6}
         />
-        <ChartTooltip
-          content={
-            <ChartTooltipContent
-              formatter={(value, name) => {
-                return (
-                  <div className="flex items-center gap-2">
-                    <span>{parseFloat(value as string).toFixed(2)}</span>
-                  </div>
-                );
-              }}
-            />
-          }
-        />
-        <Legend iconType="circle" />
+        <Tooltip />
+        <Legend />
       </RadarChart>
-    </ChartContainer>
+    </ResponsiveContainer>
   );
 };
 

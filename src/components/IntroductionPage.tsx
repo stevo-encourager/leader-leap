@@ -22,13 +22,8 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
     // Call the provided function
     onStartAssessment();
     
-    // Ensure we navigate to the assessment page directly
-    setTimeout(() => {
-      // Use a small timeout to ensure the state update happens first
-      if (window.location.pathname === '/') {
-        navigate('/assessment', { replace: true });
-      }
-    }, 50);
+    // Navigate to the assessment page
+    navigate('/assessment', { replace: true });
   };
 
   return (

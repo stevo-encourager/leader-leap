@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Smile, Target, FileBarChart, Lightbulb } from 'lucide-react';
+import SectionHeader from './SectionHeader';
 
 interface BenefitCardProps {
   icon: React.ElementType;
@@ -51,7 +52,7 @@ const BenefitsSection: React.FC = () => {
 
   return (
     <>
-      <h2 className="text-2xl font-bold text-encourager mt-8 mb-4">What to Use This Assessment For</h2>
+      <SectionHeader icon={Lightbulb} title="What to Use This Assessment For" className="mt-8 mb-4" />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {benefits.map((benefit, idx) => (
           <BenefitCard 

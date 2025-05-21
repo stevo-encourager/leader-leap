@@ -2,17 +2,13 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { User, Star } from 'lucide-react';
+import SectionHeader from './SectionHeader';
 
 const AudienceSection: React.FC = () => {
   return (
     <Card className="border-none shadow-card hover:shadow-elevated transition-all duration-300">
       <CardContent className="p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="bg-encourager-accent/20 p-3 rounded-full">
-            <User className="text-encourager" size={24} strokeWidth={1.5} />
-          </div>
-          <h2 className="text-2xl font-bold text-encourager">Who is this for?</h2>
-        </div>
+        <SectionHeader icon={User} title="Who is this for?" />
         <div className="space-y-2">
           <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-100">
             <div className="text-encourager">

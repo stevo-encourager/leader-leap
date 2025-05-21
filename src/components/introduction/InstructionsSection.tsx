@@ -2,17 +2,13 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { CircleCheck, ArrowRight } from 'lucide-react';
+import SectionHeader from './SectionHeader';
 
 const InstructionsSection: React.FC = () => {
   return (
     <Card className="border-none shadow-card bg-white">
       <CardContent className="p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="bg-encourager-accent/20 p-3 rounded-full">
-            <CircleCheck className="text-encourager" size={24} strokeWidth={1.5} />
-          </div>
-          <h2 className="text-2xl font-bold text-encourager">Instructions</h2>
-        </div>
+        <SectionHeader icon={CircleCheck} title="Instructions" />
         
         <div className="space-y-4">
           <div className="flex gap-4 items-center">

@@ -182,3 +182,35 @@ export const getAssessmentById = async (id: string) => {
     return { success: false, error: 'Failed to fetch assessment by ID' };
   }
 };
+
+/**
+ * Deletes all completed assessments for the current user
+ * @returns Success or error message
+ */
+export const deleteAllCompletedAssessments = async () => {
+  try {
+    // Get the current user ID first
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      return { success: false, error: 'User not authenticated' };
+    }
+    
+    // Delete all completed assessments for the current user
+    const { error } = await supabase
+      .from('assessment_results')
+      .delete()
+      .eq('user_id', user.id)
+      .eq('completed', true);
+
+    if (error) {
+      console.error('Error deleting assessments:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, message: 'All completed assessments deleted successfully' };
+  } catch (error) {
+    console.error('Error in deleteAllCompletedAssessments:', error);
+    return { success: false, error: 'Failed to delete assessments' };
+  }
+};

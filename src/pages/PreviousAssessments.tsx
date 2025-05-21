@@ -2,14 +2,25 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { getAssessmentHistory } from '@/services/assessmentService';
+import { getAssessmentHistory, deleteAllCompletedAssessments } from '@/services/assessmentService';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { CircleGauge, ArrowLeft } from 'lucide-react';
+import { CircleGauge, ArrowLeft, Trash2 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import Navigation from '@/components/layout/Navigation';
 import Footer from '@/components/layout/Footer';
 import { toast } from '@/hooks/use-toast';
+import { 
+  AlertDialog, 
+  AlertDialogAction, 
+  AlertDialogCancel, 
+  AlertDialogContent, 
+  AlertDialogDescription, 
+  AlertDialogFooter, 
+  AlertDialogHeader, 
+  AlertDialogTitle, 
+  AlertDialogTrigger 
+} from '@/components/ui/alert-dialog';
 
 interface AssessmentRecord {
   id: string;
@@ -21,6 +32,49 @@ const PreviousAssessments = () => {
   const navigate = useNavigate();
   const [assessments, setAssessments] = useState<AssessmentRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const fetchAssessments = async () => {
+    setIsLoading(true);
+    try {
+      const result = await getAssessmentHistory();
+      console.log('Assessment history fetch result:', result);
+      
+      if (result.success && result.data) {
+        // Make absolutely sure we have unique entries by ID
+        const uniqueIds = new Set();
+        const uniqueAssessments = result.data.filter(assessment => {
+          // Only include each ID once
+          if (!uniqueIds.has(assessment.id)) {
+            uniqueIds.add(assessment.id);
+            return true;
+          }
+          return false;
+        });
+        
+        console.log('Unique assessments (final check):', uniqueAssessments.length);
+        setAssessments(uniqueAssessments);
+      } else {
+        console.error('Failed to fetch assessment history:', result.error);
+        toast({
+          title: "Error fetching assessments",
+          description: result.error || "Failed to load your assessment history",
+          variant: "destructive",
+        });
+        setAssessments([]);
+      }
+    } catch (error) {
+      console.error('Error in fetchAssessments:', error);
+      toast({
+        title: "Error fetching assessments",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+      setAssessments([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     // Check if user is authenticated
@@ -34,50 +88,39 @@ const PreviousAssessments = () => {
     }
 
     // Fetch assessment history if user is authenticated
-    const fetchAssessments = async () => {
-      setIsLoading(true);
-      try {
-        const result = await getAssessmentHistory();
-        console.log('Assessment history fetch result:', result);
-        
-        if (result.success && result.data) {
-          // Make absolutely sure we have unique entries by ID
-          const uniqueIds = new Set();
-          const uniqueAssessments = result.data.filter(assessment => {
-            // Only include each ID once
-            if (!uniqueIds.has(assessment.id)) {
-              uniqueIds.add(assessment.id);
-              return true;
-            }
-            return false;
-          });
-          
-          console.log('Unique assessments (final check):', uniqueAssessments.length);
-          setAssessments(uniqueAssessments);
-        } else {
-          console.error('Failed to fetch assessment history:', result.error);
-          toast({
-            title: "Error fetching assessments",
-            description: result.error || "Failed to load your assessment history",
-            variant: "destructive",
-          });
-          setAssessments([]);
-        }
-      } catch (error) {
-        console.error('Error in fetchAssessments:', error);
-        toast({
-          title: "Error fetching assessments",
-          description: "An unexpected error occurred",
-          variant: "destructive",
-        });
-        setAssessments([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchAssessments();
   }, [user, navigate, loading]);
+
+  const handleDeleteAllAssessments = async () => {
+    setIsDeleting(true);
+    try {
+      const result = await deleteAllCompletedAssessments();
+      
+      if (result.success) {
+        toast({
+          title: "Assessments deleted",
+          description: "All your completed assessments have been deleted",
+        });
+        // Refresh the list
+        setAssessments([]);
+      } else {
+        toast({
+          title: "Error deleting assessments",
+          description: result.error || "Failed to delete your assessments",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting assessments:', error);
+      toast({
+        title: "Error deleting assessments",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   // Show loading state while auth is initializing or fetching data
   if (loading || isLoading) {
@@ -97,12 +140,44 @@ const PreviousAssessments = () => {
         <Navigation />
       </div>
       <main className="max-w-4xl mx-auto px-4 py-8">
-        <Link to="/">
-          <Button variant="ghost" className="mb-6 flex items-center gap-2">
-            <ArrowLeft size={16} />
-            <span>Back to Home</span>
-          </Button>
-        </Link>
+        <div className="flex justify-between items-center mb-6">
+          <Link to="/">
+            <Button variant="ghost" className="flex items-center gap-2">
+              <ArrowLeft size={16} />
+              <span>Back to Home</span>
+            </Button>
+          </Link>
+          
+          {assessments.length > 0 && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  variant="destructive" 
+                  size="sm"
+                  disabled={isDeleting}
+                  className="flex items-center gap-2"
+                >
+                  <Trash2 size={16} />
+                  <span>{isDeleting ? "Deleting..." : "Delete All Assessments"}</span>
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete all assessments</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. All your completed assessment data will be permanently deleted.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDeleteAllAssessments}>
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
+        </div>
 
         <h1 className="text-3xl font-bold text-encourager mb-8">Your Previous Assessments</h1>
 

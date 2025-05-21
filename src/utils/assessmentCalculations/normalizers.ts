@@ -1,4 +1,3 @@
-
 import { Category } from '../assessmentTypes';
 import { SkillWithMetadata } from './types';
 
@@ -8,29 +7,18 @@ export const normalizeSkill = (skill: any, categoryTitle: string): SkillWithMeta
     // Handle both name and competency fields
     const skillName = skill.name || skill.competency || 'Unknown Skill';
     
-    // Get original ratings without manipulation
-    const originalCurrent = Number(skill.ratings?.current) || 0;
-    const originalDesired = Number(skill.ratings?.desired) || 0;
+    // Get original ratings without manipulation - important to keep as numbers
+    const current = Number(skill.ratings?.current);
+    const desired = Number(skill.ratings?.desired);
     
-    // Only use valid ratings (greater than 0)
-    let current = originalCurrent;
-    let desired = originalDesired;
-    
-    // Apply minimal defaults only if absolutely necessary
-    if (current <= 0 && desired <= 0) {
-      console.log(`Both ratings are invalid for skill ${skillName}, using default values`);
-      current = 1;
-      desired = 6;
-    } else {
-      // Fix individual invalid ratings if needed
-      if (current <= 0) current = 1;
-      if (desired <= 0) desired = current + 3;
+    // Calculate gap as the absolute difference between desired and current
+    // Only when both values are present (we don't apply defaults here)
+    let gap = 0;
+    if (!isNaN(current) && !isNaN(desired)) {
+      gap = Math.abs(desired - current);
     }
     
-    // Calculate gap directly as difference between desired and current
-    const gap = Math.abs(desired - current);
-    
-    console.log(`Normalized Skill: ${skillName}, Category: ${categoryTitle}, Current: ${current}, Desired: ${desired}, Gap: ${gap} (Original values: ${originalCurrent}, ${originalDesired})`);
+    console.log(`Normalized Skill: ${skillName}, Category: ${categoryTitle}, Current: ${current}, Desired: ${desired}, Gap: ${gap}`);
     
     return {
       id: skill.id || `skill-${Math.random().toString(36).substring(2, 9)}`,
@@ -38,8 +26,8 @@ export const normalizeSkill = (skill: any, categoryTitle: string): SkillWithMeta
       categoryTitle,
       gap,
       ratings: { 
-        current: current, 
-        desired: desired 
+        current, 
+        desired 
       }
     };
   } catch (error) {

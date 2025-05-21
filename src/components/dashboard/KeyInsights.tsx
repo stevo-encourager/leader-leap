@@ -31,7 +31,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
 }) => {
   const [openSections, setOpenSections] = useState({
     largestGaps: true, // Open by default for debugging
-    skillsToImprove: false,
+    skillsToImprove: true, // Open this too for better debugging
     smallestGaps: false,
     skillsMeeting: false
   });
@@ -98,7 +98,8 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
           <div className="bg-amber-50 p-2 mb-4 rounded text-xs">
             <p><strong>Debug Info:</strong> Raw Average Gap: {averageGap}</p>
             <p>Top Category Gap: {largestCategoryGaps[0]?.gap || 'N/A'}</p>
-            <p>Calculated using 1-10 scale where current and desired ratings create a gap.</p>
+            <p>Skill count: {categories.reduce((acc, cat) => acc + (cat.skills?.length || 0), 0)}</p>
+            <p>Categories with data: {categories.filter(cat => cat.skills?.some(s => s.ratings?.current > 0 || s.ratings?.desired > 0)).length}/{categories.length}</p>
           </div>
           
           <InsightSummary averageGap={displayAverageGap} />

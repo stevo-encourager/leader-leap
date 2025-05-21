@@ -34,15 +34,16 @@ export const getCategoriesWithMetadata = (categories: Category[]): CategoryWithM
       
       category.skills.forEach(skill => {
         // Get actual rating values directly
-        const current = Number(skill.ratings?.current) || 0;
-        const desired = Number(skill.ratings?.desired) || 0;
+        const current = Number(skill.ratings?.current);
+        const desired = Number(skill.ratings?.desired);
         
-        // Only count skills with valid ratings
-        if (current > 0 && desired > 0) {
+        // Only count skills with at least one valid rating
+        if (!isNaN(current) || !isNaN(desired)) {
           console.log(`  Valid skill: ${skill.name}, Current: ${current}, Desired: ${desired}`);
           
-          totalCurrentRating += current;
-          totalDesiredRating += desired;
+          // Use 0 for any NaN values for calculation purposes
+          totalCurrentRating += !isNaN(current) ? current : 0;
+          totalDesiredRating += !isNaN(desired) ? desired : 0;
           validSkillCount++;
         }
       });

@@ -23,18 +23,21 @@ export const calculateAverageGap = (categories: Category[]): number => {
       
       category.skills.forEach(skill => {
         // Get ratings, ensuring they are numbers
-        const current = Number(skill.ratings?.current) || 0;
-        const desired = Number(skill.ratings?.desired) || 0;
+        const current = Number(skill.ratings?.current);
+        const desired = Number(skill.ratings?.desired);
         
-        // Only include skills with valid ratings
-        if (current > 0 && desired > 0) {
+        // Only calculate gap for skills with both ratings defined
+        if (!isNaN(current) && !isNaN(desired)) {
           // Calculate absolute gap
           const gap = Math.abs(desired - current);
           
           console.log(`Skill: ${skill.name}, Current: ${current}, Desired: ${desired}, Gap: ${gap}`);
           
-          totalSkillCount++;
-          totalGapValue += gap;
+          // Only count skills with at least one non-zero rating
+          if (current > 0 || desired > 0) {
+            totalSkillCount++;
+            totalGapValue += gap;
+          }
         }
       });
     });

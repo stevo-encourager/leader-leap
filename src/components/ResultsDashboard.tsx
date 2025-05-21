@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Category, Demographics } from '../utils/assessmentTypes';
@@ -113,11 +112,11 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
             </div>
             <div className="col-span-2">
               {!onSignup ? (
-                <div className="bg-white p-4 h-full border border-slate-200 rounded-lg shadow-sm flex flex-col justify-between">
+                <div className="bg-white p-4 h-full border border-slate-200 rounded-lg shadow-sm flex flex-col justify-center items-center">
                   <img 
                     src="/lovable-uploads/b35e005b-ec23-4976-8796-738f7c856377.png" 
                     alt="Coach Portrait" 
-                    className="rounded-lg w-full h-auto object-cover" 
+                    className="rounded-lg w-4/5 h-auto object-cover" 
                   />
                 </div>
               ) : (

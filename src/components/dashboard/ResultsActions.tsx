@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,7 +18,6 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
   onSignup 
 }) => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   
   // PDF export function
   const handleExportPDF = () => {

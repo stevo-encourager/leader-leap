@@ -27,9 +27,7 @@ const Results = () => {
 
   // Redirect if not on results step
   useEffect(() => {
-    console.log(`Current step in Results: ${currentStep}`);
     if (currentStep !== 'results') {
-      console.log("Redirecting to / from Results page because not on results step");
       navigate('/');
     }
   }, [currentStep, navigate]);
@@ -45,10 +43,6 @@ const Results = () => {
       </div>
     );
   }
-
-  const handleRestart = () => {
-    handleStartAssessment();
-  };
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -69,7 +63,7 @@ const Results = () => {
           <ResultsDisplay
             categories={categories}
             demographics={demographics}
-            onRestart={handleRestart}
+            onRestart={handleStartAssessment}
             onBack={() => navigate('/assessment')}
             onSignup={handleShowSignupForm}
             isAuthenticated={!!user}

@@ -15,12 +15,14 @@ export const useAssessment = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  // Effect to handle result saving when user logs in
   useEffect(() => {
     if (user && currentStep === 'results') {
       handleSaveResults();
     }
   }, [user, currentStep]);
 
+  // Basic data management functions
   const handleCategoriesUpdate = (updatedCategories: Category[]) => {
     setCategories(updatedCategories);
   };
@@ -29,30 +31,26 @@ export const useAssessment = () => {
     setDemographics(updatedDemographics);
   };
 
+  // Navigation functions - simplified to do one thing well
   const handleStartAssessment = () => {
-    console.log("Starting assessment - setting step to demographics");
     setCurrentStep('demographics');
     navigate('/assessment');
   };
 
   const handleContinueToAssessment = () => {
-    console.log("Continuing to assessment questions");
     setCurrentStep('assessment');
   };
 
   const handleBackToIntro = () => {
-    console.log("Going back to intro");
     setCurrentStep('intro');
     navigate('/');
   };
 
   const handleBackToDemographics = () => {
-    console.log("Going back to demographics");
     setCurrentStep('demographics');
   };
 
   const handleCompleteAssessment = () => {
-    console.log("Completing assessment - going to results");
     setCurrentStep('results');
     navigate('/results');
     
@@ -61,6 +59,7 @@ export const useAssessment = () => {
     }
   };
   
+  // Results management functions
   const handleSaveResults = async () => {
     if (!user) {
       setShowAuthForm(true);

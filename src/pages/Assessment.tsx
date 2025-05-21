@@ -31,12 +31,9 @@ const Assessment = () => {
 
   // Ensure we're on the right step for this page
   useEffect(() => {
-    console.log(`Current step in Assessment page: ${currentStep}`);
     if (currentStep === 'intro') {
-      console.log("Redirecting to / from Assessment page");
       navigate('/');
     } else if (currentStep === 'results') {
-      console.log("Redirecting to /results from Assessment page");
       navigate('/results');
     }
   }, [currentStep, navigate]);

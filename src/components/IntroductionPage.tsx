@@ -15,10 +15,6 @@ interface IntroductionPageProps {
 }
 
 const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStartAssessment }) => {
-  const handleStartAssessment = () => {
-    onStartAssessment();
-  };
-
   return (
     <div className="fade-in space-y-6 pt-0">
       <Card className="border-none overflow-hidden shadow-elevated bg-white">
@@ -36,7 +32,7 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
       <CardFooter className="flex justify-center pt-4 pb-8">
         <Button 
           size="lg"
-          onClick={handleStartAssessment}
+          onClick={onStartAssessment}
           className="bg-encourager hover:bg-encourager-light text-white px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 font-medium"
         >
           Start Your Assessment

@@ -12,7 +12,14 @@ import Results from "./pages/Results";
 import PreviousAssessments from "./pages/PreviousAssessments";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 30000,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -25,9 +32,7 @@ const App = () => (
             <Route path="/assessment" element={<Assessment />} />
             <Route path="/results" element={<Results />} />
             <Route path="/previous-assessments" element={<PreviousAssessments />} />
-            {/* Individual assessment result routes */}
             <Route path="/results/:id" element={<Results />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

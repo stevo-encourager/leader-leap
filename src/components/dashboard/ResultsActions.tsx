@@ -44,9 +44,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
   };
 
   const handleNewAssessment = () => {
-    console.log("Starting new assessment from ResultsActions");
-    onRestart(); // This calls handleStartAssessment in the hook
-    navigate('/');
+    onRestart();
   };
   
   return (

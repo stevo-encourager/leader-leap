@@ -8,7 +8,6 @@ import PurposeSection from './introduction/PurposeSection';
 import AudienceSection from './introduction/AudienceSection';
 import InstructionsSection from './introduction/InstructionsSection';
 import BenefitsSection from './introduction/BenefitsSection';
-import { useNavigate } from 'react-router-dom';
 
 interface IntroductionPageProps {
   categories: Category[];
@@ -16,14 +15,8 @@ interface IntroductionPageProps {
 }
 
 const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStartAssessment }) => {
-  const navigate = useNavigate();
-  
   const handleStartAssessment = () => {
-    // Call the provided function to set up state
     onStartAssessment();
-    
-    // Navigate directly
-    navigate('/assessment');
   };
 
   return (

@@ -30,29 +30,29 @@ export const useAssessment = () => {
   };
 
   const handleStartAssessment = () => {
-    console.log("Setting state to demographics and navigating to assessment");
+    console.log("Starting assessment - setting step to demographics");
     setCurrentStep('demographics');
     navigate('/assessment');
   };
 
   const handleContinueToAssessment = () => {
-    console.log("Setting state to assessment");
+    console.log("Continuing to assessment questions");
     setCurrentStep('assessment');
   };
 
   const handleBackToIntro = () => {
-    console.log("Setting state to intro and navigating to home");
+    console.log("Going back to intro");
     setCurrentStep('intro');
     navigate('/');
   };
 
   const handleBackToDemographics = () => {
-    console.log("Setting state to demographics");
+    console.log("Going back to demographics");
     setCurrentStep('demographics');
   };
 
   const handleCompleteAssessment = () => {
-    console.log("Setting state to results and navigating to results");
+    console.log("Completing assessment - going to results");
     setCurrentStep('results');
     navigate('/results');
     

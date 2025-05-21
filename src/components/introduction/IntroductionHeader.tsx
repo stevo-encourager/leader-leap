@@ -1,23 +1,13 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 interface IntroductionHeaderProps {
   onStartAssessment: () => void;
 }
 
 const IntroductionHeader: React.FC<IntroductionHeaderProps> = ({ onStartAssessment }) => {
-  const navigate = useNavigate();
-  
-  const handleClick = () => {
-    // Call the handler first
-    onStartAssessment();
-    
-    // Then directly navigate to the assessment page
-    navigate('/assessment');
-  };
-  
   return (
     <div className="p-8 flex flex-col items-center">
       <a 
@@ -43,7 +33,7 @@ const IntroductionHeader: React.FC<IntroductionHeaderProps> = ({ onStartAssessme
       
       <Button 
         size="lg"
-        onClick={handleClick}
+        onClick={onStartAssessment}
         className="bg-encourager hover:bg-encourager-light text-white px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 font-medium"
       >
         Start Your Assessment

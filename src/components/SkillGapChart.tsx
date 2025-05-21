@@ -72,24 +72,22 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
     return <div className="text-center p-6">No data available for chart</div>;
   }
 
-  // Custom tooltip component to handle type safety
   const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length > 0) {
+    if (active && payload && payload.length) {
       const subject = payload[0]?.payload?.subject || '';
       
-      // Safely extract values
-      const current = typeof payload[0]?.value === 'number' ? payload[0].value : 0;
-      const desired = typeof payload[1]?.value === 'number' ? payload[1].value : 0;
-      const gap = Math.abs(desired - current);
+      const current = payload[0]?.value !== undefined ? payload[0].value : 0;
+      const desired = payload[1]?.value !== undefined ? payload[1].value : 0;
+      const gap = Math.abs(Number(desired) - Number(current));
       
       return (
         <div className="bg-white p-3 rounded shadow-md border border-gray-200">
           <p className="font-medium">{subject}</p>
           <p className="text-sm text-gray-700">
-            Current: <span className="font-medium">{current.toFixed(2)}</span>
+            Current: <span className="font-medium">{Number(current).toFixed(2)}</span>
           </p>
           <p className="text-sm text-gray-700">
-            Desired: <span className="font-medium">{desired.toFixed(2)}</span>
+            Desired: <span className="font-medium">{Number(desired).toFixed(2)}</span>
           </p>
           <p className="text-sm text-gray-700">
             Gap: <span className="font-medium">{gap.toFixed(2)}</span>

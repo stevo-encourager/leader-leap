@@ -7,11 +7,9 @@ import {
   PolarAngleAxis, 
   Radar, 
   Legend, 
-  Tooltip,
-  TooltipProps
+  Tooltip
 } from 'recharts';
-import { Category, Skill } from '@/utils/assessmentTypes';
-import { ValueType } from 'recharts/types/component/DefaultTooltipContent';
+import { Category } from '@/utils/assessmentTypes';
 
 interface SkillGapChartProps {
   categories: Category[];
@@ -112,19 +110,22 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
           />
           <Tooltip 
             content={(props) => {
-              if (props.active && props.payload && props.payload.length) {
-                // Extract values safely with type checking
+              if (props.active && props.payload && props.payload.length > 1) {
+                // Get the subject name
+                const subject = props.payload[0]?.payload?.subject || '';
+                
+                // Parse values as numbers for calculation safety
                 const currentValue = props.payload[0]?.value;
                 const desiredValue = props.payload[1]?.value;
                 
-                // Convert to numbers safely for calculation
+                // Ensure values are numbers before calculation
                 const current = typeof currentValue === 'number' ? currentValue : 0;
                 const desired = typeof desiredValue === 'number' ? desiredValue : 0;
                 const gap = Math.abs(desired - current);
                 
                 return (
                   <div className="bg-white p-3 rounded shadow-md border border-gray-200">
-                    <p className="font-medium">{props.payload[0].payload.subject}</p>
+                    <p className="font-medium">{subject}</p>
                     <p className="text-sm text-gray-700">
                       Current: <span className="font-medium">{current.toFixed(2)}</span>
                     </p>

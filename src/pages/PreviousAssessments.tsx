@@ -37,23 +37,26 @@ const PreviousAssessments = () => {
   const fetchAssessments = async () => {
     setIsLoading(true);
     try {
-      console.log("Fetching assessments...");
+      console.log("PreviousAssessments - Fetching assessments...");
       const result = await getAssessmentHistory();
-      console.log('Assessment history fetch result:', result);
+      console.log('PreviousAssessments - Assessment history fetch result:', result);
       
       if (result.success && result.data) {
-        // Additional deduplication by ID to ensure no duplicates
-        const seen = new Set();
-        const uniqueAssessments = result.data.filter(item => {
-          const isDuplicate = seen.has(item.id);
-          seen.add(item.id);
-          return !isDuplicate;
+        // Deduplicate by ID using a Map (which preserves insertion order)
+        const uniqueMap = new Map();
+        
+        result.data.forEach(item => {
+          if (!uniqueMap.has(item.id)) {
+            uniqueMap.set(item.id, item);
+          }
         });
         
-        console.log('Final assessments after client-side deduplication:', uniqueAssessments);
+        const uniqueAssessments = Array.from(uniqueMap.values());
+        console.log('PreviousAssessments - Unique assessments:', uniqueAssessments);
+        
         setAssessments(uniqueAssessments);
       } else {
-        console.error('Failed to fetch assessment history:', result.error);
+        console.error('PreviousAssessments - Failed to fetch history:', result.error);
         toast({
           title: "Error fetching assessments",
           description: result.error || "Failed to load your assessment history",
@@ -62,7 +65,7 @@ const PreviousAssessments = () => {
         setAssessments([]);
       }
     } catch (error) {
-      console.error('Error in fetchAssessments:', error);
+      console.error('PreviousAssessments - Error in fetchAssessments:', error);
       toast({
         title: "Error fetching assessments",
         description: "An unexpected error occurred",

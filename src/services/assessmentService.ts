@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Demographics } from '../utils/assessmentTypes';
 import { Json } from '@/integrations/supabase/types';
@@ -139,7 +138,7 @@ export const getAssessmentHistory = async () => {
       return { success: false, error: 'User not authenticated' };
     }
     
-    console.log('Fetching assessment history for user:', user.id);
+    console.log('getAssessmentHistory - Fetching for user:', user.id);
     
     // Only get completed assessments, ordered by most recent first
     const { data: assessments, error } = await supabase
@@ -150,37 +149,31 @@ export const getAssessmentHistory = async () => {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('Error fetching assessment history:', error);
+      console.error('getAssessmentHistory - Error fetching data:', error);
       return { success: false, error: error.message };
     }
 
     // Log the raw data for debugging
-    console.log('Raw assessment history data from database:', assessments);
+    console.log('getAssessmentHistory - Raw data from database:', assessments);
     
     if (!assessments || assessments.length === 0) {
-      console.log('No assessment history found for user');
+      console.log('getAssessmentHistory - No history found');
       return { success: true, data: [] };
     }
 
-    // Use Map with ID as key for efficient deduplication
-    const uniqueAssessmentsMap = new Map();
-    
-    assessments.forEach(assessment => {
-      // Only add if this ID hasn't been seen yet
-      if (!uniqueAssessmentsMap.has(assessment.id)) {
-        uniqueAssessmentsMap.set(assessment.id, assessment);
-      }
+    // Deduplicate using a Set with stringified objects for comparison
+    const uniqueIds = new Set();
+    const uniqueAssessments = assessments.filter(assessment => {
+      const duplicate = uniqueIds.has(assessment.id);
+      uniqueIds.add(assessment.id);
+      return !duplicate;
     });
     
-    // Convert Map values back to array
-    const uniqueAssessments = Array.from(uniqueAssessmentsMap.values());
-    
-    console.log('Deduplicated assessments count:', uniqueAssessments.length);
-    console.log('Final assessment history:', uniqueAssessments);
+    console.log('getAssessmentHistory - After deduplication:', uniqueAssessments);
     
     return { success: true, data: uniqueAssessments };
   } catch (error) {
-    console.error('Error in getAssessmentHistory:', error);
+    console.error('getAssessmentHistory - Error:', error);
     return { success: false, error: 'Failed to fetch assessment history' };
   }
 };
@@ -192,6 +185,8 @@ export const getAssessmentHistory = async () => {
  */
 export const getAssessmentById = async (id: string) => {
   try {
+    console.log('getAssessmentById - Fetching assessment:', id);
+    
     const { data: assessment, error } = await supabase
       .from('assessment_results')
       .select('*')
@@ -199,31 +194,65 @@ export const getAssessmentById = async (id: string) => {
       .single();
 
     if (error) {
-      console.error('Error fetching assessment by ID:', error);
+      console.error('getAssessmentById - Error fetching:', error);
       return { success: false, error: error.message };
     }
 
+    if (!assessment) {
+      console.error('getAssessmentById - No assessment found with ID:', id);
+      return { success: false, error: 'Assessment not found' };
+    }
+    
+    console.log('getAssessmentById - Raw data:', assessment);
+    console.log('getAssessmentById - Categories type:', typeof assessment.categories);
+    
     // Fix any potential issues with the data format
     if (assessment && assessment.categories) {
+      let categoriesData: any = assessment.categories;
+      
+      // Handle case where categories might be stored as a string
+      if (typeof categoriesData === 'string') {
+        try {
+          categoriesData = JSON.parse(categoriesData);
+          console.log('getAssessmentById - Parsed categories from string:', categoriesData);
+        } catch (e) {
+          console.error('getAssessmentById - Failed to parse categories string:', e);
+        }
+      }
+      
+      // Ensure we have an array to work with
+      if (!Array.isArray(categoriesData)) {
+        if (typeof categoriesData === 'object' && categoriesData !== null) {
+          categoriesData = Object.values(categoriesData);
+        } else {
+          categoriesData = [];
+        }
+      }
+      
       // Ensure all categories have properly formatted skills and ratings
-      const fixedCategories = (assessment.categories as unknown as Category[]).map(category => ({
+      const fixedCategories = categoriesData.map((category: any) => ({
         ...category,
-        skills: (category.skills || []).map(skill => ({
-          ...skill,
+        id: category.id || `category-${Math.random().toString(36).substring(2, 9)}`,
+        title: category.title || 'Unknown Category',
+        description: category.description || '',
+        skills: (category.skills || []).map((skill: any) => ({
+          id: skill.id || `skill-${Math.random().toString(36).substring(2, 9)}`,
+          name: skill.name || skill.competency || 'Unnamed Skill',
+          description: skill.description || '',
           ratings: {
             current: typeof skill.ratings?.current === 'number' ? skill.ratings.current : 0,
             desired: typeof skill.ratings?.desired === 'number' ? skill.ratings.desired : 0
           }
         }))
       }));
-      
+
       assessment.categories = fixedCategories as unknown as Json;
+      console.log('getAssessmentById - Fixed categories:', fixedCategories);
     }
 
-    console.log('Successfully retrieved assessment by ID:', assessment);
     return { success: true, data: assessment };
   } catch (error) {
-    console.error('Error in getAssessmentById:', error);
+    console.error('getAssessmentById - Error:', error);
     return { success: false, error: 'Failed to fetch assessment by ID' };
   }
 };

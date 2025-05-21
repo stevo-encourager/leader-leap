@@ -17,8 +17,18 @@ interface DetailedAnalysisProps {
 }
 
 const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({ categories, className = '' }) => {
-  // Add validation to ensure we have data to render
-  const hasCategories = categories && Array.isArray(categories) && categories.length > 0;
+  // Add extensive validation to ensure we have data to render
+  const hasCategories = categories && 
+    Array.isArray(categories) && 
+    categories.length > 0 && 
+    categories.some(cat => 
+      cat && cat.skills && 
+      Array.isArray(cat.skills) && 
+      cat.skills.length > 0
+    );
+  
+  console.log('DetailedAnalysis - Categories:', categories);
+  console.log('DetailedAnalysis - hasCategories:', hasCategories);
 
   return (
     <Card className={`overflow-hidden ${className}`}>
@@ -51,7 +61,7 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({ categories, classNa
         ) : (
           <div className="h-[400px] w-full flex items-center justify-center bg-slate-50">
             <p className="text-slate-500 text-center">
-              No category data available for visualization
+              No category data available for visualization. Please complete an assessment first.
             </p>
           </div>
         )}

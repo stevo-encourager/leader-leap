@@ -23,44 +23,44 @@ interface ChartData {
 
 const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
   console.log("SkillGapChart - received categories:", categories);
-  console.log("SkillGapChart - Categories data type:", Array.isArray(categories) ? "Array" : typeof categories);
+  console.log("SkillGapChart - Categories is array:", Array.isArray(categories));
+  console.log("SkillGapChart - Categories length:", categories?.length || 0);
   
-  // Memoize chart data processing for performance
+  // Memoize chart data processing for performance and prevent errors
   const chartData = useMemo(() => {
     if (!categories || !Array.isArray(categories) || categories.length === 0) {
-      console.log("SkillGapChart - No categories data available");
+      console.error("SkillGapChart - No valid categories data available");
       return [];
     }
     
-    return categories.map(category => {
-      if (!category || typeof category !== 'object') {
-        console.error("SkillGapChart - Invalid category object:", category);
-        return {
-          subject: "Unknown",
-          current: 0,
-          desired: 0,
-          fullMark: 10
-        };
-      }
-      
+    // Filter out any invalid category objects before mapping
+    const validCategories = categories.filter(cat => 
+      cat && typeof cat === 'object' && cat.title && 
+      cat.skills && Array.isArray(cat.skills)
+    );
+    
+    console.log("SkillGapChart - Valid categories count:", validCategories.length);
+    
+    if (validCategories.length === 0) {
+      console.error("SkillGapChart - No valid categories after filtering");
+      return [];
+    }
+    
+    return validCategories.map(category => {
       // Get the category title or use a fallback
       const title = category.title || "Unknown Category";
       console.log(`SkillGapChart - Processing category: ${title}`);
       
       // Validate skills array
-      const skills = category.skills && Array.isArray(category.skills) ? category.skills : [];
-      console.log(`SkillGapChart - Category ${title} has ${skills.length} skills`);
-      
-      // Get valid skills with defined ratings
-      const validSkills = skills.filter(
-        skill => skill && skill.ratings && 
+      const skills = category.skills?.filter(skill => 
+        skill && skill.ratings && 
         typeof skill.ratings.current === 'number' && 
         typeof skill.ratings.desired === 'number'
-      );
+      ) || [];
       
-      console.log(`SkillGapChart - Category ${title} has ${validSkills.length} valid skills`);
+      console.log(`SkillGapChart - Category ${title} has ${skills.length} valid skills`);
       
-      if (!validSkills.length) {
+      if (skills.length === 0) {
         return {
           subject: title,
           current: 0,
@@ -69,17 +69,17 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
         };
       }
       
-      // Calculate averages more efficiently
-      const totalCurrent = validSkills.reduce((sum, skill) => {
-        return sum + (typeof skill.ratings.current === 'number' ? skill.ratings.current : 0);
-      }, 0);
+      // Calculate averages safely
+      let totalCurrent = 0;
+      let totalDesired = 0;
       
-      const totalDesired = validSkills.reduce((sum, skill) => {
-        return sum + (typeof skill.ratings.desired === 'number' ? skill.ratings.desired : 0);
-      }, 0);
+      skills.forEach(skill => {
+        totalCurrent += Number(skill.ratings.current) || 0;
+        totalDesired += Number(skill.ratings.desired) || 0;
+      });
       
-      const avgCurrent = parseFloat((totalCurrent / validSkills.length).toFixed(1));
-      const avgDesired = parseFloat((totalDesired / validSkills.length).toFixed(1));
+      const avgCurrent = parseFloat((totalCurrent / skills.length).toFixed(1));
+      const avgDesired = parseFloat((totalDesired / skills.length).toFixed(1));
       
       console.log(`SkillGapChart - Category ${title}: current=${avgCurrent}, desired=${avgDesired}`);
       
@@ -95,8 +95,8 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
   console.log("SkillGapChart - Final chart data:", chartData);
 
   // Create a placeholder if no data is available
-  if (!chartData.length) {
-    console.log("SkillGapChart - No chart data available, showing placeholder");
+  if (!chartData || chartData.length === 0) {
+    console.error("SkillGapChart - No chart data available after processing");
     return (
       <div className="flex items-center justify-center h-full bg-slate-50 rounded-lg p-6">
         <p className="text-gray-500 text-center">

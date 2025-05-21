@@ -23,43 +23,82 @@ export const useSpecificAssessment = (assessmentId: string | undefined): UseSpec
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!assessmentId) return;
+    if (!assessmentId) {
+      console.log('useSpecificAssessment - No assessmentId provided');
+      return;
+    }
+    
+    console.log('useSpecificAssessment - Fetching assessment with id:', assessmentId);
     
     const fetchSpecificAssessment = async () => {
       setLoadingSpecificAssessment(true);
       try {
         const result = await getAssessmentById(assessmentId);
-        console.log("Specific assessment fetch result:", result);
+        console.log("useSpecificAssessment - Raw fetch result:", result);
         
         if (result.success && result.data) {
-          // Extract categories and demographics data
-          const rawCategoriesData = result.data.categories;
-          const demographicsData = result.data.demographics as unknown as Demographics || {};
+          // Extract and validate categories data
+          let rawCategoriesData = result.data.categories;
+          console.log("useSpecificAssessment - Raw categories data type:", typeof rawCategoriesData);
+          console.log("useSpecificAssessment - Raw categories data:", rawCategoriesData);
           
-          console.log("Raw categories data:", rawCategoriesData);
+          // Handle case where categories might be stored as a string
+          if (typeof rawCategoriesData === 'string') {
+            try {
+              rawCategoriesData = JSON.parse(rawCategoriesData);
+              console.log("useSpecificAssessment - Parsed categories from string:", rawCategoriesData);
+            } catch (e) {
+              console.error("useSpecificAssessment - Failed to parse categories string:", e);
+            }
+          }
+          
+          // Extract demographics data
+          const demographicsData = result.data.demographics as unknown as Demographics || {};
           
           // Ensure we have proper categories data to work with
           if (rawCategoriesData) {
             // Convert to proper type and normalize
-            const categoriesArray = Array.isArray(rawCategoriesData) 
-              ? rawCategoriesData 
-              : [rawCategoriesData];
+            let categoriesArray;
+            if (Array.isArray(rawCategoriesData)) {
+              categoriesArray = rawCategoriesData;
+            } else if (typeof rawCategoriesData === 'object') {
+              categoriesArray = Object.values(rawCategoriesData);
+            } else {
+              categoriesArray = [];
+              console.error('useSpecificAssessment - Categories data is in an invalid format');
+            }
               
-            console.log("Categories array before normalization:", categoriesArray);
+            console.log("useSpecificAssessment - Categories array before normalization:", categoriesArray);
             
             // Apply thorough normalization to ensure consistent data structure
             const normalizedCategories = normalizeCategories(categoriesArray as unknown as Category[]);
             
-            console.log("Normalized categories:", normalizedCategories);
+            console.log("useSpecificAssessment - Normalized categories:", normalizedCategories);
             
             // Verify we have valid data after normalization
             if (normalizedCategories && normalizedCategories.length > 0) {
-              setSpecificAssessmentData({
-                categories: normalizedCategories,
-                demographics: demographicsData
-              });
+              // Check if categories have valid skills
+              const hasValidSkills = normalizedCategories.some(cat => 
+                cat.skills && Array.isArray(cat.skills) && cat.skills.length > 0
+              );
+              
+              if (hasValidSkills) {
+                console.log("useSpecificAssessment - Setting assessment data with valid categories");
+                setSpecificAssessmentData({
+                  categories: normalizedCategories,
+                  demographics: demographicsData
+                });
+              } else {
+                console.error("useSpecificAssessment - Normalized categories have no valid skills");
+                toast({
+                  title: "Incomplete assessment data",
+                  description: "The assessment data is missing skill information",
+                  variant: "destructive",
+                });
+                navigate('/previous-assessments');
+              }
             } else {
-              console.error("Normalization failed to produce valid categories");
+              console.error("useSpecificAssessment - Normalization failed to produce valid categories");
               toast({
                 title: "Error loading assessment",
                 description: "The assessment data format is invalid",
@@ -68,7 +107,7 @@ export const useSpecificAssessment = (assessmentId: string | undefined): UseSpec
               navigate('/previous-assessments');
             }
           } else {
-            console.error("No categories data found in the assessment");
+            console.error("useSpecificAssessment - No categories data found in the assessment");
             toast({
               title: "Error loading assessment",
               description: "The assessment doesn't contain categories data",
@@ -77,7 +116,7 @@ export const useSpecificAssessment = (assessmentId: string | undefined): UseSpec
             navigate('/previous-assessments');
           }
         } else {
-          console.error("Failed to fetch assessment:", result.error);
+          console.error("useSpecificAssessment - Failed to fetch assessment:", result.error);
           toast({
             title: "Error loading assessment",
             description: result.error || "Failed to load the requested assessment",
@@ -86,7 +125,7 @@ export const useSpecificAssessment = (assessmentId: string | undefined): UseSpec
           navigate('/previous-assessments');
         }
       } catch (error) {
-        console.error("Error fetching specific assessment:", error);
+        console.error("useSpecificAssessment - Error fetching specific assessment:", error);
         toast({
           title: "Error",
           description: "Failed to load the assessment",

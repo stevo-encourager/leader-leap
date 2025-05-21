@@ -139,7 +139,9 @@ export const getAssessmentHistory = async () => {
       return { success: false, error: 'User not authenticated' };
     }
     
-    // Only get completed assessments with distinct created_at timestamps
+    console.log('Fetching assessment history for user:', user.id);
+    
+    // Only get completed assessments, ordered by most recent first
     const { data: assessments, error } = await supabase
       .from('assessment_results')
       .select('id, created_at')
@@ -153,19 +155,29 @@ export const getAssessmentHistory = async () => {
     }
 
     // Log the raw data for debugging
-    console.log('Raw assessment history:', assessments);
+    console.log('Raw assessment history data from database:', assessments);
+    
+    if (!assessments || assessments.length === 0) {
+      console.log('No assessment history found for user');
+      return { success: true, data: [] };
+    }
 
-    // Use Set to track unique IDs to ensure we don't have duplicates
-    const uniqueIds = new Set<string>();
-    const uniqueAssessments = assessments.filter(assessment => {
-      if (uniqueIds.has(assessment.id)) {
-        return false;
+    // Use Map with ID as key for efficient deduplication
+    const uniqueAssessmentsMap = new Map();
+    
+    assessments.forEach(assessment => {
+      // Only add if this ID hasn't been seen yet
+      if (!uniqueAssessmentsMap.has(assessment.id)) {
+        uniqueAssessmentsMap.set(assessment.id, assessment);
       }
-      uniqueIds.add(assessment.id);
-      return true;
     });
     
-    console.log('Deduplicated assessments:', uniqueAssessments);
+    // Convert Map values back to array
+    const uniqueAssessments = Array.from(uniqueAssessmentsMap.values());
+    
+    console.log('Deduplicated assessments count:', uniqueAssessments.length);
+    console.log('Final assessment history:', uniqueAssessments);
+    
     return { success: true, data: uniqueAssessments };
   } catch (error) {
     console.error('Error in getAssessmentHistory:', error);

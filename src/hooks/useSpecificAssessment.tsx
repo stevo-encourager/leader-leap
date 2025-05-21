@@ -32,27 +32,46 @@ export const useSpecificAssessment = (assessmentId: string | undefined): UseSpec
         console.log("Specific assessment fetch result:", result);
         
         if (result.success && result.data) {
-          // Extract and properly type the categories and demographics
-          const categoriesData = result.data.categories as unknown as Category[];
-          const demographicsData = result.data.demographics as unknown as Demographics;
+          // Extract categories and demographics data
+          const rawCategoriesData = result.data.categories;
+          const demographicsData = result.data.demographics as unknown as Demographics || {};
           
-          // Ensure categories is an array
-          if (categoriesData && Array.isArray(categoriesData)) {
-            console.log("Successfully loaded assessment data with categories:", categoriesData);
+          console.log("Raw categories data:", rawCategoriesData);
+          
+          // Ensure we have proper categories data to work with
+          if (rawCategoriesData) {
+            // Convert to proper type and normalize
+            const categoriesArray = Array.isArray(rawCategoriesData) 
+              ? rawCategoriesData 
+              : [rawCategoriesData];
+              
+            console.log("Categories array before normalization:", categoriesArray);
             
-            // Use the normalizeCategories utility to process the data properly
-            const normalizedCategories = normalizeCategories(categoriesData);
+            // Apply thorough normalization to ensure consistent data structure
+            const normalizedCategories = normalizeCategories(categoriesArray as unknown as Category[]);
+            
             console.log("Normalized categories:", normalizedCategories);
             
-            setSpecificAssessmentData({
-              categories: normalizedCategories,
-              demographics: demographicsData || {}
-            });
+            // Verify we have valid data after normalization
+            if (normalizedCategories && normalizedCategories.length > 0) {
+              setSpecificAssessmentData({
+                categories: normalizedCategories,
+                demographics: demographicsData
+              });
+            } else {
+              console.error("Normalization failed to produce valid categories");
+              toast({
+                title: "Error loading assessment",
+                description: "The assessment data format is invalid",
+                variant: "destructive",
+              });
+              navigate('/previous-assessments');
+            }
           } else {
-            console.error("Invalid categories data format:", categoriesData);
+            console.error("No categories data found in the assessment");
             toast({
               title: "Error loading assessment",
-              description: "The assessment data format is invalid",
+              description: "The assessment doesn't contain categories data",
               variant: "destructive",
             });
             navigate('/previous-assessments');
@@ -73,6 +92,7 @@ export const useSpecificAssessment = (assessmentId: string | undefined): UseSpec
           description: "Failed to load the assessment",
           variant: "destructive",
         });
+        navigate('/previous-assessments');
       } finally {
         setLoadingSpecificAssessment(false);
       }

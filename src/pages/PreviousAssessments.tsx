@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
@@ -36,16 +37,20 @@ const PreviousAssessments = () => {
   const fetchAssessments = async () => {
     setIsLoading(true);
     try {
+      console.log("Fetching assessments...");
       const result = await getAssessmentHistory();
       console.log('Assessment history fetch result:', result);
       
       if (result.success && result.data) {
-        // Additional deduplication check to ensure no duplicates
-        const uniqueAssessments = Array.from(
-          new Map(result.data.map(item => [item.id, item])).values()
-        );
+        // Additional deduplication by ID to ensure no duplicates
+        const seen = new Set();
+        const uniqueAssessments = result.data.filter(item => {
+          const isDuplicate = seen.has(item.id);
+          seen.add(item.id);
+          return !isDuplicate;
+        });
         
-        console.log('Final deduplicated assessments:', uniqueAssessments);
+        console.log('Final assessments after client-side deduplication:', uniqueAssessments);
         setAssessments(uniqueAssessments);
       } else {
         console.error('Failed to fetch assessment history:', result.error);

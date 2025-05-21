@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import UserHeader from '@/components/auth/UserHeader';
@@ -32,6 +32,12 @@ const Results = () => {
     specificAssessmentData
   } = useSpecificAssessment(assessmentId);
 
+  console.log("Results page - Auth loading:", loading);
+  console.log("Results page - Specific assessment loading:", loadingSpecificAssessment);
+  console.log("Results page - AssessmentId:", assessmentId);
+  console.log("Results page - specificAssessmentData:", specificAssessmentData);
+  console.log("Results page - categories from useAssessment:", categories);
+
   // Wait for auth and data to initialize before rendering
   if (loading || loadingSpecificAssessment) {
     return <AssessmentLoading />;
@@ -53,7 +59,11 @@ const Results = () => {
     console.log("Results page - Number of categories:", displayCategories.length);
     displayCategories.forEach((cat, i) => {
       console.log(`Results page - Category ${i} (${cat.title}):`, cat);
-      console.log(`Results page - Category ${i} has ${cat.skills?.length || 0} skills`);
+      if (cat.skills && Array.isArray(cat.skills)) {
+        console.log(`Results page - Category ${i} has ${cat.skills.length} skills`);
+      } else {
+        console.log(`Results page - Category ${i} has invalid skills array`);
+      }
     });
   }
 
@@ -104,7 +114,7 @@ const Results = () => {
         )}
         
         {/* Results content */}
-        {!showAuthForm && (
+        {!showAuthForm && hasValidCategories && (
           <ResultsDisplay
             categories={displayCategories}
             demographics={displayDemographics}

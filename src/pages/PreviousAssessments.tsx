@@ -36,14 +36,9 @@ const PreviousAssessments = () => {
         console.log('Assessment history fetch result:', result);
         
         if (result.success && result.data) {
-          // Ensure we're dealing with an array and remove any potential duplicates
-          const uniqueAssessments = Array.isArray(result.data) 
-            ? result.data.filter((assessment, index, self) => 
-                index === self.findIndex(a => a.id === assessment.id))
-            : [];
-            
-          console.log('Unique assessments:', uniqueAssessments);
-          setAssessments(uniqueAssessments);
+          // Simply use the data directly as we've filtered it in the service layer
+          setAssessments(result.data);
+          console.log('Setting assessments:', result.data);
         } else {
           console.error('Failed to fetch assessment history:', result.error);
           toast({

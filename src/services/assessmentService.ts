@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Demographics } from '../utils/assessmentData';
 import { Json } from '@/integrations/supabase/types';
@@ -18,12 +17,45 @@ export const saveAssessmentResults = async (categories: Category[], demographics
       return { success: false, error: 'User not authenticated' };
     }
     
+    // Check if the user already has a pending assessment
+    const { data: existingAssessments, error: checkError } = await supabase
+      .from('assessment_results')
+      .select('id')
+      .eq('user_id', user.id)
+      .is('completed', null);
+      
+    if (checkError) {
+      console.error('Error checking existing assessments:', checkError);
+      return { success: false, error: checkError.message };
+    }
+    
+    // If there's an existing incomplete assessment, update it instead of creating a new one
+    if (existingAssessments && existingAssessments.length > 0) {
+      const { data, error } = await supabase
+        .from('assessment_results')
+        .update({
+          categories: categories as unknown as Json,
+          demographics: demographics as unknown as Json,
+          completed: true
+        })
+        .eq('id', existingAssessments[0].id);
+        
+      if (error) {
+        console.error('Error updating assessment results:', error);
+        return { success: false, error: error.message };
+      }
+      
+      return { success: true, data };
+    }
+    
+    // Otherwise, create a new completed assessment
     const { data, error } = await supabase
       .from('assessment_results')
       .insert({
         categories: categories as unknown as Json,
         demographics: demographics as unknown as Json,
-        user_id: user.id
+        user_id: user.id,
+        completed: true
       });
 
     if (error) {
@@ -55,6 +87,7 @@ export const getLatestAssessmentResults = async () => {
       .from('assessment_results')
       .select('*')
       .eq('user_id', user.id)
+      .eq('completed', true)
       .order('created_at', { ascending: false })
       .limit(1);
 
@@ -87,11 +120,12 @@ export const getAssessmentHistory = async () => {
       return { success: false, error: 'User not authenticated' };
     }
     
-    // Get all assessment results for this user
+    // Only get completed assessments
     const { data: assessments, error } = await supabase
       .from('assessment_results')
       .select('id, created_at')
       .eq('user_id', user.id)
+      .eq('completed', true)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -120,6 +154,7 @@ export const getAssessmentById = async (id: string) => {
       .from('assessment_results')
       .select('*')
       .eq('id', id)
+      .eq('completed', true)
       .single();
 
     if (error) {

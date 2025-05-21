@@ -28,69 +28,39 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
   useEffect(() => {
     console.log("SkillGapChart - Categories received:", categories);
     
-    // If no categories, return early
-    if (!categories || categories.length === 0) {
-      console.log("No categories to display in chart");
-      return;
-    }
-
     // Process the data for the chart
     const preparedData: ChartData[] = categories
-      .filter(category => {
-        // Ensure we have a valid category with skills
-        if (!category || !category.title) {
-          console.warn("Invalid category object:", category);
-          return false;
-        }
-        
-        if (!category.skills || !Array.isArray(category.skills)) {
-          console.warn(`Category ${category.title} has no skills array or it's not an array`);
-          return false;
-        }
-        
-        return true;
-      })
+      .filter(category => category && category.title && Array.isArray(category.skills))
       .map(category => {
         // Calculate average for each category
-        const totalSkills = category.skills.length;
-        let sumCurrent = 0;
-        let sumDesired = 0;
-        let validSkillCount = 0;
+        const skills = category.skills.filter(skill => skill && skill.ratings);
+        const validSkillCount = skills.length;
         
-        category.skills.forEach(skill => {
-          // Try to get ratings - handle both number and string cases
-          const skillName = skill.name || (skill as any).competency || 'unnamed';
-          
-          // Ensure we have ratings object
-          if (!skill.ratings) {
-            console.warn(`Skill ${skillName} in ${category.title} has no ratings`);
-            return;
-          }
-          
-          let currentRating = typeof skill.ratings.current === 'number' 
+        if (validSkillCount === 0) {
+          return {
+            subject: category.title,
+            current: 0,
+            desired: 0,
+            fullMark: 10
+          };
+        }
+        
+        const sumCurrent = skills.reduce((sum, skill) => {
+          const currentRating = typeof skill.ratings.current === 'number' 
             ? skill.ratings.current 
             : parseFloat(String(skill.ratings.current || '0'));
-            
-          let desiredRating = typeof skill.ratings.desired === 'number' 
+          return sum + (isNaN(currentRating) ? 0 : currentRating);
+        }, 0);
+        
+        const sumDesired = skills.reduce((sum, skill) => {
+          const desiredRating = typeof skill.ratings.desired === 'number' 
             ? skill.ratings.desired 
             : parseFloat(String(skill.ratings.desired || '0'));
-          
-          // Consider 0 as a valid rating value
-          if (!isNaN(currentRating) && !isNaN(desiredRating)) {
-            console.log(`Valid skill rating for ${skillName}: current=${currentRating}, desired=${desiredRating}`);
-            sumCurrent += currentRating;
-            sumDesired += desiredRating;
-            validSkillCount++;
-          } else {
-            console.warn(`Invalid ratings for skill: ${skillName}`, skill.ratings);
-          }
-        });
+          return sum + (isNaN(desiredRating) ? 0 : desiredRating);
+        }, 0);
         
-        // If no valid skills found, use zeros
         const categoryAvgCurrent = validSkillCount > 0 ? sumCurrent / validSkillCount : 0;
         const categoryAvgDesired = validSkillCount > 0 ? sumDesired / validSkillCount : 0;
-        
-        console.log(`Category ${category.title} - Average current: ${categoryAvgCurrent}, Average desired: ${categoryAvgDesired}, Valid skills: ${validSkillCount}`);
         
         return {
           subject: category.title,

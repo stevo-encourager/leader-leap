@@ -19,13 +19,10 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
   const navigate = useNavigate();
   
   const handleStartAssessment = () => {
-    console.log("Start assessment button clicked in IntroductionPage");
-    
     // Call the provided function to set up state
     onStartAssessment();
     
-    // Navigate directly without setTimeout
-    console.log("Navigating to /assessment from IntroductionPage");
+    // Navigate directly
     navigate('/assessment');
   };
 

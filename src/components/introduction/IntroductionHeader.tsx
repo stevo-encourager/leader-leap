@@ -10,14 +10,11 @@ interface IntroductionHeaderProps {
 const IntroductionHeader: React.FC<IntroductionHeaderProps> = ({ onStartAssessment }) => {
   const navigate = useNavigate();
   
-  const handleClick = () => {
-    console.log("Start assessment button clicked in IntroductionHeader");
-    
-    // First call the provided function to set up state
+  const handleClick = (e: React.MouseEvent) => {
+    // First set up state
     onStartAssessment();
     
-    // Then navigate directly without using setTimeout
-    console.log("Navigating to /assessment from IntroductionHeader");
+    // Then navigate 
     navigate('/assessment');
   };
   

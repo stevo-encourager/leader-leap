@@ -10,7 +10,7 @@ const Navigation: React.FC = () => {
   
   return (
     <nav className="flex justify-between items-center gap-4 py-2 w-full">
-      <Link to="/">
+      <Link to="/" className="no-underline">
         <Button 
           variant="ghost" 
           size="sm" 
@@ -23,7 +23,7 @@ const Navigation: React.FC = () => {
       
       <div className="flex gap-2">
         {user ? (
-          <Link to="/previous-assessments">
+          <Link to="/previous-assessments" className="no-underline">
             <Button 
               variant="ghost" 
               size="sm" 
@@ -34,7 +34,7 @@ const Navigation: React.FC = () => {
             </Button>
           </Link>
         ) : (
-          <Link to="/login">
+          <Link to="/login" className="no-underline">
             <Button 
               variant="ghost" 
               size="sm" 

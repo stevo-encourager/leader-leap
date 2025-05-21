@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,6 +19,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
   onSignup 
 }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   
   // PDF export function
   const handleExportPDF = () => {
@@ -41,6 +42,11 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
       'leadership-assessment-results.pdf'
     );
   };
+
+  const handleNewAssessment = () => {
+    onRestart();
+    navigate('/');
+  };
   
   return (
     <div className="flex justify-between w-full">
@@ -57,12 +63,10 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
           <Download className="h-4 w-4" />
           {user ? 'Download PDF' : 'Save as PDF'}
         </Button>
-        <Link to="/">
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Start New Assessment
-          </Button>
-        </Link>
+        <Button onClick={handleNewAssessment}>
+          <Plus className="mr-2 h-4 w-4" />
+          Start New Assessment
+        </Button>
       </div>
     </div>
   );

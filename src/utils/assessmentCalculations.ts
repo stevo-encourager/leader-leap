@@ -12,6 +12,37 @@ export interface SkillWithMetadata {
   };
 }
 
+// Helper function to normalize skill data
+const normalizeSkill = (skill: any, categoryTitle: string): SkillWithMetadata | null => {
+  // Handle both name and competency fields
+  const skillName = skill.name || skill.competency || 'Unknown Skill';
+  
+  // Ensure we have valid ratings
+  let current = typeof skill.ratings?.current === 'number' 
+    ? skill.ratings.current 
+    : parseFloat(String(skill.ratings?.current || '0'));
+    
+  let desired = typeof skill.ratings?.desired === 'number' 
+    ? skill.ratings.desired 
+    : parseFloat(String(skill.ratings?.desired || '0'));
+  
+  // Skip invalid ratings
+  if (isNaN(current) || isNaN(desired)) {
+    console.warn(`Invalid ratings for skill: ${skillName}`, skill);
+    return null;
+  }
+  
+  const gap = parseFloat(Math.abs(desired - current).toFixed(2));
+  
+  return {
+    id: skill.id || `skill-${Math.random().toString(36).substring(2, 9)}`,
+    name: skillName,
+    categoryTitle,
+    gap,
+    ratings: { current, desired }
+  };
+};
+
 export const calculateAverageGap = (categories: Category[]): number => {
   if (!categories || categories.length === 0) {
     console.warn("No categories provided to calculateAverageGap");
@@ -22,20 +53,14 @@ export const calculateAverageGap = (categories: Category[]): number => {
   let totalGapValue = 0;
   
   categories.forEach(category => {
-    if (!category.skills || category.skills.length === 0) return;
+    if (!category.skills || !Array.isArray(category.skills) || category.skills.length === 0) return;
     
     category.skills.forEach(skill => {
-      if (skill.ratings && 
-          typeof skill.ratings.current === 'number' && 
-          typeof skill.ratings.desired === 'number') {
-        const current = skill.ratings.current;
-        const desired = skill.ratings.desired;
-        const gap = Math.abs(desired - current);
-        
+      const normalizedSkill = normalizeSkill(skill, category.title);
+      
+      if (normalizedSkill) {
         totalSkillCount++;
-        totalGapValue += gap;
-      } else {
-        console.warn(`Invalid ratings for skill in calculateAverageGap:`, skill);
+        totalGapValue += normalizedSkill.gap;
       }
     });
   });
@@ -50,24 +75,12 @@ export const getAllSkillsWithMetadata = (categories: Category[]): SkillWithMetad
   const result: SkillWithMetadata[] = [];
   
   categories.forEach(category => {
-    if (!category.skills) return;
+    if (!category.skills || !Array.isArray(category.skills)) return;
     
     category.skills.forEach(skill => {
-      if (skill.ratings && 
-          typeof skill.ratings.current === 'number' && 
-          typeof skill.ratings.desired === 'number') {
-        
-        const current = skill.ratings.current;
-        const desired = skill.ratings.desired;
-        const gap = parseFloat(Math.abs(desired - current).toFixed(2));
-        
-        result.push({
-          ...skill,
-          categoryTitle: category.title,
-          gap: gap
-        });
-      } else {
-        console.warn(`Skipping skill with invalid ratings in getAllSkillsWithMetadata:`, skill);
+      const normalizedSkill = normalizeSkill(skill, category.title);
+      if (normalizedSkill) {
+        result.push(normalizedSkill);
       }
     });
   });
@@ -80,8 +93,7 @@ export const getTopStrengths = (categories: Category[], count: number = 3): Skil
   if (allSkills.length === 0) return [];
   
   return [...allSkills]
-    .filter(skill => skill.ratings && typeof skill.ratings.current === 'number')
-    .sort((a, b) => (b.ratings.current || 0) - (a.ratings.current || 0))
+    .sort((a, b) => b.ratings.current - a.ratings.current)
     .slice(0, count);
 };
 
@@ -90,8 +102,7 @@ export const getLowestSkills = (categories: Category[], count: number = 3): Skil
   if (allSkills.length === 0) return [];
   
   return [...allSkills]
-    .filter(skill => skill.ratings && typeof skill.ratings.current === 'number')
-    .sort((a, b) => (a.ratings.current || 0) - (b.ratings.current || 0))
+    .sort((a, b) => a.ratings.current - b.ratings.current)
     .slice(0, count);
 };
 
@@ -100,7 +111,6 @@ export const getLargestGaps = (categories: Category[], count: number = 3): Skill
   if (allSkills.length === 0) return [];
   
   return [...allSkills]
-    .filter(skill => skill.ratings && typeof skill.ratings.current === 'number' && typeof skill.ratings.desired === 'number')
     .sort((a, b) => b.gap - a.gap)
     .slice(0, count);
 };

@@ -36,27 +36,44 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
 
     // Process the data for the chart
     const preparedData: ChartData[] = categories
-      .filter(category => category.skills && category.skills.length > 0)
+      .filter(category => {
+        if (!category.skills || !Array.isArray(category.skills) || category.skills.length === 0) {
+          console.warn(`Category ${category.title} has no valid skills array`);
+          return false;
+        }
+        return true;
+      })
       .map(category => {
         // Calculate average for each category
         const totalSkills = category.skills.length;
         let sumCurrent = 0;
         let sumDesired = 0;
+        let validSkillCount = 0;
         
         category.skills.forEach(skill => {
+          // Try to get ratings - handle both number and string cases
+          let currentRating = typeof skill.ratings?.current === 'number' 
+            ? skill.ratings.current 
+            : parseFloat(String(skill.ratings?.current || '0'));
+            
+          let desiredRating = typeof skill.ratings?.desired === 'number' 
+            ? skill.ratings.desired 
+            : parseFloat(String(skill.ratings?.desired || '0'));
+          
           // Additional validation to ensure we have valid ratings
-          if (skill.ratings && 
-              typeof skill.ratings.current === 'number' && 
-              typeof skill.ratings.desired === 'number') {
-            sumCurrent += skill.ratings.current;
-            sumDesired += skill.ratings.desired;
+          if (!isNaN(currentRating) && !isNaN(desiredRating)) {
+            sumCurrent += currentRating;
+            sumDesired += desiredRating;
+            validSkillCount++;
           } else {
-            console.warn(`Invalid ratings for skill: ${skill.name || 'unnamed'}`, skill);
+            // Identify the skill by name or competency
+            const skillName = skill.name || (skill as any).competency || 'unnamed';
+            console.warn(`Invalid ratings for skill: ${skillName}`, skill);
           }
         });
         
-        const categoryAvgCurrent = totalSkills > 0 ? sumCurrent / totalSkills : 0;
-        const categoryAvgDesired = totalSkills > 0 ? sumDesired / totalSkills : 0;
+        const categoryAvgCurrent = validSkillCount > 0 ? sumCurrent / validSkillCount : 0;
+        const categoryAvgDesired = validSkillCount > 0 ? sumDesired / validSkillCount : 0;
         
         return {
           subject: category.title,

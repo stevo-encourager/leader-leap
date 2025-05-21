@@ -36,10 +36,11 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
             // Verify ratings exist and are numbers
             const current = skill.ratings?.current;
             const desired = skill.ratings?.desired;
-            console.log(`Skill ${j}: ${skill.name || (skill as any).competency}, ` + 
-                         `Ratings: ${skill.ratings ? `current=${current}, desired=${desired}` : "Missing"}`);
+            const skillName = skill.name || (skill as any).competency;
+            console.log(`Skill ${j}: ${skillName}, ` + 
+                       `Ratings: ${skill.ratings ? `current=${current}, desired=${desired}` : "Missing"}`);
             
-            if (!skill.ratings || typeof current !== 'number' || typeof desired !== 'number') {
+            if (!skill.ratings || (isNaN(Number(current)) || isNaN(Number(desired)))) {
               console.error(`Invalid ratings for skill:`, skill);
             }
           });
@@ -59,7 +60,12 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
 
   // Map any skills with 'competency' instead of 'name' if needed
   const normalizedCategories = categories.map(category => {
-    if (!category.skills || !Array.isArray(category.skills)) return category;
+    if (!category.skills || !Array.isArray(category.skills)) {
+      return {
+        ...category,
+        skills: []
+      };
+    }
     
     const normalizedSkills = category.skills.map(skill => {
       // Create a normalized skill object
@@ -83,40 +89,18 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
         }
       }
       
+      // Ensure skill has an ID
+      if (!normalizedSkill.id) {
+        normalizedSkill.id = `skill-${Math.random().toString(36).substring(2, 9)}`;
+      }
+      
       return normalizedSkill;
     });
     
     return { ...category, skills: normalizedSkills };
   });
 
-  // Additional validation for skills and ratings
-  const hasValidSkills = normalizedCategories.every(category => 
-    category.skills && 
-    Array.isArray(category.skills) && 
-    category.skills.length > 0
-  );
-
-  const hasValidRatings = normalizedCategories.every(category =>
-    category.skills && 
-    category.skills.every(skill => 
-      skill.ratings && 
-      typeof skill.ratings.current === 'number' && 
-      typeof skill.ratings.desired === 'number'
-    )
-  );
-
-  if (!hasValidSkills || !hasValidRatings) {
-    return (
-      <div className="p-6 text-center">
-        <p className="text-lg text-red-500 mb-4">
-          Unable to display results: Assessment data is incomplete or in an incorrect format
-        </p>
-        <pre className="text-xs text-left bg-gray-100 p-2 rounded overflow-auto max-h-60">
-          {JSON.stringify(categories, null, 2)}
-        </pre>
-      </div>
-    );
-  }
+  console.log("Normalized categories:", normalizedCategories);
 
   return (
     <ResultsDashboard 

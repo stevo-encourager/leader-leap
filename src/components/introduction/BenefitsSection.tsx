@@ -11,15 +11,15 @@ interface BenefitCardProps {
 
 const BenefitCard: React.FC<BenefitCardProps> = ({ icon: Icon, title, description }) => {
   return (
-    <Card className="border-none shadow-card hover:shadow-card-hover hover:-translate-y-1 transition-all duration-300">
+    <Card className="border-none shadow-card hover:shadow-card-hover hover:-translate-y-2 transition-all duration-300 group">
       <CardContent className="p-5">
         <div className="flex items-center gap-3 mb-3">
-          <div className="bg-encourager-accent/20 p-2 rounded-full">
-            <Icon className="text-encourager" size={18} strokeWidth={1.5} />
+          <div className="bg-encourager-accent/20 p-2 rounded-full group-hover:bg-encourager-accent/30 transition-colors duration-300">
+            <Icon className="text-encourager group-hover:scale-110 transition-transform duration-300" size={18} strokeWidth={1.5} />
           </div>
-          <h3 className="font-bold text-encourager">{title}</h3>
+          <h3 className="font-bold text-encourager group-hover:text-encourager-light transition-colors duration-300">{title}</h3>
         </div>
-        <p className="text-slate-600 text-sm">{description}</p>
+        <p className="text-slate-600 text-sm group-hover:text-slate-800 transition-colors duration-300">{description}</p>
       </CardContent>
     </Card>
   );

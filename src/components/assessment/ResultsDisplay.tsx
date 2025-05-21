@@ -33,7 +33,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
         
         if (category.skills) {
           category.skills.forEach((skill, j) => {
-            console.log(`Skill ${j}:`, skill.title, "Ratings:", skill.ratings ? "Yes" : "No");
+            console.log(`Skill ${j}:`, skill.name, "Ratings:", skill.ratings ? "Yes" : "No");
           });
         }
       });

@@ -7,7 +7,8 @@ import {
   PolarAngleAxis, 
   Radar, 
   Legend, 
-  Tooltip
+  Tooltip,
+  TooltipProps
 } from 'recharts';
 import { Category } from '@/utils/assessmentTypes';
 
@@ -28,8 +29,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
   // Prepare chart data from categories
   useEffect(() => {
     if (!categories || categories.length === 0) {
-      console.warn("No categories provided to SkillGapChart");
-      setChartData([]);
+      console.log("No categories provided to SkillGapChart");
       return;
     }
     
@@ -37,7 +37,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
     
     categories.forEach(category => {
       if (!category.skills || category.skills.length === 0) {
-        console.warn(`Category ${category.title} has no skills`);
+        console.log(`Category ${category.title} has no skills`);
         return;
       }
       
@@ -68,26 +68,26 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
     setChartData(preparedData);
   }, [categories]);
 
-  if (!categories || categories.length === 0 || chartData.length === 0) {
+  if (chartData.length === 0) {
     return <div className="text-center p-6">No data available for chart</div>;
   }
 
+  // Create a simple custom tooltip component
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       const subject = payload[0]?.payload?.subject || '';
-      
-      const current = payload[0]?.value !== undefined ? payload[0].value : 0;
-      const desired = payload[1]?.value !== undefined ? payload[1].value : 0;
-      const gap = Math.abs(Number(desired) - Number(current));
+      const current = parseFloat((payload[0]?.value || 0).toString());
+      const desired = parseFloat((payload[1]?.value || 0).toString());
+      const gap = parseFloat((Math.abs(desired - current)).toFixed(2));
       
       return (
         <div className="bg-white p-3 rounded shadow-md border border-gray-200">
           <p className="font-medium">{subject}</p>
           <p className="text-sm text-gray-700">
-            Current: <span className="font-medium">{Number(current).toFixed(2)}</span>
+            Current: <span className="font-medium">{current.toFixed(2)}</span>
           </p>
           <p className="text-sm text-gray-700">
-            Desired: <span className="font-medium">{Number(desired).toFixed(2)}</span>
+            Desired: <span className="font-medium">{desired.toFixed(2)}</span>
           </p>
           <p className="text-sm text-gray-700">
             Gap: <span className="font-medium">{gap.toFixed(2)}</span>
@@ -99,21 +99,18 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
   };
 
   return (
-    <div className="radar-chart-container w-full">
+    <div className="w-full h-full">
       <ResponsiveContainer width="100%" height={500}>
-        <RadarChart outerRadius={180} data={chartData} margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
-          <PolarGrid stroke="#e5e7eb" />
+        <RadarChart 
+          outerRadius={180} 
+          data={chartData}
+        >
+          <PolarGrid />
           <PolarAngleAxis 
             dataKey="subject" 
             tick={{ 
               fill: '#2F564D', 
-              fontSize: 12, 
-              fontWeight: 500,
-            }}
-            tickLine={false}
-            style={{
-              fontSize: '12px',
-              fontWeight: 500,
+              fontSize: 12
             }}
           />
           <Radar
@@ -122,8 +119,6 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
             stroke="#2F564D"
             fill="#2F564D"
             fillOpacity={0.4}
-            dot={{ stroke: '#2F564D', strokeWidth: 2, fill: '#fff', r: 3 }}
-            isAnimationActive={true}
           />
           <Radar
             name="Desired Level"
@@ -131,17 +126,9 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
             stroke="#8baca5"
             fill="#8baca5"
             fillOpacity={0.4}
-            dot={{ stroke: '#8baca5', strokeWidth: 2, fill: '#fff', r: 3 }}
-            isAnimationActive={true}
           />
           <Tooltip content={<CustomTooltip />} />
-          <Legend 
-            iconType="circle" 
-            wrapperStyle={{ 
-              paddingTop: 20,
-              fontSize: '14px'
-            }}
-          />
+          <Legend />
         </RadarChart>
       </ResponsiveContainer>
     </div>

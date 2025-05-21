@@ -29,7 +29,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
   categories
 }) => {
   const [openSections, setOpenSections] = useState({
-    largestGaps: true,
+    largestGaps: false,
     skillsToImprove: false,
     smallestGaps: false,
     skillsMeeting: false

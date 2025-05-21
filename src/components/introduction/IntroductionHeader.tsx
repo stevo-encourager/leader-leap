@@ -12,12 +12,10 @@ const IntroductionHeader: React.FC<IntroductionHeaderProps> = ({ onStartAssessme
   
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+    console.log("Start assessment button clicked in IntroductionHeader");
     
     // First call the provided function to set up state
     onStartAssessment();
-    
-    // Use React Router's navigate for SPA navigation
-    navigate('/assessment');
   };
   
   return (

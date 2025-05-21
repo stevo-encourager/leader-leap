@@ -20,12 +20,16 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
   
   const handleStartAssessment = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+    console.log("Start assessment button clicked in IntroductionPage");
     
     // Call the provided function to set up state
     onStartAssessment();
     
-    // Use React Router's navigate for SPA navigation
-    navigate('/assessment');
+    // Delay navigation slightly to ensure state updates first
+    setTimeout(() => {
+      console.log("Navigating to /assessment from IntroductionPage");
+      navigate('/assessment');
+    }, 50);
   };
 
   return (

@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CircleGauge, ArrowLeft } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
+import Navigation from '@/components/layout/Navigation';
+import Footer from '@/components/layout/Footer';
 
 const PreviousAssessments = () => {
   const { user } = useAuth();
@@ -37,6 +39,12 @@ const PreviousAssessments = () => {
     fetchAssessments();
   }, [user, navigate]);
 
+  const handleNavigateHome = (e: React.MouseEvent) => {
+    e.preventDefault();
+    console.log("Navigating to home from previous assessments");
+    navigate('/');
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -49,9 +57,12 @@ const PreviousAssessments = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4">
-      <div className="max-w-4xl mx-auto">
-        <Button variant="ghost" onClick={() => navigate('/')} className="mb-6 flex items-center gap-2">
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-5xl mx-auto px-4 py-2">
+        <Navigation />
+      </div>
+      <main className="max-w-4xl mx-auto px-4 py-8">
+        <Button variant="ghost" onClick={handleNavigateHome} className="mb-6 flex items-center gap-2">
           <ArrowLeft size={16} />
           <span>Back to Home</span>
         </Button>
@@ -61,7 +72,7 @@ const PreviousAssessments = () => {
         {assessments.length === 0 ? (
           <Card className="p-6 text-center">
             <p className="mb-4 text-slate-600">You haven't completed any assessments yet.</p>
-            <Button onClick={() => navigate('/')} className="bg-encourager hover:bg-encourager-light">
+            <Button onClick={handleNavigateHome} className="bg-encourager hover:bg-encourager-light">
               Start an Assessment
             </Button>
           </Card>
@@ -70,8 +81,7 @@ const PreviousAssessments = () => {
             {assessments.map((assessment) => (
               <Card key={assessment.id} className="overflow-hidden hover:shadow-lg transition-shadow">
                 <CardContent className="p-0">
-                  <button
-                    onClick={() => navigate(`/results/${assessment.id}`)}
+                  <div
                     className="w-full p-6 text-left flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
                   >
                     <div>
@@ -82,16 +92,24 @@ const PreviousAssessments = () => {
                         Completed on {formatDate(assessment.created_at)}
                       </p>
                     </div>
-                    <Button size="sm" className="bg-encourager hover:bg-encourager-light">
+                    <Button 
+                      size="sm" 
+                      className="bg-encourager hover:bg-encourager-light"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigate(`/results/${assessment.id}`);
+                      }}
+                    >
                       View Results
                     </Button>
-                  </button>
+                  </div>
                 </CardContent>
               </Card>
             ))}
           </div>
         )}
-      </div>
+      </main>
+      <Footer />
     </div>
   );
 };

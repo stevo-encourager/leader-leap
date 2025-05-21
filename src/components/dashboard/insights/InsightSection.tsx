@@ -28,7 +28,7 @@ const InsightSection: React.FC<InsightSectionProps> = ({
     >
       <CollapsibleTrigger className="flex justify-between items-center w-full text-left">
         <h4 className="text-md font-medium text-encourager">
-          {title} <span className="font-normal text-slate-600">({subtitle})</span>
+          {title} <span className="text-slate-600">{subtitle}</span>
         </h4>
         {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
       </CollapsibleTrigger>

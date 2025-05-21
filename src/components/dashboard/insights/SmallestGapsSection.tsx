@@ -18,7 +18,7 @@ const SmallestGapsSection: React.FC<SmallestGapsSectionProps> = ({
 }) => {
   return (
     <InsightSection
-      title="Your Smallest Competency Gaps"
+      title="Your Top 3 Smallest Competency Gaps"
       subtitle="areas with smallest difference between current and desired"
       isOpen={isOpen}
       onToggle={onToggle}

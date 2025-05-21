@@ -1,4 +1,3 @@
-
 import { Category, Skill } from './assessmentTypes';
 
 /**
@@ -69,25 +68,17 @@ export const normalizeCategories = (categories: any[]): Category[] => {
   
   console.log("normalizeCategories - Output:", normalizedCategories);
   
-  // Final check - if all ratings are 0, set some default values using the full 1-10 scale
+  // Only set test values if ALL ratings are zero
   const allZeros = normalizedCategories.every(cat => 
     cat.skills.every(skill => 
-      skill.ratings.current === 0 && skill.ratings.desired === 0
+      (skill.ratings.current === 0 || !skill.ratings.current) && 
+      (skill.ratings.desired === 0 || !skill.ratings.desired)
     )
   );
   
   if (allZeros && normalizedCategories.length > 0 && normalizedCategories[0].skills.length > 0) {
     console.log("normalizeCategories - All ratings are 0, setting default values on 1-10 scale");
-    
-    // Set default values for the first category only to ensure we have some data to display
-    // Using random values across the full 1-10 scale
-    normalizedCategories[0].skills = normalizedCategories[0].skills.map(skill => ({
-      ...skill,
-      ratings: {
-        current: 1 + Math.floor(Math.random() * 5), // 1-5 (lower half of scale)
-        desired: 6 + Math.floor(Math.random() * 5)  // 6-10 (upper half of scale)
-      }
-    }));
+    // Only set default test values when absolutely needed
   }
   
   return normalizedCategories;
@@ -128,46 +119,46 @@ export const normalizeSkills = (skills: any[], categoryTitle: string): Skill[] =
       id: skill.id || `skill-${Math.random().toString(36).substring(2, 9)}`,
       name: skill.name || skill.competency || "Unnamed Skill",
       description: skill.description || "",
-      ratings: { current: 3, desired: 8 } // Default to values on the 1-10 scale
+      ratings: { current: 0, desired: 0 } // Start with zeros to detect if we need defaults later
     };
     
-    // Normalize ratings
+    // Normalize ratings - preserve original values when available
     if (skill.ratings) {
       if (typeof skill.ratings === 'object') {
-        // Convert ratings to numbers and ensure they are valid on the 1-10 scale
+        // Convert ratings to numbers without modifying them
         let currentRating = typeof skill.ratings.current === 'number' 
           ? skill.ratings.current 
-          : parseFloat(String(skill.ratings.current || '3'));
+          : parseFloat(String(skill.ratings.current || '0'));
           
         let desiredRating = typeof skill.ratings.desired === 'number' 
           ? skill.ratings.desired 
-          : parseFloat(String(skill.ratings.desired || '8'));
+          : parseFloat(String(skill.ratings.desired || '0'));
         
-        // Handle NaN values and ensure values are within 1-10 range
-        if (isNaN(currentRating) || currentRating === 0) {
+        // Only set defaults if both values are invalid
+        if ((isNaN(currentRating) || currentRating === 0) && (isNaN(desiredRating) || desiredRating === 0)) {
           currentRating = 3;
-        } else {
-          currentRating = Math.max(1, Math.min(10, currentRating));
-        }
-        
-        if (isNaN(desiredRating) || desiredRating === 0) {
           desiredRating = 8;
         } else {
+          // Ensure individual values are valid
+          if (isNaN(currentRating) || currentRating === 0) currentRating = 1;
+          if (isNaN(desiredRating) || desiredRating === 0) desiredRating = Math.min(currentRating + 2, 10);
+          
+          // Ensure values are within range
+          currentRating = Math.max(1, Math.min(10, currentRating));
           desiredRating = Math.max(1, Math.min(10, desiredRating));
         }
         
         normalizedSkill.ratings.current = currentRating;
         normalizedSkill.ratings.desired = desiredRating;
         
-        // Ensure desired is always higher than current if they're the same
-        if (normalizedSkill.ratings.desired <= normalizedSkill.ratings.current) {
-          normalizedSkill.ratings.desired = Math.min(10, normalizedSkill.ratings.current + 2);
-        }
+        console.log(`normalizeSkills - Processed ${normalizedSkill.name} in ${categoryTitle}: Current=${currentRating}, Desired=${desiredRating}`);
       } else {
         console.warn(`normalizeSkills - Invalid ratings format for ${normalizedSkill.name} in ${categoryTitle}:`, skill.ratings);
+        normalizedSkill.ratings = { current: 3, desired: 8 }; // Default only when needed
       }
     } else {
       console.warn(`normalizeSkills - No ratings for skill ${normalizedSkill.name} in ${categoryTitle}`);
+      normalizedSkill.ratings = { current: 3, desired: 8 }; // Default only when needed
     }
     
     return normalizedSkill;

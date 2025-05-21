@@ -22,29 +22,51 @@ export const getCategoriesWithMetadata = (categories: Category[]): CategoryWithM
       let totalDesiredRating = 0;
       let validSkillCount = 0;
       
+      // Log for debugging
+      console.log(`Processing category: ${category.title} with ${category.skills.length} skills`);
+      
       category.skills.forEach(skill => {
         if (skill.ratings) {
-          // Ensure values are properly parsed and within range
-          let current = typeof skill.ratings.current === 'number' ? skill.ratings.current : parseFloat(String(skill.ratings.current || '0'));
-          let desired = typeof skill.ratings.desired === 'number' ? skill.ratings.desired : parseFloat(String(skill.ratings.desired || '0'));
+          // Get direct values without modifications
+          let current = typeof skill.ratings.current === 'number' ? skill.ratings.current : 0;
+          let desired = typeof skill.ratings.desired === 'number' ? skill.ratings.desired : 0;
           
-          // Apply range constraints
-          current = Math.max(0, Math.min(10, current));
-          desired = Math.max(0, Math.min(10, desired));
-          
-          totalCurrentRating += current;
-          totalDesiredRating += desired;
-          validSkillCount++;
+          // Only count skills with valid ratings
+          if (current > 0 || desired > 0) {
+            // Ensure values are within range without modifying original values
+            if (current === 0) current = 1;
+            if (desired === 0) desired = Math.min(current + 2, 10);
+            
+            current = Math.max(1, Math.min(10, current));
+            desired = Math.max(1, Math.min(10, desired));
+            
+            console.log(`  Skill: ${skill.name}, Current: ${current}, Desired: ${desired}`);
+            
+            totalCurrentRating += current;
+            totalDesiredRating += desired;
+            validSkillCount++;
+          }
         }
       });
       
-      if (validSkillCount === 0) validSkillCount = 1; // Prevent division by zero
+      if (validSkillCount === 0) {
+        console.log(`No valid skills in category: ${category.title}`);
+        return {
+          id: category.id,
+          title: category.title,
+          description: category.description,
+          gap: 0,
+          averageRatings: { current: 0, desired: 0 }
+        };
+      }
       
       const avgCurrent = parseFloat((totalCurrentRating / validSkillCount).toFixed(2));
       const avgDesired = parseFloat((totalDesiredRating / validSkillCount).toFixed(2));
       
-      // Calculate the actual gap between desired and current
-      const gap = parseFloat((Math.abs(avgDesired - avgCurrent)).toFixed(2));
+      // Calculate the absolute gap
+      const gap = parseFloat(Math.abs(avgDesired - avgCurrent).toFixed(2));
+      
+      console.log(`Category ${category.title}: Avg Current: ${avgCurrent}, Avg Desired: ${avgDesired}, Gap: ${gap}`);
       
       return {
         id: category.id,

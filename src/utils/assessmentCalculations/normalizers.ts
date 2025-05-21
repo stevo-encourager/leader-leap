@@ -8,31 +8,40 @@ export const normalizeSkill = (skill: any, categoryTitle: string): SkillWithMeta
     // Handle both name and competency fields
     const skillName = skill.name || skill.competency || 'Unknown Skill';
     
-    // Ensure we have valid ratings and convert strings to numbers if needed
+    // Direct parsing from the original values, preserving originals where possible
     let current = 0;
     let desired = 0;
     
     if (skill.ratings) {
-      // Parse numeric values with proper handling of edge cases
+      // Parse numeric values without modifying them
       current = typeof skill.ratings.current === 'number' 
         ? skill.ratings.current 
-        : parseFloat(String(skill.ratings.current || '1'));
+        : parseFloat(String(skill.ratings.current || '0'));
         
       desired = typeof skill.ratings.desired === 'number' 
         ? skill.ratings.desired 
-        : parseFloat(String(skill.ratings.desired || '8'));
+        : parseFloat(String(skill.ratings.desired || '0'));
     }
     
-    // If both values are still 0 after parsing, set reasonable defaults
-    if (current === 0) current = 1;
-    if (desired === 0) desired = 8;
+    // Only set default values if both are invalid
+    if (current === 0 && desired === 0) {
+      console.log(`Using defaults for skill ${skillName} as both ratings are 0`);
+      current = 3;
+      desired = 8;
+    } else {
+      // Clean up individual values if needed
+      if (current === 0) current = 1;
+      if (desired === 0) desired = Math.min(current + 2, 10);
+    }
     
     // Ensure values are within 1-10 range
     current = Math.max(1, Math.min(10, current));
     desired = Math.max(1, Math.min(10, desired));
     
-    // Calculate the actual gap between desired and current
-    const gap = parseFloat((Math.abs(desired - current)).toFixed(2));
+    // Calculate the gap as a simple difference between desired and current
+    const gap = Math.abs(desired - current);
+    
+    console.log(`Normalized Skill: ${skillName}, Category: ${categoryTitle}, Current: ${current}, Desired: ${desired}, Gap: ${gap}`);
     
     return {
       id: skill.id || `skill-${Math.random().toString(36).substring(2, 9)}`,

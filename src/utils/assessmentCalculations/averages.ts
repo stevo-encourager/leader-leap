@@ -13,24 +13,42 @@ export const calculateAverageGap = (categories: Category[]): number => {
     let totalSkillCount = 0;
     let totalGapValue = 0;
     
+    // Log categories to help with debugging
+    console.log("calculateAverageGap - Input categories:", JSON.stringify(categories.map(c => ({
+      title: c.title,
+      skillCount: c.skills?.length || 0
+    }))));
+    
     categories.forEach(category => {
       if (!category.skills || !Array.isArray(category.skills) || category.skills.length === 0) return;
       
       category.skills.forEach(skill => {
-        const normalizedSkill = normalizeSkill(skill, category.title);
+        // Get original ratings directly without normalization
+        const current = typeof skill.ratings?.current === 'number' ? skill.ratings.current : 0;
+        const desired = typeof skill.ratings?.desired === 'number' ? skill.ratings.desired : 0;
         
-        if (normalizedSkill) {
+        // Only count skills with valid ratings
+        if (current > 0 && desired > 0) {
+          // Calculate gap directly as absolute difference
+          const gap = Math.abs(desired - current);
+          
+          console.log(`Skill: ${skill.name}, Current: ${current}, Desired: ${desired}, Gap: ${gap}`);
+          
           totalSkillCount++;
-          totalGapValue += normalizedSkill.gap;
+          totalGapValue += gap;
         }
       });
     });
     
-    if (totalSkillCount === 0) return 0; // Return 0 when no skills are found
+    if (totalSkillCount === 0) {
+      console.warn("No valid skills found for average gap calculation");
+      return 0;
+    }
     
     // Calculate the actual average gap
     const calculatedGap = parseFloat((totalGapValue / totalSkillCount).toFixed(2));
-    console.log("Calculated average gap:", calculatedGap, "from", totalSkillCount, "skills with total gap value:", totalGapValue);
+    console.log("Calculated average gap:", calculatedGap, 
+                "from", totalSkillCount, "skills with total gap value:", totalGapValue);
     
     return calculatedGap;
   } catch (error) {

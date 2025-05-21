@@ -7,9 +7,11 @@ import {
   PolarAngleAxis, 
   Radar, 
   Legend, 
-  Tooltip
+  Tooltip,
+  TooltipProps
 } from 'recharts';
 import { Category, Skill } from '@/utils/assessmentTypes';
+import { ValueType } from 'recharts/types/component/DefaultTooltipContent';
 
 interface SkillGapChartProps {
   categories: Category[];
@@ -109,20 +111,25 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
             isAnimationActive={true}
           />
           <Tooltip 
-            content={({ active, payload }) => {
-              if (active && payload && payload.length) {
-                const current = typeof payload[0].value === 'number' ? payload[0].value : 0;
-                const desired = typeof payload[1].value === 'number' ? payload[1].value : 0;
+            content={(props) => {
+              if (props.active && props.payload && props.payload.length) {
+                // Extract values safely with type checking
+                const currentValue = props.payload[0]?.value;
+                const desiredValue = props.payload[1]?.value;
+                
+                // Convert to numbers safely for calculation
+                const current = typeof currentValue === 'number' ? currentValue : 0;
+                const desired = typeof desiredValue === 'number' ? desiredValue : 0;
                 const gap = Math.abs(desired - current);
                 
                 return (
                   <div className="bg-white p-3 rounded shadow-md border border-gray-200">
-                    <p className="font-medium">{payload[0].payload.subject}</p>
+                    <p className="font-medium">{props.payload[0].payload.subject}</p>
                     <p className="text-sm text-gray-700">
-                      Current: <span className="font-medium">{typeof current === 'number' ? current.toFixed(2) : current}</span>
+                      Current: <span className="font-medium">{current.toFixed(2)}</span>
                     </p>
                     <p className="text-sm text-gray-700">
-                      Desired: <span className="font-medium">{typeof desired === 'number' ? desired.toFixed(2) : desired}</span>
+                      Desired: <span className="font-medium">{desired.toFixed(2)}</span>
                     </p>
                     <p className="text-sm text-gray-700">
                       Gap: <span className="font-medium">{gap.toFixed(2)}</span>

@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
 import { 
   SkillWithMetadata,
   CategoryWithMetadata,
@@ -10,11 +10,11 @@ import {
   getSkillsMeetingExpectations 
 } from '@/utils/assessmentCalculations';
 import { Category } from '@/utils/assessmentTypes';
-import { 
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger 
-} from '@/components/ui/collapsible';
+import InsightSummary from './insights/InsightSummary';
+import LargestGapsSection from './insights/LargestGapsSection';
+import SmallestGapsSection from './insights/SmallestGapsSection';
+import SkillsToImproveSection from './insights/SkillsToImproveSection';
+import SkillsMeetingExpectationsSection from './insights/SkillsMeetingExpectationsSection';
 
 interface KeyInsightsProps {
   averageGap: number;
@@ -79,151 +79,39 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
         <div>
           <h3 className="text-lg font-medium mb-2">Key Insights</h3>
           
-          <div className="bg-primary/5 p-4 rounded-lg mb-4">
-            <p className="text-sm">
-              Based on your assessment, your average competency gap is <span className="font-bold">{displayAverageGap}</span> points.
-              This indicates the typical difference between your current abilities and how important these competencies are to your role.
-            </p>
-          </div>
+          <InsightSummary averageGap={displayAverageGap} />
           
-          {/* Largest Competency Gaps - Collapsible */}
-          <Collapsible
-            open={openSections.largestGaps}
-            onOpenChange={() => toggleSection('largestGaps')}
-            className="mb-4"
-          >
-            <CollapsibleTrigger className="flex justify-between items-center w-full text-left">
-              <h4 className="text-md font-medium text-encourager">Your Largest Competency Gaps <span className="font-normal text-slate-600">(areas with greatest difference between current and desired)</span></h4>
-              {openSections.largestGaps ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </CollapsibleTrigger>
-            <CollapsibleContent className="mt-2 space-y-3">
-              {largestCategoryGaps && largestCategoryGaps.length > 0 && largestCategoryGaps.some(category => category.gap > 0) ? (
-                largestCategoryGaps.map((category) => (
-                  <div key={`largest-gap-${category.id}`} className="bg-secondary/10 p-3 rounded-lg">
-                    <div className="flex justify-between">
-                      <div>
-                        <p className="font-medium">{category.title}</p>
-                        <p className="text-sm text-slate-500">{category.description}</p>
-                      </div>
-                      <div className="bg-red-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
-                        Gap: {formatNumber(category.gap)}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="bg-secondary/10 p-3 rounded-lg">
-                  <p className="text-sm text-slate-500">
-                    You need to complete an assessment with different current and desired values to identify competency gaps.
-                  </p>
-                </div>
-              )}
-            </CollapsibleContent>
-          </Collapsible>
+          {/* Largest Competency Gaps */}
+          <LargestGapsSection 
+            categoryGaps={largestCategoryGaps}
+            isOpen={openSections.largestGaps}
+            onToggle={() => toggleSection('largestGaps')}
+            formatNumber={formatNumber}
+          />
           
-          {/* Individual Skills You Want to Improve - Collapsible */}
-          <Collapsible
-            open={openSections.skillsToImprove}
-            onOpenChange={() => toggleSection('skillsToImprove')}
-            className="mb-4"
-          >
-            <CollapsibleTrigger className="flex justify-between items-center w-full text-left">
-              <h4 className="text-md font-medium text-encourager">Individual Skills You Want to Improve <span className="font-normal text-slate-600">(skills with high desired values)</span></h4>
-              {openSections.skillsToImprove ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </CollapsibleTrigger>
-            <CollapsibleContent className="mt-2 space-y-3">
-              {skillsToImprove && skillsToImprove.length > 0 ? (
-                skillsToImprove.map((skill) => (
-                  <div key={`improve-${skill.id}`} className="bg-secondary/10 p-3 rounded-lg">
-                    <div className="flex justify-between">
-                      <div>
-                        <p className="font-medium">{skill.name}</p>
-                        <p className="text-sm text-slate-500">Related Competency: {skill.categoryTitle}</p>
-                      </div>
-                      <div className="bg-amber-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
-                        Desired: {formatNumber(skill.ratings.desired)}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="bg-secondary/10 p-3 rounded-lg">
-                  <p className="text-sm text-slate-500">
-                    Complete an assessment to identify skills you want to improve.
-                  </p>
-                </div>
-              )}
-            </CollapsibleContent>
-          </Collapsible>
+          {/* Individual Skills You Want to Improve */}
+          <SkillsToImproveSection 
+            skills={skillsToImprove}
+            isOpen={openSections.skillsToImprove}
+            onToggle={() => toggleSection('skillsToImprove')}
+            formatNumber={formatNumber}
+          />
           
-          {/* Your Smallest Competency Gaps - Collapsible */}
-          <Collapsible
-            open={openSections.smallestGaps}
-            onOpenChange={() => toggleSection('smallestGaps')}
-            className="mb-4"
-          >
-            <CollapsibleTrigger className="flex justify-between items-center w-full text-left">
-              <h4 className="text-md font-medium text-encourager">Your Smallest Competency Gaps <span className="font-normal text-slate-600">(areas with smallest difference between current and desired)</span></h4>
-              {openSections.smallestGaps ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </CollapsibleTrigger>
-            <CollapsibleContent className="mt-2 space-y-3">
-              {smallestCategoryGaps && smallestCategoryGaps.length > 0 ? (
-                smallestCategoryGaps.map((category) => (
-                  <div key={`small-gap-${category.id}`} className="bg-secondary/10 p-3 rounded-lg">
-                    <div className="flex justify-between">
-                      <div>
-                        <p className="font-medium">{category.title}</p>
-                        <p className="text-sm text-slate-500">{category.description}</p>
-                      </div>
-                      <div className="bg-green-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
-                        Gap: {formatNumber(category.gap)}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="bg-secondary/10 p-3 rounded-lg">
-                  <p className="text-sm text-slate-500">
-                    Complete an assessment to identify your smallest competency gaps.
-                  </p>
-                </div>
-              )}
-            </CollapsibleContent>
-          </Collapsible>
+          {/* Your Smallest Competency Gaps */}
+          <SmallestGapsSection 
+            categoryGaps={smallestCategoryGaps}
+            isOpen={openSections.smallestGaps}
+            onToggle={() => toggleSection('smallestGaps')}
+            formatNumber={formatNumber}
+          />
           
-          {/* Individual Skills Meeting Your Expectations - Collapsible */}
-          <Collapsible
-            open={openSections.skillsMeeting}
-            onOpenChange={() => toggleSection('skillsMeeting')}
-          >
-            <CollapsibleTrigger className="flex justify-between items-center w-full text-left">
-              <h4 className="text-md font-medium text-encourager">Individual Skills Meeting Your Expectations <span className="font-normal text-slate-600">(skills with high current values)</span></h4>
-              {openSections.skillsMeeting ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </CollapsibleTrigger>
-            <CollapsibleContent className="mt-2 space-y-3">
-              {skillsMeetingExpectations && skillsMeetingExpectations.length > 0 ? (
-                skillsMeetingExpectations.map((skill) => (
-                  <div key={`meeting-${skill.id}`} className="bg-secondary/10 p-3 rounded-lg">
-                    <div className="flex justify-between">
-                      <div>
-                        <p className="font-medium">{skill.name}</p>
-                        <p className="text-sm text-slate-500">Related Competency: {skill.categoryTitle}</p>
-                      </div>
-                      <div className="bg-blue-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
-                        Current: {formatNumber(skill.ratings.current)}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="bg-secondary/10 p-3 rounded-lg">
-                  <p className="text-sm text-slate-500">
-                    Complete an assessment to identify skills meeting your expectations.
-                  </p>
-                </div>
-              )}
-            </CollapsibleContent>
-          </Collapsible>
+          {/* Individual Skills Meeting Your Expectations */}
+          <SkillsMeetingExpectationsSection 
+            skills={skillsMeetingExpectations}
+            isOpen={openSections.skillsMeeting}
+            onToggle={() => toggleSection('skillsMeeting')}
+            formatNumber={formatNumber}
+          />
         </div>
       </div>
     </div>

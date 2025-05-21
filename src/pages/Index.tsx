@@ -26,12 +26,12 @@ const Index = () => {
     handleCategoriesUpdate(initialCategories);
   }, []);
 
-  // Define a custom start assessment handler that uses both the state update
-  // and direct window location navigation to ensure it works
+  // Direct navigation to ensure it works across all browsers
   const startAssessmentHandler = () => {
     handleStartAssessment();
-    // Use window.location for guaranteed navigation
-    window.location.href = '/assessment';
+    
+    // Force the browser to navigate to the assessment page
+    window.location.replace('/assessment');
   };
 
   // Wait for auth to initialize before rendering

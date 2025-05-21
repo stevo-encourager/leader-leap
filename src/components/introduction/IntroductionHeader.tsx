@@ -8,13 +8,11 @@ interface IntroductionHeaderProps {
 }
 
 const IntroductionHeader: React.FC<IntroductionHeaderProps> = ({ onStartAssessment }) => {
-  const navigate = useNavigate();
-  
   const handleClick = () => {
     // First call the provided function to set up state
     onStartAssessment();
     
-    // Then force navigation to the assessment page
+    // Use direct window location change for guaranteed navigation
     window.location.href = '/assessment';
   };
   

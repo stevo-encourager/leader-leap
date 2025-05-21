@@ -3,7 +3,6 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Category } from '../utils/assessmentData';
-import { useNavigate } from 'react-router-dom';
 import IntroductionHeader from './introduction/IntroductionHeader';
 import PurposeSection from './introduction/PurposeSection';
 import AudienceSection from './introduction/AudienceSection';
@@ -16,13 +15,11 @@ interface IntroductionPageProps {
 }
 
 const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStartAssessment }) => {
-  const navigate = useNavigate();
-  
   const handleStartAssessment = () => {
-    // Call the provided function
+    // Call the provided function to set up state
     onStartAssessment();
     
-    // Use direct page navigation to ensure it works
+    // Use direct navigation to ensure it works reliably
     window.location.href = '/assessment';
   };
 

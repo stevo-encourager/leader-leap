@@ -31,7 +31,7 @@ const CoachingSupport: React.FC = () => {
           href="https://calendar.app.google/PwZrr2JJXVi1Uwrq7" 
           target="_blank" 
           rel="noopener noreferrer"
-          className="text-encourager hover:underline text-sm hover:scale-105 transition-transform duration-300 animate-pulse inline-block"
+          className="text-encourager hover:underline text-sm hover:scale-102 transition-transform duration-500 inline-block"
         >
           Book a free 30 minute discovery call
         </a>

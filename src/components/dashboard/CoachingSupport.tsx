@@ -12,7 +12,7 @@ const CoachingSupport: React.FC = () => {
         className="mb-2" 
       />
       
-      <ul className="list-disc list-inside space-y-2 text-sm text-slate-600 mb-4">
+      <ul className="list-disc list-inside space-y-2 text-slate-700">
         <li>Learn how to lean into your strengths to achieve your goals</li>
         <li>Understand yourself better and eliminate self-limiting beliefs or obstacles that hold you back</li>
         <li>Establish accountability for practice and reflection</li>

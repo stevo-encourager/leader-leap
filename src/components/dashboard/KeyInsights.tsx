@@ -2,9 +2,10 @@
 import React, { useEffect } from 'react';
 import { BookOpen } from 'lucide-react';
 import { 
-  SkillWithMetadata, 
-  getLargestGaps, 
-  getSmallestGaps, 
+  SkillWithMetadata,
+  CategoryWithMetadata,
+  getLargestCategoryGaps,
+  getSmallestCategoryGaps,
   getSkillsToImprove,
   getSkillsMeetingExpectations 
 } from '@/utils/assessmentCalculations';
@@ -23,21 +24,21 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
   lowestSkills,
   categories
 }) => {
-  const largestGaps = getLargestGaps(categories, 3);
-  const smallestGaps = getSmallestGaps(categories, 3);
+  const largestCategoryGaps = getLargestCategoryGaps(categories, 3);
+  const smallestCategoryGaps = getSmallestCategoryGaps(categories, 3);
   const skillsToImprove = getSkillsToImprove(categories, 3);
   const skillsMeetingExpectations = getSkillsMeetingExpectations(categories, 3);
   
   useEffect(() => {
     console.log("KeyInsights - Props received:", { 
       averageGap, 
-      largestGaps,
-      smallestGaps,
+      largestCategoryGaps,
+      smallestCategoryGaps,
       skillsToImprove,
       skillsMeetingExpectations,
       categoriesCount: categories?.length || 0 
     });
-  }, [averageGap, largestGaps, smallestGaps, skillsToImprove, skillsMeetingExpectations, categories]);
+  }, [averageGap, largestCategoryGaps, smallestCategoryGaps, skillsToImprove, skillsMeetingExpectations, categories]);
 
   // Format numbers to display with 2 decimal places
   const formatNumber = (num: number | string): string => {
@@ -68,16 +69,16 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
           
           <h4 className="text-md font-medium mt-4 mb-2">Your Largest Competency Gaps <span className="font-normal">(areas with greatest difference between current and desired)</span></h4>
           <div className="space-y-3 mb-4">
-            {largestGaps && largestGaps.length > 0 && largestGaps.some(skill => skill.gap > 0) ? (
-              largestGaps.map((skill) => (
-                <div key={`largest-gap-${skill.id}`} className="bg-secondary/10 p-3 rounded-lg">
+            {largestCategoryGaps && largestCategoryGaps.length > 0 && largestCategoryGaps.some(category => category.gap > 0) ? (
+              largestCategoryGaps.map((category) => (
+                <div key={`largest-gap-${category.id}`} className="bg-secondary/10 p-3 rounded-lg">
                   <div className="flex justify-between">
                     <div>
-                      <p className="font-medium">{skill.name}</p>
-                      <p className="text-sm text-slate-500">{skill.categoryTitle}</p>
+                      <p className="font-medium">{category.title}</p>
+                      <p className="text-sm text-slate-500">{category.description}</p>
                     </div>
                     <div className="bg-red-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
-                      Gap: {formatNumber(skill.gap)}
+                      Gap: {formatNumber(category.gap)}
                     </div>
                   </div>
                 </div>
@@ -118,16 +119,16 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
           
           <h4 className="text-md font-medium mt-4 mb-2">Your Smallest Competency Gaps <span className="font-normal">(areas with smallest difference between current and desired)</span></h4>
           <div className="space-y-3 mb-4">
-            {smallestGaps && smallestGaps.length > 0 ? (
-              smallestGaps.map((skill) => (
-                <div key={`small-gap-${skill.id}`} className="bg-secondary/10 p-3 rounded-lg">
+            {smallestCategoryGaps && smallestCategoryGaps.length > 0 ? (
+              smallestCategoryGaps.map((category) => (
+                <div key={`small-gap-${category.id}`} className="bg-secondary/10 p-3 rounded-lg">
                   <div className="flex justify-between">
                     <div>
-                      <p className="font-medium">{skill.name}</p>
-                      <p className="text-sm text-slate-500">{skill.categoryTitle}</p>
+                      <p className="font-medium">{category.title}</p>
+                      <p className="text-sm text-slate-500">{category.description}</p>
                     </div>
                     <div className="bg-green-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
-                      Gap: {formatNumber(skill.gap)}
+                      Gap: {formatNumber(category.gap)}
                     </div>
                   </div>
                 </div>

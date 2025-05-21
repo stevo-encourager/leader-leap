@@ -60,7 +60,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
       };
     }
     
-    const normalizedSkills = category.skills.map(skill => {
+    const normalizedSkills = category.skills.map((skill: any) => {
       if (!skill) {
         console.error(`Found undefined skill in category ${category.title}`);
         return {
@@ -75,8 +75,8 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
       let normalizedSkill: Skill = { ...skill };
       
       // Handle the case where competency is used instead of name
-      if (!skill.name && (skill as any).competency) {
-        normalizedSkill.name = (skill as any).competency;
+      if (!skill.name && skill.competency) {
+        normalizedSkill.name = skill.competency;
       }
       
       // Ensure skill has a name

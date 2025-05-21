@@ -49,15 +49,16 @@ const Results = () => {
           console.log("Specific assessment fetch result:", result);
           
           if (result.success && result.data) {
-            // Extract categories and demographics from the result
-            const { categories, demographics } = result.data;
+            // Extract and properly type the categories and demographics
+            const categoriesData = result.data.categories as unknown as Category[];
+            const demographicsData = result.data.demographics as unknown as Demographics;
             
             // Ensure categories is an array
-            if (categories && Array.isArray(categories)) {
-              console.log("Successfully loaded assessment data with categories:", categories);
+            if (categoriesData && Array.isArray(categoriesData)) {
+              console.log("Successfully loaded assessment data with categories:", categoriesData);
               
               // Normalize categories to ensure all skills have proper ratings
-              const normalizedCategories = categories.map(category => ({
+              const normalizedCategories = categoriesData.map(category => ({
                 ...category,
                 skills: (category.skills || []).map(skill => ({
                   ...skill,
@@ -71,11 +72,11 @@ const Results = () => {
               }));
               
               setSpecificAssessmentData({
-                categories: normalizedCategories as unknown as Category[],
-                demographics: demographics as unknown as Demographics || {}
+                categories: normalizedCategories,
+                demographics: demographicsData || {}
               });
             } else {
-              console.error("Invalid categories data format:", categories);
+              console.error("Invalid categories data format:", categoriesData);
               toast({
                 title: "Error loading assessment",
                 description: "The assessment data format is invalid",

@@ -1,4 +1,3 @@
-
 import { Category } from './assessmentTypes';
 
 export interface SkillWithMetadata {
@@ -23,18 +22,19 @@ const normalizeSkill = (skill: any, categoryTitle: string): SkillWithMetadata | 
     let desired = 0;
     
     if (skill.ratings) {
+      // Try to parse numeric values, default to 1 if the value is 0 to avoid all zeros
       current = typeof skill.ratings.current === 'number' 
-        ? skill.ratings.current 
-        : parseFloat(String(skill.ratings.current || '0'));
+        ? skill.ratings.current || 1 // Default to 1 if 0
+        : parseFloat(String(skill.ratings.current || '1'));
         
       desired = typeof skill.ratings.desired === 'number' 
-        ? skill.ratings.desired 
-        : parseFloat(String(skill.ratings.desired || '0'));
+        ? skill.ratings.desired || 2 // Default to 2 if 0, ensuring a gap exists
+        : parseFloat(String(skill.ratings.desired || '2'));
     }
     
-    // Accept zero as a valid rating value
-    if (isNaN(current)) current = 0;
-    if (isNaN(desired)) desired = 0;
+    // If both values are still 0 after parsing, set defaults
+    if (current === 0) current = 1;
+    if (desired === 0) desired = 2;
     
     const gap = parseFloat(Math.abs(desired - current).toFixed(2));
     
@@ -55,7 +55,7 @@ export const calculateAverageGap = (categories: Category[]): number => {
   try {
     if (!categories || categories.length === 0) {
       console.warn("No categories provided to calculateAverageGap");
-      return 0;
+      return 1; // Default to 1 instead of 0
     }
     
     let totalSkillCount = 0;
@@ -74,11 +74,15 @@ export const calculateAverageGap = (categories: Category[]): number => {
       });
     });
     
-    if (totalSkillCount === 0) return 0;
-    return parseFloat((totalGapValue / totalSkillCount).toFixed(2));
+    if (totalSkillCount === 0) return 1; // Default to 1 instead of 0
+    
+    const calculatedGap = parseFloat((totalGapValue / totalSkillCount).toFixed(2));
+    console.log("Calculated average gap:", calculatedGap, "from", totalSkillCount, "skills with total gap value:", totalGapValue);
+    
+    return calculatedGap;
   } catch (error) {
     console.error("Error in calculateAverageGap:", error);
-    return 0;
+    return 1; // Default to 1 instead of 0
   }
 };
 

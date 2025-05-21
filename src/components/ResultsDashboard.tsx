@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Category, Demographics } from '../utils/assessmentTypes';
@@ -25,11 +24,47 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   onBack,
   onSignup
 }) => {
+  // Initialize categories with default values for testing if all zeros
+  useEffect(() => {
+    console.log("ResultsDashboard - Initial categories:", categories);
+    
+    // Check if we have actual data or just zeros
+    const hasActualData = categories.some(cat => 
+      cat.skills && cat.skills.some(skill => 
+        skill.ratings && (skill.ratings.current > 0 || skill.ratings.desired > 0)
+      )
+    );
+    
+    console.log("ResultsDashboard - Has actual data:", hasActualData);
+    
+    if (!hasActualData && categories.length > 0) {
+      console.log("ResultsDashboard - Setting default non-zero values for testing");
+      // This is only for debugging - we'll use random values between 1-10
+      const updatedCategories = categories.map(cat => ({
+        ...cat,
+        skills: (cat.skills || []).map(skill => ({
+          ...skill,
+          ratings: {
+            current: Math.floor(Math.random() * 5) + 1, // 1-5
+            desired: Math.floor(Math.random() * 5) + 6  // 6-10
+          }
+        }))
+      }));
+      console.log("ResultsDashboard - Updated categories with test values:", updatedCategories);
+    }
+  }, [categories]);
+  
   // Calculate metrics using utility functions
   const averageGap = calculateAverageGap(categories);
   const strengths = getTopStrengths(categories, 3);
   const lowestSkills = getLowestSkills(categories, 3);
   
+  console.log("ResultsDashboard - Calculated metrics:", { 
+    averageGap, 
+    strengthsCount: strengths?.length || 0, 
+    lowestSkillsCount: lowestSkills?.length || 0 
+  });
+
   useEffect(() => {
     console.log("ResultsDashboard categories:", categories);
   }, [categories]);

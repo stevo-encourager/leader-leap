@@ -31,7 +31,7 @@ const SkillsMeetingExpectationsSection: React.FC<SkillsMeetingExpectationsSectio
                 <p className="text-sm text-slate-500">Related Competency: {skill.categoryTitle}</p>
               </div>
               <div className="bg-blue-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
-                Current: {formatNumber(skill.ratings.current)}
+                Gap: {formatNumber(skill.gap)}
               </div>
             </div>
           </div>

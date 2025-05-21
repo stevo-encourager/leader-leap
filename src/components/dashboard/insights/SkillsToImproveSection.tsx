@@ -31,7 +31,7 @@ const SkillsToImproveSection: React.FC<SkillsToImproveSectionProps> = ({
                 <p className="text-sm text-slate-500">Related Competency: {skill.categoryTitle}</p>
               </div>
               <div className="bg-amber-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
-                Desired: {formatNumber(skill.ratings.desired)}
+                Gap: {formatNumber(skill.gap)}
               </div>
             </div>
           </div>

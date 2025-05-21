@@ -20,10 +20,24 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
   const largestGaps = getLargestGaps(categories, 3);
   
   useEffect(() => {
-    console.log("KeyInsights props:", { averageGap, strengths, lowestSkills, largestGaps });
-  }, [averageGap, strengths, lowestSkills, largestGaps]);
+    console.log("KeyInsights - Props received:", { 
+      averageGap, 
+      strengths, 
+      lowestSkills, 
+      largestGaps,
+      categoriesCount: categories?.length || 0 
+    });
+    
+    // Validate the skill data we've received
+    if (lowestSkills?.length) {
+      console.log("First lowest skill:", lowestSkills[0]);
+    }
+    if (largestGaps?.length) {
+      console.log("First largest gap skill:", largestGaps[0]);
+    }
+  }, [averageGap, strengths, lowestSkills, largestGaps, categories]);
 
-  // If we don't have valid data, show a placeholder
+  // If we don't have valid categories data, show a placeholder
   if (!categories || !Array.isArray(categories) || categories.length === 0) {
     return (
       <div className="bg-encourager/5 p-4 rounded-lg border border-encourager/20">
@@ -38,7 +52,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
     );
   }
 
-  // If calculations are still happening
+  // If calculations are still happening or data is invalid
   if (typeof averageGap !== 'number' || !Array.isArray(lowestSkills) || !Array.isArray(largestGaps)) {
     return (
       <div className="bg-encourager/5 p-4 rounded-lg border border-encourager/20">
@@ -47,6 +61,26 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
           <div>
             <h3 className="text-lg font-medium mb-2">Key Insights</h3>
             <p className="text-sm">Processing your assessment data...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Check if we have actual data in our arrays
+  const hasValidData = (lowestSkills.length > 0 || largestGaps.length > 0);
+  
+  if (!hasValidData) {
+    return (
+      <div className="bg-encourager/5 p-4 rounded-lg border border-encourager/20">
+        <div className="flex items-start gap-3">
+          <BookOpen className="text-encourager h-5 w-5 mt-1" />
+          <div>
+            <h3 className="text-lg font-medium mb-2">Key Insights</h3>
+            <p className="text-sm">
+              We couldn't generate insights from your assessment data. Please ensure you've rated all skills 
+              in the assessment.
+            </p>
           </div>
         </div>
       </div>

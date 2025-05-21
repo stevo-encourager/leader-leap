@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
 
 interface IntroductionHeaderProps {
   onStartAssessment: () => void;
@@ -12,8 +11,8 @@ const IntroductionHeader: React.FC<IntroductionHeaderProps> = ({ onStartAssessme
     // First call the provided function to set up state
     onStartAssessment();
     
-    // Use direct window location change for guaranteed navigation
-    window.location.href = '/assessment';
+    // Force navigation using direct DOM API
+    document.location.href = '/assessment';
   };
   
   return (

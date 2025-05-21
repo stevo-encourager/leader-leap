@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Smile, Target, FileBarChart, Lightbulb, GraduationCap } from 'lucide-react';
+import { Smile, Target, FileBarChart, Lightbulb, Briefcase } from 'lucide-react';
 import SectionHeader from './SectionHeader';
 
 interface BenefitCardProps {
@@ -44,7 +44,7 @@ const BenefitsSection: React.FC = () => {
       desc: 'Establish a baseline to measure your growth over time' 
     },
     { 
-      icon: GraduationCap, 
+      icon: Briefcase, 
       title: 'Career advancement', 
       desc: 'Develop the leadership competencies required for your next career move' 
     }

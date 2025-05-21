@@ -19,8 +19,8 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
     // Call the provided function to set up state
     onStartAssessment();
     
-    // Use direct navigation to ensure it works reliably
-    window.location.href = '/assessment';
+    // Force navigation using direct DOM API
+    document.location.href = '/assessment';
   };
 
   return (

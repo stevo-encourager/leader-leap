@@ -1,6 +1,5 @@
 
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { initialCategories } from '../utils/assessmentData'; 
 import { CircleGauge } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,7 +10,6 @@ import IntroductionPage from '@/components/IntroductionPage';
 import { useAssessment } from '@/hooks/useAssessment';
 
 const Index = () => {
-  const navigate = useNavigate();
   const {
     handleCategoriesUpdate,
     handleStartAssessment,
@@ -26,12 +24,10 @@ const Index = () => {
     handleCategoriesUpdate(initialCategories);
   }, []);
 
-  // Direct navigation to ensure it works across all browsers
+  // Use document.location for direct navigation
   const startAssessmentHandler = () => {
     handleStartAssessment();
-    
-    // Force the browser to navigate to the assessment page
-    window.location.replace('/assessment');
+    document.location.href = '/assessment';
   };
 
   // Wait for auth to initialize before rendering

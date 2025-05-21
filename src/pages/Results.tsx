@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { CircleGauge } from 'lucide-react';
@@ -37,7 +38,8 @@ const Results = () => {
 
   useEffect(() => {
     console.log("Results page - assessment ID:", assessmentId);
-    console.log("Results page - current categories:", categories);
+    console.log("Results page - current categories from context:", categories);
+    console.log("Results page - current step:", currentStep);
     
     // If there's an assessment ID in the URL, fetch that specific assessment
     if (assessmentId) {
@@ -88,7 +90,25 @@ const Results = () => {
       
       fetchSpecificAssessment();
     }
-  }, [assessmentId, navigate]);
+    // Check current assessment data if no assessmentId - debugging info
+    else if (categories) {
+      console.log("Current assessment data check - number of categories:", categories.length);
+      if (categories.length > 0) {
+        console.log("First category:", categories[0].title);
+        console.log("Skills in first category:", categories[0].skills?.length || 0);
+        
+        // Check if there are any skills with ratings
+        const skillsWithRatings = categories.flatMap(cat => 
+          (cat.skills || []).filter(skill => skill.ratings?.current !== undefined)
+        );
+        
+        console.log("Number of skills with ratings:", skillsWithRatings.length);
+        if (skillsWithRatings.length > 0) {
+          console.log("Sample skill with ratings:", skillsWithRatings[0]);
+        }
+      }
+    }
+  }, [assessmentId, navigate, categories, currentStep]);
 
   // Wait for auth and data to initialize before rendering
   if (loading || loadingSpecificAssessment) {
@@ -112,13 +132,18 @@ const Results = () => {
     : demographics;
 
   console.log("Rendering Results with categories:", displayCategories);
+  // Debug log to see if we have any categories with skills
+  if (displayCategories && displayCategories.length > 0) {
+    console.log("First category skills count:", displayCategories[0].skills?.length || 0);
+    if (displayCategories[0].skills?.length > 0) {
+      console.log("Sample skill from first category:", displayCategories[0].skills[0]);
+    }
+  }
 
   // Check if we have valid categories data to display
   const hasValidCategories = displayCategories && 
     Array.isArray(displayCategories) && 
-    displayCategories.length > 0 &&
-    displayCategories[0].skills &&
-    Array.isArray(displayCategories[0].skills);
+    displayCategories.length > 0;
 
   if (assessmentId && !hasValidCategories) {
     return (
@@ -132,6 +157,33 @@ const Results = () => {
             <p className="text-gray-600 mb-6">The assessment data could not be loaded or has an invalid format.</p>
             <Button onClick={() => navigate('/previous-assessments')} className="bg-encourager hover:bg-encourager-light">
               Back to Previous Assessments
+            </Button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // If there are no assessment results but we're on the results page without specific ID
+  if (!assessmentId && (!displayCategories || displayCategories.length === 0)) {
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <div className="max-w-5xl mx-auto px-4 py-2">
+          <Navigation />
+        </div>
+        <main className="assessment-container max-w-5xl mx-auto px-4 py-8">
+          <div className="text-center py-12">
+            <h1 className="text-2xl font-bold mb-4 text-gray-800">No Assessment Results Available</h1>
+            <p className="text-gray-600 mb-6">It looks like you haven't completed an assessment yet or your results weren't saved.</p>
+            <Button 
+              onClick={() => {
+                handleStartAssessment();
+                navigate('/assessment');
+              }} 
+              className="bg-encourager hover:bg-encourager-light"
+            >
+              Start New Assessment
             </Button>
           </div>
         </main>

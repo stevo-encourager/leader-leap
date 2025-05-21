@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Category, Skill } from '@/utils/assessmentTypes';
@@ -22,13 +22,15 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
   hideHeader = false
 }) => {
   // Debug log to see what ratings are available
-  console.log(`Rendering LeadershipCategory: ${category.title}`, 
-    category.skills.map(skill => ({
-      id: skill.id,
-      name: skill.name,
-      ratings: skill.ratings
-    }))
-  );
+  useEffect(() => {
+    console.log(`Rendering LeadershipCategory: ${category.title}`, 
+      category.skills.map(skill => ({
+        id: skill.id,
+        name: skill.name,
+        ratings: skill.ratings
+      }))
+    );
+  }, [category]);
   
   return (
     <Card className="mb-8">

@@ -52,25 +52,6 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
     );
   }
 
-  // If calculations are still happening or data is invalid
-  if (typeof averageGap !== 'number' || !Array.isArray(lowestSkills) || !Array.isArray(largestGaps)) {
-    return (
-      <div className="bg-encourager/5 p-4 rounded-lg border border-encourager/20">
-        <div className="flex items-start gap-3">
-          <BookOpen className="text-encourager h-5 w-5 mt-1" />
-          <div>
-            <h3 className="text-lg font-medium mb-2">Key Insights</h3>
-            <p className="text-sm">Processing your assessment data...</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Modify validation to show data even when arrays are empty or all ratings are 0
-  // As long as we have valid categories, we'll display insights
-  const hasValidData = true;
-
   return (
     <div className="bg-encourager/5 p-4 rounded-lg border border-encourager/20">
       <div className="flex items-start gap-3">
@@ -103,7 +84,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
               ))
             ) : (
               <p className="text-sm text-slate-500">
-                All skills have the same rating. Complete your assessment with varying ratings to see your lowest skills.
+                All skills have the same rating. Try adjusting your assessment to better identify areas for improvement.
               </p>
             )}
           </div>

@@ -8,6 +8,7 @@ import PurposeSection from './introduction/PurposeSection';
 import AudienceSection from './introduction/AudienceSection';
 import InstructionsSection from './introduction/InstructionsSection';
 import BenefitsSection from './introduction/BenefitsSection';
+import { useNavigate } from 'react-router-dom';
 
 interface IntroductionPageProps {
   categories: Category[];
@@ -15,18 +16,22 @@ interface IntroductionPageProps {
 }
 
 const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStartAssessment }) => {
-  const handleStartAssessment = () => {
+  const navigate = useNavigate();
+  
+  const handleStartAssessment = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    
     // Call the provided function to set up state
     onStartAssessment();
     
-    // Force navigation using direct DOM API
-    document.location.href = '/assessment';
+    // Use React Router's navigate for SPA navigation
+    navigate('/assessment');
   };
 
   return (
     <div className="fade-in space-y-6 pt-0">
       <Card className="border-none overflow-hidden shadow-elevated bg-white">
-        <IntroductionHeader onStartAssessment={handleStartAssessment} />
+        <IntroductionHeader onStartAssessment={onStartAssessment} />
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

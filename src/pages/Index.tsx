@@ -8,8 +8,10 @@ import Navigation from '@/components/layout/Navigation';
 import Footer from '@/components/layout/Footer';
 import IntroductionPage from '@/components/IntroductionPage';
 import { useAssessment } from '@/hooks/useAssessment';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
+  const navigate = useNavigate();
   const {
     handleCategoriesUpdate,
     handleStartAssessment,
@@ -24,10 +26,11 @@ const Index = () => {
     handleCategoriesUpdate(initialCategories);
   }, []);
 
-  // Use document.location for direct navigation
+  // Use proper React Router navigation
   const startAssessmentHandler = () => {
     handleStartAssessment();
-    document.location.href = '/assessment';
+    // Use React Router's navigate for SPA navigation
+    navigate('/assessment', { replace: true });
   };
 
   // Wait for auth to initialize before rendering

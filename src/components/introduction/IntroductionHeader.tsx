@@ -1,18 +1,23 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 interface IntroductionHeaderProps {
   onStartAssessment: () => void;
 }
 
 const IntroductionHeader: React.FC<IntroductionHeaderProps> = ({ onStartAssessment }) => {
-  const handleClick = () => {
+  const navigate = useNavigate();
+  
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    
     // First call the provided function to set up state
     onStartAssessment();
     
-    // Force navigation using direct DOM API
-    document.location.href = '/assessment';
+    // Use React Router's navigate for SPA navigation
+    navigate('/assessment');
   };
   
   return (

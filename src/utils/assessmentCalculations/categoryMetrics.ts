@@ -24,8 +24,13 @@ export const getCategoriesWithMetadata = (categories: Category[]): CategoryWithM
       
       category.skills.forEach(skill => {
         if (skill.ratings) {
-          const current = typeof skill.ratings.current === 'number' ? skill.ratings.current : parseFloat(String(skill.ratings.current || '0'));
-          const desired = typeof skill.ratings.desired === 'number' ? skill.ratings.desired : parseFloat(String(skill.ratings.desired || '0'));
+          // Ensure values are properly parsed and within range
+          let current = typeof skill.ratings.current === 'number' ? skill.ratings.current : parseFloat(String(skill.ratings.current || '0'));
+          let desired = typeof skill.ratings.desired === 'number' ? skill.ratings.desired : parseFloat(String(skill.ratings.desired || '0'));
+          
+          // Apply range constraints
+          current = Math.max(0, Math.min(10, current));
+          desired = Math.max(0, Math.min(10, desired));
           
           totalCurrentRating += current;
           totalDesiredRating += desired;
@@ -37,6 +42,8 @@ export const getCategoriesWithMetadata = (categories: Category[]): CategoryWithM
       
       const avgCurrent = parseFloat((totalCurrentRating / validSkillCount).toFixed(2));
       const avgDesired = parseFloat((totalDesiredRating / validSkillCount).toFixed(2));
+      
+      // Calculate the actual gap between desired and current
       const gap = parseFloat((Math.abs(avgDesired - avgCurrent)).toFixed(2));
       
       return {

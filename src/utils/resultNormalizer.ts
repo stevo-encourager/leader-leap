@@ -80,11 +80,12 @@ export const normalizeCategories = (categories: any[]): Category[] => {
     console.log("normalizeCategories - All ratings are 0, setting default values on 1-10 scale");
     
     // Set default values for the first category only to ensure we have some data to display
+    // Using random values across the full 1-10 scale
     normalizedCategories[0].skills = normalizedCategories[0].skills.map(skill => ({
       ...skill,
       ratings: {
-        current: 2 + Math.floor(Math.random() * 3), // 2-4
-        desired: 7 + Math.floor(Math.random() * 3)  // 7-9
+        current: 1 + Math.floor(Math.random() * 5), // 1-5 (lower half of scale)
+        desired: 6 + Math.floor(Math.random() * 5)  // 6-10 (upper half of scale)
       }
     }));
   }
@@ -142,13 +143,25 @@ export const normalizeSkills = (skills: any[], categoryTitle: string): Skill[] =
           ? skill.ratings.desired 
           : parseFloat(String(skill.ratings.desired || '8'));
         
-        // Handle NaN values and ensure we don't have zeros, use full 1-10 scale
-        normalizedSkill.ratings.current = isNaN(currentRating) || currentRating === 0 ? 3 : currentRating;
-        normalizedSkill.ratings.desired = isNaN(desiredRating) || desiredRating === 0 ? 8 : desiredRating;
+        // Handle NaN values and ensure values are within 1-10 range
+        if (isNaN(currentRating) || currentRating === 0) {
+          currentRating = 3;
+        } else {
+          currentRating = Math.max(1, Math.min(10, currentRating));
+        }
         
-        // Ensure desired is always higher than current if both are still the same
+        if (isNaN(desiredRating) || desiredRating === 0) {
+          desiredRating = 8;
+        } else {
+          desiredRating = Math.max(1, Math.min(10, desiredRating));
+        }
+        
+        normalizedSkill.ratings.current = currentRating;
+        normalizedSkill.ratings.desired = desiredRating;
+        
+        // Ensure desired is always higher than current if they're the same
         if (normalizedSkill.ratings.desired <= normalizedSkill.ratings.current) {
-          normalizedSkill.ratings.desired = Math.min(10, normalizedSkill.ratings.current + 3);
+          normalizedSkill.ratings.desired = Math.min(10, normalizedSkill.ratings.current + 2);
         }
       } else {
         console.warn(`normalizeSkills - Invalid ratings format for ${normalizedSkill.name} in ${categoryTitle}:`, skill.ratings);

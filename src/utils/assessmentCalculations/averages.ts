@@ -7,7 +7,7 @@ export const calculateAverageGap = (categories: Category[]): number => {
   try {
     if (!categories || categories.length === 0) {
       console.warn("No categories provided to calculateAverageGap");
-      return 3; // Default to a more realistic gap on 1-10 scale
+      return 0; // Return 0 when no data is available
     }
     
     let totalSkillCount = 0;
@@ -26,15 +26,15 @@ export const calculateAverageGap = (categories: Category[]): number => {
       });
     });
     
-    if (totalSkillCount === 0) return 3; // Default to a realistic gap on 1-10 scale
+    if (totalSkillCount === 0) return 0; // Return 0 when no skills are found
     
-    // Ensure average gap is formatted to 2 decimal places
+    // Calculate the actual average gap
     const calculatedGap = parseFloat((totalGapValue / totalSkillCount).toFixed(2));
     console.log("Calculated average gap:", calculatedGap, "from", totalSkillCount, "skills with total gap value:", totalGapValue);
     
     return calculatedGap;
   } catch (error) {
     console.error("Error in calculateAverageGap:", error);
-    return 3; // Default to a realistic gap on 1-10 scale
+    return 0;
   }
 };

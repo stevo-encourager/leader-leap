@@ -7,8 +7,7 @@ import {
   PolarAngleAxis, 
   Radar, 
   Legend, 
-  Tooltip,
-  TooltipProps
+  Tooltip
 } from 'recharts';
 import { Category } from '@/utils/assessmentTypes';
 
@@ -26,18 +25,15 @@ interface ChartData {
 const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
   const [chartData, setChartData] = useState<ChartData[]>([]);
 
-  // Prepare chart data from categories
   useEffect(() => {
     if (!categories || categories.length === 0) {
-      console.log("No categories provided to SkillGapChart");
       return;
     }
-    
+
     const preparedData: ChartData[] = [];
     
     categories.forEach(category => {
       if (!category.skills || category.skills.length === 0) {
-        console.log(`Category ${category.title} has no skills`);
         return;
       }
       
@@ -64,7 +60,6 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
       });
     });
     
-    console.log("Chart data prepared:", preparedData);
     setChartData(preparedData);
   }, [categories]);
 
@@ -72,25 +67,24 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
     return <div className="text-center p-6">No data available for chart</div>;
   }
 
-  // Create a simple custom tooltip component
+  // Custom tooltip component
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
-      const subject = payload[0]?.payload?.subject || '';
-      const current = parseFloat((payload[0]?.value || 0).toString());
-      const desired = parseFloat((payload[1]?.value || 0).toString());
-      const gap = parseFloat((Math.abs(desired - current)).toFixed(2));
-      
       return (
         <div className="bg-white p-3 rounded shadow-md border border-gray-200">
-          <p className="font-medium">{subject}</p>
+          <p className="font-medium">{payload[0]?.payload?.subject}</p>
           <p className="text-sm text-gray-700">
-            Current: <span className="font-medium">{current.toFixed(2)}</span>
+            Current: <span className="font-medium">{payload[0]?.value?.toFixed(2)}</span>
           </p>
           <p className="text-sm text-gray-700">
-            Desired: <span className="font-medium">{desired.toFixed(2)}</span>
+            Desired: <span className="font-medium">{payload[1]?.value?.toFixed(2)}</span>
           </p>
           <p className="text-sm text-gray-700">
-            Gap: <span className="font-medium">{gap.toFixed(2)}</span>
+            Gap: <span className="font-medium">
+              {Math.abs(
+                (payload[1]?.value || 0) - (payload[0]?.value || 0)
+              ).toFixed(2)}
+            </span>
           </p>
         </div>
       );
@@ -99,39 +93,28 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
   };
 
   return (
-    <div className="w-full h-full">
-      <ResponsiveContainer width="100%" height={500}>
-        <RadarChart 
-          outerRadius={180} 
-          data={chartData}
-        >
-          <PolarGrid />
-          <PolarAngleAxis 
-            dataKey="subject" 
-            tick={{ 
-              fill: '#2F564D', 
-              fontSize: 12
-            }}
-          />
-          <Radar
-            name="Current Level"
-            dataKey="current"
-            stroke="#2F564D"
-            fill="#2F564D"
-            fillOpacity={0.4}
-          />
-          <Radar
-            name="Desired Level"
-            dataKey="desired"
-            stroke="#8baca5"
-            fill="#8baca5"
-            fillOpacity={0.4}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend />
-        </RadarChart>
-      </ResponsiveContainer>
-    </div>
+    <ResponsiveContainer width="100%" height={400}>
+      <RadarChart data={chartData}>
+        <PolarGrid />
+        <PolarAngleAxis dataKey="subject" />
+        <Radar
+          name="Current Level"
+          dataKey="current"
+          stroke="#2F564D"
+          fill="#2F564D"
+          fillOpacity={0.6}
+        />
+        <Radar
+          name="Desired Level"
+          dataKey="desired"
+          stroke="#8baca5"
+          fill="#8baca5"
+          fillOpacity={0.6}
+        />
+        <Tooltip content={CustomTooltip} />
+        <Legend />
+      </RadarChart>
+    </ResponsiveContainer>
   );
 };
 

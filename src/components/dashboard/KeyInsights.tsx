@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { BookOpen } from 'lucide-react';
 import { 
@@ -30,7 +29,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
   categories
 }) => {
   const [openSections, setOpenSections] = useState({
-    largestGaps: false,
+    largestGaps: true,
     skillsToImprove: false,
     smallestGaps: false,
     skillsMeeting: false

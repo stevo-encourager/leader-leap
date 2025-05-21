@@ -72,11 +72,6 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
     return <div className="text-center p-6">No data available for chart</div>;
   }
 
-  // Custom formatter for the tooltip to ensure numbers display properly with 2 decimal points
-  const tooltipFormatter = (value: string | number) => {
-    return typeof value === 'number' ? value.toFixed(2) : value;
-  };
-
   return (
     <div className="radar-chart-container w-full">
       <ResponsiveContainer width="100%" height={500}>
@@ -116,17 +111,21 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
           <Tooltip 
             content={({ active, payload }) => {
               if (active && payload && payload.length) {
+                const current = typeof payload[0].value === 'number' ? payload[0].value : 0;
+                const desired = typeof payload[1].value === 'number' ? payload[1].value : 0;
+                const gap = Math.abs(desired - current);
+                
                 return (
                   <div className="bg-white p-3 rounded shadow-md border border-gray-200">
                     <p className="font-medium">{payload[0].payload.subject}</p>
                     <p className="text-sm text-gray-700">
-                      Current: <span className="font-medium">{payload[0].value.toFixed(2)}</span>
+                      Current: <span className="font-medium">{typeof current === 'number' ? current.toFixed(2) : current}</span>
                     </p>
                     <p className="text-sm text-gray-700">
-                      Desired: <span className="font-medium">{payload[1].value.toFixed(2)}</span>
+                      Desired: <span className="font-medium">{typeof desired === 'number' ? desired.toFixed(2) : desired}</span>
                     </p>
                     <p className="text-sm text-gray-700">
-                      Gap: <span className="font-medium">{Math.abs(payload[1].value - payload[0].value).toFixed(2)}</span>
+                      Gap: <span className="font-medium">{gap.toFixed(2)}</span>
                     </p>
                   </div>
                 );

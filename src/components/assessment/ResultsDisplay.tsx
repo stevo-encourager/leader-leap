@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import ResultsDashboard from '../ResultsDashboard';
 import { Category, Demographics } from '../../utils/assessmentTypes';
 import { normalizeCategories } from '../../utils/resultNormalizer';
@@ -22,43 +22,17 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   onSignup,
   isAuthenticated
 }) => {
-  useEffect(() => {
-    console.log("RESULTS_DISPLAY - INITIAL Categories received:", JSON.stringify(categories));
-    
-    // Debug category ratings
-    if (categories && categories.length > 0) {
-      console.log(`RESULTS_DISPLAY - First category: ${categories[0].title}`);
-      if (categories[0].skills && categories[0].skills.length > 0) {
-        const firstSkill = categories[0].skills[0];
-        console.log(`RESULTS_DISPLAY - First skill: ${firstSkill.name}`);
-        console.log(`RESULTS_DISPLAY - First skill ratings:`, firstSkill.ratings);
-        console.log(`RESULTS_DISPLAY - First skill ratings type:`, typeof firstSkill.ratings);
-        if (firstSkill.ratings) {
-          console.log(`RESULTS_DISPLAY - Current rating type: ${typeof firstSkill.ratings.current}`);
-          console.log(`RESULTS_DISPLAY - Desired rating type: ${typeof firstSkill.ratings.desired}`);
-        }
-      }
-    }
-  }, [categories]);
-
-  // Check if categories is valid before rendering
+  // Quick validation of input data
   if (!categories || !Array.isArray(categories) || categories.length === 0) {
-    console.error("RESULTS_DISPLAY - Invalid categories data received");
     return <InvalidResultsMessage onRestart={onRestart} />;
   }
 
-  // Normalize the categories data
+  // Normalize the categories data to ensure consistent format
   const normalizedCategories = normalizeCategories(categories);
   
-  // Confirm data after normalization
-  console.log("RESULTS_DISPLAY - Categories after normalization:", normalizedCategories.length);
-  console.log("RESULTS_DISPLAY - Full normalized categories:", JSON.stringify(normalizedCategories));
-  
-  if (normalizedCategories.length > 0 && normalizedCategories[0].skills.length > 0) {
-    console.log("RESULTS_DISPLAY - First normalized skill ratings:", 
-      normalizedCategories[0].skills[0].ratings);
-    console.log("RESULTS_DISPLAY - First normalized skill ratings type:", 
-      typeof normalizedCategories[0].skills[0].ratings);
+  // Check for valid normalized data
+  if (!normalizedCategories || normalizedCategories.length === 0) {
+    return <InvalidResultsMessage onRestart={onRestart} />;
   }
 
   return (

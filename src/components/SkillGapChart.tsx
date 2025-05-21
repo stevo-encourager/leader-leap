@@ -22,114 +22,71 @@ interface ChartData {
 }
 
 const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
-  console.log("CHART - SkillGapChart received categories:", categories);
-  console.log("CHART - Categories is array:", Array.isArray(categories));
-  console.log("CHART - Categories length:", categories?.length || 0);
-  
-  // Log first category and skills for detailed debugging
-  if (categories && categories.length > 0) {
-    console.log("CHART - First category:", categories[0].title);
-    if (categories[0].skills && categories[0].skills.length > 0) {
-      console.log("CHART - First skill sample:", categories[0].skills[0]);
-    }
-  }
-  
   // Memoize chart data processing for performance
   const chartData = useMemo(() => {
-    console.log("CHART - Processing chart data from categories");
-    
     if (!categories || !Array.isArray(categories) || categories.length === 0) {
-      console.error("CHART - No valid categories data available");
       return [];
     }
     
-    // Filter out any invalid category objects before mapping
-    const validCategories = categories.filter(cat => 
-      cat && typeof cat === 'object' && cat.title && 
-      cat.skills && Array.isArray(cat.skills)
-    );
-    
-    console.log("CHART - Valid categories for chart:", validCategories.length);
-    
-    if (validCategories.length === 0) {
-      console.error("CHART - No valid categories after filtering");
-      return [];
-    }
-    
-    const data = validCategories.map(category => {
-      // Get the category title or use a fallback
-      const title = category.title || "Unknown Category";
-      console.log(`CHART - Processing category: ${title} with ${category.skills?.length || 0} skills`);
-      
-      // Validate skills array
-      const skills = category.skills?.filter(skill => 
-        skill && skill.ratings && 
-        (typeof skill.ratings.current === 'number' || typeof skill.ratings.desired === 'number')
-      ) || [];
-      
-      console.log(`CHART - Category ${title} has ${skills.length} valid skills`);
-      
-      if (skills.length === 0) {
-        return {
-          subject: title,
-          current: 0,
-          desired: 0,
-          fullMark: 10
-        };
-      }
-      
-      // Calculate averages safely
-      let totalCurrent = 0;
-      let totalDesired = 0;
+    return categories.map(category => {
+      // Default values
+      let avgCurrent = 0;
+      let avgDesired = 0;
       let skillCount = 0;
       
-      skills.forEach(skill => {
-        const current = typeof skill.ratings.current === 'number' ? skill.ratings.current : 0;
-        const desired = typeof skill.ratings.desired === 'number' ? skill.ratings.desired : 0;
-        
-        // Only include skills with valid ratings
-        if (current > 0 || desired > 0) {
-          totalCurrent += current;
-          totalDesired += desired;
-          skillCount++;
-          console.log(`CHART - Skill ${skill.name}: Current=${current}, Desired=${desired}`);
+      // Process skills if they exist
+      if (category.skills && Array.isArray(category.skills) && category.skills.length > 0) {
+        // Count valid skills and sum ratings
+        for (const skill of category.skills) {
+          if (!skill.ratings) continue;
+          
+          const current = Number(skill.ratings.current);
+          const desired = Number(skill.ratings.desired);
+          
+          if (current > 0 || desired > 0) {
+            avgCurrent += current;
+            avgDesired += desired;
+            skillCount++;
+          }
         }
-      });
-      
-      if (skillCount === 0) {
-        console.log(`CHART - No valid skills with ratings in category: ${title}`);
-        return {
-          subject: title,
-          current: 0,
-          desired: 0,
-          fullMark: 10
-        };
+        
+        // Calculate averages
+        if (skillCount > 0) {
+          avgCurrent = parseFloat((avgCurrent / skillCount).toFixed(1));
+          avgDesired = parseFloat((avgDesired / skillCount).toFixed(1));
+        }
       }
       
-      const avgCurrent = parseFloat((totalCurrent / skillCount).toFixed(1));
-      const avgDesired = parseFloat((totalDesired / skillCount).toFixed(1));
-      
-      console.log(`CHART - Category ${title}: current=${avgCurrent}, desired=${avgDesired}, gap=${Math.abs(avgDesired - avgCurrent).toFixed(1)}`);
-      
       return {
-        subject: title,
+        subject: category.title || "Unknown Category",
         current: avgCurrent,
         desired: avgDesired,
         fullMark: 10
       };
     });
-    
-    console.log("CHART - Final processed chart data:", data);
-    return data;
   }, [categories]);
 
   // Create a placeholder if no data is available
   if (!chartData || chartData.length === 0) {
-    console.error("CHART - No chart data available after processing");
     return (
       <div className="flex items-center justify-center h-full bg-slate-50 rounded-lg p-6">
         <p className="text-gray-500 text-center">
           No assessment data available for visualization
+        </p>
+      </div>
+    );
+  }
+  
+  // Filter to only show categories with actual data
+  const validChartData = chartData.filter(
+    item => item.current > 0 || item.desired > 0
+  );
+  
+  if (validChartData.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full bg-slate-50 rounded-lg p-6">
+        <p className="text-gray-500 text-center">
+          Complete the assessment to see your competency radar chart
         </p>
       </div>
     );
@@ -150,7 +107,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
     <ChartContainer className="w-full h-full" config={chartConfig}>
       <ResponsiveContainer width="100%" height="100%">
         <RadarChart 
-          data={chartData} 
+          data={validChartData} 
           margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
           style={{overflow: 'visible'}}
         >

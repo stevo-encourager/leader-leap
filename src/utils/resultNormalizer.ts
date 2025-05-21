@@ -5,29 +5,12 @@ import { Category, Skill } from './assessmentTypes';
  * Normalizes categories data to ensure consistent format for display
  */
 export const normalizeCategories = (categories: any[]): Category[] => {
-  console.log("NORMALIZER - Input categories data:", JSON.stringify(categories).substring(0, 200) + "...");
-  
-  if (!categories) {
-    console.error("NORMALIZER - Categories is undefined or null");
-    return [];
-  }
-  
-  if (!Array.isArray(categories)) {
-    console.error("NORMALIZER - Categories is not an array:", typeof categories);
-    // Try to make it an array
-    const categoriesArray = [categories];
-    console.log("NORMALIZER - Converted to array:", categoriesArray);
-    categories = categoriesArray;
-  }
-  
-  if (categories.length === 0) {
-    console.warn("NORMALIZER - Empty categories array");
+  if (!categories || !Array.isArray(categories) || categories.length === 0) {
     return [];
   }
 
-  const normalizedCategories = categories.map(category => {
+  return categories.map(category => {
     if (!category || typeof category !== 'object') {
-      console.error("NORMALIZER - Found invalid category:", category);
       return {
         id: `category-${Math.random().toString(36).substring(2, 9)}`,
         title: "Unknown Category",
@@ -36,28 +19,15 @@ export const normalizeCategories = (categories: any[]): Category[] => {
       };
     }
     
-    // Ensure category has an ID
+    // Get basic category info
     const categoryId = category.id || `category-${Math.random().toString(36).substring(2, 9)}`;
-    
-    // Ensure category has a title
     const categoryTitle = category.title || "Unknown Category";
-    
-    // Ensure category has a description
     const categoryDescription = category.description || "";
     
-    console.log(`NORMALIZER - Processing category: ${categoryTitle}`);
-    
-    // Handle skills array
-    let skills: Skill[] = [];
-    if (category.skills) {
-      if (Array.isArray(category.skills)) {
-        skills = normalizeSkills(category.skills, categoryTitle);
-      } else {
-        console.warn(`NORMALIZER - Category ${categoryTitle} has invalid skills (not an array):`, typeof category.skills);
-      }
-    } else {
-      console.warn(`NORMALIZER - Category ${categoryTitle} has no skills property`);
-    }
+    // Normalize skills
+    const skills = category.skills && Array.isArray(category.skills) 
+      ? normalizeSkills(category.skills)
+      : [];
     
     return {
       id: categoryId,
@@ -66,45 +36,18 @@ export const normalizeCategories = (categories: any[]): Category[] => {
       skills
     };
   });
-  
-  // Log first normalized category for debugging
-  if (normalizedCategories.length > 0) {
-    console.log("NORMALIZER - First normalized category:", normalizedCategories[0].title);
-    console.log("NORMALIZER - First skill in first category:", normalizedCategories[0].skills?.[0]);
-  }
-  
-  return normalizedCategories;
 };
 
 /**
  * Normalizes skills data to ensure consistent format for display
  */
-export const normalizeSkills = (skills: any[], categoryTitle: string): Skill[] => {
-  console.log(`NORMALIZER - Normalizing ${skills?.length || 0} skills for category ${categoryTitle}`);
-  
-  if (!skills) {
-    console.error(`NORMALIZER - Skills is undefined or null for category ${categoryTitle}`);
-    return [];
-  }
-  
-  if (!Array.isArray(skills)) {
-    console.error(`NORMALIZER - Skills is not an array for category ${categoryTitle}:`, typeof skills);
-    return [];
-  }
-  
-  if (skills.length === 0) {
-    console.warn(`NORMALIZER - Empty skills array for category ${categoryTitle}`);
+export const normalizeSkills = (skills: any[]): Skill[] => {
+  if (!skills || !Array.isArray(skills) || skills.length === 0) {
     return [];
   }
 
-  // Log first skill for debugging
-  if (skills.length > 0) {
-    console.log(`NORMALIZER - First skill sample for ${categoryTitle}:`, JSON.stringify(skills[0]));
-  }
-  
-  return skills.map((skill, index) => {
+  return skills.map(skill => {
     if (!skill || typeof skill !== 'object') {
-      console.error(`NORMALIZER - Found invalid skill at index ${index} in ${categoryTitle}:`, skill);
       return {
         id: `skill-${Math.random().toString(36).substring(2, 9)}`,
         name: "Unknown Skill",
@@ -118,30 +61,17 @@ export const normalizeSkills = (skills: any[], categoryTitle: string): Skill[] =
       id: skill.id || `skill-${Math.random().toString(36).substring(2, 9)}`,
       name: skill.name || skill.competency || "Unnamed Skill",
       description: skill.description || "",
-      ratings: { current: 0, desired: 0 } // Start with zeros as default
+      ratings: { 
+        current: 0,
+        desired: 0
+      }
     };
     
-    // Get original ratings directly - preserve original values
+    // Handle ratings properly, ensuring they're always numbers
     if (skill.ratings) {
-      if (typeof skill.ratings === 'object') {
-        // Handle ratings properly, ensuring they're converted to numbers
-        // This is CRITICAL for the calculations to work correctly
-        const currentRating = Number(skill.ratings.current);
-        const desiredRating = Number(skill.ratings.desired);
-        
-        console.log(`NORMALIZER - Original ratings for ${normalizedSkill.name}: Current=${skill.ratings.current} (${typeof skill.ratings.current}), Desired=${skill.ratings.desired} (${typeof skill.ratings.desired})`);
-        console.log(`NORMALIZER - Converted ratings: Current=${currentRating}, Desired=${desiredRating}`);
-        
-        // Preserve original values, ensuring they're numbers
-        normalizedSkill.ratings.current = !isNaN(currentRating) ? currentRating : 0;
-        normalizedSkill.ratings.desired = !isNaN(desiredRating) ? desiredRating : 0;
-        
-        console.log(`NORMALIZER - Final ratings for ${normalizedSkill.name}: Current=${normalizedSkill.ratings.current}, Desired=${normalizedSkill.ratings.desired}, Gap=${Math.abs(normalizedSkill.ratings.desired - normalizedSkill.ratings.current)}`);
-      } else {
-        console.warn(`NORMALIZER - Invalid ratings object for skill ${normalizedSkill.name}:`, skill.ratings);
-      }
-    } else {
-      console.warn(`NORMALIZER - No ratings for skill ${normalizedSkill.name}`);
+      // Directly convert to numbers to ensure consistent handling
+      normalizedSkill.ratings.current = Number(skill.ratings.current || 0);
+      normalizedSkill.ratings.desired = Number(skill.ratings.desired || 0);
     }
     
     return normalizedSkill;

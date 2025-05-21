@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Category, Skill } from '@/utils/assessmentTypes';
@@ -21,17 +21,6 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
   onSkillRating,
   hideHeader = false
 }) => {
-  // Debug log to see what ratings are available
-  useEffect(() => {
-    console.log(`Rendering LeadershipCategory: ${category.title}`, 
-      category.skills.map(skill => ({
-        id: skill.id,
-        name: skill.name,
-        ratings: skill.ratings
-      }))
-    );
-  }, [category]);
-  
   return (
     <Card className="mb-8">
       {!hideHeader && (
@@ -57,7 +46,7 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
         </CardHeader>
       )}
       <CardContent>
-        {category.skills.map((skill, index) => (
+        {category.skills.map((skill) => (
           <div key={skill.id} className="mb-8 pt-6">
             <div className="flex justify-between items-center mb-2">
               <h4 className="text-lg font-medium text-[#242323]">{skill.name}</h4>
@@ -88,8 +77,9 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
                       step={1}
                       value={[skill.ratings.current]}
                       onValueChange={(value) => {
-                        console.log(`Setting ${skill.name} current rating to: ${value[0]}`);
-                        onSkillRating(category.id, skill.id, 'current', value[0]);
+                        // Convert to number explicitly
+                        const numericValue = Number(value[0]);
+                        onSkillRating(category.id, skill.id, 'current', numericValue);
                       }}
                       className="mb-2"
                     />
@@ -116,8 +106,9 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
                       step={1}
                       value={[skill.ratings.desired]}
                       onValueChange={(value) => {
-                        console.log(`Setting ${skill.name} desired rating to: ${value[0]}`);
-                        onSkillRating(category.id, skill.id, 'desired', value[0]);
+                        // Convert to number explicitly
+                        const numericValue = Number(value[0]);
+                        onSkillRating(category.id, skill.id, 'desired', numericValue);
                       }}
                       className="mb-2"
                     />
@@ -138,7 +129,7 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
                 className="skill-gap" 
                 style={{ 
                   width: `${skill.ratings.current * 10}%`,
-                  backgroundColor: 'rgba(139, 172, 165, 0.2)' // Changed to #8baca5 with opacity
+                  backgroundColor: 'rgba(139, 172, 165, 0.2)'
                 }}
               ></div>
               <div 

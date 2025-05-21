@@ -5,7 +5,7 @@ import SectionHeader from '../introduction/SectionHeader';
 
 const CoachingSupport: React.FC = () => {
   return (
-    <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 h-full text-center">
+    <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 h-full">
       <SectionHeader 
         icon={User} 
         title="Get some expert coaching support" 
@@ -18,7 +18,7 @@ const CoachingSupport: React.FC = () => {
         <li>Establish accountability for practice and reflection</li>
       </ul>
       
-      <div className="mt-4 pt-3 border-t border-slate-100 text-center">
+      <div className="mt-4 pt-3 border-t border-slate-100 text-left">
         <a 
           href="https://www.encouragercoaching.com" 
           target="_blank" 

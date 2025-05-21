@@ -67,25 +67,9 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
     );
   }
 
-  // Check if we have actual data in our arrays
-  const hasValidData = (lowestSkills.length > 0 || largestGaps.length > 0);
-  
-  if (!hasValidData) {
-    return (
-      <div className="bg-encourager/5 p-4 rounded-lg border border-encourager/20">
-        <div className="flex items-start gap-3">
-          <BookOpen className="text-encourager h-5 w-5 mt-1" />
-          <div>
-            <h3 className="text-lg font-medium mb-2">Key Insights</h3>
-            <p className="text-sm">
-              We couldn't generate insights from your assessment data. Please ensure you've rated all skills 
-              in the assessment.
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Modify validation to show data even when arrays are empty or all ratings are 0
+  // As long as we have valid categories, we'll display insights
+  const hasValidData = true;
 
   return (
     <div className="bg-encourager/5 p-4 rounded-lg border border-encourager/20">
@@ -118,7 +102,9 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
                 </div>
               ))
             ) : (
-              <p className="text-sm text-slate-500">No skill data available</p>
+              <p className="text-sm text-slate-500">
+                All skills have the same rating. Complete your assessment with varying ratings to see your lowest skills.
+              </p>
             )}
           </div>
           
@@ -139,7 +125,9 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
                 </div>
               ))
             ) : (
-              <p className="text-sm text-slate-500">No gap data available</p>
+              <p className="text-sm text-slate-500">
+                No significant gaps found. Try setting different current and desired levels to identify areas with larger gaps.
+              </p>
             )}
           </div>
         </div>

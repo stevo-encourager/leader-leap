@@ -75,7 +75,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
             ? skill.ratings.desired 
             : parseFloat(String(skill.ratings.desired || '0'));
           
-          // Additional validation to ensure we have valid ratings
+          // Consider 0 as a valid rating value (change from previous validation)
           if (!isNaN(currentRating) && !isNaN(desiredRating)) {
             console.log(`Valid skill rating for ${skillName}: current=${currentRating}, desired=${desiredRating}`);
             sumCurrent += currentRating;
@@ -112,8 +112,9 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
     return <div className="text-center p-6">Processing chart data...</div>;
   }
   
-  // Check if we actually have data to show after processing
-  const hasValidData = chartData.some(item => item.current > 0 || item.desired > 0);
+  // Modify the validation check to display the chart even with all zeros
+  // as long as we have data entries in chartData
+  const hasValidData = chartData.length > 0;
   
   if (!hasValidData) {
     return <div className="text-center p-6">No valid rating data found to display chart</div>;

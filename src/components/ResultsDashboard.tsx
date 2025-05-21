@@ -9,6 +9,7 @@ import CoachingSupport from './dashboard/CoachingSupport';
 import ResultsActions from './dashboard/ResultsActions';
 import RecommendedSteps from './dashboard/RecommendedSteps';
 import { calculateAverageGap, getTopStrengths, getLowestSkills } from '../utils/assessmentCalculations';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface ResultsDashboardProps {
   categories: Category[];
@@ -71,7 +72,26 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
               <CoachingSupport />
             </div>
             <div className="col-span-2">
-              {!onSignup ? null : (
+              {!onSignup ? (
+                <div className="bg-white p-4 h-full border border-slate-200 rounded-lg shadow-sm flex flex-col justify-between items-center">
+                  <div className="text-center mb-3">
+                    <h3 className="text-lg font-medium text-slate-700">Leadership Coach</h3>
+                  </div>
+                  <div className="w-36 h-36 mx-auto mb-3">
+                    <Avatar className="w-full h-full">
+                      <AvatarImage 
+                        src="/lovable-uploads/f8765ac3-0960-45f9-a7ef-b41163790dad.png" 
+                        alt="Leadership Coach" 
+                        className="object-cover"
+                      />
+                      <AvatarFallback>LC</AvatarFallback>
+                    </Avatar>
+                  </div>
+                  <p className="text-slate-600 text-center text-sm mt-2">
+                    Ready to put these insights into action? Book a discovery call to discuss your results.
+                  </p>
+                </div>
+              ) : (
                 <div className="bg-white p-4 h-full border border-slate-200 rounded-lg shadow-sm flex flex-col justify-between">
                   <p className="text-slate-700 mb-6">
                     <strong>Want to save your results, download as PDF, and access them later?</strong><br />

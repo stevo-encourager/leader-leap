@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { 
   ResponsiveContainer,
@@ -8,7 +9,7 @@ import {
   Legend, 
   Tooltip
 } from 'recharts';
-import { Category, Skill } from '@/utils/assessmentTypes';
+import { Category } from '@/utils/assessmentTypes';
 
 interface SkillGapChartProps {
   categories: Category[];
@@ -24,12 +25,25 @@ interface ChartData {
 const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
   // Prepare chart data from categories
   const prepareChartData = (): ChartData[] => {
+    if (!categories || categories.length === 0) {
+      return [];
+    }
+    
     const allSkills: ChartData[] = [];
     
     categories.forEach(category => {
+      if (!category?.skills || category.skills.length === 0) {
+        return;
+      }
+      
       // Calculate average for each category
-      const categoryAvgCurrent = category.skills.reduce((sum, skill) => sum + skill.ratings.current, 0) / category.skills.length;
-      const categoryAvgDesired = category.skills.reduce((sum, skill) => sum + skill.ratings.desired, 0) / category.skills.length;
+      const categoryAvgCurrent = category.skills.reduce((sum, skill) => {
+        return sum + (skill.ratings?.current || 0);
+      }, 0) / category.skills.length;
+      
+      const categoryAvgDesired = category.skills.reduce((sum, skill) => {
+        return sum + (skill.ratings?.desired || 0);
+      }, 0) / category.skills.length;
       
       allSkills.push({
         subject: category.title,
@@ -48,6 +62,15 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
   const tooltipFormatter = (value: string | number) => {
     return typeof value === 'number' ? value.toFixed(2) : value;
   };
+
+  // If there's no data, show a message
+  if (chartData.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <p className="text-slate-500">No assessment data available to display.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="radar-chart-container w-full">

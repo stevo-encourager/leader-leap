@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BookOpen } from 'lucide-react';
 import { SkillWithMetadata, getLargestGaps } from '@/utils/assessmentCalculations';
 import { Category } from '@/utils/assessmentTypes';
@@ -19,6 +19,28 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
 }) => {
   const largestGaps = getLargestGaps(categories, 3);
   
+  useEffect(() => {
+    console.log("KeyInsights props:", { averageGap, strengths, lowestSkills, categories });
+    console.log("Largest gaps:", largestGaps);
+  }, [averageGap, strengths, lowestSkills, categories, largestGaps]);
+
+  // If we don't have valid data, show a placeholder
+  if (!categories || categories.length === 0 || 
+      !Array.isArray(strengths) || !Array.isArray(lowestSkills) || 
+      typeof averageGap !== 'number') {
+    return (
+      <div className="bg-encourager/5 p-4 rounded-lg border border-encourager/20">
+        <div className="flex items-start gap-3">
+          <BookOpen className="text-encourager h-5 w-5 mt-1" />
+          <div>
+            <h3 className="text-lg font-medium mb-2">Key Insights</h3>
+            <p className="text-sm">Processing your assessment data...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-encourager/5 p-4 rounded-lg border border-encourager/20">
       <div className="flex items-start gap-3">
@@ -35,36 +57,44 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
           
           <h4 className="text-md font-medium mt-4 mb-2">Your Lowest Rated Skills <span className="font-normal">(areas that need the most development)</span></h4>
           <div className="space-y-3 mb-4">
-            {lowestSkills.map((skill) => (
-              <div key={`lowest-${skill.id}`} className="bg-secondary/10 p-3 rounded-lg">
-                <div className="flex justify-between">
-                  <div>
-                    <p className="font-medium">{skill.name}</p>
-                    <p className="text-sm text-slate-500">{skill.categoryTitle}</p>
-                  </div>
-                  <div className="bg-red-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
-                    Current: {skill.ratings.current}
+            {lowestSkills.length > 0 ? (
+              lowestSkills.map((skill) => (
+                <div key={`lowest-${skill.id}`} className="bg-secondary/10 p-3 rounded-lg">
+                  <div className="flex justify-between">
+                    <div>
+                      <p className="font-medium">{skill.name}</p>
+                      <p className="text-sm text-slate-500">{skill.categoryTitle}</p>
+                    </div>
+                    <div className="bg-red-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
+                      Current: {skill.ratings.current}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-sm text-slate-500">No skill data available</p>
+            )}
           </div>
           
           <h4 className="text-md font-medium mt-4 mb-2">Your Largest Skills Gaps <span className="font-normal">(areas with greatest difference between current and desired)</span></h4>
           <div className="space-y-3 mb-4">
-            {largestGaps.map((skill) => (
-              <div key={`skill-gap-${skill.id}`} className="bg-secondary/10 p-3 rounded-lg">
-                <div className="flex justify-between">
-                  <div>
-                    <p className="font-medium">{skill.name}</p>
-                    <p className="text-sm text-slate-500">{skill.categoryTitle}</p>
-                  </div>
-                  <div className="bg-red-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
-                    Gap: {skill.gap}
+            {largestGaps.length > 0 ? (
+              largestGaps.map((skill) => (
+                <div key={`skill-gap-${skill.id}`} className="bg-secondary/10 p-3 rounded-lg">
+                  <div className="flex justify-between">
+                    <div>
+                      <p className="font-medium">{skill.name}</p>
+                      <p className="text-sm text-slate-500">{skill.categoryTitle}</p>
+                    </div>
+                    <div className="bg-red-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
+                      Gap: {skill.gap}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-sm text-slate-500">No gap data available</p>
+            )}
           </div>
         </div>
       </div>

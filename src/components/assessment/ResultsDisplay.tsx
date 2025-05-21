@@ -29,15 +29,18 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
     } else {
       console.log("Categories count:", categories.length);
       categories.forEach((category, i) => {
-        console.log(`Category ${i}:`, category.title, "Skills:", category.skills?.length || 0);
+        console.log(`Category ${i}: ${category.title}, Skills: ${category.skills?.length || 0}`);
         
         if (category.skills) {
           category.skills.forEach((skill, j) => {
-            // Check if the skill object has expected properties
-            if (!skill.name && (skill as any).competency) {
-              console.log(`Skill ${j} uses 'competency' instead of 'name':`, (skill as any).competency);
-            } else {
-              console.log(`Skill ${j}:`, skill.name, "Ratings:", skill.ratings ? "Yes" : "No");
+            // Verify ratings exist and are numbers
+            const current = skill.ratings?.current;
+            const desired = skill.ratings?.desired;
+            console.log(`Skill ${j}: ${skill.name || (skill as any).competency}, ` + 
+                         `Ratings: ${skill.ratings ? `current=${current}, desired=${desired}` : "Missing"}`);
+            
+            if (!skill.ratings || typeof current !== 'number' || typeof desired !== 'number') {
+              console.error(`Invalid ratings for skill:`, skill);
             }
           });
         }
@@ -59,15 +62,28 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
     if (!category.skills || !Array.isArray(category.skills)) return category;
     
     const normalizedSkills = category.skills.map(skill => {
+      // Create a normalized skill object
+      let normalizedSkill: Skill = { ...skill };
+      
+      // Handle the case where competency is used instead of name
       if (!skill.name && (skill as any).competency) {
-        // Create a new skill object with the correct property name
-        const normalizedSkill: Skill = {
-          ...skill,
-          name: (skill as any).competency,
-        };
-        return normalizedSkill;
+        normalizedSkill.name = (skill as any).competency;
       }
-      return skill;
+      
+      // Ensure ratings exist and are numbers
+      if (!normalizedSkill.ratings) {
+        normalizedSkill.ratings = { current: 0, desired: 0 };
+      } else {
+        // Convert string ratings to numbers if needed
+        if (typeof normalizedSkill.ratings.current !== 'number') {
+          normalizedSkill.ratings.current = Number(normalizedSkill.ratings.current) || 0;
+        }
+        if (typeof normalizedSkill.ratings.desired !== 'number') {
+          normalizedSkill.ratings.desired = Number(normalizedSkill.ratings.desired) || 0;
+        }
+      }
+      
+      return normalizedSkill;
     });
     
     return { ...category, skills: normalizedSkills };
@@ -95,6 +111,9 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
         <p className="text-lg text-red-500 mb-4">
           Unable to display results: Assessment data is incomplete or in an incorrect format
         </p>
+        <pre className="text-xs text-left bg-gray-100 p-2 rounded overflow-auto max-h-60">
+          {JSON.stringify(categories, null, 2)}
+        </pre>
       </div>
     );
   }

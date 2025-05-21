@@ -44,9 +44,14 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
         let sumDesired = 0;
         
         category.skills.forEach(skill => {
-          if (skill.ratings) {
-            sumCurrent += skill.ratings.current || 0;
-            sumDesired += skill.ratings.desired || 0;
+          // Additional validation to ensure we have valid ratings
+          if (skill.ratings && 
+              typeof skill.ratings.current === 'number' && 
+              typeof skill.ratings.desired === 'number') {
+            sumCurrent += skill.ratings.current;
+            sumDesired += skill.ratings.desired;
+          } else {
+            console.warn(`Invalid ratings for skill: ${skill.name || 'unnamed'}`, skill);
           }
         });
         
@@ -65,8 +70,12 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
     setChartData(preparedData);
   }, [categories]);
 
+  if (!categories || categories.length === 0) {
+    return <div className="text-center p-6">No assessment data available</div>;
+  }
+
   if (chartData.length === 0) {
-    return <div className="text-center p-6">No data available for chart</div>;
+    return <div className="text-center p-6">Processing chart data...</div>;
   }
 
   return (

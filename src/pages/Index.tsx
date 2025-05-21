@@ -26,11 +26,12 @@ const Index = () => {
     handleCategoriesUpdate(initialCategories);
   }, []);
 
-  // Use proper React Router navigation
+  // Handle assessment start with explicit navigation
   const startAssessmentHandler = () => {
+    console.log("Start assessment handler triggered");
     handleStartAssessment();
-    // Use React Router's navigate for SPA navigation
-    navigate('/assessment', { replace: true });
+    console.log("Navigation to /assessment");
+    navigate('/assessment');
   };
 
   // Wait for auth to initialize before rendering

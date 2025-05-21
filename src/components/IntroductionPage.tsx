@@ -22,7 +22,7 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
     // Call the provided function
     onStartAssessment();
     
-    // Navigate directly without replace to ensure it works
+    // Navigate programmatically - ensure this happens
     navigate('/assessment');
   };
 

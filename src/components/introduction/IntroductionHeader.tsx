@@ -14,17 +14,24 @@ const IntroductionHeader: React.FC<IntroductionHeaderProps> = ({ onStartAssessme
     // Call the provided function
     onStartAssessment();
     
-    // Explicitly navigate to ensure it works
+    // Navigate programmatically
     navigate('/assessment');
   };
   
   return (
     <div className="p-8 flex flex-col items-center">
-      <img 
-        src="/lovable-uploads/8320d514-fba5-4e1b-a658-1563758db943.png" 
-        alt="Encourager Logo" 
-        className="h-32 object-contain mb-6 animate-float" 
-      />
+      <a 
+        href="https://www.encouragercoaching.com" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="hover:opacity-80 transition-opacity"
+      >
+        <img 
+          src="/lovable-uploads/8320d514-fba5-4e1b-a658-1563758db943.png" 
+          alt="Encourager Logo" 
+          className="h-32 object-contain mb-6 animate-float" 
+        />
+      </a>
       
       <h1 className="text-4xl md:text-5xl font-bold text-encourager mb-4 text-center">
         Leadership Gap Assessment Tool

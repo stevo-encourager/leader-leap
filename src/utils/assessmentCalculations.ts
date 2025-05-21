@@ -25,8 +25,8 @@ export const calculateAverageGap = (categories: Category[]): number => {
     if (!category.skills || category.skills.length === 0) return;
     
     category.skills.forEach(skill => {
-      const current = skill.ratings.current || 0;
-      const desired = skill.ratings.desired || 0;
+      const current = skill.ratings?.current || 0;
+      const desired = skill.ratings?.desired || 0;
       const gap = Math.abs(desired - current);
       
       totalSkillCount++;
@@ -47,6 +47,8 @@ export const getAllSkillsWithMetadata = (categories: Category[]): SkillWithMetad
     if (!category.skills) return;
     
     category.skills.forEach(skill => {
+      if (!skill.ratings) return;
+      
       const current = skill.ratings.current || 0;
       const desired = skill.ratings.desired || 0;
       const gap = parseFloat(Math.abs(desired - current).toFixed(2));
@@ -65,6 +67,7 @@ export const getAllSkillsWithMetadata = (categories: Category[]): SkillWithMetad
 export const getTopStrengths = (categories: Category[], count: number = 3): SkillWithMetadata[] => {
   const allSkills = getAllSkillsWithMetadata(categories);
   return [...allSkills]
+    .filter(skill => skill.ratings && typeof skill.ratings.current === 'number')
     .sort((a, b) => (b.ratings.current || 0) - (a.ratings.current || 0))
     .slice(0, count);
 };
@@ -72,6 +75,15 @@ export const getTopStrengths = (categories: Category[], count: number = 3): Skil
 export const getLowestSkills = (categories: Category[], count: number = 3): SkillWithMetadata[] => {
   const allSkills = getAllSkillsWithMetadata(categories);
   return [...allSkills]
+    .filter(skill => skill.ratings && typeof skill.ratings.current === 'number')
     .sort((a, b) => (a.ratings.current || 0) - (b.ratings.current || 0))
+    .slice(0, count);
+};
+
+export const getLargestGaps = (categories: Category[], count: number = 3): SkillWithMetadata[] => {
+  const allSkills = getAllSkillsWithMetadata(categories);
+  return [...allSkills]
+    .filter(skill => skill.ratings && typeof skill.ratings.current === 'number' && typeof skill.ratings.desired === 'number')
+    .sort((a, b) => b.gap - a.gap)
     .slice(0, count);
 };

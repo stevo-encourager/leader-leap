@@ -44,7 +44,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
             <img 
               src="/lovable-uploads/8320d514-fba5-4e1b-a658-1563758db943.png" 
               alt="Leadership Assessment Logo" 
-              className="h-24 w-auto" 
+              className="h-28 w-auto" 
             />
           </div>
         </CardHeader>
@@ -59,7 +59,8 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
           <KeyInsights 
             averageGap={averageGap} 
             strengths={strengths} 
-            lowestSkills={lowestSkills} 
+            lowestSkills={lowestSkills}
+            categories={categories}
           />
           
           {/* Recommended Next Steps - moved above coaching support */}

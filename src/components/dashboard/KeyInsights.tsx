@@ -1,19 +1,24 @@
 
 import React from 'react';
 import { BookOpen } from 'lucide-react';
-import { SkillWithMetadata } from '@/utils/assessmentCalculations';
+import { SkillWithMetadata, getLargestGaps } from '@/utils/assessmentCalculations';
+import { Category } from '@/utils/assessmentTypes';
 
 interface KeyInsightsProps {
   averageGap: number;
   strengths: SkillWithMetadata[];
   lowestSkills: SkillWithMetadata[];
+  categories: Category[];
 }
 
 const KeyInsights: React.FC<KeyInsightsProps> = ({ 
   averageGap, 
   strengths,
-  lowestSkills
+  lowestSkills,
+  categories
 }) => {
+  const largestGaps = getLargestGaps(categories, 3);
+  
   return (
     <div className="bg-encourager/5 p-4 rounded-lg border border-encourager/20">
       <div className="flex items-start gap-3">
@@ -28,7 +33,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
             </p>
           </div>
           
-          <h4 className="text-md font-medium mt-4 mb-2">Your Largest Competency Gaps <span className="font-normal">(categories that need the greatest improvement)</span></h4>
+          <h4 className="text-md font-medium mt-4 mb-2">Your Lowest Rated Skills <span className="font-normal">(areas that need the most development)</span></h4>
           <div className="space-y-3 mb-4">
             {lowestSkills.map((skill) => (
               <div key={`lowest-${skill.id}`} className="bg-secondary/10 p-3 rounded-lg">
@@ -38,16 +43,16 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
                     <p className="text-sm text-slate-500">{skill.categoryTitle}</p>
                   </div>
                   <div className="bg-red-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
-                    Gap: {skill.gap}
+                    Current: {skill.ratings.current}
                   </div>
                 </div>
               </div>
             ))}
           </div>
           
-          <h4 className="text-md font-medium mt-4 mb-2">Your Largest Skills Gaps <span className="font-normal">(individual skills that need the greatest improvement)</span></h4>
+          <h4 className="text-md font-medium mt-4 mb-2">Your Largest Skills Gaps <span className="font-normal">(areas with greatest difference between current and desired)</span></h4>
           <div className="space-y-3 mb-4">
-            {lowestSkills.map((skill) => (
+            {largestGaps.map((skill) => (
               <div key={`skill-gap-${skill.id}`} className="bg-secondary/10 p-3 rounded-lg">
                 <div className="flex justify-between">
                   <div>

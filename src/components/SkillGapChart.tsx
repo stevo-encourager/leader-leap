@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   ResponsiveContainer,
   RadarChart, 
@@ -23,14 +23,17 @@ interface ChartData {
 }
 
 const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
+  const [chartData, setChartData] = useState<ChartData[]>([]);
+
   // Prepare chart data from categories
-  const prepareChartData = (): ChartData[] => {
+  useEffect(() => {
     if (!categories || categories.length === 0) {
       console.warn("No categories provided to SkillGapChart");
-      return [];
+      setChartData([]);
+      return;
     }
     
-    const allSkills: ChartData[] = [];
+    const preparedData: ChartData[] = [];
     
     categories.forEach(category => {
       if (!category.skills || category.skills.length === 0) {
@@ -44,14 +47,16 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
       let sumDesired = 0;
       
       category.skills.forEach(skill => {
-        sumCurrent += skill.ratings.current || 0;
-        sumDesired += skill.ratings.desired || 0;
+        if (skill.ratings) {
+          sumCurrent += skill.ratings.current || 0;
+          sumDesired += skill.ratings.desired || 0;
+        }
       });
       
       const categoryAvgCurrent = totalSkills > 0 ? sumCurrent / totalSkills : 0;
       const categoryAvgDesired = totalSkills > 0 ? sumDesired / totalSkills : 0;
       
-      allSkills.push({
+      preparedData.push({
         subject: category.title,
         current: parseFloat(categoryAvgCurrent.toFixed(2)),
         desired: parseFloat(categoryAvgDesired.toFixed(2)),
@@ -59,13 +64,11 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
       });
     });
     
-    console.log("Chart data prepared:", allSkills);
-    return allSkills;
-  };
+    console.log("Chart data prepared:", preparedData);
+    setChartData(preparedData);
+  }, [categories]);
 
-  const chartData = prepareChartData();
-
-  if (chartData.length === 0) {
+  if (!categories || categories.length === 0 || chartData.length === 0) {
     return <div className="text-center p-6">No data available for chart</div>;
   }
 
@@ -99,6 +102,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
             fill="#2F564D"
             fillOpacity={0.4}
             dot={{ stroke: '#2F564D', strokeWidth: 2, fill: '#fff', r: 3 }}
+            isAnimationActive={true}
           />
           <Radar
             name="Desired Level"
@@ -107,15 +111,28 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
             fill="#8baca5"
             fillOpacity={0.4}
             dot={{ stroke: '#8baca5', strokeWidth: 2, fill: '#fff', r: 3 }}
+            isAnimationActive={true}
           />
           <Tooltip 
-            contentStyle={{ 
-              backgroundColor: 'white', 
-              borderColor: '#e5e7eb',
-              borderRadius: '8px',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+            content={({ active, payload }) => {
+              if (active && payload && payload.length) {
+                return (
+                  <div className="bg-white p-3 rounded shadow-md border border-gray-200">
+                    <p className="font-medium">{payload[0].payload.subject}</p>
+                    <p className="text-sm text-gray-700">
+                      Current: <span className="font-medium">{payload[0].value.toFixed(2)}</span>
+                    </p>
+                    <p className="text-sm text-gray-700">
+                      Desired: <span className="font-medium">{payload[1].value.toFixed(2)}</span>
+                    </p>
+                    <p className="text-sm text-gray-700">
+                      Gap: <span className="font-medium">{Math.abs(payload[1].value - payload[0].value).toFixed(2)}</span>
+                    </p>
+                  </div>
+                );
+              }
+              return null;
             }}
-            formatter={tooltipFormatter}
           />
           <Legend 
             iconType="circle" 

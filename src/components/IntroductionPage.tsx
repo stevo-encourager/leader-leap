@@ -22,8 +22,8 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
     // Call the provided function
     onStartAssessment();
     
-    // Navigate to the assessment page
-    navigate('/assessment', { replace: true });
+    // Navigate directly without replace to ensure it works
+    navigate('/assessment');
   };
 
   return (

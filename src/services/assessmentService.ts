@@ -87,9 +87,10 @@ export const getAssessmentHistory = async () => {
       return { success: false, error: 'User not authenticated' };
     }
     
+    // Get all assessment results for this user
     const { data: assessments, error } = await supabase
       .from('assessment_results')
-      .select('*')
+      .select('id, created_at')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
@@ -98,9 +99,37 @@ export const getAssessmentHistory = async () => {
       return { success: false, error: error.message };
     }
 
+    // Log the raw data for debugging
+    console.log('Raw assessment history:', assessments);
+
     return { success: true, data: assessments };
   } catch (error) {
     console.error('Error in getAssessmentHistory:', error);
     return { success: false, error: 'Failed to fetch assessment history' };
+  }
+};
+
+/**
+ * Fetches a specific assessment result by ID
+ * @param id The ID of the assessment to fetch
+ * @returns The assessment data or null if not found
+ */
+export const getAssessmentById = async (id: string) => {
+  try {
+    const { data: assessment, error } = await supabase
+      .from('assessment_results')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      console.error('Error fetching assessment by ID:', error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, data: assessment };
+  } catch (error) {
+    console.error('Error in getAssessmentById:', error);
+    return { success: false, error: 'Failed to fetch assessment by ID' };
   }
 };

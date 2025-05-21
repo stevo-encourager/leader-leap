@@ -9,11 +9,17 @@ import { CircleGauge, ArrowLeft } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import Navigation from '@/components/layout/Navigation';
 import Footer from '@/components/layout/Footer';
+import { toast } from '@/hooks/use-toast';
+
+interface AssessmentRecord {
+  id: string;
+  created_at: string;
+}
 
 const PreviousAssessments = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [assessments, setAssessments] = useState<any[]>([]);
+  const [assessments, setAssessments] = useState<AssessmentRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -25,12 +31,35 @@ const PreviousAssessments = () => {
     const fetchAssessments = async () => {
       setLoading(true);
       try {
+        console.log('Fetching assessment history for user:', user.id);
         const result = await getAssessmentHistory();
+        console.log('Assessment history fetch result:', result);
+        
         if (result.success && result.data) {
-          setAssessments(result.data);
+          // Ensure we're dealing with an array and remove any potential duplicates
+          const uniqueAssessments = Array.isArray(result.data) 
+            ? result.data.filter((assessment, index, self) => 
+                index === self.findIndex(a => a.id === assessment.id))
+            : [];
+            
+          console.log('Unique assessments:', uniqueAssessments);
+          setAssessments(uniqueAssessments);
+        } else {
+          console.error('Failed to fetch assessment history:', result.error);
+          toast({
+            title: "Error fetching assessments",
+            description: result.error || "Failed to load your assessment history",
+            variant: "destructive",
+          });
+          setAssessments([]);
         }
       } catch (error) {
-        console.error('Error fetching assessment history:', error);
+        console.error('Error in fetchAssessments:', error);
+        toast({
+          title: "Error fetching assessments",
+          description: "An unexpected error occurred",
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }

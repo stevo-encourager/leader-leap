@@ -26,11 +26,12 @@ const Index = () => {
     handleCategoriesUpdate(initialCategories);
   }, []);
 
-  // Custom start assessment handler that directly navigates
+  // Define a custom start assessment handler that uses both the state update
+  // and direct window location navigation to ensure it works
   const startAssessmentHandler = () => {
     handleStartAssessment();
-    // Force navigation to assessment
-    navigate('/assessment', { replace: true });
+    // Use window.location for guaranteed navigation
+    window.location.href = '/assessment';
   };
 
   // Wait for auth to initialize before rendering

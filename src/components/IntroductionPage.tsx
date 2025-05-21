@@ -22,8 +22,8 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
     // Call the provided function
     onStartAssessment();
     
-    // Navigate programmatically - ensure this happens
-    navigate('/assessment');
+    // Use direct page navigation to ensure it works
+    window.location.href = '/assessment';
   };
 
   return (

@@ -11,11 +11,11 @@ const IntroductionHeader: React.FC<IntroductionHeaderProps> = ({ onStartAssessme
   const navigate = useNavigate();
   
   const handleClick = () => {
-    // Call the provided function
+    // First call the provided function to set up state
     onStartAssessment();
     
-    // Navigate programmatically
-    navigate('/assessment');
+    // Then force navigation to the assessment page
+    window.location.href = '/assessment';
   };
   
   return (

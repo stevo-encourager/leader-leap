@@ -24,15 +24,22 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
 }) => {
   useEffect(() => {
     console.log("ResultsDisplay - Categories received:", categories);
+    if (categories && Array.isArray(categories)) {
+      console.log("ResultsDisplay - Categories length:", categories.length);
+    } else {
+      console.log("ResultsDisplay - Categories not valid array");
+    }
   }, [categories]);
 
   // Check if categories is valid before rendering
   if (!categories || !Array.isArray(categories) || categories.length === 0) {
+    console.log("ResultsDisplay - Invalid categories data, showing error message");
     return <InvalidResultsMessage onRestart={onRestart} />;
   }
 
   // Normalize the categories data
   const normalizedCategories = normalizeCategories(categories);
+  console.log("ResultsDisplay - Normalized categories:", normalizedCategories);
 
   return (
     <ResultsDashboard 

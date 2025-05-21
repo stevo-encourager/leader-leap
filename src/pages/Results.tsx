@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import UserHeader from '@/components/auth/UserHeader';
@@ -32,11 +32,14 @@ const Results = () => {
     specificAssessmentData
   } = useSpecificAssessment(assessmentId);
 
-  console.log("Results page - Auth loading:", loading);
-  console.log("Results page - Specific assessment loading:", loadingSpecificAssessment);
-  console.log("Results page - AssessmentId:", assessmentId);
-  console.log("Results page - specificAssessmentData:", specificAssessmentData);
-  console.log("Results page - categories from useAssessment:", categories);
+  // Use effect to log details for debugging
+  useEffect(() => {
+    console.log("Results page - Auth loading:", loading);
+    console.log("Results page - Specific assessment loading:", loadingSpecificAssessment);
+    console.log("Results page - AssessmentId:", assessmentId);
+    console.log("Results page - specificAssessmentData:", specificAssessmentData);
+    console.log("Results page - categories from useAssessment:", categories);
+  }, [loading, loadingSpecificAssessment, assessmentId, specificAssessmentData, categories]);
 
   // Wait for auth and data to initialize before rendering
   if (loading || loadingSpecificAssessment) {
@@ -52,19 +55,11 @@ const Results = () => {
     ? specificAssessmentData.demographics 
     : demographics;
 
+  // Log details of what we're about to display  
   console.log("Results page - Display categories:", displayCategories);
-  console.log("Results page - Categories data type:", Array.isArray(displayCategories) ? "Array" : typeof displayCategories);
   
   if (displayCategories && Array.isArray(displayCategories)) {
     console.log("Results page - Number of categories:", displayCategories.length);
-    displayCategories.forEach((cat, i) => {
-      console.log(`Results page - Category ${i} (${cat.title}):`, cat);
-      if (cat.skills && Array.isArray(cat.skills)) {
-        console.log(`Results page - Category ${i} has ${cat.skills.length} skills`);
-      } else {
-        console.log(`Results page - Category ${i} has invalid skills array`);
-      }
-    });
   }
 
   // Check if we have valid categories data to display
@@ -73,7 +68,7 @@ const Results = () => {
     displayCategories.length > 0;
 
   // Error state for specific assessment ID
-  if (assessmentId && !hasValidCategories) {
+  if (assessmentId && !hasValidCategories && !loadingSpecificAssessment) {
     return (
       <ErrorDisplay
         title="Unable to load assessment results"
@@ -85,7 +80,7 @@ const Results = () => {
   }
 
   // No assessment results available
-  if (!assessmentId && (!displayCategories || displayCategories.length === 0)) {
+  if (!assessmentId && (!hasValidCategories || !displayCategories)) {
     return (
       <ErrorDisplay
         title="No Assessment Results Available"

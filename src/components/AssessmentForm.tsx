@@ -33,6 +33,14 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
   const [showMidpointDialog, setShowMidpointDialog] = useState<boolean>(false);
   const { toast } = useToast();
 
+  // Debug log to see the categories
+  useEffect(() => {
+    console.log("AssessmentForm - Current categories:", categories);
+    if (categories && categories.length > 0) {
+      console.log("First category skills:", categories[0].skills);
+    }
+  }, [categories]);
+
   // Check if we should show the engagement message when active category changes
   useEffect(() => {
     const midpoint = Math.floor(categories.length / 2);
@@ -42,6 +50,8 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
   }, [activeCategory, categories.length]);
 
   const handleSkillRating = (categoryId: string, skillId: string, type: 'current' | 'desired', value: number) => {
+    console.log(`Updating skill rating: category=${categoryId}, skill=${skillId}, type=${type}, value=${value}`);
+    
     const updatedCategories = categories.map(category => {
       if (category.id === categoryId) {
         const updatedSkills = category.skills.map(skill => {
@@ -64,6 +74,13 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
       return category;
     });
 
+    // Log the update to verify data changes
+    const updatedSkill = updatedCategories
+      .find(cat => cat.id === categoryId)
+      ?.skills.find(skill => skill.id === skillId);
+      
+    console.log("Updated skill:", updatedSkill);
+    
     onCategoriesUpdate(updatedCategories);
   };
 
@@ -72,6 +89,8 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
       setActiveCategory(activeCategory + 1);
       window.scrollTo(0, 0);
     } else {
+      // Log categories before completing to verify data
+      console.log("Completing assessment with categories:", categories);
       onComplete();
     }
   };
@@ -91,7 +110,8 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
 
   const isCategoryCompleted = (category: Category): boolean => {
     return category.skills.every(skill => 
-      skill.ratings.current > 0 && skill.ratings.desired > 0
+      typeof skill.ratings.current === 'number' && 
+      typeof skill.ratings.desired === 'number'
     );
   };
 

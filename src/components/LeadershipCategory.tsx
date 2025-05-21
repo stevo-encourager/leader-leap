@@ -21,6 +21,15 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
   onSkillRating,
   hideHeader = false
 }) => {
+  // Debug log to see what ratings are available
+  console.log(`Rendering LeadershipCategory: ${category.title}`, 
+    category.skills.map(skill => ({
+      id: skill.id,
+      name: skill.name,
+      ratings: skill.ratings
+    }))
+  );
+  
   return (
     <Card className="mb-8">
       {!hideHeader && (
@@ -76,7 +85,10 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
                       max={10}
                       step={1}
                       value={[skill.ratings.current]}
-                      onValueChange={(value) => onSkillRating(category.id, skill.id, 'current', value[0])}
+                      onValueChange={(value) => {
+                        console.log(`Setting ${skill.name} current rating to: ${value[0]}`);
+                        onSkillRating(category.id, skill.id, 'current', value[0]);
+                      }}
                       className="mb-2"
                     />
                   </div>
@@ -101,7 +113,10 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
                       max={10}
                       step={1}
                       value={[skill.ratings.desired]}
-                      onValueChange={(value) => onSkillRating(category.id, skill.id, 'desired', value[0])}
+                      onValueChange={(value) => {
+                        console.log(`Setting ${skill.name} desired rating to: ${value[0]}`);
+                        onSkillRating(category.id, skill.id, 'desired', value[0]);
+                      }}
                       className="mb-2"
                     />
                   </div>

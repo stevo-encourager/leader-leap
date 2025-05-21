@@ -10,6 +10,11 @@ import {
   Tooltip
 } from 'recharts';
 import { Category } from '@/utils/assessmentTypes';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent
+} from '@/components/ui/chart';
 
 interface SkillGapChartProps {
   categories: Category[];
@@ -26,39 +31,37 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
   const [chartData, setChartData] = useState<ChartData[]>([]);
 
   useEffect(() => {
+    // If no categories, return early
     if (!categories || categories.length === 0) {
       return;
     }
 
-    const preparedData: ChartData[] = [];
-    
-    categories.forEach(category => {
-      if (!category.skills || category.skills.length === 0) {
-        return;
-      }
-      
-      // Calculate average for each category
-      const totalSkills = category.skills.length;
-      let sumCurrent = 0;
-      let sumDesired = 0;
-      
-      category.skills.forEach(skill => {
-        if (skill.ratings) {
-          sumCurrent += skill.ratings.current || 0;
-          sumDesired += skill.ratings.desired || 0;
-        }
+    // Process the data for the chart
+    const preparedData: ChartData[] = categories
+      .filter(category => category.skills && category.skills.length > 0)
+      .map(category => {
+        // Calculate average for each category
+        const totalSkills = category.skills.length;
+        let sumCurrent = 0;
+        let sumDesired = 0;
+        
+        category.skills.forEach(skill => {
+          if (skill.ratings) {
+            sumCurrent += skill.ratings.current || 0;
+            sumDesired += skill.ratings.desired || 0;
+          }
+        });
+        
+        const categoryAvgCurrent = totalSkills > 0 ? sumCurrent / totalSkills : 0;
+        const categoryAvgDesired = totalSkills > 0 ? sumDesired / totalSkills : 0;
+        
+        return {
+          subject: category.title,
+          current: parseFloat(categoryAvgCurrent.toFixed(2)),
+          desired: parseFloat(categoryAvgDesired.toFixed(2)),
+          fullMark: 10
+        };
       });
-      
-      const categoryAvgCurrent = totalSkills > 0 ? sumCurrent / totalSkills : 0;
-      const categoryAvgDesired = totalSkills > 0 ? sumDesired / totalSkills : 0;
-      
-      preparedData.push({
-        subject: category.title,
-        current: parseFloat(categoryAvgCurrent.toFixed(2)),
-        desired: parseFloat(categoryAvgDesired.toFixed(2)),
-        fullMark: 10
-      });
-    });
     
     setChartData(preparedData);
   }, [categories]);
@@ -67,54 +70,64 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
     return <div className="text-center p-6">No data available for chart</div>;
   }
 
-  // Custom tooltip component
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white p-3 rounded shadow-md border border-gray-200">
-          <p className="font-medium">{payload[0]?.payload?.subject}</p>
-          <p className="text-sm text-gray-700">
-            Current: <span className="font-medium">{payload[0]?.value?.toFixed(2)}</span>
-          </p>
-          <p className="text-sm text-gray-700">
-            Desired: <span className="font-medium">{payload[1]?.value?.toFixed(2)}</span>
-          </p>
-          <p className="text-sm text-gray-700">
-            Gap: <span className="font-medium">
-              {Math.abs(
-                (payload[1]?.value || 0) - (payload[0]?.value || 0)
-              ).toFixed(2)}
-            </span>
-          </p>
-        </div>
-      );
-    }
-    return null;
+  const chartConfig = {
+    current: {
+      label: "Current Level",
+      theme: {
+        light: "#2F564D",
+        dark: "#2F564D",
+      },
+    },
+    desired: {
+      label: "Desired Level",
+      theme: {
+        light: "#8baca5",
+        dark: "#8baca5",
+      },
+    },
   };
 
   return (
-    <ResponsiveContainer width="100%" height={400}>
-      <RadarChart data={chartData}>
-        <PolarGrid />
-        <PolarAngleAxis dataKey="subject" />
+    <ChartContainer className="w-full h-[400px]" config={chartConfig}>
+      <RadarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 10 }}>
+        <PolarGrid gridType="circle" />
+        <PolarAngleAxis 
+          dataKey="subject"
+          tick={{ 
+            fill: 'currentColor', 
+            fontSize: 12
+          }}
+        />
         <Radar
-          name="Current Level"
           dataKey="current"
-          stroke="#2F564D"
-          fill="#2F564D"
+          name="Current Level"
+          stroke="var(--color-current)"
+          fill="var(--color-current)"
           fillOpacity={0.6}
         />
         <Radar
-          name="Desired Level"
           dataKey="desired"
-          stroke="#8baca5"
-          fill="#8baca5"
+          name="Desired Level"
+          stroke="var(--color-desired)"
+          fill="var(--color-desired)"
           fillOpacity={0.6}
         />
-        <Tooltip content={CustomTooltip} />
-        <Legend />
+        <ChartTooltip
+          content={
+            <ChartTooltipContent
+              formatter={(value, name) => {
+                return (
+                  <div className="flex items-center gap-2">
+                    <span>{parseFloat(value as string).toFixed(2)}</span>
+                  </div>
+                );
+              }}
+            />
+          }
+        />
+        <Legend iconType="circle" />
       </RadarChart>
-    </ResponsiveContainer>
+    </ChartContainer>
   );
 };
 

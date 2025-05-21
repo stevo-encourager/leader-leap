@@ -12,7 +12,7 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({ categories }) => {
     <div>
       <h3 className="text-lg font-medium mb-3">Detailed Analysis</h3>
       <div className="bg-white rounded-lg p-3 border">
-        <div className="h-[400px]">
+        <div style={{ height: "400px", width: "100%" }}>
           <SkillGapChart categories={categories} />
         </div>
       </div>

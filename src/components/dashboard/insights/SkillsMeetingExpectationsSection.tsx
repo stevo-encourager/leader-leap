@@ -19,7 +19,6 @@ const SkillsMeetingExpectationsSection: React.FC<SkillsMeetingExpectationsSectio
   return (
     <InsightSection
       title="Top 3 Individual Skills Meeting Your Expectations"
-      subtitle="skills with high current values"
       isOpen={isOpen}
       onToggle={onToggle}
     >

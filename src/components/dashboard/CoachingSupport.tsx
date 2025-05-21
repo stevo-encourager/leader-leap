@@ -18,7 +18,7 @@ const CoachingSupport: React.FC = () => {
         <li>Establish accountability for practice and reflection</li>
       </ul>
       
-      <div className="mt-4 pt-3 border-t border-slate-100 text-left">
+      <div className="mt-4 pt-3 border-t border-slate-100 text-center">
         <a 
           href="https://www.encouragercoaching.com" 
           target="_blank" 

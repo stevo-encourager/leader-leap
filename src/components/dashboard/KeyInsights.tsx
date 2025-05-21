@@ -1,7 +1,13 @@
 
 import React, { useEffect } from 'react';
 import { BookOpen } from 'lucide-react';
-import { SkillWithMetadata, getLargestGaps } from '@/utils/assessmentCalculations';
+import { 
+  SkillWithMetadata, 
+  getLargestGaps, 
+  getSmallestGaps, 
+  getSkillsToImprove,
+  getSkillsMeetingExpectations 
+} from '@/utils/assessmentCalculations';
 import { Category } from '@/utils/assessmentTypes';
 
 interface KeyInsightsProps {
@@ -18,33 +24,20 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
   categories
 }) => {
   const largestGaps = getLargestGaps(categories, 3);
+  const smallestGaps = getSmallestGaps(categories, 3);
+  const skillsToImprove = getSkillsToImprove(categories, 3);
+  const skillsMeetingExpectations = getSkillsMeetingExpectations(categories, 3);
   
   useEffect(() => {
     console.log("KeyInsights - Props received:", { 
       averageGap, 
-      strengths, 
-      lowestSkills, 
       largestGaps,
+      smallestGaps,
+      skillsToImprove,
+      skillsMeetingExpectations,
       categoriesCount: categories?.length || 0 
     });
-    
-    // More detailed logging to debug the zero values issue
-    if (categories && categories.length > 0) {
-      console.log("KeyInsights - First category sample:", categories[0]);
-      if (categories[0].skills && categories[0].skills.length > 0) {
-        console.log("KeyInsights - First skill sample:", categories[0].skills[0]);
-        console.log("KeyInsights - First skill ratings:", categories[0].skills[0].ratings);
-      }
-    }
-    
-    if (lowestSkills && lowestSkills.length > 0) {
-      console.log("KeyInsights - Lowest skills sample:", lowestSkills[0]);
-    }
-    
-    if (largestGaps && largestGaps.length > 0) {
-      console.log("KeyInsights - Largest gaps sample:", largestGaps[0]);
-    }
-  }, [averageGap, strengths, lowestSkills, largestGaps, categories]);
+  }, [averageGap, largestGaps, smallestGaps, skillsToImprove, skillsMeetingExpectations, categories]);
 
   // Format numbers to display with 2 decimal places
   const formatNumber = (num: number | string): string => {
@@ -73,11 +66,11 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
             </p>
           </div>
           
-          <h4 className="text-md font-medium mt-4 mb-2">Your Lowest Rated Skills <span className="font-normal">(areas that need the most development)</span></h4>
+          <h4 className="text-md font-medium mt-4 mb-2">Your Largest Competency Gaps <span className="font-normal">(areas with greatest difference between current and desired)</span></h4>
           <div className="space-y-3 mb-4">
-            {lowestSkills && lowestSkills.length > 0 && lowestSkills.some(skill => skill.ratings.current > 0) ? (
-              lowestSkills.map((skill) => (
-                <div key={`lowest-${skill.id}`} className="bg-secondary/10 p-3 rounded-lg">
+            {largestGaps && largestGaps.length > 0 && largestGaps.some(skill => skill.gap > 0) ? (
+              largestGaps.map((skill) => (
+                <div key={`largest-gap-${skill.id}`} className="bg-secondary/10 p-3 rounded-lg">
                   <div className="flex justify-between">
                     <div>
                       <p className="font-medium">{skill.name}</p>
@@ -92,23 +85,48 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
             ) : (
               <div className="bg-secondary/10 p-3 rounded-lg">
                 <p className="text-sm text-slate-500">
-                  You need to complete an assessment with ratings greater than 0 to identify your lowest rated skills.
+                  You need to complete an assessment with different current and desired values to identify competency gaps.
                 </p>
               </div>
             )}
           </div>
           
-          <h4 className="text-md font-medium mt-4 mb-2">Your Largest Skills Gaps <span className="font-normal">(areas with greatest difference between current and desired)</span></h4>
+          <h4 className="text-md font-medium mt-4 mb-2">Individual Skills You Want to Improve <span className="font-normal">(skills with high desired values)</span></h4>
           <div className="space-y-3 mb-4">
-            {largestGaps && largestGaps.length > 0 && largestGaps.some(skill => skill.gap > 0) ? (
-              largestGaps.map((skill) => (
-                <div key={`skill-gap-${skill.id}`} className="bg-secondary/10 p-3 rounded-lg">
+            {skillsToImprove && skillsToImprove.length > 0 ? (
+              skillsToImprove.map((skill) => (
+                <div key={`improve-${skill.id}`} className="bg-secondary/10 p-3 rounded-lg">
                   <div className="flex justify-between">
                     <div>
                       <p className="font-medium">{skill.name}</p>
                       <p className="text-sm text-slate-500">{skill.categoryTitle}</p>
                     </div>
-                    <div className="bg-red-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
+                    <div className="bg-amber-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
+                      Desired: {formatNumber(skill.ratings.desired)}
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="bg-secondary/10 p-3 rounded-lg">
+                <p className="text-sm text-slate-500">
+                  Complete an assessment to identify skills you want to improve.
+                </p>
+              </div>
+            )}
+          </div>
+          
+          <h4 className="text-md font-medium mt-4 mb-2">Your Smallest Competency Gaps <span className="font-normal">(areas with smallest difference between current and desired)</span></h4>
+          <div className="space-y-3 mb-4">
+            {smallestGaps && smallestGaps.length > 0 ? (
+              smallestGaps.map((skill) => (
+                <div key={`small-gap-${skill.id}`} className="bg-secondary/10 p-3 rounded-lg">
+                  <div className="flex justify-between">
+                    <div>
+                      <p className="font-medium">{skill.name}</p>
+                      <p className="text-sm text-slate-500">{skill.categoryTitle}</p>
+                    </div>
+                    <div className="bg-green-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
                       Gap: {formatNumber(skill.gap)}
                     </div>
                   </div>
@@ -117,7 +135,32 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
             ) : (
               <div className="bg-secondary/10 p-3 rounded-lg">
                 <p className="text-sm text-slate-500">
-                  You need to complete an assessment with different current and desired values to identify skill gaps.
+                  Complete an assessment to identify your smallest competency gaps.
+                </p>
+              </div>
+            )}
+          </div>
+          
+          <h4 className="text-md font-medium mt-4 mb-2">Individual Skills Meeting Your Expectations <span className="font-normal">(skills with high current values)</span></h4>
+          <div className="space-y-3">
+            {skillsMeetingExpectations && skillsMeetingExpectations.length > 0 ? (
+              skillsMeetingExpectations.map((skill) => (
+                <div key={`meeting-${skill.id}`} className="bg-secondary/10 p-3 rounded-lg">
+                  <div className="flex justify-between">
+                    <div>
+                      <p className="font-medium">{skill.name}</p>
+                      <p className="text-sm text-slate-500">{skill.categoryTitle}</p>
+                    </div>
+                    <div className="bg-blue-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
+                      Current: {formatNumber(skill.ratings.current)}
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="bg-secondary/10 p-3 rounded-lg">
+                <p className="text-sm text-slate-500">
+                  Complete an assessment to identify skills meeting your expectations.
                 </p>
               </div>
             )}

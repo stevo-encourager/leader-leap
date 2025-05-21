@@ -159,3 +159,50 @@ export const getLargestGaps = (categories: Category[], count: number = 3): Skill
     return [];
   }
 };
+
+export const getSmallestGaps = (categories: Category[], count: number = 3): SkillWithMetadata[] => {
+  try {
+    const allSkills = getAllSkillsWithMetadata(categories);
+    if (allSkills.length === 0) return [];
+    
+    // Filter out skills with zero gap to avoid showing meaningless results
+    const nonZeroGapSkills = allSkills.filter(skill => skill.gap > 0);
+    
+    return [...nonZeroGapSkills]
+      .sort((a, b) => a.gap - b.gap)
+      .slice(0, count);
+  } catch (error) {
+    console.error("Error in getSmallestGaps:", error);
+    return [];
+  }
+};
+
+export const getSkillsToImprove = (categories: Category[], count: number = 3): SkillWithMetadata[] => {
+  try {
+    const allSkills = getAllSkillsWithMetadata(categories);
+    if (allSkills.length === 0) return [];
+    
+    // Sort by desired rating (high to low) to find skills the user wants to focus on
+    return [...allSkills]
+      .sort((a, b) => b.ratings.desired - a.ratings.desired)
+      .slice(0, count);
+  } catch (error) {
+    console.error("Error in getSkillsToImprove:", error);
+    return [];
+  }
+};
+
+export const getSkillsMeetingExpectations = (categories: Category[], count: number = 3): SkillWithMetadata[] => {
+  try {
+    const allSkills = getAllSkillsWithMetadata(categories);
+    if (allSkills.length === 0) return [];
+    
+    // Sort by current rating (high to low) to find skills the user is already good at
+    return [...allSkills]
+      .sort((a, b) => b.ratings.current - a.ratings.current)
+      .slice(0, count);
+  } catch (error) {
+    console.error("Error in getSkillsMeetingExpectations:", error);
+    return [];
+  }
+};

@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getAssessmentHistory, deleteAllCompletedAssessments } from '@/services/assessment/manageAssessmentHistory';
+import { getAssessmentHistory, deleteAllAssessments } from '@/services/assessment/manageAssessmentHistory';
 import { toast } from '@/hooks/use-toast';
 
 interface AssessmentRecord {
@@ -65,7 +65,7 @@ export const useAssessmentHistory = () => {
   const handleDeleteAllAssessments = async () => {
     setIsDeleting(true);
     try {
-      const result = await deleteAllCompletedAssessments();
+      const result = await deleteAllAssessments();
       
       if (result.success) {
         toast({

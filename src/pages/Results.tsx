@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import UserHeader from '@/components/auth/UserHeader';
@@ -9,6 +9,7 @@ import Footer from '@/components/layout/Footer';
 import ResultsDisplay from '@/components/assessment/ResultsDisplay';
 import { useAssessment } from '@/hooks/useAssessment';
 import { useSpecificAssessment } from '@/hooks/useSpecificAssessment';
+import { useAssessmentData } from '@/hooks/useAssessmentData';
 import AssessmentLoading from '@/components/assessment/AssessmentLoading';
 import ErrorDisplay from '@/components/assessment/ErrorDisplay';
 
@@ -32,50 +33,27 @@ const Results = () => {
     specificAssessmentData
   } = useSpecificAssessment(assessmentId);
 
-  // Add detailed logging for debugging
-  useEffect(() => {
-    console.log("Results Page Mount - Route params:", { assessmentId });
-    console.log("Results Page - Auth loading:", loading);
-    console.log("Results Page - Assessment loading:", loadingSpecificAssessment);
-    console.log("Results Page - Has assessment data:", !!specificAssessmentData);
-    console.log("Results Page - Has categories from hook:", !!categories && Array.isArray(categories));
-    
-    if (categories && Array.isArray(categories)) {
-      console.log("Results Page - Categories from hook count:", categories.length);
-      console.log("Results Page - Categories from hook sample:", categories[0]);
-    }
-    
-    if (specificAssessmentData) {
-      console.log("Results Page - Specific assessment data:", specificAssessmentData);
-    }
-  }, [assessmentId, loading, loadingSpecificAssessment, specificAssessmentData, categories]);
+  // Use our new hook to handle assessment data
+  const {
+    displayCategories,
+    displayDemographics,
+    isAssessmentDataValid,
+    isAssessmentDataLoading
+  } = useAssessmentData(
+    assessmentId,
+    specificAssessmentData,
+    loadingSpecificAssessment,
+    categories,
+    demographics
+  );
 
   // Wait for auth and data to initialize before rendering
-  if (loading || loadingSpecificAssessment) {
+  if (loading || isAssessmentDataLoading) {
     return <AssessmentLoading />;
   }
 
-  // Determine which categories and demographics to display
-  // Use specific assessment data if we have an ID, otherwise use the current assessment data
-  const displayCategories = assessmentId && specificAssessmentData 
-    ? specificAssessmentData.categories 
-    : categories;
-    
-  const displayDemographics = assessmentId && specificAssessmentData 
-    ? specificAssessmentData.demographics 
-    : demographics;
-
-  // Log what we're actually going to display
-  console.log("Results Page - Display categories:", displayCategories);
-  console.log("Results Page - Display categories count:", displayCategories?.length || 0);
-  
-  // Check if we have valid categories data to display
-  const hasValidCategories = displayCategories && 
-    Array.isArray(displayCategories) && 
-    displayCategories.length > 0;
-
   // Error state for specific assessment ID
-  if (assessmentId && !hasValidCategories) {
+  if (assessmentId && !isAssessmentDataValid) {
     return (
       <ErrorDisplay
         title="Unable to load assessment results"
@@ -87,7 +65,7 @@ const Results = () => {
   }
 
   // No assessment results available
-  if (!assessmentId && (!displayCategories || displayCategories.length === 0)) {
+  if (!assessmentId && !isAssessmentDataValid) {
     return (
       <ErrorDisplay
         title="No Assessment Results Available"
@@ -116,7 +94,7 @@ const Results = () => {
         )}
         
         {/* Results content */}
-        {!showAuthForm && hasValidCategories && (
+        {!showAuthForm && isAssessmentDataValid && (
           <ResultsDisplay
             categories={displayCategories}
             demographics={displayDemographics}

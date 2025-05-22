@@ -25,13 +25,22 @@ export const normalizeSkill = (
       : parseFloat(String(skill.ratings.desired || '0'));
     
     // Check for valid numbers - only consider values > 0 as valid
-    if (isNaN(current) || isNaN(desired) || (current === 0 && desired === 0)) {
+    if (isNaN(current) || isNaN(desired)) {
       console.log(`normalizeSkill - Invalid rating values for ${skill.name}: current=${skill.ratings.current}, desired=${skill.ratings.desired}`);
       return null;
     }
     
+    const validCurrent = isNaN(current) ? 0 : current;
+    const validDesired = isNaN(desired) ? 0 : desired;
+    
+    // Only include skills with at least one non-zero value
+    if (validCurrent === 0 && validDesired === 0) {
+      console.log(`normalizeSkill - Skipping skill with zero ratings: ${skill.name}`);
+      return null;
+    }
+    
     // Calculate gap
-    const gap = desired - current;
+    const gap = validDesired - validCurrent;
     
     return {
       id: skill.id,
@@ -39,8 +48,8 @@ export const normalizeSkill = (
       categoryTitle,
       gap,
       ratings: {
-        current,
-        desired
+        current: validCurrent,
+        desired: validDesired
       }
     };
   } catch (error) {

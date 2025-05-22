@@ -21,127 +21,116 @@ export const useAssessmentData = (
   currentDemographics?: Demographics
 ): UseAssessmentDataReturn => {
   const [isAssessmentDataValid, setIsAssessmentDataValid] = useState(false);
+  const [processedCategories, setProcessedCategories] = useState<Category[]>([]);
   
-  // Determine which categories and demographics to display
-  // Use specific assessment data if we have an ID, otherwise use the current assessment data
-  const displayCategories = assessmentId && specificAssessmentData 
+  // Determine which categories and demographics to use
+  const rawCategories = assessmentId && specificAssessmentData 
     ? specificAssessmentData.categories 
     : currentCategories || [];
     
-  const displayDemographics = assessmentId && specificAssessmentData 
+  const rawDemographics = assessmentId && specificAssessmentData 
     ? specificAssessmentData.demographics 
     : currentDemographics || {};
 
-  // Additional debugging for data source
+  // Process and validate categories
   useEffect(() => {
-    if (assessmentId && specificAssessmentData) {
-      console.log("useAssessmentData - Using specific assessment data for ID:", assessmentId);
-    } else {
-      console.log("useAssessmentData - Using current assessment data (no specific ID)");
+    console.log("useAssessmentData - Raw categories:", JSON.stringify(rawCategories));
+    console.log("useAssessmentData - Categories length:", rawCategories?.length || 0);
+    
+    // Ensure categories is an array
+    if (!rawCategories || !Array.isArray(rawCategories)) {
+      console.warn("useAssessmentData - Categories is not an array:", rawCategories);
+      setIsAssessmentDataValid(false);
+      setProcessedCategories([]);
+      return;
     }
     
-    console.log("useAssessmentData - Current categories count:", currentCategories?.length || 0);
-    if (assessmentId) {
-      console.log("useAssessmentData - Specific data:", specificAssessmentData);
-    }
-  }, [assessmentId, specificAssessmentData, currentCategories]);
-
-  // Validate the data whenever it changes
-  useEffect(() => {
-    console.log("useAssessmentData - Display categories:", displayCategories);
-    console.log("useAssessmentData - Display categories count:", displayCategories?.length || 0);
-    
-    // Check if displayCategories contains undefined values
-    if (Array.isArray(displayCategories)) {
-      const hasUndefined = displayCategories.some(cat => cat === undefined);
-      if (hasUndefined) {
-        console.warn("useAssessmentData - Categories array contains undefined values");
+    // Process categories
+    const processed = rawCategories.map(category => {
+      // Check if category is valid
+      if (!category || typeof category !== 'object') {
+        console.warn("useAssessmentData - Invalid category:", category);
+        return null;
       }
       
-      // Log first category as a sample
-      if (displayCategories.length > 0) {
-        const firstCategory = displayCategories[0];
-        console.log("useAssessmentData - First category sample:", firstCategory);
-        
-        if (firstCategory && firstCategory.skills && firstCategory.skills.length > 0) {
-          const firstSkill = firstCategory.skills[0];
-          console.log("useAssessmentData - First skill sample:", firstSkill);
-          if (firstSkill && firstSkill.ratings) {
-            console.log("useAssessmentData - First skill ratings:", firstSkill.ratings);
-          }
-        }
+      // Ensure category has required fields
+      const processedCategory: Category = {
+        id: category.id || `category-${Math.random().toString(36).substring(2, 9)}`,
+        title: category.title || 'Unknown Category',
+        description: category.description || '',
+        skills: []
+      };
+      
+      // Process skills if they exist
+      if (category.skills && Array.isArray(category.skills)) {
+        processedCategory.skills = category.skills
+          .map(skill => {
+            // Skip invalid skills
+            if (!skill || typeof skill !== 'object') {
+              return null;
+            }
+            
+            // Create a correctly formatted skill
+            const processedSkill = {
+              id: skill.id || `skill-${Math.random().toString(36).substring(2, 9)}`,
+              name: skill.name || 'Unknown Skill',
+              description: skill.description || '',
+              ratings: {
+                current: 0,
+                desired: 0
+              }
+            };
+            
+            // Process ratings
+            if (skill.ratings) {
+              const current = typeof skill.ratings.current === 'number' 
+                ? skill.ratings.current 
+                : parseFloat(String(skill.ratings.current || '0'));
+                
+              const desired = typeof skill.ratings.desired === 'number' 
+                ? skill.ratings.desired 
+                : parseFloat(String(skill.ratings.desired || '0'));
+              
+              processedSkill.ratings.current = isNaN(current) ? 0 : current;
+              processedSkill.ratings.desired = isNaN(desired) ? 0 : desired;
+            }
+            
+            // Only include skills with valid ratings
+            if (processedSkill.ratings.current > 0 || processedSkill.ratings.desired > 0) {
+              return processedSkill;
+            }
+            
+            return null;
+          })
+          .filter(Boolean) as any; // Filter out null values
       }
-    }
+      
+      // Only include categories with valid skills
+      if (processedCategory.skills.length > 0) {
+        return processedCategory;
+      }
+      
+      return null;
+    }).filter(Boolean) as Category[]; // Filter out null values
     
-    // Simpler validation to catch truly empty data
-    if (!displayCategories || !Array.isArray(displayCategories) || displayCategories.length === 0) {
-      console.log("useAssessmentData - Invalid category data (missing or empty array)");
-      setIsAssessmentDataValid(false);
-      return;
-    }
+    setProcessedCategories(processed);
     
-    // Ensure categories have skills (less strict validation)
-    const hasSkills = displayCategories.some(category => 
-      category && category.skills && Array.isArray(category.skills) && category.skills.length > 0
-    );
-    
-    if (!hasSkills) {
-      console.log("useAssessmentData - No categories with skills found");
-      setIsAssessmentDataValid(false);
-      return;
-    }
-    
-    // Check for any ratings data (less strict)
-    const hasAnyRatings = displayCategories.some(category => 
-      category && category.skills && category.skills.some(skill => 
-        skill && skill.ratings && (
-          typeof skill.ratings.current === 'number' || 
-          typeof skill.ratings.desired === 'number'
-        )
+    // Check if we have any valid data
+    const hasValidData = processed.length > 0 && processed.some(category => 
+      category.skills && category.skills.some(skill => 
+        skill.ratings && (skill.ratings.current > 0 || skill.ratings.desired > 0)
       )
     );
     
-    if (!hasAnyRatings) {
-      console.log("useAssessmentData - No valid ratings found in categories");
-      setIsAssessmentDataValid(false);
-      return;
-    }
-
-    // Count the number of skills with valid ratings for debugging
-    let ratingCount = 0;
-    let skillCount = 0;
-    let categoriesWithRatings = 0;
+    console.log("useAssessmentData - Processed categories:", JSON.stringify(processed));
+    console.log("useAssessmentData - Has valid data:", hasValidData);
     
-    displayCategories.forEach(category => {
-      if (!category || !category.skills) return;
-      
-      let categoryHasRatings = false;
-      skillCount += category.skills.length;
-      
-      category.skills.forEach(skill => {
-        if (!skill || !skill.ratings) return;
-        
-        if (typeof skill.ratings.current === 'number' || typeof skill.ratings.desired === 'number') {
-          ratingCount++;
-          categoryHasRatings = true;
-        }
-      });
-      
-      if (categoryHasRatings) {
-        categoriesWithRatings++;
-      }
-    });
-    
-    console.log(`useAssessmentData - Found ${ratingCount} skills with ratings out of ${skillCount} total skills`);
-    console.log(`useAssessmentData - ${categoriesWithRatings} out of ${displayCategories.length} categories have ratings`);
-    
-    console.log("useAssessmentData - Data validation passed, setting to valid");
-    setIsAssessmentDataValid(true);
-  }, [displayCategories]);
+    setIsAssessmentDataValid(hasValidData);
+  }, [rawCategories]);
 
   return {
-    displayCategories,
-    displayDemographics,
+    displayCategories: processedCategories,
+    displayDemographics: rawDemographics,
     isAssessmentDataValid,
     isAssessmentDataLoading: loadingSpecificData
   };

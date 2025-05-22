@@ -25,7 +25,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
 
   // Enhanced validation and debug logging for the incoming data
   useEffect(() => {
-    console.log("ResultsDisplay - Categories:", categories);
+    console.log("ResultsDisplay - Categories:", JSON.stringify(categories));
     console.log("ResultsDisplay - Categories length:", categories?.length || 0);
     console.log("ResultsDisplay - Demographics:", demographics);
     
@@ -35,16 +35,17 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
     let validSkillsCount = 0;
 
     // Validate and clean categories data
-    const cleanCategories = categories.map(category => {
+    const cleanCategories = categories.filter(category => {
       if (!category || !category.skills) {
         console.log("ResultsDisplay - Invalid category (null or no skills):", category);
-        return null;
+        return false;
       }
       
       // Filter for valid skills with non-zero ratings
       const validSkills = category.skills.filter(skill => {
         if (!skill || !skill.ratings) return false;
         
+        // Parse ratings as numbers with fallback to 0
         const current = typeof skill.ratings.current === 'number' 
           ? skill.ratings.current 
           : parseFloat(String(skill.ratings.current || '0'));
@@ -73,18 +74,16 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
       
       if (validSkills.length > 0) {
         validCategoriesCount++;
-        return {
-          ...category,
-          skills: validSkills
-        };
+        category.skills = validSkills;
+        return true;
       }
       
       console.log(`ResultsDisplay - Category ${category.title} has no valid skills`);
-      return null;
-    }).filter(Boolean) as Category[];
+      return false;
+    });
     
     console.log(`ResultsDisplay - Found ${totalRatings} valid rating values across ${validSkillsCount} skills in ${validCategoriesCount} categories`);
-    console.log("ResultsDisplay - Cleaned categories:", cleanCategories);
+    console.log("ResultsDisplay - Cleaned categories:", JSON.stringify(cleanCategories));
     
     setValidatedCategories(cleanCategories);
   }, [categories]);

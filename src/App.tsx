@@ -10,6 +10,7 @@ import Login from "./pages/Login";
 import Assessment from "./pages/Assessment";
 import Results from "./pages/Results";
 import PreviousAssessments from "./pages/PreviousAssessments";
+import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/results" element={<Results />} />
             <Route path="/results/:id" element={<Results />} />
             <Route path="/previous-assessments" element={<PreviousAssessments />} />
+            <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Toaster />

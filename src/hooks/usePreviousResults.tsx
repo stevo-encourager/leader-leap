@@ -3,8 +3,10 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { getLatestAssessmentResults } from '@/services/assessment/fetchAssessment';
+import { getLocalAssessmentData } from '@/services/assessment/manageAssessmentHistory';
 import { toast } from '@/hooks/use-toast';
 import { useSaveTracker } from './useSaveTracker';
+import { useAuth } from '@/contexts/AuthContext';
 
 /**
  * Hook to manage loading previous assessment results
@@ -17,11 +19,45 @@ export const usePreviousResults = (
   const [loadingPreviousResults, setLoadingPreviousResults] = useState(false);
   const navigate = useNavigate();
   const { markAsSaved } = useSaveTracker();
+  const { user } = useAuth();
   
   const handleLoadPreviousResults = async () => {
     setLoadingPreviousResults(true);
     
     try {
+      // If user is not authenticated, try to load from local storage instead
+      if (!user) {
+        const localData = getLocalAssessmentData();
+        
+        if (localData && localData.categories && localData.categories.length > 0) {
+          console.log('No user authenticated, loading from local storage:', 
+            JSON.stringify({
+              categoriesCount: localData.categories.length,
+              timestamp: localData.timestamp || 'unknown'
+            }));
+          
+          setCategories(localData.categories);
+          setDemographics(localData.demographics || {});
+          setCurrentStep('results');
+          
+          navigate('/results');
+          
+          toast({
+            title: "Local results loaded",
+            description: "Create an account to save your results permanently.",
+          });
+        } else {
+          toast({
+            title: "No previous results found",
+            description: "You don't have any saved assessment results yet.",
+          });
+        }
+        
+        setLoadingPreviousResults(false);
+        return;
+      }
+      
+      // User is authenticated, try to load from database
       const result = await getLatestAssessmentResults();
       
       if (result.success && result.data) {
@@ -52,10 +88,28 @@ export const usePreviousResults = (
           description: "Your most recent assessment results have been loaded.",
         });
       } else {
-        toast({
-          title: "No previous results found",
-          description: "You don't have any saved assessment results yet.",
-        });
+        // No results in database, try local storage as fallback for authenticated users
+        const localData = getLocalAssessmentData();
+        
+        if (localData && localData.categories && localData.categories.length > 0) {
+          console.log('No database results found, loading from local storage as fallback');
+          
+          setCategories(localData.categories);
+          setDemographics(localData.demographics || {});
+          setCurrentStep('results');
+          
+          navigate('/results');
+          
+          toast({
+            title: "Local results loaded",
+            description: "These results haven't been saved to your account yet. Complete the assessment again while logged in to save them.",
+          });
+        } else {
+          toast({
+            title: "No previous results found",
+            description: "You don't have any saved assessment results yet.",
+          });
+        }
       }
     } catch (error) {
       toast({

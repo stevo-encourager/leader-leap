@@ -131,6 +131,13 @@ export const useResultsManagement = (
       }
       
       setShowAuthForm(true);
+      
+      // Add toast to inform the user about data persistence
+      toast({
+        title: "Sign up to save your results",
+        description: "Create an account to access your assessment history anytime.",
+      });
+      
       return;
     }
     

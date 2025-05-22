@@ -1,7 +1,10 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { getLocalAssessmentData, clearLocalAssessmentData } from '@/services/assessment/manageAssessmentHistory';
+import { saveAssessmentResults } from '@/services/assessment/saveAssessment';
 
 interface AuthContextType {
   session: Session | null;
@@ -20,6 +23,38 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Function to migrate local assessment data to the user's account
+  const migrateLocalAssessmentData = async (currentUser: User) => {
+    try {
+      const localData = getLocalAssessmentData();
+      
+      if (!localData || !localData.categories || localData.categories.length === 0) {
+        console.log('No local assessment data to migrate');
+        return;
+      }
+      
+      console.log('Migrating local assessment data to user account:', currentUser.id);
+      
+      // Save the local assessment data to the user's account
+      const result = await saveAssessmentResults(localData.categories, localData.demographics || {});
+      
+      if (result.success) {
+        console.log('Successfully migrated local assessment data to user account');
+        toast({
+          title: "Assessment data migrated",
+          description: "Your previous assessment results have been saved to your account.",
+        });
+        
+        // Clear the local data after successful migration
+        clearLocalAssessmentData();
+      } else {
+        console.error('Failed to migrate local assessment data:', result.error);
+      }
+    } catch (error) {
+      console.error('Error migrating local assessment data:', error);
+    }
+  };
+
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -37,6 +72,34 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             title: "Signed in",
             description: "Welcome back!",
           });
+          
+          // When user signs in, check for and migrate local assessment data
+          if (currentSession?.user) {
+            // Use setTimeout to avoid potential Supabase auth callback deadlock
+            setTimeout(() => {
+              migrateLocalAssessmentData(currentSession.user);
+            }, 0);
+          }
+        } else if (event === 'USER_UPDATED') {
+          // This fires when a user verifies their email
+          console.log('User updated event received');
+          
+          if (currentSession?.user) {
+            // Check if this is a new verification by looking at the email confirmed timestamp
+            const emailConfirmedAt = currentSession.user.email_confirmed_at;
+            const now = new Date();
+            const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+            
+            // If email was confirmed in the last 5 minutes, try to migrate data
+            if (emailConfirmedAt && new Date(emailConfirmedAt) > fiveMinutesAgo) {
+              console.log('Recent email verification detected, checking for local data to migrate');
+              
+              // Use setTimeout to avoid potential Supabase auth callback deadlock
+              setTimeout(() => {
+                migrateLocalAssessmentData(currentSession.user);
+              }, 0);
+            }
+          }
         }
       }
     );
@@ -46,6 +109,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       setLoading(false);
+      
+      // If user is already authenticated, check for local data to migrate
+      if (currentSession?.user) {
+        migrateLocalAssessmentData(currentSession.user);
+      }
     });
 
     return () => {

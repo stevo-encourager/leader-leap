@@ -1,10 +1,11 @@
 
 import React from 'react';
-import { ArrowLeft, Download, Plus } from 'lucide-react';
+import { ArrowLeft, Download, Plus, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { exportToPDF } from '@/utils/pdfUtils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ResultsActionsProps {
   onBack: () => void;
@@ -52,6 +53,25 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
         Back to Assessment
       </Button>
       <div className="flex gap-2">
+        {!user && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  onClick={onSignup}
+                  className="flex items-center gap-2"
+                >
+                  Sign Up
+                  <Info className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p className="max-w-xs text-sm">Create an account to save your results and access them anytime</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
         <Button 
           variant="encourager" 
           className="flex items-center gap-2"

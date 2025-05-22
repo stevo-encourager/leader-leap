@@ -18,13 +18,12 @@ export const useResultsManagement = (
   const { user } = useAuth();
   const navigate = useNavigate();
   
+  // Store the assessment ID in a ref to track which assessment we're currently viewing
+  const currentAssessmentIdRef = useRef<string | null>(null);
+  
   // Add a flag to track if results have been saved in the current session
   // This prevents multiple saves when viewing the results page multiple times
   const resultsSavedRef = useRef(false);
-  
-  // Track the last save time to prevent rapid repeated saves
-  const lastSaveTimeRef = useRef<number | null>(null);
-  const SAVE_COOLDOWN_MS = 5000; // 5 seconds cooldown between saves
   
   // Reset the saved flag when categories or demographics change
   useEffect(() => {
@@ -53,16 +52,6 @@ export const useResultsManagement = (
       console.log('Results already saved in this session, skipping');
       return;
     }
-    
-    // Check if we're within the cooldown period
-    const now = Date.now();
-    if (lastSaveTimeRef.current && (now - lastSaveTimeRef.current < SAVE_COOLDOWN_MS)) {
-      console.log(`Save attempted too soon (within ${SAVE_COOLDOWN_MS}ms cooldown), skipping`);
-      return;
-    }
-    
-    // Update the last save time
-    lastSaveTimeRef.current = now;
 
     if (!user) {
       setShowAuthForm(true);
@@ -76,6 +65,12 @@ export const useResultsManagement = (
     if (result.success) {
       // Mark as saved for this session
       resultsSavedRef.current = true;
+      
+      // Store the assessment ID to track which assessment we're viewing
+      if (result.data && result.data.length > 0) {
+        currentAssessmentIdRef.current = result.data[0].id;
+        console.log('Saved assessment with ID:', currentAssessmentIdRef.current);
+      }
       
       toast({
         title: "Results saved",
@@ -103,6 +98,13 @@ export const useResultsManagement = (
         setCategories(categoriesData);
         setDemographics(demographicsData || {});
         setCurrentStep('results');
+        
+        // Store the assessment ID
+        if (result.data.id) {
+          currentAssessmentIdRef.current = result.data.id;
+          console.log('Loaded assessment with ID:', currentAssessmentIdRef.current);
+        }
+        
         navigate('/results');
         
         toast({
@@ -143,6 +145,7 @@ export const useResultsManagement = (
     handleSaveResults,
     handleLoadPreviousResults,
     handleCloseAuthForm,
-    handleShowSignupForm
+    handleShowSignupForm,
+    currentAssessmentId: currentAssessmentIdRef.current
   };
 };

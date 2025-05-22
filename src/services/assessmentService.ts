@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Demographics } from '../utils/assessmentTypes';
 import { Json } from '@/integrations/supabase/types';
@@ -33,60 +32,8 @@ export const saveAssessmentResults = async (categories: Category[], demographics
       return { success: false, error: 'No valid ratings found in assessment data' };
     }
     
-    // CRITICAL FIX: First check if the user already has a completed assessment from today
-    // This will prevent creating multiple records when the user views the results multiple times
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const { data: todayAssessments, error: checkTodayError } = await supabase
-      .from('assessment_results')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('completed', true)
-      .gte('created_at', today.toISOString())
-      .order('created_at', { ascending: false });
-      
-    if (checkTodayError) {
-      console.error('Error checking today\'s assessments:', checkTodayError);
-      return { success: false, error: checkTodayError.message };
-    }
-    
-    // If there's an assessment from today, update it instead of creating a new one
-    if (todayAssessments && todayAssessments.length > 0) {
-      console.log('Found existing assessment from today, updating instead of creating new one');
-      
-      const { data, error } = await supabase
-        .from('assessment_results')
-        .update({
-          categories: categories as unknown as Json,
-          demographics: demographics as unknown as Json
-        })
-        .eq('id', todayAssessments[0].id)
-        .select();
-        
-      if (error) {
-        console.error('Error updating today\'s assessment:', error);
-        return { success: false, error: error.message };
-      }
-      
-      console.log('Successfully updated today\'s assessment');
-      return { success: true, data };
-    }
-    
-    // Check if the user has any completed assessment
-    const { data: existingCompletedAssessments, error: checkError } = await supabase
-      .from('assessment_results')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('completed', true);
-      
-    if (checkError) {
-      console.error('Error checking existing assessments:', checkError);
-      return { success: false, error: checkError.message };
-    }
-    
-    // If there's an existing incomplete assessment, update it instead of creating a new one
-    // This prevents duplicate assessments from being created
+    // First, check if the user has an in-progress assessment (not completed)
+    // and update it rather than creating a new one
     const { data: incompleteAssessments, error: incompleteCheckError } = await supabase
       .from('assessment_results')
       .select('id')
@@ -99,6 +46,8 @@ export const saveAssessmentResults = async (categories: Category[], demographics
     }
     
     if (incompleteAssessments && incompleteAssessments.length > 0) {
+      console.log('Updating existing incomplete assessment:', incompleteAssessments[0].id);
+      
       const { data, error } = await supabase
         .from('assessment_results')
         .update({
@@ -117,7 +66,8 @@ export const saveAssessmentResults = async (categories: Category[], demographics
       return { success: true, data };
     }
     
-    // Otherwise, create a new completed assessment
+    // If there's no incomplete assessment, create a new one
+    console.log('Creating new assessment record');
     const { data, error } = await supabase
       .from('assessment_results')
       .insert({

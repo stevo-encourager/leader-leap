@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getAssessmentHistory, deleteAllCompletedAssessments } from '@/services/assessmentService';
 import { toast } from '@/hooks/use-toast';
@@ -14,20 +14,13 @@ export const useAssessmentHistory = () => {
   const [assessments, setAssessments] = useState<AssessmentRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [assessmentCount, setAssessmentCount] = useState<number | null>(null);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [totalAssessments, setTotalAssessments] = useState(0);
 
-  // Date filter state for future enhancement
-  const [dateFilter, setDateFilter] = useState<{ startDate: Date | null, endDate: Date | null }>({
-    startDate: null,
-    endDate: null
-  });
-
-  const fetchAssessments = async () => {
+  const fetchAssessments = useCallback(async () => {
     setIsLoading(true);
     try {
       console.log("useAssessmentHistory - Fetching assessments...");
@@ -67,7 +60,7 @@ export const useAssessmentHistory = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   const handleDeleteAllAssessments = async () => {
     setIsDeleting(true);
@@ -113,19 +106,24 @@ export const useAssessmentHistory = () => {
     return assessments.slice(startIndex, startIndex + pageSize);
   };
 
+  // Load assessments when component mounts or user changes
+  useEffect(() => {
+    if (user) {
+      fetchAssessments();
+    }
+  }, [user, fetchAssessments]);
+
   return {
     user,
     assessments: getPaginatedData(),
     allAssessments: assessments,
     isLoading,
     isDeleting,
-    assessmentCount,
     totalAssessments,
     currentPage,
     pageSize,
     fetchAssessments,
     handleDeleteAllAssessments,
-    handlePageChange,
-    setDateFilter
+    handlePageChange
   };
 };

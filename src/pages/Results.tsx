@@ -79,6 +79,7 @@ const Results = () => {
     );
   }
 
+  // If assessment data is valid, render the results
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-5xl mx-auto px-4 py-2">

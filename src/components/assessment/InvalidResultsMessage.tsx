@@ -15,14 +15,20 @@ const InvalidResultsMessage: React.FC<InvalidResultsMessageProps> = ({
   errorType 
 }) => {
   let errorMessage = "This may be due to incomplete assessment data or a problem during the assessment process.";
+  let errorTitle = "Unable to display results: Invalid assessment data";
   
   // Customize message based on error type
   if (errorType === "invalid-format") {
-    errorMessage = "The assessment data format is invalid or corrupted.";
+    errorMessage = "The assessment data format is invalid or corrupted. Please try completing the assessment again.";
   } else if (errorType === "fetch-error") {
-    errorMessage = "There was a problem retrieving the assessment data from the server.";
+    errorMessage = "There was a problem retrieving the assessment data from the server. Please try again later.";
   } else if (errorType === "missing-skills") {
-    errorMessage = "The assessment data is missing required skill information.";
+    errorMessage = "The assessment data is missing required skill information. Please try completing the assessment again.";
+  } else if (errorType === "missing-categories") {
+    errorMessage = "No assessment categories were found. Please try completing the assessment again.";
+  } else if (errorType === "loading") {
+    errorTitle = "Loading assessment results";
+    errorMessage = "Please wait while we load your assessment results...";
   }
 
   return (
@@ -30,7 +36,7 @@ const InvalidResultsMessage: React.FC<InvalidResultsMessageProps> = ({
       <div className="flex justify-center mb-4">
         <AlertTriangle className="h-10 w-10 text-red-500" />
       </div>
-      <h3 className="text-lg font-medium text-red-500 mb-4">Unable to display results: Invalid assessment data</h3>
+      <h3 className="text-lg font-medium text-red-500 mb-4">{errorTitle}</h3>
       <p className="text-sm text-gray-600 mb-4">
         {errorMessage}
       </p>

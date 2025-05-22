@@ -27,15 +27,31 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
   // Ensure categories is always an array
   const safeCategories = Array.isArray(categories) ? categories : [];
   
-  console.log("SkillGapChart - Received categories count:", safeCategories?.length || 0);
-  console.log("SkillGapChart - Raw categories:", JSON.stringify(safeCategories));
+  // Log detailed info about categories
+  console.log("SkillGapChart - Categories count:", safeCategories.length);
+  if (safeCategories.length > 0) {
+    const totalSkills = safeCategories.reduce((total, cat) => total + (cat.skills?.length || 0), 0);
+    console.log("SkillGapChart - Total skills:", totalSkills);
+    
+    // Log first category as sample
+    if (safeCategories[0]) {
+      const firstCat = safeCategories[0];
+      console.log("SkillGapChart - First category:", {
+        title: firstCat.title,
+        skillsCount: firstCat.skills?.length || 0,
+        hasSkills: Array.isArray(firstCat.skills) && firstCat.skills.length > 0,
+        firstSkillName: firstCat.skills?.[0]?.name,
+        firstSkillRatings: firstCat.skills?.[0]?.ratings
+      });
+    }
+  }
   
   // Process chart data with detailed logging
   const chartData = useMemo(() => {
-    console.log("SkillGapChart - Processing categories for chart data");
+    console.log("SkillGapChart - Processing chart data from categories");
     
     if (!safeCategories || safeCategories.length === 0) {
-      console.warn("SkillGapChart - No valid categories provided");
+      console.warn("SkillGapChart - No categories provided");
       return [];
     }
     
@@ -44,7 +60,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
     
     for (const category of safeCategories) {
       // Skip invalid categories
-      if (!category || !category.skills || !Array.isArray(category.skills) || category.skills.length === 0) {
+      if (!category || !category.skills || !Array.isArray(category.skills)) {
         console.log(`SkillGapChart - Skipping invalid category: ${category?.title || 'unknown'}`);
         continue;
       }
@@ -61,17 +77,12 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
           continue;
         }
         
-        // Parse ratings as numbers
-        const current = typeof skill.ratings.current === 'number' 
-          ? skill.ratings.current 
-          : parseFloat(String(skill.ratings.current || '0'));
-          
-        const desired = typeof skill.ratings.desired === 'number' 
-          ? skill.ratings.desired 
-          : parseFloat(String(skill.ratings.desired || '0'));
+        // Get ratings
+        const current = typeof skill.ratings.current === 'number' ? skill.ratings.current : 0;
+        const desired = typeof skill.ratings.desired === 'number' ? skill.ratings.desired : 0;
         
         // Only include valid, non-zero ratings
-        if (!isNaN(current) && !isNaN(desired) && (current > 0 || desired > 0)) {
+        if (current > 0 || desired > 0) {
           totalCurrent += current;
           totalDesired += desired;
           validSkillCount++;
@@ -99,7 +110,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
       }
     }
     
-    console.log("SkillGapChart - Processed chart data:", result);
+    console.log("SkillGapChart - Final chart data items:", result.length);
     return result;
   }, [safeCategories]);
 
@@ -113,6 +124,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
   console.log("SkillGapChart - Valid chart data items:", validChartData.length);
   
   if (validChartData.length === 0) {
+    console.warn("SkillGapChart - No valid chart data to display");
     return (
       <div className="flex items-center justify-center h-full bg-slate-50 rounded-lg p-6">
         <p className="text-gray-500 text-center">
@@ -122,7 +134,9 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
     );
   }
 
-  // Simplified radar chart implementation
+  console.log("SkillGapChart - Rendering radar chart with data:", validChartData);
+
+  // Radar chart implementation
   return (
     <ResponsiveContainer width="100%" height="100%">
       <RadarChart 

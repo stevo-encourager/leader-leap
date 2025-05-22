@@ -22,6 +22,16 @@ export const useAssessmentData = (
 ): UseAssessmentDataReturn => {
   const [isAssessmentDataValid, setIsAssessmentDataValid] = useState(false);
   const [processedCategories, setProcessedCategories] = useState<Category[]>([]);
+  const [processedDemographics, setProcessedDemographics] = useState<Demographics>({});
+  
+  useEffect(() => {
+    console.log("useAssessmentData - INIT called with:", {
+      hasAssessmentId: !!assessmentId,
+      hasSpecificData: !!specificAssessmentData,
+      currentCategoriesLength: currentCategories?.length || 0,
+      loadingSpecificData
+    });
+  }, []);
   
   // Determine which categories and demographics to use
   const rawCategories = assessmentId && specificAssessmentData 
@@ -34,8 +44,16 @@ export const useAssessmentData = (
 
   // Process and validate categories
   useEffect(() => {
-    console.log("useAssessmentData - Raw categories:", JSON.stringify(rawCategories));
-    console.log("useAssessmentData - Categories length:", rawCategories?.length || 0);
+    console.log("useAssessmentData - Processing raw categories:", {
+      categoriesLength: rawCategories?.length || 0,
+      isArray: Array.isArray(rawCategories),
+      firstCategoryTitle: rawCategories && rawCategories[0]?.title
+    });
+    
+    if (rawDemographics) {
+      console.log("useAssessmentData - Raw demographics:", rawDemographics);
+      setProcessedDemographics(rawDemographics);
+    }
     
     // Ensure categories is an array
     if (!rawCategories || !Array.isArray(rawCategories)) {
@@ -46,72 +64,72 @@ export const useAssessmentData = (
     }
     
     // Process categories
-    const processed = rawCategories.map(category => {
-      // Check if category is valid
-      if (!category || typeof category !== 'object') {
-        console.warn("useAssessmentData - Invalid category:", category);
-        return null;
-      }
-      
-      // Ensure category has required fields
-      const processedCategory: Category = {
-        id: category.id || `category-${Math.random().toString(36).substring(2, 9)}`,
-        title: category.title || 'Unknown Category',
-        description: category.description || '',
-        skills: []
-      };
-      
-      // Process skills if they exist
-      if (category.skills && Array.isArray(category.skills)) {
-        processedCategory.skills = category.skills
-          .map(skill => {
-            // Skip invalid skills
-            if (!skill || typeof skill !== 'object') {
-              return null;
-            }
-            
-            // Create a correctly formatted skill
-            const processedSkill = {
-              id: skill.id || `skill-${Math.random().toString(36).substring(2, 9)}`,
-              name: skill.name || 'Unknown Skill',
-              description: skill.description || '',
-              ratings: {
-                current: 0,
-                desired: 0
-              }
-            };
-            
-            // Process ratings
-            if (skill.ratings) {
-              const current = typeof skill.ratings.current === 'number' 
-                ? skill.ratings.current 
-                : parseFloat(String(skill.ratings.current || '0'));
-                
-              const desired = typeof skill.ratings.desired === 'number' 
-                ? skill.ratings.desired 
-                : parseFloat(String(skill.ratings.desired || '0'));
+    const processed = rawCategories
+      .filter(category => category && typeof category === 'object')
+      .map(category => {
+        // Ensure category has required fields
+        const processedCategory: Category = {
+          id: category.id || `category-${Math.random().toString(36).substring(2, 9)}`,
+          title: category.title || 'Unknown Category',
+          description: category.description || '',
+          skills: []
+        };
+        
+        // Process skills if they exist
+        if (category.skills && Array.isArray(category.skills)) {
+          processedCategory.skills = category.skills
+            .filter(skill => skill && typeof skill === 'object')
+            .map(skill => {
+              // Create a correctly formatted skill
+              const processedSkill = {
+                id: skill.id || `skill-${Math.random().toString(36).substring(2, 9)}`,
+                name: skill.name || 'Unknown Skill',
+                description: skill.description || '',
+                ratings: {
+                  current: 0,
+                  desired: 0
+                }
+              };
               
-              processedSkill.ratings.current = isNaN(current) ? 0 : current;
-              processedSkill.ratings.desired = isNaN(desired) ? 0 : desired;
-            }
-            
-            // Only include skills with valid ratings
-            if (processedSkill.ratings.current > 0 || processedSkill.ratings.desired > 0) {
+              // Process ratings
+              if (skill.ratings) {
+                // Parse ratings as numbers with fallback to 0
+                let current = 0;
+                let desired = 0;
+                
+                if (typeof skill.ratings.current === 'number') {
+                  current = isNaN(skill.ratings.current) ? 0 : skill.ratings.current;
+                } else if (skill.ratings.current !== undefined && skill.ratings.current !== null) {
+                  current = parseFloat(String(skill.ratings.current));
+                  current = isNaN(current) ? 0 : current;
+                }
+                
+                if (typeof skill.ratings.desired === 'number') {
+                  desired = isNaN(skill.ratings.desired) ? 0 : skill.ratings.desired;
+                } else if (skill.ratings.desired !== undefined && skill.ratings.desired !== null) {
+                  desired = parseFloat(String(skill.ratings.desired));
+                  desired = isNaN(desired) ? 0 : desired;
+                }
+                
+                processedSkill.ratings.current = current;
+                processedSkill.ratings.desired = desired;
+                
+                console.log(`useAssessmentData - Processed skill: ${skill.name}, current=${current}, desired=${desired}`);
+              }
+              
               return processedSkill;
-            }
-            
-            return null;
-          })
-          .filter(Boolean) as any; // Filter out null values
-      }
-      
-      // Only include categories with valid skills
-      if (processedCategory.skills.length > 0) {
+            })
+            .filter(skill => skill.ratings.current > 0 || skill.ratings.desired > 0);
+        }
+        
         return processedCategory;
-      }
-      
-      return null;
-    }).filter(Boolean) as Category[]; // Filter out null values
+      })
+      .filter(category => category.skills && category.skills.length > 0);
+    
+    console.log("useAssessmentData - Processed categories result:", {
+      length: processed.length,
+      totalSkills: processed.reduce((count, cat) => count + cat.skills.length, 0)
+    });
     
     setProcessedCategories(processed);
     
@@ -122,15 +140,13 @@ export const useAssessmentData = (
       )
     );
     
-    console.log("useAssessmentData - Processed categories:", JSON.stringify(processed));
     console.log("useAssessmentData - Has valid data:", hasValidData);
-    
     setIsAssessmentDataValid(hasValidData);
-  }, [rawCategories]);
+  }, [rawCategories, rawDemographics]);
 
   return {
     displayCategories: processedCategories,
-    displayDemographics: rawDemographics,
+    displayDemographics: processedDemographics,
     isAssessmentDataValid,
     isAssessmentDataLoading: loadingSpecificData
   };

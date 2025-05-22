@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Demographics } from '../../utils/assessmentTypes';
 import { Json } from '@/integrations/supabase/types';
@@ -16,62 +15,86 @@ const normalizeCategories = (categories: Category[]): Category[] => {
     }
     
     // Deep clone to avoid modifying original data
-    const normalizedCategories = JSON.parse(JSON.stringify(categories));
+    let normalizedCategories;
+    try {
+      normalizedCategories = JSON.parse(JSON.stringify(categories));
+      console.log("saveAssessment - Deep cloned categories");
+    } catch (err) {
+      console.error("saveAssessment - Error cloning categories:", err);
+      normalizedCategories = [...categories]; // Fallback to shallow clone
+    }
     
     // Process each category
-    return normalizedCategories.map((category: any) => {
-      if (!category || typeof category !== 'object') {
-        console.warn("saveAssessment - Invalid category object:", category);
-        return null;
-      }
-      
-      // Ensure category has required fields
-      const normalizedCategory = {
-        id: category.id || `category-${Math.random().toString(36).substring(2, 9)}`,
-        title: category.title || 'Unknown Category',
-        description: category.description || '',
-        skills: []
-      };
-      
-      // Process skills if they exist
-      if (category.skills && Array.isArray(category.skills)) {
-        normalizedCategory.skills = category.skills.map((skill: any) => {
-          if (!skill || typeof skill !== 'object') {
-            console.warn("saveAssessment - Invalid skill object:", skill);
-            return null;
-          }
-          
-          // Normalize skill data
-          const normalizedSkill = {
-            id: skill.id || `skill-${Math.random().toString(36).substring(2, 9)}`,
-            name: skill.name || 'Unknown Skill',
-            description: skill.description || '',
-            ratings: {
-              current: 0,
-              desired: 0
-            }
-          };
-          
-          // Parse ratings
-          if (skill.ratings) {
-            const current = typeof skill.ratings.current === 'number' 
-              ? skill.ratings.current 
-              : parseFloat(String(skill.ratings.current || '0'));
+    const result = normalizedCategories
+      .filter((category: any) => category && typeof category === 'object')
+      .map((category: any) => {
+        // Ensure category has required fields
+        const normalizedCategory = {
+          id: category.id || `category-${Math.random().toString(36).substring(2, 9)}`,
+          title: category.title || 'Unknown Category',
+          description: category.description || '',
+          skills: []
+        };
+        
+        // Process skills if they exist
+        if (category.skills && Array.isArray(category.skills)) {
+          normalizedCategory.skills = category.skills
+            .filter((skill: any) => skill && typeof skill === 'object')
+            .map((skill: any) => {
+              // Normalize skill data
+              const normalizedSkill = {
+                id: skill.id || `skill-${Math.random().toString(36).substring(2, 9)}`,
+                name: skill.name || 'Unknown Skill',
+                description: skill.description || '',
+                ratings: {
+                  current: 0,
+                  desired: 0
+                }
+              };
               
-            const desired = typeof skill.ratings.desired === 'number' 
-              ? skill.ratings.desired 
-              : parseFloat(String(skill.ratings.desired || '0'));
-            
-            normalizedSkill.ratings.current = isNaN(current) ? 0 : current;
-            normalizedSkill.ratings.desired = isNaN(desired) ? 0 : desired;
-          }
-          
-          return normalizedSkill;
-        }).filter(Boolean);
-      }
-      
-      return normalizedCategory;
-    }).filter(Boolean);
+              // Parse ratings
+              if (skill.ratings) {
+                // Handle current rating
+                let current = 0;
+                if (typeof skill.ratings.current === 'number') {
+                  current = skill.ratings.current;
+                } else if (skill.ratings.current !== undefined && skill.ratings.current !== null) {
+                  try {
+                    current = parseFloat(String(skill.ratings.current));
+                  } catch (e) {
+                    console.warn(`saveAssessment - Could not parse current rating for ${skill.name}:`, e);
+                    current = 0;
+                  }
+                }
+                
+                // Handle desired rating
+                let desired = 0;
+                if (typeof skill.ratings.desired === 'number') {
+                  desired = skill.ratings.desired;
+                } else if (skill.ratings.desired !== undefined && skill.ratings.desired !== null) {
+                  try {
+                    desired = parseFloat(String(skill.ratings.desired));
+                  } catch (e) {
+                    console.warn(`saveAssessment - Could not parse desired rating for ${skill.name}:`, e);
+                    desired = 0;
+                  }
+                }
+                
+                normalizedSkill.ratings.current = isNaN(current) ? 0 : current;
+                normalizedSkill.ratings.desired = isNaN(desired) ? 0 : desired;
+                
+                console.log(`saveAssessment - Normalized skill: ${skill.name}, current=${normalizedSkill.ratings.current}, desired=${normalizedSkill.ratings.desired}`);
+              }
+              
+              return normalizedSkill;
+            });
+        }
+        
+        return normalizedCategory;
+      });
+    
+    console.log(`saveAssessment - Normalized ${result.length} categories with a total of ${result.reduce((count, cat) => count + cat.skills.length, 0)} skills`);
+    return result;
   } catch (error) {
     console.error("Error normalizing categories:", error);
     return [];
@@ -86,22 +109,20 @@ const hasValidRatings = (categories: Category[]): boolean => {
     return false;
   }
   
-  return categories.some(category => 
+  const validRatings = categories.some(category => 
     category && category.skills && Array.isArray(category.skills) &&
     category.skills.some(skill => {
       if (!skill || !skill.ratings) return false;
       
-      const current = typeof skill.ratings.current === 'number' 
-        ? skill.ratings.current 
-        : parseFloat(String(skill.ratings.current || '0'));
-        
-      const desired = typeof skill.ratings.desired === 'number' 
-        ? skill.ratings.desired 
-        : parseFloat(String(skill.ratings.desired || '0'));
+      const current = typeof skill.ratings.current === 'number' ? skill.ratings.current : 0;
+      const desired = typeof skill.ratings.desired === 'number' ? skill.ratings.desired : 0;
       
       return !isNaN(current) && !isNaN(desired) && (current > 0 || desired > 0);
     })
   );
+  
+  console.log("saveAssessment - Has valid ratings:", validRatings);
+  return validRatings;
 };
 
 /**
@@ -120,11 +141,11 @@ export const saveAssessmentResults = async (categories: Category[], demographics
       return { success: false, error: 'User not authenticated' };
     }
 
-    console.log('saveAssessment - Original categories:', JSON.stringify(categories));
+    console.log('saveAssessment - Original categories count:', categories?.length || 0);
     
     // Normalize the categories to ensure consistent format
     const normalizedCategories = normalizeCategories(categories);
-    console.log('saveAssessment - Normalized categories:', JSON.stringify(normalizedCategories));
+    console.log('saveAssessment - Normalized categories count:', normalizedCategories?.length || 0);
     
     // Check if the categories have valid ratings before saving
     if (!hasValidRatings(normalizedCategories)) {
@@ -199,25 +220,30 @@ const updateExistingAssessment = async (
   categories: Category[], 
   demographics: Demographics
 ) => {
-  console.log('updateExistingAssessment - Updating with categories:', JSON.stringify(categories));
+  console.log('updateExistingAssessment - Starting update with categories count:', categories?.length || 0);
   
-  const { data, error } = await supabase
-    .from('assessment_results')
-    .update({
-      categories: categories as unknown as Json,
-      demographics: demographics as unknown as Json,
-      completed: true
-    })
-    .eq('id', assessmentId)
-    .select();
+  try {
+    const { data, error } = await supabase
+      .from('assessment_results')
+      .update({
+        categories: categories as unknown as Json,
+        demographics: demographics as unknown as Json,
+        completed: true
+      })
+      .eq('id', assessmentId)
+      .select();
+      
+    if (error) {
+      console.error('updateExistingAssessment - Error:', error);
+      return { success: false, error: error.message };
+    }
     
-  if (error) {
-    console.error('updateExistingAssessment - Error:', error);
-    return { success: false, error: error.message };
+    console.log('updateExistingAssessment - Success, data:', data);
+    return { success: true, data };
+  } catch (err) {
+    console.error('updateExistingAssessment - Exception:', err);
+    return { success: false, error: 'Failed to update existing assessment' };
   }
-  
-  console.log('updateExistingAssessment - Success, data:', data);
-  return { success: true, data };
 };
 
 /**
@@ -232,24 +258,29 @@ const createNewAssessment = async (
   categories: Category[],
   demographics: Demographics
 ) => {
-  console.log('createNewAssessment - Creating with categories:', JSON.stringify(categories));
+  console.log('createNewAssessment - Creating with categories count:', categories?.length || 0);
   
-  // Use insert with onConflict strategy to prevent duplicates at the database level
-  const { data, error } = await supabase
-    .from('assessment_results')
-    .insert({
-      categories: categories as unknown as Json,
-      demographics: demographics as unknown as Json,
-      user_id: userId,
-      completed: true
-    })
-    .select();
+  try {
+    // Use insert with onConflict strategy to prevent duplicates at the database level
+    const { data, error } = await supabase
+      .from('assessment_results')
+      .insert({
+        categories: categories as unknown as Json,
+        demographics: demographics as unknown as Json,
+        user_id: userId,
+        completed: true
+      })
+      .select();
 
-  if (error) {
-    console.error('createNewAssessment - Error:', error);
-    return { success: false, error: error.message };
+    if (error) {
+      console.error('createNewAssessment - Error:', error);
+      return { success: false, error: error.message };
+    }
+
+    console.log('createNewAssessment - Success, data:', data);
+    return { success: true, data };
+  } catch (err) {
+    console.error('createNewAssessment - Exception:', err);
+    return { success: false, error: 'Failed to create new assessment' };
   }
-
-  console.log('createNewAssessment - Success, data:', data);
-  return { success: true, data };
 };

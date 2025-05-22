@@ -16,31 +16,43 @@ export const normalizeSkill = (
     }
     
     // Parse ratings as numbers and provide safe defaults
-    const current = typeof skill.ratings.current === 'number' 
-      ? skill.ratings.current 
-      : parseFloat(String(skill.ratings.current || '0'));
-      
-    const desired = typeof skill.ratings.desired === 'number' 
-      ? skill.ratings.desired 
-      : parseFloat(String(skill.ratings.desired || '0'));
+    let current = 0;
+    let desired = 0;
     
-    // Check for valid numbers - only consider values > 0 as valid
-    if (isNaN(current) || isNaN(desired)) {
-      console.log(`normalizeSkill - Invalid rating values for ${skill.name}: current=${skill.ratings.current}, desired=${skill.ratings.desired}`);
-      return null;
+    // Handle current rating
+    if (typeof skill.ratings.current === 'number') {
+      current = skill.ratings.current;
+    } else if (skill.ratings.current !== undefined && skill.ratings.current !== null) {
+      try {
+        current = parseFloat(String(skill.ratings.current));
+      } catch (e) {
+        console.warn(`normalizeSkill - Error parsing current rating for ${skill.name}:`, e);
+      }
     }
     
-    const validCurrent = isNaN(current) ? 0 : current;
-    const validDesired = isNaN(desired) ? 0 : desired;
+    // Handle desired rating
+    if (typeof skill.ratings.desired === 'number') {
+      desired = skill.ratings.desired;
+    } else if (skill.ratings.desired !== undefined && skill.ratings.desired !== null) {
+      try {
+        desired = parseFloat(String(skill.ratings.desired));
+      } catch (e) {
+        console.warn(`normalizeSkill - Error parsing desired rating for ${skill.name}:`, e);
+      }
+    }
+    
+    // Check for valid numbers
+    current = isNaN(current) ? 0 : current;
+    desired = isNaN(desired) ? 0 : desired;
     
     // Only include skills with at least one non-zero value
-    if (validCurrent === 0 && validDesired === 0) {
+    if (current === 0 && desired === 0) {
       console.log(`normalizeSkill - Skipping skill with zero ratings: ${skill.name}`);
       return null;
     }
     
     // Calculate gap
-    const gap = validDesired - validCurrent;
+    const gap = desired - current;
     
     return {
       id: skill.id,
@@ -48,8 +60,8 @@ export const normalizeSkill = (
       categoryTitle,
       gap,
       ratings: {
-        current: validCurrent,
-        desired: validDesired
+        current,
+        desired
       }
     };
   } catch (error) {
@@ -63,7 +75,10 @@ export const normalizeSkill = (
  */
 export const getAllSkillsWithMetadata = (categories: Category[]): SkillWithMetadata[] => {
   try {
-    console.log("getAllSkillsWithMetadata - Processing categories:", categories?.length || 0);
+    console.log("getAllSkillsWithMetadata - Processing categories:", {
+      count: categories?.length || 0,
+      isArray: Array.isArray(categories)
+    });
     
     if (!categories || !Array.isArray(categories) || categories.length === 0) {
       console.log("getAllSkillsWithMetadata - No categories");
@@ -79,21 +94,20 @@ export const getAllSkillsWithMetadata = (categories: Category[]): SkillWithMetad
         continue;
       }
       
+      console.log(`getAllSkillsWithMetadata - Processing category: ${category.title} with ${category.skills.length} skills`);
+      
       // Process each skill in the category
       for (const skill of category.skills) {
         const normalizedSkill = normalizeSkill(skill, category.title);
         
         if (normalizedSkill) {
           allSkills.push(normalizedSkill);
+          console.log(`getAllSkillsWithMetadata - Added skill: ${skill.name}, current=${normalizedSkill.ratings.current}, desired=${normalizedSkill.ratings.desired}`);
         }
       }
     }
     
     console.log(`getAllSkillsWithMetadata - Found ${allSkills.length} normalized skills`);
-    if (allSkills.length > 0) {
-      console.log("getAllSkillsWithMetadata - First skill sample:", allSkills[0]);
-    }
-    
     return allSkills;
   } catch (error) {
     console.error("Error in getAllSkillsWithMetadata:", error);

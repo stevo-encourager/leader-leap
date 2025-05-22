@@ -160,10 +160,10 @@ export const useResultsManagement = (
       
       if (result.success) {
         // Log success details
-        console.log('Successfully saved assessment results:', result.data);
+        console.log('Successfully saved assessment results:', result);
         
-        // Mark as saved for this session
-        if (result.data && result.data.length > 0) {
+        // Mark as saved for this session - safely handling the data property
+        if (result.success && 'data' in result && result.data && result.data.length > 0) {
           const assessmentId = result.data[0].id;
           console.log('Saved assessment with ID:', assessmentId);
           markAsSaved(assessmentId, today);

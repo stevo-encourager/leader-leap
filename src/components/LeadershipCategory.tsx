@@ -5,11 +5,18 @@ import { Category, Skill } from '../utils/assessmentTypes';
 
 interface LeadershipCategoryProps {
   category: Category;
-  onChange: (updatedCategory: Category) => void;
+  onChange?: (updatedCategory: Category) => void;
+  onSkillRating?: (categoryId: string, skillId: string, type: 'current' | 'desired', value: number) => void;
+  hideHeader?: boolean;
 }
 
-const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({ category, onChange }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({ 
+  category, 
+  onChange,
+  onSkillRating,
+  hideHeader = false
+}) => {
+  const [isExpanded, setIsExpanded] = useState(!hideHeader);
 
   const handleRatingChange = (skillId: string, ratingType: 'current' | 'desired', value: number) => {
     // Ensure value is a valid number
@@ -22,17 +29,28 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({ category, onCha
     // Log rating change for debugging
     console.log(`LeadershipCategory - Setting ${ratingType} rating for skill ${skillId} to ${numericValue}`);
     
-    // Create a deep copy of the category to avoid reference issues
-    const updatedCategory: Category = JSON.parse(JSON.stringify(category));
+    if (onSkillRating) {
+      // Use the onSkillRating prop if provided (new approach)
+      onSkillRating(category.id, skillId, ratingType, numericValue);
+      return;
+    }
     
-    // Find the skill and update its rating
-    const skillToUpdate = updatedCategory.skills.find(skill => skill.id === skillId);
-    if (skillToUpdate) {
-      skillToUpdate.ratings[ratingType] = numericValue;
-      console.log(`LeadershipCategory - Updated ${category.title} -> ${skillToUpdate.name} -> ${ratingType} = ${numericValue}`);
-      onChange(updatedCategory);
+    // Legacy approach - use onChange prop
+    if (onChange) {
+      // Create a deep copy of the category to avoid reference issues
+      const updatedCategory: Category = JSON.parse(JSON.stringify(category));
+      
+      // Find the skill and update its rating
+      const skillToUpdate = updatedCategory.skills.find(skill => skill.id === skillId);
+      if (skillToUpdate) {
+        skillToUpdate.ratings[ratingType] = numericValue;
+        console.log(`LeadershipCategory - Updated ${category.title} -> ${skillToUpdate.name} -> ${ratingType} = ${numericValue}`);
+        onChange(updatedCategory);
+      } else {
+        console.error(`LeadershipCategory - Skill not found: ${skillId}`);
+      }
     } else {
-      console.error(`LeadershipCategory - Skill not found: ${skillId}`);
+      console.warn(`LeadershipCategory - No onChange or onSkillRating handler provided for ${category.title} -> ${skillId}`);
     }
   };
 
@@ -40,20 +58,25 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({ category, onCha
     setIsExpanded(!isExpanded);
   };
 
+  // Don't render the header when hideHeader is true
+  const header = !hideHeader ? (
+    <CardHeader 
+      className="pb-2 cursor-pointer" 
+      onClick={toggleExpanded}
+    >
+      <CardTitle className="text-lg flex justify-between items-center">
+        <span>{category.title}</span>
+        <span className="text-sm text-gray-500">
+          {isExpanded ? '▲' : '▼'}
+        </span>
+      </CardTitle>
+      <CardDescription>{category.description}</CardDescription>
+    </CardHeader>
+  ) : null;
+
   return (
     <Card className="w-full shadow-sm border border-gray-200 mb-6">
-      <CardHeader 
-        className="pb-2 cursor-pointer" 
-        onClick={toggleExpanded}
-      >
-        <CardTitle className="text-lg flex justify-between items-center">
-          <span>{category.title}</span>
-          <span className="text-sm text-gray-500">
-            {isExpanded ? '▲' : '▼'}
-          </span>
-        </CardTitle>
-        <CardDescription>{category.description}</CardDescription>
-      </CardHeader>
+      {header}
       
       {isExpanded && (
         <CardContent>

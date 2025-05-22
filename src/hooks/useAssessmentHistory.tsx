@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getAssessmentHistory, deleteAllCompletedAssessments } from '@/services/assessmentService';
 import { toast } from '@/hooks/use-toast';
@@ -15,6 +15,17 @@ export const useAssessmentHistory = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [assessmentCount, setAssessmentCount] = useState<number | null>(null);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalAssessments, setTotalAssessments] = useState(0);
+
+  // Date filter state for future enhancement
+  const [dateFilter, setDateFilter] = useState<{ startDate: Date | null, endDate: Date | null }>({
+    startDate: null,
+    endDate: null
+  });
 
   const fetchAssessments = async () => {
     setIsLoading(true);
@@ -24,13 +35,18 @@ export const useAssessmentHistory = () => {
       console.log('useAssessmentHistory - Assessment history fetch result:', result);
       
       if (result.success && result.data) {
-        // Store the raw data count
-        setAssessmentCount(result.data.length);
+        // Store the total count
+        setTotalAssessments(result.data.length);
+        
+        // Natural sort by date (newest first)
+        const sortedAssessments = [...result.data].sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
         
         // Set the assessments
-        setAssessments(result.data);
+        setAssessments(sortedAssessments);
         
-        console.log('useAssessmentHistory - Assessments count:', result.data.length);
+        console.log('useAssessmentHistory - Assessments count:', sortedAssessments.length);
       } else {
         console.error('useAssessmentHistory - Failed to fetch history:', result.error);
         toast({
@@ -63,9 +79,10 @@ export const useAssessmentHistory = () => {
           title: "Assessments deleted",
           description: "All your completed assessments have been deleted",
         });
-        // Refresh the list
+        // Reset pagination and assessments
+        setCurrentPage(1);
         setAssessments([]);
-        setAssessmentCount(0);
+        setTotalAssessments(0);
       } else {
         toast({
           title: "Error deleting assessments",
@@ -85,13 +102,30 @@ export const useAssessmentHistory = () => {
     }
   };
 
+  // Function to handle page changes
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // Get paginated data
+  const getPaginatedData = () => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return assessments.slice(startIndex, startIndex + pageSize);
+  };
+
   return {
     user,
-    assessments,
+    assessments: getPaginatedData(),
+    allAssessments: assessments,
     isLoading,
     isDeleting,
     assessmentCount,
+    totalAssessments,
+    currentPage,
+    pageSize,
     fetchAssessments,
-    handleDeleteAllAssessments
+    handleDeleteAllAssessments,
+    handlePageChange,
+    setDateFilter
   };
 };

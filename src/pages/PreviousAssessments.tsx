@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { CircleGauge, ArrowLeft } from 'lucide-react';
+import { CircleGauge, ArrowLeft, Filter } from 'lucide-react';
 import Navigation from '@/components/layout/Navigation';
 import Footer from '@/components/layout/Footer';
 import { useAssessmentHistory } from '@/hooks/useAssessmentHistory';
@@ -14,11 +14,16 @@ const PreviousAssessments = () => {
   const navigate = useNavigate();
   const { 
     user, 
-    assessments, 
+    assessments,
+    allAssessments,
     isLoading, 
-    isDeleting, 
+    isDeleting,
+    totalAssessments,
+    currentPage,
+    pageSize,
     fetchAssessments, 
-    handleDeleteAllAssessments 
+    handleDeleteAllAssessments,
+    handlePageChange
   } = useAssessmentHistory();
 
   // Tracking the timestamp of the last loaded assessments
@@ -69,7 +74,7 @@ const PreviousAssessments = () => {
           </Link>
           
           <div className="flex items-center gap-4">
-            {assessments.length > 0 && (
+            {allAssessments.length > 0 && (
               <>
                 <Button 
                   variant="outline" 
@@ -82,7 +87,8 @@ const PreviousAssessments = () => {
                 
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-slate-500">
-                    {assessments.length} assessment{assessments.length !== 1 ? 's' : ''}
+                    {totalAssessments} assessment{totalAssessments !== 1 ? 's' : ''} 
+                    {pageSize < totalAssessments ? ` (showing ${pageSize} per page)` : ''}
                   </span>
                   
                   <DeleteAllAssessmentsDialog 
@@ -97,14 +103,23 @@ const PreviousAssessments = () => {
 
         <h1 className="text-3xl font-bold text-encourager mb-8">Your Previous Assessments</h1>
 
-        {assessments.length === 0 ? (
+        {allAssessments.length === 0 ? (
           <EmptyAssessmentsList isLoading={isLoading} />
         ) : (
           <>
-            <AssessmentsList assessments={assessments} />
+            <AssessmentsList 
+              assessments={assessments} 
+              currentPage={currentPage}
+              pageSize={pageSize}
+              totalAssessments={totalAssessments}
+              onPageChange={handlePageChange}
+            />
+            
             {lastRefreshed && (
               <p className="mt-4 text-xs text-slate-400 text-right">
                 Last updated: {new Date(lastRefreshed).toLocaleTimeString()}
+                {' | '}
+                Showing page {currentPage} of {Math.ceil(totalAssessments / pageSize)}
               </p>
             )}
           </>

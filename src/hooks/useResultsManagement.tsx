@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { saveAssessmentResults, getLatestAssessmentResults } from '@/services/assessmentService';
@@ -21,6 +21,30 @@ export const useResultsManagement = (
   // Add a flag to track if results have been saved in the current session
   // This prevents multiple saves when viewing the results page multiple times
   const resultsSavedRef = useRef(false);
+  
+  // Track the last save time to prevent rapid repeated saves
+  const lastSaveTimeRef = useRef<number | null>(null);
+  const SAVE_COOLDOWN_MS = 5000; // 5 seconds cooldown between saves
+  
+  // Reset the saved flag when categories or demographics change
+  useEffect(() => {
+    if (categories && categories.length > 0) {
+      // Only reset if we have actual categories with data
+      const hasRatings = categories.some(cat => 
+        cat.skills && cat.skills.some(skill => 
+          skill.ratings && (
+            typeof skill.ratings.current === 'number' || 
+            typeof skill.ratings.desired === 'number'
+          )
+        )
+      );
+      
+      if (hasRatings) {
+        console.log('Categories/demographics changed, resetting saved flag');
+        resultsSavedRef.current = false;
+      }
+    }
+  }, [categories, demographics]);
 
   // Results management functions
   const handleSaveResults = async () => {
@@ -29,6 +53,16 @@ export const useResultsManagement = (
       console.log('Results already saved in this session, skipping');
       return;
     }
+    
+    // Check if we're within the cooldown period
+    const now = Date.now();
+    if (lastSaveTimeRef.current && (now - lastSaveTimeRef.current < SAVE_COOLDOWN_MS)) {
+      console.log(`Save attempted too soon (within ${SAVE_COOLDOWN_MS}ms cooldown), skipping`);
+      return;
+    }
+    
+    // Update the last save time
+    lastSaveTimeRef.current = now;
 
     if (!user) {
       setShowAuthForm(true);
@@ -75,6 +109,9 @@ export const useResultsManagement = (
           title: "Previous results loaded",
           description: "Your most recent assessment results have been loaded.",
         });
+        
+        // Since we loaded existing results, mark them as already saved
+        resultsSavedRef.current = true;
       } else {
         toast({
           title: "No previous results found",

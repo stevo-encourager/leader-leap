@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Demographics } from '../utils/assessmentTypes';
 import { Json } from '@/integrations/supabase/types';
@@ -32,8 +33,50 @@ export const saveAssessmentResults = async (categories: Category[], demographics
       return { success: false, error: 'No valid ratings found in assessment data' };
     }
     
-    // First, check if the user has an in-progress assessment (not completed)
-    // and update it rather than creating a new one
+    // Get the current date in YYYY-MM-DD format to check for existing assessments today
+    const today = new Date().toISOString().split('T')[0];
+    const startOfDay = today + 'T00:00:00Z';
+    const endOfDay = today + 'T23:59:59Z';
+    
+    console.log(`Checking for assessments between ${startOfDay} and ${endOfDay}`);
+    
+    // Check if the user already has an assessment from today
+    const { data: todaysAssessments, error: checkError } = await supabase
+      .from('assessment_results')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('completed', true)
+      .gte('created_at', startOfDay)
+      .lte('created_at', endOfDay);
+      
+    if (checkError) {
+      console.error('Error checking today\'s assessments:', checkError);
+      return { success: false, error: checkError.message };
+    }
+    
+    // If there's already an assessment from today, update it instead of creating a new one
+    if (todaysAssessments && todaysAssessments.length > 0) {
+      console.log('Updating today\'s existing assessment:', todaysAssessments[0].id);
+      
+      const { data, error } = await supabase
+        .from('assessment_results')
+        .update({
+          categories: categories as unknown as Json,
+          demographics: demographics as unknown as Json,
+          // Don't update the created_at timestamp since we want to preserve the original date
+        })
+        .eq('id', todaysAssessments[0].id)
+        .select();
+        
+      if (error) {
+        console.error('Error updating today\'s assessment:', error);
+        return { success: false, error: error.message };
+      }
+      
+      return { success: true, data };
+    }
+    
+    // If there's no assessment from today, check for any incomplete assessment
     const { data: incompleteAssessments, error: incompleteCheckError } = await supabase
       .from('assessment_results')
       .select('id')
@@ -45,6 +88,7 @@ export const saveAssessmentResults = async (categories: Category[], demographics
       return { success: false, error: incompleteCheckError.message };
     }
     
+    // If there's an incomplete assessment, update it
     if (incompleteAssessments && incompleteAssessments.length > 0) {
       console.log('Updating existing incomplete assessment:', incompleteAssessments[0].id);
       
@@ -66,7 +110,7 @@ export const saveAssessmentResults = async (categories: Category[], demographics
       return { success: true, data };
     }
     
-    // If there's no incomplete assessment, create a new one
+    // If there's no assessment from today and no incomplete assessment, create a new one
     console.log('Creating new assessment record');
     const { data, error } = await supabase
       .from('assessment_results')

@@ -2,13 +2,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { CircleGauge, ArrowLeft, Filter } from 'lucide-react';
+import { CircleGauge, ArrowLeft } from 'lucide-react';
 import Navigation from '@/components/layout/Navigation';
 import Footer from '@/components/layout/Footer';
 import { useAssessmentHistory } from '@/hooks/useAssessmentHistory';
 import AssessmentsList from '@/components/previous-assessments/AssessmentsList';
 import EmptyAssessmentsList from '@/components/previous-assessments/EmptyAssessmentsList';
 import DeleteAllAssessmentsDialog from '@/components/previous-assessments/DeleteAllAssessmentsDialog';
+import { toast } from '@/hooks/use-toast';
 
 const PreviousAssessments = () => {
   const navigate = useNavigate();
@@ -45,6 +46,10 @@ const PreviousAssessments = () => {
   const handleRefresh = () => {
     fetchAssessments();
     setLastRefreshed(new Date().toISOString());
+    toast({
+      title: "Assessment list refreshed",
+      description: "Showing latest assessments with duplicates grouped by day"
+    });
   };
 
   // Show loading state while fetching data
@@ -87,8 +92,7 @@ const PreviousAssessments = () => {
                 
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-slate-500">
-                    {totalAssessments} assessment{totalAssessments !== 1 ? 's' : ''} 
-                    {pageSize < totalAssessments ? ` (showing ${pageSize} per page)` : ''}
+                    Showing assessments grouped by day
                   </span>
                   
                   <DeleteAllAssessmentsDialog 
@@ -107,6 +111,13 @@ const PreviousAssessments = () => {
           <EmptyAssessmentsList isLoading={isLoading} />
         ) : (
           <>
+            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-6">
+              <p className="text-sm text-yellow-800">
+                <strong>Note:</strong> To simplify your assessment history, we're now showing only one assessment per day (the most recent one). 
+                If you completed multiple assessments on the same day, only the latest will be displayed.
+              </p>
+            </div>
+            
             <AssessmentsList 
               assessments={assessments} 
               currentPage={currentPage}

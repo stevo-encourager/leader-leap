@@ -25,6 +25,9 @@ export const useResultsManagement = (
   // This prevents multiple saves when viewing the results page multiple times
   const resultsSavedRef = useRef(false);
   
+  // Add a tracker to store the date when we last saved an assessment
+  const lastSavedDateRef = useRef<string | null>(null);
+  
   // Reset the saved flag when categories or demographics change
   useEffect(() => {
     if (categories && categories.length > 0) {
@@ -58,6 +61,12 @@ export const useResultsManagement = (
       return;
     }
     
+    // Check if we already saved an assessment today
+    const today = new Date().toISOString().split('T')[0];
+    if (lastSavedDateRef.current === today) {
+      console.log('Already saved an assessment today, updating instead of creating a new one');
+    }
+    
     console.log("Saving assessment results with categories:", categories);
     
     const result = await saveAssessmentResults(categories, demographics);
@@ -65,6 +74,9 @@ export const useResultsManagement = (
     if (result.success) {
       // Mark as saved for this session
       resultsSavedRef.current = true;
+      
+      // Store today's date as the last saved date
+      lastSavedDateRef.current = today;
       
       // Store the assessment ID to track which assessment we're viewing
       if (result.data && result.data.length > 0) {
@@ -103,6 +115,11 @@ export const useResultsManagement = (
         if (result.data.id) {
           currentAssessmentIdRef.current = result.data.id;
           console.log('Loaded assessment with ID:', currentAssessmentIdRef.current);
+          
+          // Also set the last saved date
+          if (result.data.created_at) {
+            lastSavedDateRef.current = new Date(result.data.created_at).toISOString().split('T')[0];
+          }
         }
         
         navigate('/results');

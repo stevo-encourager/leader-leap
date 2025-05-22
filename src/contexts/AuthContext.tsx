@@ -16,8 +16,10 @@ interface AuthContextType {
   signOut: () => Promise<void>;
 }
 
+// Create the context with an undefined default value
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Export the provider component
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -218,6 +220,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   );
 };
 
+// Export the hook with proper error handling
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {

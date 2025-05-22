@@ -29,7 +29,7 @@ export const usePreviousResults = (
       if (!user) {
         const localData = getLocalAssessmentData();
         
-        if (localData && localData.categories && localData.categories.length > 0) {
+        if (localData && localData.categories && Array.isArray(localData.categories) && localData.categories.length > 0) {
           console.log('No user authenticated, loading from local storage:', 
             JSON.stringify({
               categoriesCount: localData.categories.length,
@@ -91,7 +91,7 @@ export const usePreviousResults = (
         // No results in database, try local storage as fallback for authenticated users
         const localData = getLocalAssessmentData();
         
-        if (localData && localData.categories && localData.categories.length > 0) {
+        if (localData && localData.categories && Array.isArray(localData.categories) && localData.categories.length > 0) {
           console.log('No database results found, loading from local storage as fallback');
           
           setCategories(localData.categories);

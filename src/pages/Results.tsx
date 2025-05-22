@@ -12,18 +12,22 @@ import { useSpecificAssessment } from '@/hooks/useSpecificAssessment';
 import { useAssessmentData } from '@/hooks/useAssessmentData';
 import AssessmentLoading from '@/components/assessment/AssessmentLoading';
 import InvalidResultsMessage from '@/components/assessment/InvalidResultsMessage';
+import { getLocalAssessmentData } from '@/services/assessment/manageAssessmentHistory';
 
 const Results = () => {
   const navigate = useNavigate();
   const { id: assessmentId } = useParams();
   const { user, loading } = useAuth();
   const saveTriggeredRef = useRef(false);
+  const localDataLoadedRef = useRef(false);
   
   const {
     currentStep,
     categories,
     demographics,
     showAuthForm,
+    handleCategoriesUpdate,
+    handleDemographicsUpdate,
     handleCloseAuthForm,
     handleShowSignupForm,
     handleStartAssessment,
@@ -50,6 +54,22 @@ const Results = () => {
       }
     } else {
       console.warn("Results page - Categories array is empty or undefined");
+      
+      // CRITICAL FIX: If categories is empty, try to load from local storage
+      if (!localDataLoadedRef.current) {
+        console.log("Results page - Trying to load from local storage");
+        const localData = getLocalAssessmentData();
+        if (localData && localData.categories && localData.categories.length > 0) {
+          console.log("Results page - Found local assessment data, using that");
+          handleCategoriesUpdate(localData.categories);
+          if (localData.demographics) {
+            handleDemographicsUpdate(localData.demographics);
+          }
+          localDataLoadedRef.current = true;
+        } else {
+          console.warn("Results page - No local assessment data found");
+        }
+      }
     }
     
     // Try to diagnose why categories might be empty
@@ -61,7 +81,7 @@ const Results = () => {
         console.log("Results page - First render detected, will trigger save/load");
       }
     }
-  }, [currentStep, categories, demographics, assessmentId, user]);
+  }, [currentStep, categories, demographics, assessmentId, user, handleCategoriesUpdate, handleDemographicsUpdate]);
 
   // Load specific assessment if ID is provided
   const {
@@ -167,10 +187,28 @@ const Results = () => {
         }, 100);
       } else {
         console.error('Results page - Cannot save assessment: categories is empty or invalid');
-        console.log('Results page - Categories value:', categories);
+        
+        // CRITICAL FIX: Try one more time to load from local storage
+        const localData = getLocalAssessmentData();
+        if (localData && localData.categories && localData.categories.length > 0) {
+          console.log('Results page - Found local assessment data, using that before save');
+          handleCategoriesUpdate(localData.categories);
+          if (localData.demographics) {
+            handleDemographicsUpdate(localData.demographics);
+          }
+          
+          // Try saving after a short delay
+          setTimeout(() => {
+            saveTriggeredRef.current = true;
+            handleSaveResults();
+          }, 200);
+        } else {
+          console.log('Results page - No local data available, cannot save');
+          console.log('Results page - Categories value:', categories);
+        }
       }
     }
-  }, [user, currentStep, assessmentId, categories, handleSaveResults]);
+  }, [user, currentStep, assessmentId, categories, handleSaveResults, handleCategoriesUpdate, handleDemographicsUpdate]);
 
   // Wait for auth and data to initialize before rendering
   if (loading || isAssessmentDataLoading) {
@@ -206,14 +244,24 @@ const Results = () => {
   const hasValidData = (assessmentId && specificAssessmentData && specificAssessmentData.categories.length > 0) || 
                       (!assessmentId && categories && categories.length > 0);
   
-  // If no valid assessment data is available
+  // CRITICAL FIX: Check local storage as last resort
+  let localData = null;
   if (!hasValidData) {
+    localData = getLocalAssessmentData();
+    if (localData && localData.categories && localData.categories.length > 0) {
+      console.log("Results page - Using local assessment data as fallback");
+    }
+  }
+  
+  // If no valid assessment data is available even after checking local storage
+  if (!hasValidData && (!localData || !localData.categories || localData.categories.length === 0)) {
     console.error("Results page - No valid assessment data available:", {
       assessmentId,
       hasSpecificData: Boolean(specificAssessmentData),
       specificDataLength: specificAssessmentData?.categories?.length || 0,
       hasCategories: Boolean(categories && categories.length > 0),
-      categoriesLength: categories?.length || 0
+      categoriesLength: categories?.length || 0,
+      localDataAvailable: Boolean(localData),
     });
     
     return (
@@ -237,9 +285,18 @@ const Results = () => {
     );
   }
 
+  // If we need to use local data instead of context data
+  const finalDisplayCategories = displayCategories && displayCategories.length > 0 
+    ? displayCategories 
+    : localData ? localData.categories : [];
+    
+  const finalDisplayDemographics = Object.keys(displayDemographics || {}).length > 0
+    ? displayDemographics
+    : localData && localData.demographics ? localData.demographics : {};
+
   // If assessment data is valid, render the results
   console.log("Results page - Rendering ResultsDisplay with valid data");
-  console.log("Results page - displayCategories count:", displayCategories.length);
+  console.log("Results page - finalDisplayCategories count:", finalDisplayCategories.length);
   
   return (
     <div className="min-h-screen bg-slate-50">
@@ -258,8 +315,8 @@ const Results = () => {
         {/* Results content */}
         {!showAuthForm && (
           <ResultsDisplay
-            categories={displayCategories}
-            demographics={displayDemographics}
+            categories={finalDisplayCategories}
+            demographics={finalDisplayDemographics}
             onRestart={() => {
               handleStartAssessment();
               navigate('/assessment');

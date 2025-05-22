@@ -1,229 +1,235 @@
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Category, Demographics } from '@/utils/assessmentTypes';
+import { getLocalAssessmentData } from '@/services/assessment/manageAssessmentHistory';
 
-interface UseAssessmentDataReturn {
-  displayCategories: Category[];
-  displayDemographics: Demographics;
-  isAssessmentDataValid: boolean;
-  isAssessmentDataLoading: boolean;
-  debugData?: any; // Add debug data
-}
-
-/**
- * Hook to manage assessment data display
- * Handles both specific assessment data (from ID) or current assessment data
- */
 export const useAssessmentData = (
   assessmentId: string | undefined,
-  specificAssessmentData: { categories: Category[], demographics: Demographics } | null,
-  loadingSpecificData: boolean,
-  currentCategories?: Category[],
-  currentDemographics?: Demographics
-): UseAssessmentDataReturn => {
-  const [isAssessmentDataValid, setIsAssessmentDataValid] = useState(false);
-  const [processedCategories, setProcessedCategories] = useState<Category[]>([]);
-  const [processedDemographics, setProcessedDemographics] = useState<Demographics>({});
+  specificAssessment: any,
+  loadingSpecificAssessment: boolean,
+  contextCategories: Category[],
+  contextDemographics: Demographics
+) => {
+  const [displayCategories, setDisplayCategories] = useState<Category[]>([]);
+  const [displayDemographics, setDisplayDemographics] = useState<Demographics>({});
+  const [isAssessmentDataValid, setIsAssessmentDataValid] = useState<boolean>(false);
+  const [isAssessmentDataLoading, setIsAssessmentDataLoading] = useState<boolean>(true);
   const [debugData, setDebugData] = useState<any>(null);
-  
-  useEffect(() => {
-    const debugInfo: any = {
-      initData: {
-        hasAssessmentId: !!assessmentId,
-        hasSpecificData: !!specificAssessmentData,
-        specificDataCategories: specificAssessmentData?.categories ? {
-          type: typeof specificAssessmentData.categories,
-          isArray: Array.isArray(specificAssessmentData.categories),
-          length: specificAssessmentData.categories?.length || 0
-        } : null,
-        currentCategoriesLength: currentCategories?.length || 0,
-        loadingSpecificData
-      }
-    };
-    
-    console.log("useAssessmentData - INIT called with:", debugInfo.initData);
-    setDebugData(debugInfo);
-  }, []);
-  
-  // Determine which categories and demographics to use
-  const rawCategories = assessmentId && specificAssessmentData 
-    ? specificAssessmentData.categories 
-    : currentCategories || [];
-    
-  const rawDemographics = assessmentId && specificAssessmentData 
-    ? specificAssessmentData.demographics 
-    : currentDemographics || {};
 
-  // Process and validate categories
+  // Process the raw categories data to ensure it's valid
   useEffect(() => {
-    const debugInfo: any = {
-      rawData: {
-        categoriesLength: rawCategories?.length || 0,
-        isArray: Array.isArray(rawCategories),
-        firstCategoryTitle: rawCategories && rawCategories[0]?.title,
-        rawCategories: rawCategories ? JSON.parse(JSON.stringify(rawCategories)) : null,
-        rawDemographics: rawDemographics ? { ...rawDemographics } : null
-      }
+    // Start by setting loading state
+    setIsAssessmentDataLoading(true);
+    
+    // Prepare debug info object
+    const debug: any = {
+      timestamp: new Date().toISOString(),
+      assessmentId: assessmentId || 'none',
+      isSpecificAssessment: !!assessmentId,
+      isLoadingSpecificData: loadingSpecificAssessment,
+      specificDataAvailable: !!specificAssessment,
+      contextCategoriesAvailable: Array.isArray(contextCategories) && contextCategories.length > 0,
+      contextCategoriesCount: Array.isArray(contextCategories) ? contextCategories.length : 0,
+      dataSource: null
     };
     
-    console.log("useAssessmentData - Processing raw categories:", {
-      categoriesLength: rawCategories?.length || 0,
-      isArray: Array.isArray(rawCategories),
-      firstCategoryTitle: rawCategories && rawCategories[0]?.title
-    });
-    
-    if (rawDemographics) {
-      console.log("useAssessmentData - Raw demographics:", rawDemographics);
-      setProcessedDemographics(rawDemographics);
-    }
-    
-    // Ensure categories is an array
-    if (!rawCategories || !Array.isArray(rawCategories)) {
-      console.warn("useAssessmentData - Categories is not an array:", rawCategories);
-      setIsAssessmentDataValid(false);
-      setProcessedCategories([]);
-      debugInfo.error = "Categories is not an array";
-      setDebugData(debugInfo);
-      return;
-    }
-    
-    // Count initial ratings to see if we have any data
-    const initialRatingsCount = rawCategories.reduce((total, category) => {
-      if (!category || !category.skills) return total;
+    try {
+      let sourcedCategories: Category[] = [];
+      let sourcedDemographics: Demographics = {};
       
-      return total + category.skills.reduce((skillTotal, skill) => {
-        if (!skill || !skill.ratings) return skillTotal;
+      // Determine the source of our data
+      if (assessmentId && specificAssessment && specificAssessment.categories) {
+        // Case 1: Viewing a specific saved assessment
+        console.log("useAssessmentData - Using specific assessment data");
+        debug.dataSource = "specific_assessment";
         
-        const hasCurrentRating = typeof skill.ratings.current === 'number' && !isNaN(skill.ratings.current) && skill.ratings.current > 0;
-        const hasDesiredRating = typeof skill.ratings.desired === 'number' && !isNaN(skill.ratings.desired) && skill.ratings.desired > 0;
-        
-        return skillTotal + (hasCurrentRating ? 1 : 0) + (hasDesiredRating ? 1 : 0);
-      }, 0);
-    }, 0);
-    
-    debugInfo.initialRatingsCount = initialRatingsCount;
-    console.log(`useAssessmentData - Initial ratings count: ${initialRatingsCount}`);
-    
-    // Process categories
-    const processed = rawCategories
-      .filter(category => category && typeof category === 'object')
-      .map(category => {
-        // Ensure category has required fields
-        const processedCategory: Category = {
-          id: category.id || `category-${Math.random().toString(36).substring(2, 9)}`,
-          title: category.title || 'Unknown Category',
-          description: category.description || '',
-          skills: []
-        };
-        
-        // Process skills if they exist
-        if (category.skills && Array.isArray(category.skills)) {
-          processedCategory.skills = category.skills
-            .filter(skill => skill && typeof skill === 'object')
-            .map(skill => {
-              // Create a correctly formatted skill
-              const processedSkill = {
-                id: skill.id || `skill-${Math.random().toString(36).substring(2, 9)}`,
-                name: skill.name || 'Unknown Skill',
-                description: skill.description || '',
-                ratings: {
-                  current: 0,
-                  desired: 0
-                }
-              };
-              
-              // Process ratings
-              if (skill.ratings) {
-                // Parse ratings as numbers with fallback to 0
-                let current = 0;
-                let desired = 0;
-                
-                if (typeof skill.ratings.current === 'number') {
-                  current = skill.ratings.current;
-                  current = isNaN(current) ? 0 : current;
-                } else if (skill.ratings.current !== undefined && skill.ratings.current !== null) {
-                  try {
-                    current = parseFloat(String(skill.ratings.current));
-                    current = isNaN(current) ? 0 : current;
-                  } catch (e) {
-                    console.warn(`useAssessmentData - Error parsing current rating for ${skill.name}:`, e);
-                  }
-                }
-                
-                if (typeof skill.ratings.desired === 'number') {
-                  desired = skill.ratings.desired;
-                  desired = isNaN(desired) ? 0 : desired;
-                } else if (skill.ratings.desired !== undefined && skill.ratings.desired !== null) {
-                  try {
-                    desired = parseFloat(String(skill.ratings.desired));
-                    desired = isNaN(desired) ? 0 : desired;
-                  } catch (e) {
-                    console.warn(`useAssessmentData - Error parsing desired rating for ${skill.name}:`, e);
-                  }
-                }
-                
-                processedSkill.ratings.current = current;
-                processedSkill.ratings.desired = desired;
-                
-                console.log(`useAssessmentData - Processed skill: ${skill.name}, current=${current}, desired=${desired}`);
-              }
-              
-              return processedSkill;
-            })
-            .filter(skill => skill.ratings.current > 0 || skill.ratings.desired > 0);
+        // Ensure categories is an array
+        if (Array.isArray(specificAssessment.categories)) {
+          sourcedCategories = specificAssessment.categories;
+        } else if (typeof specificAssessment.categories === 'object') {
+          console.log("useAssessmentData - Converting specific assessment categories from object to array");
+          sourcedCategories = Object.values(specificAssessment.categories);
+          debug.categoriesConvertedFromObject = true;
         }
         
-        return processedCategory;
-      })
-      .filter(category => category.skills && category.skills.length > 0);
-    
-    // Count final processed ratings
-    const finalRatingsCount = processed.reduce((total, category) => {
-      if (!category || !category.skills) return total;
+        // Demographics
+        if (specificAssessment.demographics) {
+          sourcedDemographics = specificAssessment.demographics;
+        }
+        
+      } else if (!assessmentId && contextCategories && contextCategories.length > 0) {
+        // Case 2: Using categories from current context (just completed assessment)
+        console.log("useAssessmentData - Using categories from context");
+        debug.dataSource = "context_assessment";
+        sourcedCategories = contextCategories;
+        sourcedDemographics = contextDemographics || {};
+      } else {
+        // Case 3: Try to get from local storage as fallback
+        console.log("useAssessmentData - Trying to load from local storage");
+        const localData = getLocalAssessmentData();
+        if (localData && localData.categories && localData.categories.length > 0) {
+          console.log("useAssessmentData - Using data from local storage");
+          debug.dataSource = "local_storage";
+          sourcedCategories = localData.categories;
+          sourcedDemographics = localData.demographics || {};
+        } else {
+          console.warn("useAssessmentData - No valid data source available");
+          debug.dataSource = "none";
+        }
+      }
       
-      return total + category.skills.reduce((skillTotal, skill) => {
-        if (!skill || !skill.ratings) return skillTotal;
+      // Log the raw categories from the selected source
+      console.log("useAssessmentData - Processing raw categories:", {
+        categoriesLength: sourcedCategories?.length || 0,
+        isArray: Array.isArray(sourcedCategories),
+        firstCategoryTitle: sourcedCategories && sourcedCategories.length > 0 ? sourcedCategories[0]?.title : 'none'
+      });
+      
+      console.log("useAssessmentData - Raw demographics:", sourcedDemographics);
+      
+      // Count initial ratings for debugging
+      let ratingsCount = 0;
+      if (Array.isArray(sourcedCategories)) {
+        sourcedCategories.forEach(cat => {
+          if (cat && cat.skills && Array.isArray(cat.skills)) {
+            cat.skills.forEach(skill => {
+              if (skill && skill.ratings) {
+                if (typeof skill.ratings.current === 'number' && skill.ratings.current > 0) ratingsCount++;
+                if (typeof skill.ratings.desired === 'number' && skill.ratings.desired > 0) ratingsCount++;
+              }
+            });
+          }
+        });
+      }
+      console.log("useAssessmentData - Initial ratings count:", ratingsCount);
+      debug.initialRatingsCount = ratingsCount;
+      
+      // Process and validate the data
+      if (Array.isArray(sourcedCategories) && sourcedCategories.length > 0) {
+        // Deep clone to avoid any reference issues
+        const processedCategories = JSON.parse(JSON.stringify(sourcedCategories));
         
-        const hasCurrentRating = typeof skill.ratings.current === 'number' && !isNaN(skill.ratings.current) && skill.ratings.current > 0;
-        const hasDesiredRating = typeof skill.ratings.desired === 'number' && !isNaN(skill.ratings.desired) && skill.ratings.desired > 0;
+        // Clean and normalize the categories and skills
+        const cleanedCategories = processedCategories
+          .filter((category: any) => category && typeof category === 'object')
+          .map((category: any) => {
+            // Ensure category has all required fields
+            const validCategory: Category = {
+              id: category.id || `category-${Math.random().toString(36).substring(2, 9)}`,
+              title: category.title || 'Unknown Category',
+              description: category.description || '',
+              skills: []
+            };
+            
+            // Process skills if they exist
+            if (category.skills && Array.isArray(category.skills)) {
+              validCategory.skills = category.skills
+                .filter((skill: any) => skill && typeof skill === 'object')
+                .map((skill: any) => {
+                  // Process skill data
+                  const processedSkill = {
+                    id: skill.id || `skill-${Math.random().toString(36).substring(2, 9)}`,
+                    name: skill.name || skill.competency || 'Unnamed Skill',
+                    description: skill.description || '',
+                    ratings: {
+                      current: 0,
+                      desired: 0
+                    }
+                  };
+                  
+                  // Process ratings
+                  if (skill.ratings) {
+                    // Handle current rating
+                    if (typeof skill.ratings.current === 'number') {
+                      processedSkill.ratings.current = skill.ratings.current;
+                    } else if (skill.ratings.current !== undefined && skill.ratings.current !== null) {
+                      try {
+                        const parsedCurrent = parseFloat(String(skill.ratings.current));
+                        processedSkill.ratings.current = isNaN(parsedCurrent) ? 0 : parsedCurrent;
+                      } catch (e) {
+                        console.warn(`useAssessmentData - Error parsing current rating for ${skill.name}:`, e);
+                      }
+                    }
+                    
+                    // Handle desired rating
+                    if (typeof skill.ratings.desired === 'number') {
+                      processedSkill.ratings.desired = skill.ratings.desired;
+                    } else if (skill.ratings.desired !== undefined && skill.ratings.desired !== null) {
+                      try {
+                        const parsedDesired = parseFloat(String(skill.ratings.desired));
+                        processedSkill.ratings.desired = isNaN(parsedDesired) ? 0 : parsedDesired;
+                      } catch (e) {
+                        console.warn(`useAssessmentData - Error parsing desired rating for ${skill.name}:`, e);
+                      }
+                    }
+                    
+                    console.log(`useAssessmentData - Processed skill: ${processedSkill.name}, current=${processedSkill.ratings.current}, desired=${processedSkill.ratings.desired}`);
+                  }
+                  
+                  return processedSkill;
+                });
+            }
+            
+            return validCategory;
+          });
         
-        return skillTotal + (hasCurrentRating ? 1 : 0) + (hasDesiredRating ? 1 : 0);
-      }, 0);
-    }, 0);
-    
-    debugInfo.finalRatingsCount = finalRatingsCount;
-    debugInfo.processedResult = {
-      length: processed.length,
-      totalSkills: processed.reduce((count, cat) => count + cat.skills.length, 0),
-      processedCategories: processed.length > 0 ? processed : null
-    };
-    
-    console.log("useAssessmentData - Processed categories result:", {
-      length: processed.length,
-      totalSkills: processed.reduce((count, cat) => count + cat.skills.length, 0),
-      finalRatingsCount
-    });
-    
-    setProcessedCategories(processed);
-    
-    // Check if we have any valid data
-    const hasValidData = processed.length > 0 && processed.some(category => 
-      category.skills && category.skills.some(skill => 
-        skill.ratings && (skill.ratings.current > 0 || skill.ratings.desired > 0)
-      )
-    );
-    
-    debugInfo.hasValidData = hasValidData;
-    console.log("useAssessmentData - Has valid data:", hasValidData);
-    setIsAssessmentDataValid(hasValidData);
-    setDebugData(debugInfo);
-  }, [rawCategories, rawDemographics]);
+        // Count processed ratings for debugging
+        let processedRatingsCount = 0;
+        cleanedCategories.forEach((cat: Category) => {
+          if (cat.skills) {
+            cat.skills.forEach(skill => {
+              if (skill.ratings) {
+                if (typeof skill.ratings.current === 'number' && skill.ratings.current > 0) processedRatingsCount++;
+                if (typeof skill.ratings.desired === 'number' && skill.ratings.desired > 0) processedRatingsCount++;
+              }
+            });
+          }
+        });
+        console.log("useAssessmentData - Processed ratings count:", processedRatingsCount);
+        debug.processedRatingsCount = processedRatingsCount;
+        
+        // Set the data and mark as valid
+        setDisplayCategories(cleanedCategories);
+        setDisplayDemographics(sourcedDemographics || {});
+        setIsAssessmentDataValid(cleanedCategories.length > 0);
+        
+        // Update debug data
+        debug.categoriesProcessed = cleanedCategories.length;
+        debug.valid = cleanedCategories.length > 0;
+      } else {
+        // No valid categories data
+        console.warn("useAssessmentData - No valid categories data found");
+        setDisplayCategories([]);
+        setIsAssessmentDataValid(false);
+        
+        // Update debug data
+        debug.valid = false;
+        debug.error = "No valid categories data found";
+      }
+    } catch (error) {
+      console.error("useAssessmentData - Error processing assessment data:", error);
+      setDisplayCategories([]);
+      setIsAssessmentDataValid(false);
+      
+      // Update debug data
+      debug.valid = false;
+      debug.error = `Error processing data: ${error}`;
+    } finally {
+      // Finish loading
+      setIsAssessmentDataLoading(false);
+      
+      // Update debug info
+      debug.finalCategoriesLength = displayCategories.length;
+      debug.isValid = isAssessmentDataValid;
+      setDebugData(debug);
+    }
+  }, [assessmentId, specificAssessment, loadingSpecificAssessment, contextCategories, contextDemographics]);
 
   return {
-    displayCategories: processedCategories,
-    displayDemographics: processedDemographics,
+    displayCategories,
+    displayDemographics,
     isAssessmentDataValid,
-    isAssessmentDataLoading: loadingSpecificData,
+    isAssessmentDataLoading,
     debugData
   };
 };

@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { useNavigationState } from './useNavigationState';
 import { Category, Demographics } from '@/utils/assessmentTypes';
@@ -7,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useState } from 'react';
 import { allCategories } from '@/utils/assessmentCategories';
 import { toast } from './use-toast';
+import { storeLocalAssessmentData, getLocalAssessmentData } from '@/services/assessment/manageAssessmentHistory';
 
 export const useAssessment = () => {
   const {
@@ -29,7 +29,19 @@ export const useAssessment = () => {
     if (!isInitialized && (!categories || categories.length === 0)) {
       console.log("useAssessment - Initializing with default categories");
       try {
-        // Deep clone the allCategories to avoid reference issues
+        // First check if we have locally stored assessment data
+        const localData = getLocalAssessmentData();
+        if (localData && localData.categories && localData.categories.length > 0) {
+          console.log("useAssessment - Found local assessment data, using that");
+          setCategories(localData.categories);
+          if (localData.demographics) {
+            setDemographics(localData.demographics);
+          }
+          setIsInitialized(true);
+          return;
+        }
+        
+        // Otherwise use default categories
         const defaultCategories = JSON.parse(JSON.stringify(allCategories));
         if (defaultCategories && defaultCategories.length > 0) {
           console.log(`useAssessment - Loaded ${defaultCategories.length} default categories`);
@@ -135,6 +147,10 @@ export const useAssessment = () => {
     if (skillsWithRatings === 0) {
       console.warn("wrappedHandleCompleteAssessment - No skills with ratings found");
     }
+    
+    // CRITICAL FIX: Store assessment data locally before changing page
+    storeLocalAssessmentData(categories, demographics);
+    console.log("wrappedHandleCompleteAssessment - Stored assessment data locally");
     
     // Call the original handler
     handleCompleteAssessment();

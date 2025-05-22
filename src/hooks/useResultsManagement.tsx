@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { saveAssessmentResults } from '@/services/assessment/saveAssessment';
+import { storeLocalAssessmentData, getLocalAssessmentData } from '@/services/assessment/manageAssessmentHistory';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { useAuthForm } from './useAuthForm';
@@ -82,6 +83,25 @@ export const useResultsManagement = (
     }
   }, [categories, demographics, resetSaveState]);
 
+  // CRITICAL FIX: Always store assessment data locally when completing the assessment
+  useEffect(() => {
+    if (categories && categories.length > 0) {
+      const hasRatings = categories.some(cat => 
+        cat && cat.skills && cat.skills.some(skill => 
+          skill && skill.ratings && (
+            typeof skill.ratings.current === 'number' && skill.ratings.current > 0 || 
+            typeof skill.ratings.desired === 'number' && skill.ratings.desired > 0
+          )
+        )
+      );
+      
+      if (hasRatings) {
+        console.log('useResultsManagement - Storing assessment data locally');
+        storeLocalAssessmentData(categories, demographics);
+      }
+    }
+  }, [categories, demographics]);
+
   // Results save function
   const handleSaveResults = async () => {
     // Prevent multiple simultaneous save operations
@@ -96,10 +116,38 @@ export const useResultsManagement = (
       return;
     }
 
+    // If user isn't authenticated, check for local data anyway
     if (!user) {
       console.log('User not authenticated, showing auth form');
+      
+      // CRITICAL FIX: Load data from local storage if available
+      const localData = getLocalAssessmentData();
+      if (localData && (!categories || categories.length === 0)) {
+        console.log('Found local assessment data, using that');
+        setCategories(localData.categories);
+        if (localData.demographics) {
+          setDemographics(localData.demographics);
+        }
+      }
+      
       setShowAuthForm(true);
       return;
+    }
+    
+    // CRITICAL FIX: Try to get local data if categories is empty
+    if (!categories || !Array.isArray(categories) || categories.length === 0) {
+      const localData = getLocalAssessmentData();
+      if (localData) {
+        console.log('handleSaveResults - Retrieving categories from local storage');
+        setCategories(localData.categories);
+        if (localData.demographics) {
+          setDemographics(localData.demographics);
+        }
+        
+        // Wait a bit for state to update before continuing
+        setTimeout(() => handleSaveResults(), 200);
+        return;
+      }
     }
     
     // Log the categories we're about to save

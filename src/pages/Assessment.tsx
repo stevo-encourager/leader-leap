@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CircleGauge } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,9 +10,12 @@ import Footer from '@/components/layout/Footer';
 import DemographicsForm from '@/components/DemographicsForm';
 import AssessmentForm from '@/components/AssessmentForm';
 import { useAssessment } from '@/hooks/useAssessment';
+import { toast } from '@/hooks/use-toast';
 
 const Assessment = () => {
   const navigate = useNavigate();
+  const [loadError, setLoadError] = useState<string | null>(null);
+  
   const {
     currentStep,
     categories,
@@ -29,15 +32,37 @@ const Assessment = () => {
   
   const { user, loading } = useAuth();
 
-  // Log categories data for debugging - moved OUTSIDE conditional rendering
-  // This ensures hooks are called in the same order on every render
+  // Log categories data for debugging and error detection
   useEffect(() => {
-    if (categories && Array.isArray(categories)) {
-      console.log("Assessment page - Categories:", categories);
-      console.log("Assessment page - Categories valid:", categories.length > 0);
-      if (categories.length > 0) {
-        console.log("Assessment page - First category:", categories[0]);
+    console.log("Assessment page - Categories:", categories);
+    
+    if (!categories || !Array.isArray(categories)) {
+      console.error("Assessment page - Categories is not an array:", categories);
+      setLoadError("Categories data is invalid or missing");
+      return;
+    }
+    
+    console.log("Assessment page - Categories valid:", categories.length > 0);
+    
+    if (categories.length === 0) {
+      console.error("Assessment page - Categories array is empty");
+      setLoadError("No assessment categories were loaded");
+      return;
+    }
+    
+    if (categories.length > 0) {
+      console.log("Assessment page - First category:", categories[0]);
+      
+      // Check if the first category has the expected properties
+      const firstCategory = categories[0];
+      if (!firstCategory.id || !firstCategory.title || !Array.isArray(firstCategory.skills)) {
+        console.error("Assessment page - First category has invalid format:", firstCategory);
+        setLoadError("Assessment categories have an invalid format");
+        return;
       }
+      
+      // Clear any previous error if categories data looks valid
+      setLoadError(null);
     }
   }, [categories]);
 
@@ -101,6 +126,9 @@ const Assessment = () => {
               <div className="p-6 bg-red-50 border border-red-200 rounded-md text-red-800">
                 <h3 className="font-bold mb-2">Error Loading Assessment</h3>
                 <p>There was a problem loading the assessment categories. Please try again.</p>
+                {loadError && (
+                  <p className="mt-2 text-sm font-medium">Error details: {loadError}</p>
+                )}
                 <button 
                   onClick={() => navigate('/')}
                   className="mt-4 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-800 rounded transition-colors"

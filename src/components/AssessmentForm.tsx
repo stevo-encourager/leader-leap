@@ -1,11 +1,11 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Category, Skill } from '@/utils/assessmentTypes';
 import LeadershipCategory from './LeadershipCategory';
-import { ArrowLeft, CircleGauge, Gauge, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, CircleGauge, Gauge, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { validateCategoriesData } from '@/utils/assessmentData';
 import {
   Dialog,
   DialogContent,
@@ -31,15 +31,28 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
 }) => {
   const [activeCategory, setActiveCategory] = useState<number>(0);
   const [showMidpointDialog, setShowMidpointDialog] = useState<boolean>(false);
+  const [dataValidationError, setDataValidationError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Debug log to see the categories
+  // Validate categories data on component mount
   useEffect(() => {
-    console.log("AssessmentForm - Current categories:", categories);
-    if (categories && categories.length > 0) {
-      console.log("First category skills:", categories[0]?.skills);
+    console.log("AssessmentForm - Validating categories data:", categories);
+    
+    if (!validateCategoriesData(categories)) {
+      setDataValidationError("Invalid assessment data structure");
+      toast({
+        title: "Data validation error",
+        description: "The assessment data has an invalid structure. Please contact support.",
+        variant: "destructive",
+      });
+      return;
     }
-  }, [categories]);
+    
+    if (categories && categories.length > 0) {
+      console.log("AssessmentForm - First category skills:", categories[0]?.skills);
+      setDataValidationError(null);
+    }
+  }, [categories, toast]);
 
   // Check if we should show the engagement message when active category changes
   useEffect(() => {
@@ -64,46 +77,55 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
       return;
     }
     
-    const updatedCategories = categories.map(category => {
-      if (!category) return category;
-      
-      if (category.id === categoryId) {
-        // Safety check for skills array
-        if (!category.skills || !Array.isArray(category.skills)) {
-          console.error(`AssessmentForm - handleSkillRating: category ${categoryId} has no skills array`);
-          return category;
-        }
+    try {
+      const updatedCategories = categories.map(category => {
+        if (!category) return category;
         
-        const updatedSkills = category.skills.map(skill => {
-          if (!skill) return skill;
-          
-          if (skill.id === skillId) {
-            return {
-              ...skill,
-              ratings: {
-                ...skill.ratings,
-                [type]: value
-              }
-            };
+        if (category.id === categoryId) {
+          // Safety check for skills array
+          if (!category.skills || !Array.isArray(category.skills)) {
+            console.error(`AssessmentForm - handleSkillRating: category ${categoryId} has no skills array`);
+            return category;
           }
-          return skill;
-        });
-        return {
-          ...category,
-          skills: updatedSkills
-        };
-      }
-      return category;
-    });
+          
+          const updatedSkills = category.skills.map(skill => {
+            if (!skill) return skill;
+            
+            if (skill.id === skillId) {
+              return {
+                ...skill,
+                ratings: {
+                  ...skill.ratings,
+                  [type]: value
+                }
+              };
+            }
+            return skill;
+          });
+          return {
+            ...category,
+            skills: updatedSkills
+          };
+        }
+        return category;
+      });
 
-    // Log the update to verify data changes
-    const updatedSkill = updatedCategories
-      .find(cat => cat?.id === categoryId)
-      ?.skills?.find(skill => skill?.id === skillId);
+      // Log the update to verify data changes
+      const updatedSkill = updatedCategories
+        .find(cat => cat?.id === categoryId)
+        ?.skills?.find(skill => skill?.id === skillId);
+        
+      console.log("Updated skill:", updatedSkill);
       
-    console.log("Updated skill:", updatedSkill);
-    
-    onCategoriesUpdate(updatedCategories);
+      onCategoriesUpdate(updatedCategories);
+    } catch (error) {
+      console.error("Error updating skill rating:", error);
+      toast({
+        title: "Error updating rating",
+        description: "An error occurred while updating the skill rating. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleNextCategory = () => {
@@ -125,6 +147,25 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
       onBack();
     }
   };
+  
+  // If we have a data validation error, show an error message
+  if (dataValidationError) {
+    return (
+      <div className="fade-in">
+        <div className="p-6 bg-red-50 border border-red-200 rounded-md text-red-800">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="text-red-500" />
+            <h3 className="font-bold">Data Validation Error</h3>
+          </div>
+          <p className="mt-2">{dataValidationError}</p>
+          <p className="mt-2 text-sm">Please return to the home page and try starting the assessment again.</p>
+          <Button onClick={onBack} variant="destructive" className="mt-4">
+            Go Back
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   // Add safety check for currentCategory
   if (!categories || !Array.isArray(categories) || categories.length === 0 || activeCategory >= categories.length) {
@@ -174,6 +215,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
   const currentCategoryCompleted = isCategoryCompleted(currentCategory);
   const progressPercentage = Math.round(((activeCategory + 1) / categories.length) * 100);
 
+  // Return the JSX form + UI
   return (
     <div className="fade-in">
       <div className="flex justify-between items-center mb-8">
@@ -222,14 +264,22 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
       <div className="flex justify-between mt-6">
         <Button 
           variant="outline" 
-          onClick={handlePrevCategory}
+          onClick={onBack}
           className="border-encourager hover:bg-encourager-lightgray hover:text-encourager"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           {isFirstCategory ? 'Back to Demographics' : 'Previous'}
         </Button>
         <Button
-          onClick={handleNextCategory}
+          onClick={isFirstCategory ? () => {
+            if (activeCategory < categories.length - 1) {
+              setActiveCategory(activeCategory + 1);
+              window.scrollTo(0, 0);
+            } else {
+              console.log("Completing assessment with categories:", categories);
+              onComplete();
+            }
+          } : onBack}
           className="bg-encourager hover:bg-encourager-light"
         >
           {isLastCategory ? 'View Results' : 'Next'}

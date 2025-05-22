@@ -29,6 +29,18 @@ const Assessment = () => {
   
   const { user, loading } = useAuth();
 
+  // Log categories data for debugging - moved OUTSIDE conditional rendering
+  // This ensures hooks are called in the same order on every render
+  useEffect(() => {
+    if (categories && Array.isArray(categories)) {
+      console.log("Assessment page - Categories:", categories);
+      console.log("Assessment page - Categories valid:", categories.length > 0);
+      if (categories.length > 0) {
+        console.log("Assessment page - First category:", categories[0]);
+      }
+    }
+  }, [categories]);
+
   // Wait for auth to initialize before rendering
   if (loading) {
     return (
@@ -43,15 +55,6 @@ const Assessment = () => {
 
   // Verify categories data before rendering assessment form
   const hasValidCategories = categories && Array.isArray(categories) && categories.length > 0;
-  
-  // Log categories data for debugging
-  useEffect(() => {
-    console.log("Assessment page - Categories:", categories);
-    console.log("Assessment page - Categories valid:", hasValidCategories);
-    if (hasValidCategories) {
-      console.log("Assessment page - First category:", categories[0]);
-    }
-  }, [categories, hasValidCategories]);
 
   return (
     <div className="min-h-screen bg-slate-50">

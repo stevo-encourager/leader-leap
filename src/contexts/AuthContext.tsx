@@ -22,72 +22,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [migrationAttempted, setMigrationAttempted] = useState(false);
 
   // Function to migrate local assessment data to the user's account
   const migrateLocalAssessmentData = async (currentUser: User) => {
     try {
-      // Skip if we've already attempted migration for this session
-      if (migrationAttempted) {
-        console.log('Migration already attempted this session, skipping');
-        return;
-      }
-      
       const localData = getLocalAssessmentData();
       
-      console.log('Checking for local data to migrate:', {
-        hasLocalData: !!localData,
-        categoriesCount: localData?.categories?.length || 0,
-        timestamp: localData?.timestamp || 'none'
-      });
-      
       if (!localData || !localData.categories || localData.categories.length === 0) {
-        console.log('No local assessment data found to migrate');
-        setMigrationAttempted(true);
+        console.log('No local assessment data to migrate');
         return;
       }
       
-      // Verify that the categories data contains valid ratings
-      const hasValidRatings = localData.categories.some(category => 
-        category && category.skills && Array.isArray(category.skills) &&
-        category.skills.some(skill => {
-          if (!skill || !skill.ratings) return false;
-          
-          const current = typeof skill.ratings.current === 'number' ? skill.ratings.current : 0;
-          const desired = typeof skill.ratings.desired === 'number' ? skill.ratings.desired : 0;
-          
-          return current > 0 || desired > 0;
-        })
-      );
-      
-      if (!hasValidRatings) {
-        console.warn('Local assessment data found but contains no valid ratings, skipping migration');
-        setMigrationAttempted(true);
-        return;
-      }
-      
-      console.log('Valid local assessment data found, migrating to user account:', currentUser.id);
-      
-      // Deep clone the data to avoid reference issues
-      const categoriesToMigrate = JSON.parse(JSON.stringify(localData.categories));
-      const demographicsToMigrate = localData.demographics || {};
-      
-      // Log a sample of what we're migrating
-      if (categoriesToMigrate.length > 0 && categoriesToMigrate[0].skills && categoriesToMigrate[0].skills.length > 0) {
-        console.log('First skill being migrated:', 
-          JSON.stringify({
-            category: categoriesToMigrate[0].title,
-            skill: categoriesToMigrate[0].skills[0].name,
-            ratings: categoriesToMigrate[0].skills[0].ratings
-          })
-        );
-      }
+      console.log('Migrating local assessment data to user account:', currentUser.id);
       
       // Save the local assessment data to the user's account
-      const result = await saveAssessmentResults(categoriesToMigrate, demographicsToMigrate);
+      const result = await saveAssessmentResults(localData.categories, localData.demographics || {});
       
       if (result.success) {
-        console.log('Successfully migrated local assessment data to user account:', result);
+        console.log('Successfully migrated local assessment data to user account');
         toast({
           title: "Assessment data migrated",
           description: "Your previous assessment results have been saved to your account.",
@@ -97,18 +49,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         clearLocalAssessmentData();
       } else {
         console.error('Failed to migrate local assessment data:', result.error);
-        toast({
-          title: "Migration issue",
-          description: "There was a problem saving your previous results to your account. Try clicking 'Load Previous Results'.",
-          variant: "destructive",
-        });
       }
-      
-      // Mark migration as attempted regardless of result to prevent multiple attempts
-      setMigrationAttempted(true);
     } catch (error) {
       console.error('Error migrating local assessment data:', error);
-      setMigrationAttempted(true);
     }
   };
 
@@ -116,14 +59,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
-        console.log(`Auth state changed: ${event}`, currentSession?.user?.id || 'no user');
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
         if (event === 'SIGNED_OUT') {
-          // Reset migration attempted flag on sign out
-          setMigrationAttempted(false);
-          
           toast({
             title: "Signed out",
             description: "You have been signed out successfully.",
@@ -167,14 +106,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     // THEN check for existing session
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      console.log('Initial session check:', currentSession?.user?.id || 'no session');
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
       setLoading(false);
       
       // If user is already authenticated, check for local data to migrate
       if (currentSession?.user) {
-        console.log('User already authenticated on page load, checking for data migration');
         migrateLocalAssessmentData(currentSession.user);
       }
     });

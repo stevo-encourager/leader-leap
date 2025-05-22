@@ -65,7 +65,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   // Enhanced validation for incoming data
   if (!categories || !Array.isArray(categories) || categories.length === 0) {
     console.warn("ResultsDisplay - Critical: Invalid categories data:", categories);
-    return <InvalidResultsMessage onRestart={onRestart} />;
+    return <InvalidResultsMessage onRestart={onRestart} onBack={onBack} errorType="missing-categories" />;
   }
 
   // Check for categories with skills
@@ -75,7 +75,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   
   if (categoriesWithSkills.length === 0) {
     console.warn("ResultsDisplay - Critical: No categories with skills found");
-    return <InvalidResultsMessage onRestart={onRestart} />;
+    return <InvalidResultsMessage onRestart={onRestart} onBack={onBack} errorType="missing-skills" />;
   }
 
   // Check if we have any valid ratings
@@ -90,7 +90,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   
   if (!hasValidRatings) {
     console.warn("ResultsDisplay - Critical: No valid ratings found in categories");
-    return <InvalidResultsMessage onRestart={onRestart} />;
+    return <InvalidResultsMessage onRestart={onRestart} onBack={onBack} errorType="invalid-format" />;
   }
 
   // If we've passed all validations, render the dashboard

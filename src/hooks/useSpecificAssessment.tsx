@@ -15,6 +15,7 @@ interface UseSpecificAssessmentReturn {
     categories: Category[], 
     demographics: Demographics 
   } | null;
+  error: string | null;
 }
 
 export const useSpecificAssessment = (assessmentId: string | undefined): UseSpecificAssessmentReturn => {
@@ -23,6 +24,7 @@ export const useSpecificAssessment = (assessmentId: string | undefined): UseSpec
     categories: Category[], 
     demographics: Demographics 
   } | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -35,6 +37,8 @@ export const useSpecificAssessment = (assessmentId: string | undefined): UseSpec
     
     const fetchSpecificAssessment = async () => {
       setLoadingSpecificAssessment(true);
+      setError(null);
+      
       try {
         const result = await getAssessmentById(assessmentId);
         console.log("useSpecificAssessment - Raw fetch result:", result);
@@ -49,7 +53,7 @@ export const useSpecificAssessment = (assessmentId: string | undefined): UseSpec
           // Validate and normalize categories
           const normalizedCategories = validateAndNormalizeCategories(rawCategoriesData);
           
-          if (normalizedCategories) {
+          if (normalizedCategories && normalizedCategories.length > 0) {
             console.log("useSpecificAssessment - Setting assessment data with valid categories");
             setSpecificAssessmentData({
               categories: normalizedCategories,
@@ -57,15 +61,15 @@ export const useSpecificAssessment = (assessmentId: string | undefined): UseSpec
             });
           } else {
             console.error("useSpecificAssessment - Failed to validate categories");
-            handleAssessmentDataError("invalid-format", navigate);
+            setError("invalid-format");
           }
         } else {
           console.error("useSpecificAssessment - Failed to fetch assessment:", result.error);
-          handleAssessmentDataError("fetch-error", navigate);
+          setError(result.error || "fetch-error");
         }
       } catch (error) {
         console.error("useSpecificAssessment - Error fetching specific assessment:", error);
-        handleAssessmentDataError("fetch-error", navigate);
+        setError("fetch-error");
       } finally {
         setLoadingSpecificAssessment(false);
       }
@@ -76,6 +80,7 @@ export const useSpecificAssessment = (assessmentId: string | undefined): UseSpec
 
   return {
     loadingSpecificAssessment,
-    specificAssessmentData
+    specificAssessmentData,
+    error
   };
 };

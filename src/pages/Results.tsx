@@ -11,7 +11,7 @@ import { useAssessment } from '@/hooks/useAssessment';
 import { useSpecificAssessment } from '@/hooks/useSpecificAssessment';
 import { useAssessmentData } from '@/hooks/useAssessmentData';
 import AssessmentLoading from '@/components/assessment/AssessmentLoading';
-import ErrorDisplay from '@/components/assessment/ErrorDisplay';
+import InvalidResultsMessage from '@/components/assessment/InvalidResultsMessage';
 
 const Results = () => {
   const navigate = useNavigate();
@@ -30,7 +30,8 @@ const Results = () => {
 
   const {
     loadingSpecificAssessment,
-    specificAssessmentData
+    specificAssessmentData,
+    error: specificAssessmentError
   } = useSpecificAssessment(assessmentId);
 
   // Use our updated hook to handle assessment data
@@ -53,29 +54,69 @@ const Results = () => {
   }
 
   // Error state for specific assessment ID
+  if (assessmentId && specificAssessmentError) {
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <div className="max-w-5xl mx-auto px-4 py-2">
+          <Navigation />
+        </div>
+        <main className="assessment-container max-w-5xl mx-auto px-4 py-8">
+          <UserHeader />
+          <InvalidResultsMessage 
+            onRestart={() => {
+              handleStartAssessment();
+              navigate('/assessment');
+            }}
+            onBack={() => navigate('/previous-assessments')}
+            errorType={specificAssessmentError}
+          />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Invalid assessment data (no error but data is invalid)
   if (assessmentId && !isAssessmentDataValid) {
     return (
-      <ErrorDisplay
-        title="Unable to load assessment results"
-        message="The assessment data could not be loaded or has an invalid format."
-        buttonText="Back to Previous Assessments"
-        onButtonClick={() => navigate('/previous-assessments')}
-      />
+      <div className="min-h-screen bg-slate-50">
+        <div className="max-w-5xl mx-auto px-4 py-2">
+          <Navigation />
+        </div>
+        <main className="assessment-container max-w-5xl mx-auto px-4 py-8">
+          <UserHeader />
+          <InvalidResultsMessage 
+            onRestart={() => {
+              handleStartAssessment();
+              navigate('/assessment');
+            }}
+            onBack={() => navigate('/previous-assessments')}
+            errorType="invalid-format"
+          />
+        </main>
+        <Footer />
+      </div>
     );
   }
 
   // No assessment results available
   if (!assessmentId && !isAssessmentDataValid) {
     return (
-      <ErrorDisplay
-        title="No Assessment Results Available"
-        message="It looks like you haven't completed an assessment yet or your results weren't saved."
-        buttonText="Start New Assessment"
-        onButtonClick={() => {
-          handleStartAssessment();
-          navigate('/assessment');
-        }}
-      />
+      <div className="min-h-screen bg-slate-50">
+        <div className="max-w-5xl mx-auto px-4 py-2">
+          <Navigation />
+        </div>
+        <main className="assessment-container max-w-5xl mx-auto px-4 py-8">
+          <UserHeader />
+          <InvalidResultsMessage 
+            onRestart={() => {
+              handleStartAssessment();
+              navigate('/assessment');
+            }}
+          />
+        </main>
+        <Footer />
+      </div>
     );
   }
 

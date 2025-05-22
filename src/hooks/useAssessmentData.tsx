@@ -38,10 +38,42 @@ export const useAssessmentData = (
     console.log("useAssessmentData - Display categories:", displayCategories);
     console.log("useAssessmentData - Display categories count:", displayCategories?.length || 0);
     
-    const isValid = isValidAssessmentResult(displayCategories);
-    console.log("useAssessmentData - Is assessment data valid:", isValid);
+    // More thorough validation
+    if (!displayCategories || !Array.isArray(displayCategories) || displayCategories.length === 0) {
+      console.log("useAssessmentData - Invalid category data (missing or empty array)");
+      setIsAssessmentDataValid(false);
+      return;
+    }
     
-    setIsAssessmentDataValid(isValid);
+    // Check if all categories have skills
+    const missingSkills = displayCategories.some(category => 
+      !category.skills || !Array.isArray(category.skills) || category.skills.length === 0
+    );
+    
+    if (missingSkills) {
+      console.log("useAssessmentData - Some categories are missing skills");
+      setIsAssessmentDataValid(false);
+      return;
+    }
+    
+    // Check if we have any valid ratings
+    const hasValidRatings = displayCategories.some(category => 
+      category.skills.some(skill => 
+        skill.ratings && (
+          (typeof skill.ratings.current === 'number' && skill.ratings.current > 0) || 
+          (typeof skill.ratings.desired === 'number' && skill.ratings.desired > 0)
+        )
+      )
+    );
+    
+    if (!hasValidRatings) {
+      console.log("useAssessmentData - No valid ratings found in categories");
+      setIsAssessmentDataValid(false);
+      return;
+    }
+    
+    console.log("useAssessmentData - Data validation passed, setting to valid");
+    setIsAssessmentDataValid(true);
   }, [displayCategories]);
 
   return {

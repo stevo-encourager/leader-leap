@@ -1,13 +1,16 @@
+
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { formatDate } from '@/lib/utils';
 import { Pagination } from '@/components/ui/pagination';
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
 
 interface AssessmentRecord {
   id: string;
   created_at: string;
+  hasValidData?: boolean;
 }
 
 interface AssessmentsListProps {
@@ -16,6 +19,7 @@ interface AssessmentsListProps {
   pageSize: number;
   totalAssessments: number;
   onPageChange: (page: number) => void;
+  validateAssessment?: (id: string) => Promise<boolean>;
 }
 
 // Helper function to group assessments by date (YYYY-MM-DD)
@@ -42,7 +46,8 @@ const AssessmentsList = ({
   currentPage,
   pageSize,
   totalAssessments,
-  onPageChange
+  onPageChange,
+  validateAssessment
 }: AssessmentsListProps) => {
   // Group assessments by date to show only one per day
   const uniqueAssessments = groupAssessmentsByDate(assessments);
@@ -82,14 +87,21 @@ const AssessmentsList = ({
                   {assessment.id}
                 </TableCell>
                 <TableCell className="text-right">
-                  <Link to={`/results/${assessment.id}`}>
-                    <Button 
-                      size="sm" 
-                      className="bg-encourager hover:bg-encourager-light"
-                    >
-                      View Results
-                    </Button>
-                  </Link>
+                  {assessment.hasValidData === false ? (
+                    <div className="flex items-center justify-end gap-2">
+                      <ExclamationTriangleIcon className="h-4 w-4 text-amber-500" />
+                      <span className="text-xs text-amber-600">Invalid data</span>
+                    </div>
+                  ) : (
+                    <Link to={`/results/${assessment.id}`}>
+                      <Button 
+                        size="sm" 
+                        className="bg-encourager hover:bg-encourager-light"
+                      >
+                        View Results
+                      </Button>
+                    </Link>
+                  )}
                 </TableCell>
               </TableRow>
             ))

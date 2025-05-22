@@ -37,24 +37,46 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
   useEffect(() => {
     console.log("AssessmentForm - Current categories:", categories);
     if (categories && categories.length > 0) {
-      console.log("First category skills:", categories[0].skills);
+      console.log("First category skills:", categories[0]?.skills);
     }
   }, [categories]);
 
   // Check if we should show the engagement message when active category changes
   useEffect(() => {
+    // Ensure categories is valid before calculating midpoint
+    if (!categories || categories.length === 0) {
+      console.error("AssessmentForm - No valid categories available");
+      return;
+    }
+    
     const midpoint = Math.floor(categories.length / 2);
     if (activeCategory === midpoint) {
       setShowMidpointDialog(true);
     }
-  }, [activeCategory, categories.length]);
+  }, [activeCategory, categories]);
 
   const handleSkillRating = (categoryId: string, skillId: string, type: 'current' | 'desired', value: number) => {
     console.log(`Updating skill rating: category=${categoryId}, skill=${skillId}, type=${type}, value=${value}`);
     
+    // Add safety check for categories
+    if (!categories || !Array.isArray(categories)) {
+      console.error("AssessmentForm - handleSkillRating: categories is not an array");
+      return;
+    }
+    
     const updatedCategories = categories.map(category => {
+      if (!category) return category;
+      
       if (category.id === categoryId) {
+        // Safety check for skills array
+        if (!category.skills || !Array.isArray(category.skills)) {
+          console.error(`AssessmentForm - handleSkillRating: category ${categoryId} has no skills array`);
+          return category;
+        }
+        
         const updatedSkills = category.skills.map(skill => {
+          if (!skill) return skill;
+          
           if (skill.id === skillId) {
             return {
               ...skill,
@@ -76,8 +98,8 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
 
     // Log the update to verify data changes
     const updatedSkill = updatedCategories
-      .find(cat => cat.id === categoryId)
-      ?.skills.find(skill => skill.id === skillId);
+      .find(cat => cat?.id === categoryId)
+      ?.skills?.find(skill => skill?.id === skillId);
       
     console.log("Updated skill:", updatedSkill);
     
@@ -104,12 +126,45 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
     }
   };
 
+  // Add safety check for currentCategory
+  if (!categories || !Array.isArray(categories) || categories.length === 0 || activeCategory >= categories.length) {
+    console.error("AssessmentForm - Invalid categories or activeCategory out of bounds");
+    return (
+      <div className="p-6 bg-red-50 border border-red-200 rounded-md text-red-800">
+        <h3 className="font-bold mb-2">Error Loading Assessment</h3>
+        <p>There was a problem loading the assessment data. Please try again.</p>
+        <Button onClick={onBack} className="mt-4">Back</Button>
+      </div>
+    );
+  }
+
   const currentCategory = categories[activeCategory];
+  
+  // Add additional safety check for currentCategory
+  if (!currentCategory) {
+    console.error("AssessmentForm - currentCategory is undefined");
+    return (
+      <div className="p-6 bg-red-50 border border-red-200 rounded-md text-red-800">
+        <h3 className="font-bold mb-2">Error Loading Category</h3>
+        <p>There was a problem loading this category. Please try again.</p>
+        <Button onClick={onBack} className="mt-4">Back</Button>
+      </div>
+    );
+  }
+  
   const isLastCategory = activeCategory === categories.length - 1;
   const isFirstCategory = activeCategory === 0;
 
   const isCategoryCompleted = (category: Category): boolean => {
+    // Add safety check for skills
+    if (!category || !category.skills || !Array.isArray(category.skills)) {
+      console.warn(`isCategoryCompleted: Category ${category?.title || 'unknown'} has invalid skills`);
+      return false;
+    }
+    
     return category.skills.every(skill => 
+      skill && 
+      skill.ratings &&
       typeof skill.ratings.current === 'number' && 
       typeof skill.ratings.desired === 'number'
     );

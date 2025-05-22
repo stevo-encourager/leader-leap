@@ -41,6 +41,18 @@ const Assessment = () => {
     );
   }
 
+  // Verify categories data before rendering assessment form
+  const hasValidCategories = categories && Array.isArray(categories) && categories.length > 0;
+  
+  // Log categories data for debugging
+  useEffect(() => {
+    console.log("Assessment page - Categories:", categories);
+    console.log("Assessment page - Categories valid:", hasValidCategories);
+    if (hasValidCategories) {
+      console.log("Assessment page - First category:", categories[0]);
+    }
+  }, [categories, hasValidCategories]);
+
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-5xl mx-auto px-4 py-2">
@@ -70,7 +82,7 @@ const Assessment = () => {
               />
             )}
             
-            {currentStep === 'assessment' && (
+            {currentStep === 'assessment' && hasValidCategories && (
               <AssessmentForm 
                 categories={categories}
                 onCategoriesUpdate={handleCategoriesUpdate}
@@ -80,6 +92,19 @@ const Assessment = () => {
                 }}
                 onBack={handleBackToDemographics}
               />
+            )}
+            
+            {currentStep === 'assessment' && !hasValidCategories && (
+              <div className="p-6 bg-red-50 border border-red-200 rounded-md text-red-800">
+                <h3 className="font-bold mb-2">Error Loading Assessment</h3>
+                <p>There was a problem loading the assessment categories. Please try again.</p>
+                <button 
+                  onClick={() => navigate('/')}
+                  className="mt-4 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-800 rounded transition-colors"
+                >
+                  Return to Home
+                </button>
+              </div>
             )}
           </>
         )}

@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getAssessmentHistory, deleteAllCompletedAssessments } from '@/services/assessmentService';
+import { getAssessmentHistory, deleteAllCompletedAssessments } from '@/services/assessment/manageAssessmentHistory';
 import { toast } from '@/hooks/use-toast';
 
 interface AssessmentRecord {

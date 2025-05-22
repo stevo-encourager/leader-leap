@@ -1,8 +1,7 @@
 
 import { useState, useEffect } from 'react';
-import { getAssessmentById } from '@/services/assessmentService';
+import { getAssessmentById } from '@/services/assessment/fetchAssessment';
 import { Category, Demographics } from '@/utils/assessmentTypes';
-import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { 
   validateAndNormalizeCategories, 

@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Category, Demographics } from '@/utils/assessmentTypes';
-import { saveAssessmentResults } from '@/services/assessmentService';
+import { saveAssessmentResults } from '@/services/assessment/saveAssessment';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { useAuthForm } from './useAuthForm';

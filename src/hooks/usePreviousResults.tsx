@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Category, Demographics } from '@/utils/assessmentTypes';
-import { getLatestAssessmentResults } from '@/services/assessmentService';
+import { getLatestAssessmentResults } from '@/services/assessment/fetchAssessment';
 import { toast } from '@/hooks/use-toast';
 import { useSaveTracker } from './useSaveTracker';
 

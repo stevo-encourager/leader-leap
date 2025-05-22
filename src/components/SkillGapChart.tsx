@@ -30,6 +30,20 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
   // Log detailed info about categories
   console.log("SkillGapChart - Categories count:", safeCategories.length);
   if (safeCategories.length > 0) {
+    // Safely stringify categories to avoid circular references
+    const safeCategoriesString = JSON.stringify(
+      safeCategories.map(cat => ({
+        title: cat.title,
+        skillsCount: cat.skills?.length || 0,
+        skills: cat.skills?.map(s => ({
+          name: s.name,
+          current: s.ratings?.current,
+          desired: s.ratings?.desired,
+        }))
+      }))
+    );
+    console.log("SkillGapChart - Categories data:", safeCategoriesString.substring(0, 1000) + (safeCategoriesString.length > 1000 ? '...' : ''));
+    
     const totalSkills = safeCategories.reduce((total, cat) => total + (cat.skills?.length || 0), 0);
     console.log("SkillGapChart - Total skills:", totalSkills);
     
@@ -74,12 +88,39 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
       for (const skill of category.skills) {
         // Skip invalid skills
         if (!skill || !skill.ratings) {
+          console.log(`SkillGapChart - Skipping invalid skill (no ratings): ${skill?.name || 'unknown'}`);
           continue;
         }
         
-        // Get ratings
-        const current = typeof skill.ratings.current === 'number' ? skill.ratings.current : 0;
-        const desired = typeof skill.ratings.desired === 'number' ? skill.ratings.desired : 0;
+        // Get ratings with detailed validation
+        let current = 0;
+        let desired = 0;
+        
+        // Handle current rating
+        if (typeof skill.ratings.current === 'number') {
+          current = skill.ratings.current;
+        } else if (skill.ratings.current !== undefined && skill.ratings.current !== null) {
+          try {
+            current = parseFloat(String(skill.ratings.current));
+          } catch (e) {
+            console.warn(`SkillGapChart - Error parsing current rating for ${skill.name}:`, e);
+          }
+        }
+        
+        // Handle desired rating
+        if (typeof skill.ratings.desired === 'number') {
+          desired = skill.ratings.desired;
+        } else if (skill.ratings.desired !== undefined && skill.ratings.desired !== null) {
+          try {
+            desired = parseFloat(String(skill.ratings.desired));
+          } catch (e) {
+            console.warn(`SkillGapChart - Error parsing desired rating for ${skill.name}:`, e);
+          }
+        }
+        
+        // Ensure valid numbers
+        current = isNaN(current) ? 0 : current;
+        desired = isNaN(desired) ? 0 : desired;
         
         // Only include valid, non-zero ratings
         if (current > 0 || desired > 0) {
@@ -87,6 +128,8 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
           totalDesired += desired;
           validSkillCount++;
           console.log(`SkillGapChart - Valid skill: ${skill.name}, current=${current}, desired=${desired}`);
+        } else {
+          console.log(`SkillGapChart - Skill with zero ratings: ${skill.name}`);
         }
       }
       
@@ -111,6 +154,10 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
     }
     
     console.log("SkillGapChart - Final chart data items:", result.length);
+    if (result.length > 0) {
+      console.log("SkillGapChart - Chart data sample:", result);
+    }
+    
     return result;
   }, [safeCategories]);
 
@@ -126,9 +173,12 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
   if (validChartData.length === 0) {
     console.warn("SkillGapChart - No valid chart data to display");
     return (
-      <div className="flex items-center justify-center h-full bg-slate-50 rounded-lg p-6">
-        <p className="text-gray-500 text-center">
-          Complete the assessment to see your competency radar chart
+      <div className="flex flex-col items-center justify-center h-full bg-slate-50 rounded-lg p-6">
+        <p className="text-gray-500 text-center mb-3">
+          No valid assessment data available to display in the radar chart.
+        </p>
+        <p className="text-xs text-gray-400 text-center">
+          Complete the assessment with valid current and desired skill ratings to see your competency radar chart.
         </p>
       </div>
     );

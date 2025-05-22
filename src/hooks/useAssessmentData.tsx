@@ -7,6 +7,7 @@ interface UseAssessmentDataReturn {
   displayDemographics: Demographics;
   isAssessmentDataValid: boolean;
   isAssessmentDataLoading: boolean;
+  debugData?: any; // Add debug data
 }
 
 /**
@@ -23,14 +24,25 @@ export const useAssessmentData = (
   const [isAssessmentDataValid, setIsAssessmentDataValid] = useState(false);
   const [processedCategories, setProcessedCategories] = useState<Category[]>([]);
   const [processedDemographics, setProcessedDemographics] = useState<Demographics>({});
+  const [debugData, setDebugData] = useState<any>(null);
   
   useEffect(() => {
-    console.log("useAssessmentData - INIT called with:", {
-      hasAssessmentId: !!assessmentId,
-      hasSpecificData: !!specificAssessmentData,
-      currentCategoriesLength: currentCategories?.length || 0,
-      loadingSpecificData
-    });
+    const debugInfo: any = {
+      initData: {
+        hasAssessmentId: !!assessmentId,
+        hasSpecificData: !!specificAssessmentData,
+        specificDataCategories: specificAssessmentData?.categories ? {
+          type: typeof specificAssessmentData.categories,
+          isArray: Array.isArray(specificAssessmentData.categories),
+          length: specificAssessmentData.categories?.length || 0
+        } : null,
+        currentCategoriesLength: currentCategories?.length || 0,
+        loadingSpecificData
+      }
+    };
+    
+    console.log("useAssessmentData - INIT called with:", debugInfo.initData);
+    setDebugData(debugInfo);
   }, []);
   
   // Determine which categories and demographics to use
@@ -44,6 +56,16 @@ export const useAssessmentData = (
 
   // Process and validate categories
   useEffect(() => {
+    const debugInfo: any = {
+      rawData: {
+        categoriesLength: rawCategories?.length || 0,
+        isArray: Array.isArray(rawCategories),
+        firstCategoryTitle: rawCategories && rawCategories[0]?.title,
+        rawCategories: rawCategories ? JSON.parse(JSON.stringify(rawCategories)) : null,
+        rawDemographics: rawDemographics ? { ...rawDemographics } : null
+      }
+    };
+    
     console.log("useAssessmentData - Processing raw categories:", {
       categoriesLength: rawCategories?.length || 0,
       isArray: Array.isArray(rawCategories),
@@ -60,8 +82,27 @@ export const useAssessmentData = (
       console.warn("useAssessmentData - Categories is not an array:", rawCategories);
       setIsAssessmentDataValid(false);
       setProcessedCategories([]);
+      debugInfo.error = "Categories is not an array";
+      setDebugData(debugInfo);
       return;
     }
+    
+    // Count initial ratings to see if we have any data
+    const initialRatingsCount = rawCategories.reduce((total, category) => {
+      if (!category || !category.skills) return total;
+      
+      return total + category.skills.reduce((skillTotal, skill) => {
+        if (!skill || !skill.ratings) return skillTotal;
+        
+        const hasCurrentRating = typeof skill.ratings.current === 'number' && !isNaN(skill.ratings.current) && skill.ratings.current > 0;
+        const hasDesiredRating = typeof skill.ratings.desired === 'number' && !isNaN(skill.ratings.desired) && skill.ratings.desired > 0;
+        
+        return skillTotal + (hasCurrentRating ? 1 : 0) + (hasDesiredRating ? 1 : 0);
+      }, 0);
+    }, 0);
+    
+    debugInfo.initialRatingsCount = initialRatingsCount;
+    console.log(`useAssessmentData - Initial ratings count: ${initialRatingsCount}`);
     
     // Process categories
     const processed = rawCategories
@@ -98,17 +139,27 @@ export const useAssessmentData = (
                 let desired = 0;
                 
                 if (typeof skill.ratings.current === 'number') {
-                  current = isNaN(skill.ratings.current) ? 0 : skill.ratings.current;
-                } else if (skill.ratings.current !== undefined && skill.ratings.current !== null) {
-                  current = parseFloat(String(skill.ratings.current));
+                  current = skill.ratings.current;
                   current = isNaN(current) ? 0 : current;
+                } else if (skill.ratings.current !== undefined && skill.ratings.current !== null) {
+                  try {
+                    current = parseFloat(String(skill.ratings.current));
+                    current = isNaN(current) ? 0 : current;
+                  } catch (e) {
+                    console.warn(`useAssessmentData - Error parsing current rating for ${skill.name}:`, e);
+                  }
                 }
                 
                 if (typeof skill.ratings.desired === 'number') {
-                  desired = isNaN(skill.ratings.desired) ? 0 : skill.ratings.desired;
-                } else if (skill.ratings.desired !== undefined && skill.ratings.desired !== null) {
-                  desired = parseFloat(String(skill.ratings.desired));
+                  desired = skill.ratings.desired;
                   desired = isNaN(desired) ? 0 : desired;
+                } else if (skill.ratings.desired !== undefined && skill.ratings.desired !== null) {
+                  try {
+                    desired = parseFloat(String(skill.ratings.desired));
+                    desired = isNaN(desired) ? 0 : desired;
+                  } catch (e) {
+                    console.warn(`useAssessmentData - Error parsing desired rating for ${skill.name}:`, e);
+                  }
                 }
                 
                 processedSkill.ratings.current = current;
@@ -126,9 +177,31 @@ export const useAssessmentData = (
       })
       .filter(category => category.skills && category.skills.length > 0);
     
+    // Count final processed ratings
+    const finalRatingsCount = processed.reduce((total, category) => {
+      if (!category || !category.skills) return total;
+      
+      return total + category.skills.reduce((skillTotal, skill) => {
+        if (!skill || !skill.ratings) return skillTotal;
+        
+        const hasCurrentRating = typeof skill.ratings.current === 'number' && !isNaN(skill.ratings.current) && skill.ratings.current > 0;
+        const hasDesiredRating = typeof skill.ratings.desired === 'number' && !isNaN(skill.ratings.desired) && skill.ratings.desired > 0;
+        
+        return skillTotal + (hasCurrentRating ? 1 : 0) + (hasDesiredRating ? 1 : 0);
+      }, 0);
+    }, 0);
+    
+    debugInfo.finalRatingsCount = finalRatingsCount;
+    debugInfo.processedResult = {
+      length: processed.length,
+      totalSkills: processed.reduce((count, cat) => count + cat.skills.length, 0),
+      processedCategories: processed.length > 0 ? processed : null
+    };
+    
     console.log("useAssessmentData - Processed categories result:", {
       length: processed.length,
-      totalSkills: processed.reduce((count, cat) => count + cat.skills.length, 0)
+      totalSkills: processed.reduce((count, cat) => count + cat.skills.length, 0),
+      finalRatingsCount
     });
     
     setProcessedCategories(processed);
@@ -140,14 +213,17 @@ export const useAssessmentData = (
       )
     );
     
+    debugInfo.hasValidData = hasValidData;
     console.log("useAssessmentData - Has valid data:", hasValidData);
     setIsAssessmentDataValid(hasValidData);
+    setDebugData(debugInfo);
   }, [rawCategories, rawDemographics]);
 
   return {
     displayCategories: processedCategories,
     displayDemographics: processedDemographics,
     isAssessmentDataValid,
-    isAssessmentDataLoading: loadingSpecificData
+    isAssessmentDataLoading: loadingSpecificData,
+    debugData
   };
 };

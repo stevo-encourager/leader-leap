@@ -37,10 +37,28 @@ const Results = () => {
     console.log("Results page - Categories count:", categories?.length || 0);
     console.log("Results page - Has demographics:", !!demographics);
     
+    // Serialize categories to avoid circular references
+    const safeCategoriesData = categories ? JSON.parse(JSON.stringify(categories)) : null;
+    console.log("Results page - Categories data:", safeCategoriesData);
+    
     // Log first category as sample (if exists)
     if (categories && categories.length > 0) {
       console.log("Results page - First category title:", categories[0]?.title);
       console.log("Results page - First category skills count:", categories[0]?.skills?.length || 0);
+      
+      // Log first skill details if available
+      if (categories[0]?.skills?.length > 0) {
+        const firstSkill = categories[0].skills[0];
+        console.log("Results page - First skill:", {
+          name: firstSkill.name,
+          currentRating: firstSkill.ratings?.current,
+          desiredRating: firstSkill.ratings?.desired,
+          ratingType: {
+            current: typeof firstSkill.ratings?.current,
+            desired: typeof firstSkill.ratings?.desired
+          }
+        });
+      }
     }
   }, [currentStep, categories, demographics]);
 
@@ -55,7 +73,15 @@ const Results = () => {
     if (assessmentId) {
       console.log("Results page - Loading specific assessment:", assessmentId);
       console.log("Results page - Loading status:", loadingSpecificAssessment);
-      console.log("Results page - Specific assessment data:", specificAssessmentData);
+      
+      // Safely log specific assessment data
+      const safeSpecificData = specificAssessmentData ? {
+        ...specificAssessmentData,
+        categories: specificAssessmentData.categories ? 
+          JSON.parse(JSON.stringify(specificAssessmentData.categories)) : null
+      } : null;
+      
+      console.log("Results page - Specific assessment data:", safeSpecificData);
       console.log("Results page - Error:", specificAssessmentError);
     }
   }, [assessmentId, loadingSpecificAssessment, specificAssessmentData, specificAssessmentError]);
@@ -65,7 +91,8 @@ const Results = () => {
     displayCategories,
     displayDemographics,
     isAssessmentDataValid,
-    isAssessmentDataLoading
+    isAssessmentDataLoading,
+    debugData
   } = useAssessmentData(
     assessmentId,
     specificAssessmentData,
@@ -79,7 +106,48 @@ const Results = () => {
     console.log("Results page - Display categories count:", displayCategories?.length || 0);
     console.log("Results page - Is assessment data valid:", isAssessmentDataValid);
     console.log("Results page - Is assessment data loading:", isAssessmentDataLoading);
-  }, [displayCategories, isAssessmentDataValid, isAssessmentDataLoading]);
+    
+    // Log detailed assessment debug data
+    if (debugData) {
+      console.log("Results page - Assessment debug data:", debugData);
+    }
+    
+    // Detailed validation of display categories
+    if (displayCategories && displayCategories.length > 0) {
+      // Count ratings
+      const ratingStats = {
+        totalCategories: displayCategories.length,
+        categoriesWithSkills: 0,
+        totalSkills: 0,
+        skillsWithCurrentRating: 0,
+        skillsWithDesiredRating: 0,
+        skillsWithBothRatings: 0
+      };
+      
+      displayCategories.forEach(category => {
+        if (category.skills && category.skills.length > 0) {
+          ratingStats.categoriesWithSkills++;
+          ratingStats.totalSkills += category.skills.length;
+          
+          category.skills.forEach(skill => {
+            const hasCurrentRating = typeof skill.ratings?.current === 'number' && 
+                                    !isNaN(skill.ratings.current) && 
+                                    skill.ratings.current > 0;
+                                    
+            const hasDesiredRating = typeof skill.ratings?.desired === 'number' && 
+                                    !isNaN(skill.ratings.desired) && 
+                                    skill.ratings.desired > 0;
+                                    
+            if (hasCurrentRating) ratingStats.skillsWithCurrentRating++;
+            if (hasDesiredRating) ratingStats.skillsWithDesiredRating++;
+            if (hasCurrentRating && hasDesiredRating) ratingStats.skillsWithBothRatings++;
+          });
+        }
+      });
+      
+      console.log("Results page - Display categories validation:", ratingStats);
+    }
+  }, [displayCategories, isAssessmentDataValid, isAssessmentDataLoading, debugData]);
 
   // Effect to handle result saving when user is logged in and viewing results
   useEffect(() => {
@@ -126,6 +194,7 @@ const Results = () => {
             }}
             onBack={() => navigate('/previous-assessments')}
             errorType={specificAssessmentError}
+            debugData={debugData}
           />
         </main>
         <Footer />
@@ -158,6 +227,7 @@ const Results = () => {
               navigate('/assessment');
             }}
             onBack={assessmentId ? () => navigate('/previous-assessments') : undefined}
+            debugData={debugData}
           />
         </main>
         <Footer />

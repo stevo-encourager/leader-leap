@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -37,6 +38,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
   // Validate categories data on component mount
   useEffect(() => {
     console.log("AssessmentForm - Validating categories data:", categories);
+    console.log("AssessmentForm - Total categories:", categories?.length || 0);
     
     if (!validateCategoriesData(categories)) {
       setDataValidationError("Invalid assessment data structure");
@@ -129,6 +131,8 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
   };
 
   const handleNextCategory = () => {
+    console.log(`Navigating from category ${activeCategory} to ${activeCategory + 1}. Total categories: ${categories.length}`);
+    
     if (activeCategory < categories.length - 1) {
       setActiveCategory(activeCategory + 1);
       window.scrollTo(0, 0);
@@ -264,22 +268,14 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
       <div className="flex justify-between mt-6">
         <Button 
           variant="outline" 
-          onClick={onBack}
+          onClick={handlePrevCategory}
           className="border-encourager hover:bg-encourager-lightgray hover:text-encourager"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           {isFirstCategory ? 'Back to Demographics' : 'Previous'}
         </Button>
         <Button
-          onClick={isFirstCategory ? () => {
-            if (activeCategory < categories.length - 1) {
-              setActiveCategory(activeCategory + 1);
-              window.scrollTo(0, 0);
-            } else {
-              console.log("Completing assessment with categories:", categories);
-              onComplete();
-            }
-          } : onBack}
+          onClick={handleNextCategory}
           className="bg-encourager hover:bg-encourager-light"
         >
           {isLastCategory ? 'View Results' : 'Next'}

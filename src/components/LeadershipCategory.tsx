@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Category, Skill } from '../utils/assessmentTypes';
+import { Slider } from './ui/slider';
 
 interface LeadershipCategoryProps {
   category: Category;
@@ -83,13 +84,20 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
       
       {shouldShowContent && (
         <CardContent>
-          <div className="space-y-6">
+          <div className="space-y-8">
             {category.skills.map((skill) => (
-              <SkillAssessment 
-                key={skill.id} 
-                skill={skill} 
-                onRatingChange={(ratingType, value) => handleRatingChange(skill.id, ratingType, value)}
-              />
+              <Card key={skill.id} className="border border-gray-100 shadow-sm">
+                <CardHeader className="pb-2">
+                  <h4 className="text-lg font-medium text-gray-800">{skill.name}</h4>
+                  <p className="text-sm text-gray-600">{skill.description}</p>
+                </CardHeader>
+                <CardContent>
+                  <SkillAssessment 
+                    skill={skill} 
+                    onRatingChange={(ratingType, value) => handleRatingChange(skill.id, ratingType, value)}
+                  />
+                </CardContent>
+              </Card>
             ))}
           </div>
         </CardContent>
@@ -110,7 +118,6 @@ const SkillAssessment: React.FC<SkillAssessmentProps> = ({ skill, onRatingChange
   // Handle current rating change
   const handleCurrentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
-    // Log for debugging
     console.log(`SkillAssessment - Current rating change for ${skill.name}: ${value}`);
     onRatingChange('current', value);
   };
@@ -118,66 +125,71 @@ const SkillAssessment: React.FC<SkillAssessmentProps> = ({ skill, onRatingChange
   // Handle desired rating change
   const handleDesiredChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
-    // Log for debugging
     console.log(`SkillAssessment - Desired rating change for ${skill.name}: ${value}`);
     onRatingChange('desired', value);
   };
-  
-  // Log current skill ratings for debugging
-  console.log(`SkillAssessment - Rendering ${skill.name} with ratings:`, {
-    current: ratings.current,
-    desired: ratings.desired
-  });
 
   return (
-    <div className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
-      <div className="mb-2">
-        <h4 className="text-md font-medium text-gray-800">{skill.name}</h4>
-        <p className="text-sm text-gray-600">{skill.description}</p>
+    <div className="space-y-6">
+      {/* Current Level */}
+      <div className="space-y-2">
+        <div className="flex justify-between items-center">
+          <label className="block text-md font-medium text-gray-700">
+            Current ability:
+          </label>
+          <span className="text-lg font-medium text-encourager">{ratings.current}</span>
+        </div>
+        <input
+          type="range"
+          min="0"
+          max="10"
+          step="1"
+          value={ratings.current || 0}
+          onChange={handleCurrentChange}
+          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+        />
+        <div className="flex justify-between text-xs text-gray-500 mt-1">
+          <span>Beginner</span>
+          <span>Proficient</span>
+          <span>Advanced</span>
+          <span>Expert</span>
+        </div>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-        {/* Current Level */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Current Level: {ratings.current}
+      {/* Desired Level */}
+      <div className="space-y-2">
+        <div className="flex justify-between items-center">
+          <label className="block text-md font-medium text-gray-700">
+            Target level:
           </label>
-          <input
-            type="range"
-            min="0"
-            max="10"
-            step="1"
-            value={ratings.current || 0}
-            onChange={handleCurrentChange}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-          />
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>0</span>
-            <span>5</span>
-            <span>10</span>
-          </div>
+          <span className="text-lg font-medium text-encourager">{ratings.desired}</span>
         </div>
-        
-        {/* Desired Level */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Desired Level: {ratings.desired}
-          </label>
-          <input
-            type="range"
-            min="0"
-            max="10"
-            step="1"
-            value={ratings.desired || 0}
-            onChange={handleDesiredChange}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-          />
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>0</span>
-            <span>5</span>
-            <span>10</span>
-          </div>
+        <input
+          type="range"
+          min="0"
+          max="10"
+          step="1"
+          value={ratings.desired || 0}
+          onChange={handleDesiredChange}
+          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+        />
+        <div className="flex justify-between text-xs text-gray-500 mt-1">
+          <span>Beginner</span>
+          <span>Proficient</span>
+          <span>Advanced</span>
+          <span>Expert</span>
         </div>
+      </div>
+
+      {/* Visual indicator for the gap between current and desired */}
+      <div className="h-1 bg-gray-100 w-full rounded-full mt-2 overflow-hidden">
+        <div 
+          className="h-full bg-encourager-accent rounded-full"
+          style={{ 
+            width: `${Math.max(0, (ratings.desired - ratings.current) * 10)}%`,
+            marginLeft: `${ratings.current * 10}%`
+          }}
+        />
       </div>
     </div>
   );

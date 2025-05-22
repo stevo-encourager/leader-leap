@@ -73,37 +73,71 @@ serve(async (req) => {
     
     console.log(`Found ${users.users.length} users to delete`);
     
-    // Delete each user
+    // Delete each user - FORCE HARD DELETE
     const deletionResults = [];
+    let failedDeletions = 0;
     
     for (const user of users.users) {
       try {
         console.log(`Attempting to delete user ${user.id} (${user.email})`);
+        
+        // Explicitly use hard delete (shouldSoftDelete: false) to ensure complete removal
         const { error } = await supabase.auth.admin.deleteUser(user.id, {
           shouldSoftDelete: false // Ensure hard deletion
         });
         
         if (error) {
           console.error(`Error deleting user ${user.id}:`, error);
+          failedDeletions++;
           deletionResults.push({ userId: user.id, email: user.email, success: false, error: error.message });
+          
+          // Second attempt with different approach if first fails
+          console.log(`Retrying deletion of user ${user.id} with different approach...`);
+          const secondAttempt = await supabase.auth.admin.deleteUser(user.id);
+          
+          if (secondAttempt.error) {
+            console.error(`Second attempt failed for user ${user.id}:`, secondAttempt.error);
+          } else {
+            console.log(`Second attempt succeeded for user ${user.id}`);
+            deletionResults[deletionResults.length - 1].success = true;
+            deletionResults[deletionResults.length - 1].error = "Deleted on second attempt";
+            failedDeletions--;
+          }
         } else {
           console.log(`Successfully deleted user ${user.id} (${user.email})`);
           deletionResults.push({ userId: user.id, email: user.email, success: true });
         }
       } catch (err) {
+        failedDeletions++;
         console.error(`Exception deleting user ${user.id}:`, err);
         deletionResults.push({ userId: user.id, email: user.email, success: false, error: err.message });
       }
       
       // Small delay between deletions to prevent rate limiting
-      await new Promise(resolve => setTimeout(resolve, 200));
+      await new Promise(resolve => setTimeout(resolve, 300));
+    }
+    
+    // Verify all users were deleted by checking again
+    const { data: remainingUsers, error: verifyError } = await supabase.auth.admin.listUsers({
+      perPage: 1000,
+    });
+    
+    let verificationMessage = "";
+    if (verifyError) {
+      verificationMessage = `Unable to verify deletion: ${verifyError.message}`;
+    } else {
+      verificationMessage = remainingUsers && remainingUsers.users.length > 0 
+        ? `Warning: ${remainingUsers.users.length} users still remain after deletion` 
+        : "Verification successful: No users remain";
     }
     
     return new Response(
       JSON.stringify({
-        success: true,
+        success: failedDeletions === 0,
         message: "User deletion process completed",
         totalUsers: users.users.length,
+        failedDeletions,
+        verificationMessage,
         results: deletionResults
       }),
       { headers: { "Content-Type": "application/json" } }

@@ -73,6 +73,15 @@ export const deleteAllUsers = async () => {
         
         return { success: false, error: `Failed to delete users: ${failedUsers}` };
       }
+
+      // Include verification message if available
+      if (data.verificationMessage && data.verificationMessage.includes("Warning")) {
+        return {
+          success: true,
+          data: data,
+          warning: data.verificationMessage
+        };
+      }
     }
     
     return { success: true, data };
@@ -83,7 +92,7 @@ export const deleteAllUsers = async () => {
 };
 
 /**
- * Clear all local storage data related to the assessment
+ * Clear all local storage data related to the assessment and auth
  */
 export const clearLocalStorageData = () => {
   try {
@@ -100,14 +109,23 @@ export const clearLocalStorageData = () => {
     // Clear any other app-specific local storage items
     localStorage.removeItem('supabase.auth.token');
     
-    // Force clear auth data from Supabase local storage
-    // Use a more bulletproof approach that doesn't rely on protected properties
+    // Force clear auth data from Supabase local storage using a pattern match
     const supabaseStorageKeys = Object.keys(localStorage).filter(key => 
       key.startsWith('sb-')
     );
     
     // Clear all Supabase-related keys in local storage
-    supabaseStorageKeys.forEach(key => localStorage.removeItem(key));
+    supabaseStorageKeys.forEach(key => {
+      console.log(`Clearing local storage key: ${key}`);
+      localStorage.removeItem(key);
+    });
+    
+    // Force clear browser session storage too
+    try {
+      sessionStorage.clear();
+    } catch (e) {
+      console.warn("Could not clear session storage:", e);
+    }
     
     console.log("Local storage cleared successfully");
     return true;
@@ -123,6 +141,8 @@ export const clearLocalStorageData = () => {
  */
 export const resetAppData = async () => {
   try {
+    console.log("Starting app reset process...");
+    
     // 1. Clear local storage first
     clearLocalStorageData();
     
@@ -157,6 +177,16 @@ export const resetAppData = async () => {
       });
       
       return { success: true, warning: usersResult.warning };
+    }
+    
+    // Final step - sign out current user if they exist
+    try {
+      console.log("Signing out current user as part of reset...");
+      await supabase.auth.signOut({ scope: 'global' });
+      console.log("User signed out successfully");
+    } catch (signOutError) {
+      console.warn("Error signing out user during reset:", signOutError);
+      // Continue with reset even if sign out fails
     }
     
     // Success

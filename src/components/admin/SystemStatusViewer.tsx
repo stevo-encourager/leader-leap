@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { CircleGauge } from 'lucide-react';
+import { CircleGauge, RefreshCw } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -122,13 +122,16 @@ const SystemStatusViewer = () => {
               Refreshing...
             </>
           ) : (
-            'Refresh Stats'
+            <>
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Refresh Stats
+            </>
           )}
         </Button>
       </div>
       
       {!isLoading && (stats.userCount || 0) > 0 && (
-        <Alert>
+        <Alert variant="destructive">
           <AlertTitle>System not in clean state</AlertTitle>
           <AlertDescription>
             There are still {stats.userCount} user accounts in the system. 

@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Demographics } from '../../utils/assessmentTypes';
 import { Json } from '@/integrations/supabase/types';
+import { normalizeCategories } from '@/utils/resultNormalizer';
 
 /**
  * Saves the assessment results to the database
@@ -20,12 +21,25 @@ export const saveAssessmentResults = async (categories: Category[], demographics
 
     console.log('Saving assessment with categories:', categories);
     
+    // Normalize the categories to ensure consistent format
+    const normalizedCategories = normalizeCategories(categories);
+    console.log('Normalized categories for saving:', normalizedCategories);
+    
     // Check if the categories have valid ratings before saving
-    const hasValidRatings = categories.some(category => 
-      category.skills && category.skills.some(skill => 
-        skill.ratings && typeof skill.ratings.current === 'number' && 
-        typeof skill.ratings.desired === 'number'
-      )
+    const hasValidRatings = normalizedCategories.some(category => 
+      category.skills && category.skills.some(skill => {
+        if (!skill.ratings) return false;
+        
+        const current = typeof skill.ratings.current === 'number' 
+          ? skill.ratings.current 
+          : parseFloat(String(skill.ratings.current || '0'));
+          
+        const desired = typeof skill.ratings.desired === 'number' 
+          ? skill.ratings.desired 
+          : parseFloat(String(skill.ratings.desired || '0'));
+        
+        return !isNaN(current) && !isNaN(desired) && (current > 0 || desired > 0);
+      })
     );
     
     if (!hasValidRatings) {
@@ -57,7 +71,7 @@ export const saveAssessmentResults = async (categories: Category[], demographics
     // If there's already an assessment from today, update it instead of creating a new one
     if (todaysAssessments && todaysAssessments.length > 0) {
       console.log('Found existing assessment from today, updating it:', todaysAssessments[0].id);
-      return await updateExistingAssessment(todaysAssessments[0].id, categories, demographics);
+      return await updateExistingAssessment(todaysAssessments[0].id, normalizedCategories, demographics);
     }
     
     // Check for any incomplete assessment
@@ -76,12 +90,12 @@ export const saveAssessmentResults = async (categories: Category[], demographics
     // If there's an incomplete assessment, update it
     if (incompleteAssessments && incompleteAssessments.length > 0) {
       console.log('Found incomplete assessment, updating it:', incompleteAssessments[0].id);
-      return await updateExistingAssessment(incompleteAssessments[0].id, categories, demographics);
+      return await updateExistingAssessment(incompleteAssessments[0].id, normalizedCategories, demographics);
     }
     
     // If there's no assessment from today and no incomplete assessment, create a new one
     console.log('No existing assessment found, creating new one');
-    return await createNewAssessment(user.id, categories, demographics);
+    return await createNewAssessment(user.id, normalizedCategories, demographics);
   } catch (error) {
     console.error('Error in saveAssessmentResults:', error);
     return { success: false, error: 'Failed to save assessment results' };

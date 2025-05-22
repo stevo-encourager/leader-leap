@@ -27,19 +27,35 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
   const safeCategories = Array.isArray(categories) ? categories : [];
   
   console.log("SkillGapChart - Received categories:", safeCategories?.length || 0);
-  console.log("SkillGapChart - Categories data:", safeCategories);
   
   // Process chart data with detailed logging
   const chartData = useMemo(() => {
-    console.log("SkillGapChart - Processing chart data for categories:", 
-      safeCategories?.map(c => c?.title || 'undefined'));
+    console.log("SkillGapChart - Processing categories for chart data");
     
     if (!safeCategories || safeCategories.length === 0) {
-      console.log("SkillGapChart - No valid categories");
+      console.warn("SkillGapChart - No valid categories provided");
       return [];
     }
     
-    return safeCategories.map(category => {
+    // Debug first category
+    if (safeCategories.length > 0) {
+      const firstCat = safeCategories[0];
+      console.log("SkillGapChart - First category sample:", {
+        title: firstCat?.title,
+        skillsCount: firstCat?.skills?.length || 0
+      });
+      
+      // Debug first skill in first category
+      if (firstCat?.skills && firstCat.skills.length > 0) {
+        const firstSkill = firstCat.skills[0];
+        console.log("SkillGapChart - First skill sample:", {
+          name: firstSkill?.name,
+          ratings: firstSkill?.ratings
+        });
+      }
+    }
+    
+    const result = safeCategories.map(category => {
       if (!category) {
         console.warn("SkillGapChart - Found undefined category in array");
         return {
@@ -57,9 +73,9 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
       
       // Process skills if they exist
       if (category.skills && Array.isArray(category.skills) && category.skills.length > 0) {
-        console.log(`SkillGapChart - Processing skills for ${category.title}`);
         let totalCurrent = 0;
         let totalDesired = 0;
+        let validSkillCount = 0;
         
         // Count valid skills and sum ratings
         for (const skill of category.skills) {
@@ -67,29 +83,32 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
           
           const current = typeof skill.ratings.current === 'number' 
             ? skill.ratings.current 
-            : Number(skill.ratings.current || 0);
+            : parseFloat(String(skill.ratings.current || '0'));
             
           const desired = typeof skill.ratings.desired === 'number' 
             ? skill.ratings.desired 
-            : Number(skill.ratings.desired || 0);
+            : parseFloat(String(skill.ratings.desired || '0'));
           
-          console.log(`SkillGapChart - Skill ${skill.name}: current=${current}, desired=${desired}`);
-          
-          if (!isNaN(current) && !isNaN(desired)) {
+          if (!isNaN(current) && !isNaN(desired) && (current > 0 || desired > 0)) {
             totalCurrent += current;
             totalDesired += desired;
-            skillCount++;
+            validSkillCount++;
+            console.log(`SkillGapChart - Valid skill: ${skill.name}, current=${current}, desired=${desired}`);
+          } else {
+            console.log(`SkillGapChart - Skipping invalid skill ratings: ${skill.name}, current=${skill.ratings.current}, desired=${skill.ratings.desired}`);
           }
         }
         
         // Calculate averages
-        if (skillCount > 0) {
-          avgCurrent = parseFloat((totalCurrent / skillCount).toFixed(1));
-          avgDesired = parseFloat((totalDesired / skillCount).toFixed(1));
-          console.log(`SkillGapChart - Category ${category.title}: avgCurrent=${avgCurrent}, avgDesired=${avgDesired}, from ${skillCount} skills`);
+        if (validSkillCount > 0) {
+          avgCurrent = parseFloat((totalCurrent / validSkillCount).toFixed(1));
+          avgDesired = parseFloat((totalDesired / validSkillCount).toFixed(1));
+          console.log(`SkillGapChart - Category ${category.title}: avgCurrent=${avgCurrent}, avgDesired=${avgDesired} from ${validSkillCount} valid skills`);
         } else {
-          console.log(`SkillGapChart - Category ${category.title}: No skills with ratings`);
+          console.log(`SkillGapChart - Category ${category.title}: No valid skills with ratings`);
         }
+        
+        skillCount = validSkillCount;
       } else {
         console.log(`SkillGapChart - Category ${category.title || 'Unknown'}: No valid skills array`);
       }
@@ -98,28 +117,19 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
         subject: category.title || "Unknown Category",
         current: avgCurrent,
         desired: avgDesired,
-        fullMark: 10
+        fullMark: 10,
+        skillCount // Store for filtering
       };
     });
+    
+    console.log("SkillGapChart - Processed chart data:", result);
+    return result;
   }, [safeCategories]);
 
-  console.log("SkillGapChart - Final chart data:", chartData);
-
-  // Create a placeholder if no data is available
-  if (!chartData || chartData.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-full bg-slate-50 rounded-lg p-6">
-        <p className="text-gray-500 text-center">
-          No assessment data available for visualization
-        </p>
-      </div>
-    );
-  }
-  
   // Filter to only show categories with actual data
   const validChartData = chartData.filter(
-    item => (item.current > 0 || item.desired > 0) && 
-           (!isNaN(item.current) && !isNaN(item.desired))
+    item => item.skillCount > 0 && ((item.current > 0 || item.desired > 0) && 
+           (!isNaN(item.current) && !isNaN(item.desired)))
   );
   
   console.log("SkillGapChart - Valid chart data items:", validChartData.length);

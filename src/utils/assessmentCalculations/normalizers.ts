@@ -11,19 +11,21 @@ export const normalizeSkill = (
 ): SkillWithMetadata | null => {
   try {
     if (!skill || !skill.ratings) {
+      console.log(`normalizeSkill - Skipping invalid skill (no ratings):`, skill);
       return null;
     }
     
+    // Parse ratings as numbers and provide safe defaults
     const current = typeof skill.ratings.current === 'number' 
       ? skill.ratings.current 
-      : Number(skill.ratings.current || 0);
+      : parseFloat(String(skill.ratings.current || '0'));
       
     const desired = typeof skill.ratings.desired === 'number' 
       ? skill.ratings.desired 
-      : Number(skill.ratings.desired || 0);
+      : parseFloat(String(skill.ratings.desired || '0'));
     
-    // Check for valid numbers
-    if (isNaN(current) || isNaN(desired)) {
+    // Check for valid numbers - only consider values > 0 as valid
+    if (isNaN(current) || isNaN(desired) || (current === 0 && desired === 0)) {
       console.log(`normalizeSkill - Invalid rating values for ${skill.name}: current=${skill.ratings.current}, desired=${skill.ratings.desired}`);
       return null;
     }
@@ -79,6 +81,10 @@ export const getAllSkillsWithMetadata = (categories: Category[]): SkillWithMetad
     }
     
     console.log(`getAllSkillsWithMetadata - Found ${allSkills.length} normalized skills`);
+    if (allSkills.length > 0) {
+      console.log("getAllSkillsWithMetadata - First skill sample:", allSkills[0]);
+    }
+    
     return allSkills;
   } catch (error) {
     console.error("Error in getAllSkillsWithMetadata:", error);

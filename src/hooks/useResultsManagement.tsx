@@ -57,7 +57,7 @@ export const useResultsManagement = (
         resetSaveState();
       }
     }
-  }, [categories, demographics]);
+  }, [categories, demographics, resetSaveState]);
 
   // Results save function
   const handleSaveResults = async () => {
@@ -74,6 +74,7 @@ export const useResultsManagement = (
     }
 
     if (!user) {
+      console.log('User not authenticated, showing auth form');
       setShowAuthForm(true);
       return;
     }
@@ -94,6 +95,7 @@ export const useResultsManagement = (
     }
     
     setIsSaving(true);
+    console.log('Starting assessment save operation');
     
     try {
       // Check if we already saved an assessment today
@@ -115,6 +117,7 @@ export const useResultsManagement = (
           markAsSaved(assessmentId, today);
         } else {
           // Still mark as saved but without an assessment ID
+          console.log('Assessment saved but no ID returned');
           markAsSaved(undefined, today);
         }
         
@@ -123,6 +126,7 @@ export const useResultsManagement = (
           description: "Your assessment results have been saved to your account.",
         });
       } else {
+        console.error('Error saving results:', result.error);
         toast({
           title: "Error saving results",
           description: result.error || "An error occurred while saving your results.",
@@ -138,6 +142,7 @@ export const useResultsManagement = (
       });
     } finally {
       setIsSaving(false);
+      console.log('Assessment save operation completed');
     }
   };
   

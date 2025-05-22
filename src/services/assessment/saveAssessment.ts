@@ -40,7 +40,7 @@ export const saveAssessmentResults = async (categories: Category[], demographics
     
     console.log(`Checking for assessments between ${startOfDay} and ${endOfDay}`);
     
-    // Check if the user already has an assessment from today - using transaction for atomicity
+    // Check if the user already has an assessment from today
     const { data: todaysAssessments, error: checkError } = await supabase
       .from('assessment_results')
       .select('id')
@@ -56,10 +56,11 @@ export const saveAssessmentResults = async (categories: Category[], demographics
     
     // If there's already an assessment from today, update it instead of creating a new one
     if (todaysAssessments && todaysAssessments.length > 0) {
+      console.log('Found existing assessment from today, updating it:', todaysAssessments[0].id);
       return await updateExistingAssessment(todaysAssessments[0].id, categories, demographics);
     }
     
-    // If there's no assessment from today, check for any incomplete assessment
+    // Check for any incomplete assessment
     const { data: incompleteAssessments, error: incompleteCheckError } = await supabase
       .from('assessment_results')
       .select('id')
@@ -74,10 +75,12 @@ export const saveAssessmentResults = async (categories: Category[], demographics
     
     // If there's an incomplete assessment, update it
     if (incompleteAssessments && incompleteAssessments.length > 0) {
+      console.log('Found incomplete assessment, updating it:', incompleteAssessments[0].id);
       return await updateExistingAssessment(incompleteAssessments[0].id, categories, demographics);
     }
     
     // If there's no assessment from today and no incomplete assessment, create a new one
+    console.log('No existing assessment found, creating new one');
     return await createNewAssessment(user.id, categories, demographics);
   } catch (error) {
     console.error('Error in saveAssessmentResults:', error);

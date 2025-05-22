@@ -138,7 +138,7 @@ const SystemStatusViewer = () => {
       )}
       
       {!isLoading && (stats.userCount || 0) === 0 && (stats.assessmentCount || 0) === 0 && (stats.profileCount || 0) === 0 && (
-        <Alert variant="success" className="bg-green-50 border-green-200">
+        <Alert className="bg-green-50 border-green-200">
           <AlertTitle>System in clean state</AlertTitle>
           <AlertDescription>
             All user accounts and data have been successfully deleted. 

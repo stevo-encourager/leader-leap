@@ -30,7 +30,7 @@ const ResetAppButton = () => {
         toast({
           title: "Reset complete",
           description: result.warning || "Application has been reset. All users and data have been removed.",
-          variant: result.warning ? "warning" : "default",
+          variant: result.warning ? "destructive" : "default",
         });
         
         setProgress(100); // Complete

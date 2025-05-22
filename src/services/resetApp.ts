@@ -101,7 +101,13 @@ export const clearLocalStorageData = () => {
     localStorage.removeItem('supabase.auth.token');
     
     // Force clear auth data from Supabase local storage
-    localStorage.removeItem('sb-' + supabase.supabaseUrl + '-auth-token');
+    // Use a more bulletproof approach that doesn't rely on protected properties
+    const supabaseStorageKeys = Object.keys(localStorage).filter(key => 
+      key.startsWith('sb-')
+    );
+    
+    // Clear all Supabase-related keys in local storage
+    supabaseStorageKeys.forEach(key => localStorage.removeItem(key));
     
     console.log("Local storage cleared successfully");
     return true;
@@ -147,7 +153,7 @@ export const resetAppData = async () => {
       toast({
         title: "Partial reset completed",
         description: usersResult.warning,
-        variant: "warning",
+        variant: "destructive",
       });
       
       return { success: true, warning: usersResult.warning };

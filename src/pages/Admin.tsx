@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ResetAppButton from '@/components/admin/ResetAppButton';
 import DataSchemaViewer from '@/components/admin/DataSchemaViewer';
+import SystemStatusViewer from '@/components/admin/SystemStatusViewer';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 

@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { saveAssessmentResults, getLatestAssessmentResults } from '@/services/assessmentService';
@@ -17,9 +17,19 @@ export const useResultsManagement = (
   const [loadingPreviousResults, setLoadingPreviousResults] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
+  
+  // Add a flag to track if results have been saved in the current session
+  // This prevents multiple saves when viewing the results page multiple times
+  const resultsSavedRef = useRef(false);
 
   // Results management functions
   const handleSaveResults = async () => {
+    // Skip save if already saved in this session
+    if (resultsSavedRef.current) {
+      console.log('Results already saved in this session, skipping');
+      return;
+    }
+
     if (!user) {
       setShowAuthForm(true);
       return;
@@ -30,6 +40,9 @@ export const useResultsManagement = (
     const result = await saveAssessmentResults(categories, demographics);
     
     if (result.success) {
+      // Mark as saved for this session
+      resultsSavedRef.current = true;
+      
       toast({
         title: "Results saved",
         description: "Your assessment results have been saved to your account.",

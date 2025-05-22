@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { CircleGauge, ArrowLeft } from 'lucide-react';
@@ -21,6 +21,9 @@ const PreviousAssessments = () => {
     handleDeleteAllAssessments 
   } = useAssessmentHistory();
 
+  // Tracking the timestamp of the last loaded assessments
+  const [lastRefreshed, setLastRefreshed] = useState<string | null>(null);
+
   useEffect(() => {
     // Check if user is authenticated
     if (!user) {
@@ -30,7 +33,14 @@ const PreviousAssessments = () => {
 
     // Fetch assessment history if user is authenticated
     fetchAssessments();
+    setLastRefreshed(new Date().toISOString());
   }, [user, navigate]);
+
+  // Manual refresh function
+  const handleRefresh = () => {
+    fetchAssessments();
+    setLastRefreshed(new Date().toISOString());
+  };
 
   // Show loading state while fetching data
   if (isLoading) {
@@ -58,18 +68,31 @@ const PreviousAssessments = () => {
             </Button>
           </Link>
           
-          {assessments.length > 0 && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-slate-500">
-                {assessments.length} assessment{assessments.length !== 1 ? 's' : ''}
-              </span>
-              
-              <DeleteAllAssessmentsDialog 
-                isDeleting={isDeleting}
-                onDeleteAll={handleDeleteAllAssessments}
-              />
-            </div>
-          )}
+          <div className="flex items-center gap-4">
+            {assessments.length > 0 && (
+              <>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleRefresh} 
+                  disabled={isLoading}
+                >
+                  Refresh List
+                </Button>
+                
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-slate-500">
+                    {assessments.length} assessment{assessments.length !== 1 ? 's' : ''}
+                  </span>
+                  
+                  <DeleteAllAssessmentsDialog 
+                    isDeleting={isDeleting}
+                    onDeleteAll={handleDeleteAllAssessments}
+                  />
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         <h1 className="text-3xl font-bold text-encourager mb-8">Your Previous Assessments</h1>
@@ -77,7 +100,14 @@ const PreviousAssessments = () => {
         {assessments.length === 0 ? (
           <EmptyAssessmentsList isLoading={isLoading} />
         ) : (
-          <AssessmentsList assessments={assessments} />
+          <>
+            <AssessmentsList assessments={assessments} />
+            {lastRefreshed && (
+              <p className="mt-4 text-xs text-slate-400 text-right">
+                Last updated: {new Date(lastRefreshed).toLocaleTimeString()}
+              </p>
+            )}
+          </>
         )}
       </main>
       <Footer />

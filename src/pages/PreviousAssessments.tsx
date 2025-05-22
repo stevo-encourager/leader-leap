@@ -1,87 +1,29 @@
-import React, { useEffect, useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+
+import React, { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { getAssessmentHistory, deleteAllCompletedAssessments } from '@/services/assessmentService';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { CircleGauge, ArrowLeft, Trash2 } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { CircleGauge, ArrowLeft } from 'lucide-react';
 import Navigation from '@/components/layout/Navigation';
 import Footer from '@/components/layout/Footer';
-import { toast } from '@/hooks/use-toast';
-import { 
-  AlertDialog, 
-  AlertDialogAction, 
-  AlertDialogCancel, 
-  AlertDialogContent, 
-  AlertDialogDescription, 
-  AlertDialogFooter, 
-  AlertDialogHeader, 
-  AlertDialogTitle, 
-  AlertDialogTrigger 
-} from '@/components/ui/alert-dialog';
-
-interface AssessmentRecord {
-  id: string;
-  created_at: string;
-}
+import { useAssessmentHistory } from '@/hooks/useAssessmentHistory';
+import AssessmentsList from '@/components/previous-assessments/AssessmentsList';
+import EmptyAssessmentsList from '@/components/previous-assessments/EmptyAssessmentsList';
+import DeleteAllAssessmentsDialog from '@/components/previous-assessments/DeleteAllAssessmentsDialog';
 
 const PreviousAssessments = () => {
-  const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const [assessments, setAssessments] = useState<AssessmentRecord[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [assessmentCount, setAssessmentCount] = useState<number | null>(null);
-
-  const fetchAssessments = async () => {
-    setIsLoading(true);
-    try {
-      console.log("PreviousAssessments - Fetching assessments...");
-      const result = await getAssessmentHistory();
-      console.log('PreviousAssessments - Assessment history fetch result:', result);
-      
-      if (result.success && result.data) {
-        // Store the raw count for debugging
-        setAssessmentCount(result.data.length);
-        
-        // Use a Map to ensure we keep only one assessment with each ID
-        const uniqueAssessments = Array.from(
-          new Map(result.data.map(item => [item.id, item])).values()
-        );
-        
-        console.log('PreviousAssessments - Unique assessments:', uniqueAssessments);
-        console.log('PreviousAssessments - Raw count:', result.data.length, 'Unique count:', uniqueAssessments.length);
-        
-        setAssessments(uniqueAssessments);
-      } else {
-        console.error('PreviousAssessments - Failed to fetch history:', result.error);
-        toast({
-          title: "Error fetching assessments",
-          description: result.error || "Failed to load your assessment history",
-          variant: "destructive",
-        });
-        setAssessments([]);
-      }
-    } catch (error) {
-      console.error('PreviousAssessments - Error in fetchAssessments:', error);
-      toast({
-        title: "Error fetching assessments",
-        description: "An unexpected error occurred",
-        variant: "destructive",
-      });
-      setAssessments([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { 
+    user, 
+    assessments, 
+    isLoading, 
+    isDeleting, 
+    assessmentCount,
+    fetchAssessments, 
+    handleDeleteAllAssessments 
+  } = useAssessmentHistory();
 
   useEffect(() => {
     // Check if user is authenticated
-    if (loading) {
-      return; // Wait for auth to initialize
-    }
-    
     if (!user) {
       navigate('/login');
       return;
@@ -89,42 +31,10 @@ const PreviousAssessments = () => {
 
     // Fetch assessment history if user is authenticated
     fetchAssessments();
-  }, [user, navigate, loading]);
+  }, [user, navigate]);
 
-  const handleDeleteAllAssessments = async () => {
-    setIsDeleting(true);
-    try {
-      const result = await deleteAllCompletedAssessments();
-      
-      if (result.success) {
-        toast({
-          title: "Assessments deleted",
-          description: "All your completed assessments have been deleted",
-        });
-        // Refresh the list
-        setAssessments([]);
-        setAssessmentCount(0);
-      } else {
-        toast({
-          title: "Error deleting assessments",
-          description: result.error || "Failed to delete your assessments",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error('Error deleting assessments:', error);
-      toast({
-        title: "Error deleting assessments",
-        description: "An unexpected error occurred",
-        variant: "destructive",
-      });
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-  // Show loading state while auth is initializing or fetching data
-  if (loading || isLoading) {
+  // Show loading state while fetching data
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <div className="text-center">
@@ -157,33 +67,10 @@ const PreviousAssessments = () => {
                   ` (deduped from ${assessmentCount})`}
               </span>
               
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button 
-                    variant="destructive" 
-                    size="sm"
-                    disabled={isDeleting}
-                    className="flex items-center gap-2"
-                  >
-                    <Trash2 size={16} />
-                    <span>{isDeleting ? "Deleting..." : "Delete All"}</span>
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete all assessments</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. All your completed assessment data will be permanently deleted.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDeleteAllAssessments}>
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <DeleteAllAssessmentsDialog 
+                isDeleting={isDeleting}
+                onDeleteAll={handleDeleteAllAssessments}
+              />
             </div>
           )}
         </div>
@@ -191,55 +78,9 @@ const PreviousAssessments = () => {
         <h1 className="text-3xl font-bold text-encourager mb-8">Your Previous Assessments</h1>
 
         {assessments.length === 0 ? (
-          <Card className="p-6 text-center">
-            {isLoading ? (
-              <div className="flex flex-col items-center justify-center p-4">
-                <CircleGauge className="text-encourager animate-spin" size={32} />
-                <p className="mt-2 text-slate-500">Loading your assessments...</p>
-              </div>
-            ) : (
-              <>
-                <p className="mb-4 text-slate-600">You haven't completed any assessments yet.</p>
-                <Link to="/assessment">
-                  <Button className="bg-encourager hover:bg-encourager-light">
-                    Start an Assessment
-                  </Button>
-                </Link>
-              </>
-            )}
-          </Card>
+          <EmptyAssessmentsList isLoading={isLoading} />
         ) : (
-          <div className="space-y-4">
-            {assessments.map((assessment) => (
-              <Card key={assessment.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                <CardContent className="p-0">
-                  <div
-                    className="w-full p-6 text-left flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
-                  >
-                    <div>
-                      <h3 className="font-medium text-lg text-encourager">
-                        Leadership Gap Assessment
-                      </h3>
-                      <p className="text-slate-500 text-sm">
-                        Completed on {formatDate(assessment.created_at)}
-                      </p>
-                      <p className="text-slate-400 text-xs">
-                        ID: {assessment.id}
-                      </p>
-                    </div>
-                    <Link to={`/results/${assessment.id}`}>
-                      <Button 
-                        size="sm" 
-                        className="bg-encourager hover:bg-encourager-light"
-                      >
-                        View Results
-                      </Button>
-                    </Link>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <AssessmentsList assessments={assessments} />
         )}
       </main>
       <Footer />

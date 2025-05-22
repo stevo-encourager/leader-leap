@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Category, Skill } from '../utils/assessmentTypes';
+import { Slider } from './ui/slider';
 
 interface LeadershipCategoryProps {
   category: Category;
@@ -145,13 +146,7 @@ const SkillAssessment: React.FC<SkillAssessmentProps> = ({ skill, onRatingChange
           step="1"
           value={ratings.current || 0}
           onChange={handleCurrentChange}
-          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-encourager"
-          style={{
-            background: 'linear-gradient(to right, #2F564D 0%, #2F564D 50%, #e5e7eb 50%, #e5e7eb 100%)',
-            backgroundSize: '100% 100%',
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: `left ${ratings.current * 10}%`
-          }}
+          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
         />
         <div className="flex justify-between text-xs text-gray-500 mt-1">
           <span>Beginner</span>
@@ -176,13 +171,7 @@ const SkillAssessment: React.FC<SkillAssessmentProps> = ({ skill, onRatingChange
           step="1"
           value={ratings.desired || 0}
           onChange={handleDesiredChange}
-          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-encourager"
-          style={{
-            background: 'linear-gradient(to right, #2F564D 0%, #2F564D 50%, #e5e7eb 50%, #e5e7eb 100%)',
-            backgroundSize: '100% 100%',
-            backgroundRepeat: 'no-repeat',
-            backgroundPosition: `left ${ratings.desired * 10}%`
-          }}
+          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
         />
         <div className="flex justify-between text-xs text-gray-500 mt-1">
           <span>Beginner</span>

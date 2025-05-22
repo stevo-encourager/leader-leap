@@ -32,12 +32,12 @@ export const saveAssessmentResults = async (categories: Category[], demographics
       return { success: false, error: 'No valid ratings found in assessment data' };
     }
     
-    // Check if the user already has a pending assessment
-    const { data: existingAssessments, error: checkError } = await supabase
+    // Check if the user already has a completed assessment
+    const { data: existingCompletedAssessments, error: checkError } = await supabase
       .from('assessment_results')
       .select('id')
       .eq('user_id', user.id)
-      .is('completed', null);
+      .eq('completed', true);
       
     if (checkError) {
       console.error('Error checking existing assessments:', checkError);
@@ -45,7 +45,19 @@ export const saveAssessmentResults = async (categories: Category[], demographics
     }
     
     // If there's an existing incomplete assessment, update it instead of creating a new one
-    if (existingAssessments && existingAssessments.length > 0) {
+    // This prevents duplicate assessments from being created
+    const { data: incompleteAssessments, error: incompleteCheckError } = await supabase
+      .from('assessment_results')
+      .select('id')
+      .eq('user_id', user.id)
+      .is('completed', null);
+      
+    if (incompleteCheckError) {
+      console.error('Error checking incomplete assessments:', incompleteCheckError);
+      return { success: false, error: incompleteCheckError.message };
+    }
+    
+    if (incompleteAssessments && incompleteAssessments.length > 0) {
       const { data, error } = await supabase
         .from('assessment_results')
         .update({
@@ -53,7 +65,7 @@ export const saveAssessmentResults = async (categories: Category[], demographics
           demographics: demographics as unknown as Json,
           completed: true
         })
-        .eq('id', existingAssessments[0].id)
+        .eq('id', incompleteAssessments[0].id)
         .select();
         
       if (error) {
@@ -161,15 +173,19 @@ export const getAssessmentHistory = async () => {
       return { success: true, data: [] };
     }
 
-    // Deduplicate using a Set with stringified objects for comparison
-    const uniqueIds = new Set();
-    const uniqueAssessments = assessments.filter(assessment => {
-      const duplicate = uniqueIds.has(assessment.id);
-      uniqueIds.add(assessment.id);
-      return !duplicate;
-    });
+    // Create a map to deduplicate by ID while preserving only the most recent entry
+    const assessmentMap = new Map();
     
-    console.log('getAssessmentHistory - After deduplication:', uniqueAssessments);
+    // Process in reverse to ensure we keep the most recent entry for each ID
+    for (const assessment of assessments) {
+      if (!assessmentMap.has(assessment.id)) {
+        assessmentMap.set(assessment.id, assessment);
+      }
+    }
+    
+    const uniqueAssessments = Array.from(assessmentMap.values());
+    
+    console.log('getAssessmentHistory - Deduplicated assessments:', uniqueAssessments);
     
     return { success: true, data: uniqueAssessments };
   } catch (error) {

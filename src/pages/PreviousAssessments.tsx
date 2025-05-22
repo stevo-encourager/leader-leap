@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
@@ -42,18 +41,19 @@ const PreviousAssessments = () => {
       console.log('PreviousAssessments - Assessment history fetch result:', result);
       
       if (result.success && result.data) {
-        // Deduplicate by ID using a Map (which preserves insertion order)
-        const uniqueMap = new Map();
-        
-        result.data.forEach(item => {
-          if (!uniqueMap.has(item.id)) {
-            uniqueMap.set(item.id, item);
+        // The assessment service now handles deduplication, but let's ensure uniqueness here too
+        const idSet = new Set<string>();
+        const uniqueAssessments = result.data.filter(item => {
+          // If we've seen this ID before, filter it out
+          if (idSet.has(item.id)) {
+            return false;
           }
+          // Otherwise, add it to our set and keep it
+          idSet.add(item.id);
+          return true;
         });
         
-        const uniqueAssessments = Array.from(uniqueMap.values());
-        console.log('PreviousAssessments - Unique assessments:', uniqueAssessments);
-        
+        console.log('PreviousAssessments - Filtered unique assessments:', uniqueAssessments);
         setAssessments(uniqueAssessments);
       } else {
         console.error('PreviousAssessments - Failed to fetch history:', result.error);

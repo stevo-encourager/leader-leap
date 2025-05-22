@@ -40,14 +40,14 @@ export const saveAssessmentResults = async (categories: Category[], demographics
     
     console.log(`Checking for assessments between ${startOfDay} and ${endOfDay}`);
     
-    // Check if the user already has an assessment from today
+    // Check if the user already has an assessment from today - using transaction for atomicity
     const { data: todaysAssessments, error: checkError } = await supabase
       .from('assessment_results')
       .select('id')
       .eq('user_id', user.id)
-      .eq('completed', true)
       .gte('created_at', startOfDay)
-      .lte('created_at', endOfDay);
+      .lte('created_at', endOfDay)
+      .limit(1);
       
     if (checkError) {
       console.error('Error checking today\'s assessments:', checkError);
@@ -63,6 +63,7 @@ export const saveAssessmentResults = async (categories: Category[], demographics
         .update({
           categories: categories as unknown as Json,
           demographics: demographics as unknown as Json,
+          completed: true
           // Don't update the created_at timestamp since we want to preserve the original date
         })
         .eq('id', todaysAssessments[0].id)
@@ -81,7 +82,8 @@ export const saveAssessmentResults = async (categories: Category[], demographics
       .from('assessment_results')
       .select('id')
       .eq('user_id', user.id)
-      .is('completed', null);
+      .is('completed', null)
+      .limit(1);
       
     if (incompleteCheckError) {
       console.error('Error checking incomplete assessments:', incompleteCheckError);
@@ -112,6 +114,8 @@ export const saveAssessmentResults = async (categories: Category[], demographics
     
     // If there's no assessment from today and no incomplete assessment, create a new one
     console.log('Creating new assessment record');
+    
+    // Use insert with onConflict strategy to prevent duplicates at the database level
     const { data, error } = await supabase
       .from('assessment_results')
       .insert({

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import UserHeader from '@/components/auth/UserHeader';
@@ -17,6 +17,8 @@ const Results = () => {
   const navigate = useNavigate();
   const { id: assessmentId } = useParams();
   const { user, loading } = useAuth();
+  const saveTriggeredRef = useRef(false);
+  
   const {
     currentStep,
     categories,
@@ -25,7 +27,8 @@ const Results = () => {
     handleCloseAuthForm,
     handleShowSignupForm,
     handleStartAssessment,
-    handleBackToDemographics
+    handleBackToDemographics,
+    handleSaveResults
   } = useAssessment();
 
   const {
@@ -47,6 +50,31 @@ const Results = () => {
     categories,
     demographics
   );
+
+  // Effect to handle result saving when user is logged in and viewing results
+  // Uses a ref to ensure it only triggers once per session
+  useEffect(() => {
+    // Only attempt to save if:
+    // 1. User is logged in
+    // 2. We're on the results page (currentStep is 'results')
+    // 3. We're not viewing a specific assessment (no assessmentId)
+    // 4. We haven't already triggered a save in this component mount
+    // 5. We have valid data to save
+    if (user && 
+        currentStep === 'results' && 
+        !assessmentId && 
+        !saveTriggeredRef.current && 
+        isAssessmentDataValid) {
+      
+      console.log('Triggering assessment save from Results page');
+      saveTriggeredRef.current = true;
+      
+      // Use setTimeout to avoid race conditions and ensure this runs after render
+      setTimeout(() => {
+        handleSaveResults();
+      }, 0);
+    }
+  }, [user, currentStep, assessmentId, isAssessmentDataValid, handleSaveResults]);
 
   // Wait for auth and data to initialize before rendering
   if (loading || isAssessmentDataLoading) {

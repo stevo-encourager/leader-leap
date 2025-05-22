@@ -15,6 +15,7 @@ export const useResultsManagement = (
 ) => {
   const [showAuthForm, setShowAuthForm] = useState(false);
   const [loadingPreviousResults, setLoadingPreviousResults] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   
@@ -50,6 +51,12 @@ export const useResultsManagement = (
 
   // Results management functions
   const handleSaveResults = async () => {
+    // Prevent multiple simultaneous save operations
+    if (isSaving) {
+      console.log('Already saving results, skipping duplicate call');
+      return;
+    }
+    
     // Skip save if already saved in this session
     if (resultsSavedRef.current) {
       console.log('Results already saved in this session, skipping');
@@ -61,39 +68,67 @@ export const useResultsManagement = (
       return;
     }
     
-    // Check if we already saved an assessment today
-    const today = new Date().toISOString().split('T')[0];
-    if (lastSavedDateRef.current === today) {
-      console.log('Already saved an assessment today, updating instead of creating a new one');
+    // Check for valid data before saving
+    const hasValidData = categories && categories.length > 0 && 
+      categories.some(cat => 
+        cat.skills && cat.skills.some(skill => 
+          skill.ratings && 
+          typeof skill.ratings.current === 'number' && 
+          typeof skill.ratings.desired === 'number'
+        )
+      );
+    
+    if (!hasValidData) {
+      console.log('No valid assessment data to save, skipping');
+      return;
     }
     
-    console.log("Saving assessment results with categories:", categories);
+    setIsSaving(true);
     
-    const result = await saveAssessmentResults(categories, demographics);
-    
-    if (result.success) {
-      // Mark as saved for this session
-      resultsSavedRef.current = true;
-      
-      // Store today's date as the last saved date
-      lastSavedDateRef.current = today;
-      
-      // Store the assessment ID to track which assessment we're viewing
-      if (result.data && result.data.length > 0) {
-        currentAssessmentIdRef.current = result.data[0].id;
-        console.log('Saved assessment with ID:', currentAssessmentIdRef.current);
+    try {
+      // Check if we already saved an assessment today
+      const today = new Date().toISOString().split('T')[0];
+      if (lastSavedDateRef.current === today) {
+        console.log('Already saved an assessment today, updating instead of creating a new one');
       }
       
-      toast({
-        title: "Results saved",
-        description: "Your assessment results have been saved to your account.",
-      });
-    } else {
+      console.log("Saving assessment results with categories:", categories);
+      
+      const result = await saveAssessmentResults(categories, demographics);
+      
+      if (result.success) {
+        // Mark as saved for this session
+        resultsSavedRef.current = true;
+        
+        // Store today's date as the last saved date
+        lastSavedDateRef.current = today;
+        
+        // Store the assessment ID to track which assessment we're viewing
+        if (result.data && result.data.length > 0) {
+          currentAssessmentIdRef.current = result.data[0].id;
+          console.log('Saved assessment with ID:', currentAssessmentIdRef.current);
+        }
+        
+        toast({
+          title: "Results saved",
+          description: "Your assessment results have been saved to your account.",
+        });
+      } else {
+        toast({
+          title: "Error saving results",
+          description: result.error || "An error occurred while saving your results.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error in handleSaveResults:", error);
       toast({
         title: "Error saving results",
-        description: result.error || "An error occurred while saving your results.",
+        description: "An unexpected error occurred while saving your results.",
         variant: "destructive",
       });
+    } finally {
+      setIsSaving(false);
     }
   };
   

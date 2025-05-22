@@ -41,20 +41,25 @@ const PreviousAssessments = () => {
       console.log('PreviousAssessments - Assessment history fetch result:', result);
       
       if (result.success && result.data) {
-        // The assessment service now handles deduplication, but let's ensure uniqueness here too
-        const idSet = new Set<string>();
-        const uniqueAssessments = result.data.filter(item => {
-          // If we've seen this ID before, filter it out
-          if (idSet.has(item.id)) {
-            return false;
+        // Enhanced deduplication: Using a Map to ensure we keep only the most recent assessment
+        // when there are multiple entries with the same ID
+        const uniqueAssessments = new Map<string, AssessmentRecord>();
+        
+        // Process from newest to oldest (already sorted in the service)
+        result.data.forEach(assessment => {
+          // Only add if we haven't seen this ID yet
+          if (!uniqueAssessments.has(assessment.id)) {
+            uniqueAssessments.set(assessment.id, assessment);
           }
-          // Otherwise, add it to our set and keep it
-          idSet.add(item.id);
-          return true;
         });
         
-        console.log('PreviousAssessments - Filtered unique assessments:', uniqueAssessments);
-        setAssessments(uniqueAssessments);
+        // Convert map values back to array
+        const finalAssessments = Array.from(uniqueAssessments.values());
+        
+        console.log('PreviousAssessments - After deduplication:', finalAssessments);
+        console.log('PreviousAssessments - Original count:', result.data.length, 'Final count:', finalAssessments.length);
+        
+        setAssessments(finalAssessments);
       } else {
         console.error('PreviousAssessments - Failed to fetch history:', result.error);
         toast({
@@ -150,33 +155,39 @@ const PreviousAssessments = () => {
           </Link>
           
           {assessments.length > 0 && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button 
-                  variant="destructive" 
-                  size="sm"
-                  disabled={isDeleting}
-                  className="flex items-center gap-2"
-                >
-                  <Trash2 size={16} />
-                  <span>{isDeleting ? "Deleting..." : "Delete All Assessments"}</span>
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete all assessments</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. All your completed assessment data will be permanently deleted.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDeleteAllAssessments}>
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-slate-500">
+                {assessments.length} assessment{assessments.length !== 1 ? 's' : ''}
+              </span>
+              
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="destructive" 
+                    size="sm"
+                    disabled={isDeleting}
+                    className="flex items-center gap-2"
+                  >
+                    <Trash2 size={16} />
+                    <span>{isDeleting ? "Deleting..." : "Delete All"}</span>
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete all assessments</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. All your completed assessment data will be permanently deleted.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteAllAssessments}>
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           )}
         </div>
 
@@ -184,12 +195,21 @@ const PreviousAssessments = () => {
 
         {assessments.length === 0 ? (
           <Card className="p-6 text-center">
-            <p className="mb-4 text-slate-600">You haven't completed any assessments yet.</p>
-            <Link to="/assessment">
-              <Button className="bg-encourager hover:bg-encourager-light">
-                Start an Assessment
-              </Button>
-            </Link>
+            {isLoading ? (
+              <div className="flex flex-col items-center justify-center p-4">
+                <CircleGauge className="text-encourager animate-spin" size={32} />
+                <p className="mt-2 text-slate-500">Loading your assessments...</p>
+              </div>
+            ) : (
+              <>
+                <p className="mb-4 text-slate-600">You haven't completed any assessments yet.</p>
+                <Link to="/assessment">
+                  <Button className="bg-encourager hover:bg-encourager-light">
+                    Start an Assessment
+                  </Button>
+                </Link>
+              </>
+            )}
           </Card>
         ) : (
           <div className="space-y-4">
@@ -205,6 +225,9 @@ const PreviousAssessments = () => {
                       </h3>
                       <p className="text-slate-500 text-sm">
                         Completed on {formatDate(assessment.created_at)}
+                      </p>
+                      <p className="text-slate-400 text-xs">
+                        ID: {assessment.id}
                       </p>
                     </div>
                     <Link to={`/results/${assessment.id}`}>

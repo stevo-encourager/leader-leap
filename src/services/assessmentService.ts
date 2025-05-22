@@ -173,19 +173,16 @@ export const getAssessmentHistory = async () => {
       return { success: true, data: [] };
     }
 
-    // Create a map to deduplicate by ID while preserving only the most recent entry
-    const assessmentMap = new Map();
+    // Server-side deduplication: Use Set to ensure unique IDs
+    const seen = new Set();
+    const uniqueAssessments = assessments.filter(assessment => {
+      const isDuplicate = seen.has(assessment.id);
+      seen.add(assessment.id);
+      return !isDuplicate;
+    });
     
-    // Process in reverse to ensure we keep the most recent entry for each ID
-    for (const assessment of assessments) {
-      if (!assessmentMap.has(assessment.id)) {
-        assessmentMap.set(assessment.id, assessment);
-      }
-    }
-    
-    const uniqueAssessments = Array.from(assessmentMap.values());
-    
-    console.log('getAssessmentHistory - Deduplicated assessments:', uniqueAssessments);
+    console.log('getAssessmentHistory - After server deduplication:', uniqueAssessments);
+    console.log('getAssessmentHistory - Removed', assessments.length - uniqueAssessments.length, 'duplicates');
     
     return { success: true, data: uniqueAssessments };
   } catch (error) {

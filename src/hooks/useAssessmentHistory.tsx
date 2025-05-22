@@ -24,13 +24,13 @@ export const useAssessmentHistory = () => {
       console.log('useAssessmentHistory - Assessment history fetch result:', result);
       
       if (result.success && result.data) {
-        // Store the raw count
+        // Store the raw data count
         setAssessmentCount(result.data.length);
         
-        // Set the deduplicated assessments from the service
+        // Set the assessments
         setAssessments(result.data);
         
-        console.log('useAssessmentHistory - Final assessments count:', result.data.length);
+        console.log('useAssessmentHistory - Assessments count:', result.data.length);
       } else {
         console.error('useAssessmentHistory - Failed to fetch history:', result.error);
         toast({

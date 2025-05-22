@@ -152,7 +152,8 @@ export const getAssessmentHistory = async () => {
     
     console.log('getAssessmentHistory - Fetching for user:', user.id);
     
-    // First, get all completed assessments for the user to understand the scope of duplication
+    // After our database cleanup, we should have only unique assessment IDs
+    // We'll still implement a safety check on the client side
     const { data: assessments, error } = await supabase
       .from('assessment_results')
       .select('id, created_at')
@@ -174,21 +175,18 @@ export const getAssessmentHistory = async () => {
       return { success: true, data: [] };
     }
 
-    // Use a Set to track already seen IDs for efficient deduplication
-    const seenIds = new Set();
-    const uniqueAssessments = [];
-    
-    // Keep only the first occurrence of each assessment ID
-    for (const assessment of assessments) {
-      if (!seenIds.has(assessment.id)) {
-        seenIds.add(assessment.id);
-        uniqueAssessments.push(assessment);
+    // While the database should now be clean, we'll still maintain this client-side
+    // deduplication as a safety measure against future duplicates
+    const uniqueIds = new Set();
+    const uniqueAssessments = assessments.filter(assessment => {
+      if (uniqueIds.has(assessment.id)) {
+        return false;
       }
-    }
+      uniqueIds.add(assessment.id);
+      return true;
+    });
     
-    console.log('getAssessmentHistory - After deduplication:', uniqueAssessments);
-    console.log('getAssessmentHistory - Before count:', assessments.length, 'After count:', uniqueAssessments.length);
-    console.log('getAssessmentHistory - Unique IDs:', Array.from(seenIds));
+    console.log('getAssessmentHistory - Unique assessments count:', uniqueAssessments.length);
     
     return { success: true, data: uniqueAssessments };
   } catch (error) {

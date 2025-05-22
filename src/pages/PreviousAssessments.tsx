@@ -17,7 +17,6 @@ const PreviousAssessments = () => {
     assessments, 
     isLoading, 
     isDeleting, 
-    assessmentCount,
     fetchAssessments, 
     handleDeleteAllAssessments 
   } = useAssessmentHistory();
@@ -63,8 +62,6 @@ const PreviousAssessments = () => {
             <div className="flex items-center gap-2">
               <span className="text-sm text-slate-500">
                 {assessments.length} assessment{assessments.length !== 1 ? 's' : ''}
-                {assessmentCount !== null && assessmentCount !== assessments.length && 
-                  ` (deduped from ${assessmentCount})`}
               </span>
               
               <DeleteAllAssessmentsDialog 

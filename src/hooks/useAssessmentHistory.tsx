@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getAssessmentHistory, deleteAllCompletedAssessments } from '@/services/assessmentService';
@@ -26,10 +27,10 @@ export const useAssessmentHistory = () => {
         // Store the raw count
         setAssessmentCount(result.data.length);
         
-        // The service should now return already deduplicated results
+        // Set the deduplicated assessments from the service
         setAssessments(result.data);
         
-        console.log('useAssessmentHistory - Assessments count:', result.data.length);
+        console.log('useAssessmentHistory - Final assessments count:', result.data.length);
       } else {
         console.error('useAssessmentHistory - Failed to fetch history:', result.error);
         toast({

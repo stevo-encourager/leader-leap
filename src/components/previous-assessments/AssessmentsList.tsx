@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { formatDate } from '@/lib/utils';
 import { Pagination } from '@/components/ui/pagination';
-import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
+import { AlertTriangle } from 'lucide-react';
 
 interface AssessmentRecord {
   id: string;
@@ -89,7 +89,7 @@ const AssessmentsList = ({
                 <TableCell className="text-right">
                   {assessment.hasValidData === false ? (
                     <div className="flex items-center justify-end gap-2">
-                      <ExclamationTriangleIcon className="h-4 w-4 text-amber-500" />
+                      <AlertTriangle className="h-4 w-4 text-amber-500" />
                       <span className="text-xs text-amber-600">Invalid data</span>
                     </div>
                   ) : (

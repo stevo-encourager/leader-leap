@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
+import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface InvalidResultsMessageProps {
@@ -28,7 +28,7 @@ const InvalidResultsMessage: React.FC<InvalidResultsMessageProps> = ({
   return (
     <div className="p-6 text-center border border-red-200 rounded-lg bg-red-50 max-w-2xl mx-auto">
       <div className="flex justify-center mb-4">
-        <ExclamationTriangleIcon className="h-10 w-10 text-red-500" />
+        <AlertTriangle className="h-10 w-10 text-red-500" />
       </div>
       <h3 className="text-lg font-medium text-red-500 mb-4">Unable to display results: Invalid assessment data</h3>
       <p className="text-sm text-gray-600 mb-4">

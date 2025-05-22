@@ -74,11 +74,14 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
     </CardHeader>
   ) : null;
 
+  // CRITICAL FIX: Always show content when hideHeader is true, otherwise respect isExpanded state
+  const shouldShowContent = hideHeader || isExpanded;
+
   return (
     <Card className="w-full shadow-sm border border-gray-200 mb-6">
       {header}
       
-      {isExpanded && (
+      {shouldShowContent && (
         <CardContent>
           <div className="space-y-6">
             {category.skills.map((skill) => (

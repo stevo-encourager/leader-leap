@@ -33,7 +33,7 @@ export const deleteAllAssessmentRecords = async () => {
  */
 export const deleteAllUsers = async () => {
   try {
-    console.log("Attempting to delete all users...");
+    console.log("Attempting to delete all users and related data...");
     
     // This is a development-only function and requires admin rights
     const { data, error } = await supabase.functions.invoke('delete-all-users', {
@@ -46,6 +46,35 @@ export const deleteAllUsers = async () => {
     }
     
     console.log("Users deletion response:", data);
+    
+    // Check if the function successfully deleted users
+    if (data && data.results) {
+      const successCount = data.results.filter((result: any) => result.success).length;
+      const failCount = data.results.length - successCount;
+      
+      console.log(`Successfully deleted ${successCount} users, ${failCount} failed`);
+      
+      if (failCount > 0) {
+        const failedUsers = data.results
+          .filter((result: any) => !result.success)
+          .map((result: any) => `${result.email || result.userId}: ${result.error}`)
+          .join(', ');
+          
+        console.warn("Failed to delete some users:", failedUsers);
+        
+        // Return partial success if some users were deleted but others failed
+        if (successCount > 0) {
+          return { 
+            success: true, 
+            data: data, 
+            warning: `${failCount} users could not be deleted. Please try again to delete remaining users.` 
+          };
+        }
+        
+        return { success: false, error: `Failed to delete users: ${failedUsers}` };
+      }
+    }
+    
     return { success: true, data };
   } catch (error: any) {
     console.error("Error deleting all users:", error.message);
@@ -70,6 +99,9 @@ export const clearLocalStorageData = () => {
     
     // Clear any other app-specific local storage items
     localStorage.removeItem('supabase.auth.token');
+    
+    // Force clear auth data from Supabase local storage
+    localStorage.removeItem('sb-' + supabase.supabaseUrl + '-auth-token');
     
     console.log("Local storage cleared successfully");
     return true;
@@ -108,6 +140,17 @@ export const resetAppData = async () => {
         variant: "destructive",
       });
       return { success: false, error: usersResult.error };
+    }
+    
+    // Check for partial success with warnings
+    if (usersResult.warning) {
+      toast({
+        title: "Partial reset completed",
+        description: usersResult.warning,
+        variant: "warning",
+      });
+      
+      return { success: true, warning: usersResult.warning };
     }
     
     // Success

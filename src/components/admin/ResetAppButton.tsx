@@ -6,24 +6,34 @@ import { CircleGauge, AlertTriangle } from 'lucide-react';
 import { resetAppData } from '@/services/resetApp';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/hooks/use-toast';
+import { Progress } from '@/components/ui/progress';
 
 const ResetAppButton = () => {
   const [isResetting, setIsResetting] = useState(false);
+  const [progress, setProgress] = useState(0);
   const navigate = useNavigate();
   
   const handleResetApp = async () => {
     setIsResetting(true);
+    setProgress(10); // Started
     
     try {
+      // Clear local storage first
+      setProgress(30); // Local storage clear
+      
+      // Delete data and users
       const result = await resetAppData();
+      setProgress(90); // Almost done
       
       if (result.success) {
         // Force navigation to home page after successful reset
         toast({
           title: "Reset complete",
-          description: "Application has been reset. All users and data have been removed.",
-          variant: "default",
+          description: result.warning || "Application has been reset. All users and data have been removed.",
+          variant: result.warning ? "warning" : "default",
         });
+        
+        setProgress(100); // Complete
         
         // Small delay to ensure toast is shown before redirect
         setTimeout(() => {
@@ -31,6 +41,8 @@ const ResetAppButton = () => {
           // Force reload to clear any in-memory state
           window.location.reload();
         }, 1500);
+      } else {
+        setProgress(0); // Reset progress on error
       }
     } catch (error) {
       console.error("Error resetting app:", error);
@@ -39,6 +51,7 @@ const ResetAppButton = () => {
         description: "An unexpected error occurred while resetting the application.",
         variant: "destructive",
       });
+      setProgress(0); // Reset progress
     } finally {
       setIsResetting(false);
     }
@@ -66,8 +79,19 @@ const ResetAppButton = () => {
             <p>Are you absolutely sure you want to proceed?</p>
           </AlertDialogDescription>
         </AlertDialogHeader>
+        {isResetting && (
+          <div className="space-y-2 py-2">
+            <Progress value={progress} />
+            <p className="text-sm text-center text-muted-foreground">
+              {progress < 30 && "Starting reset process..."}
+              {progress >= 30 && progress < 60 && "Deleting local data..."}
+              {progress >= 60 && progress < 90 && "Deleting users and database records..."}
+              {progress >= 90 && "Finalizing reset..."}
+            </p>
+          </div>
+        )}
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isResetting}>Cancel</AlertDialogCancel>
           <AlertDialogAction 
             onClick={handleResetApp} 
             disabled={isResetting}

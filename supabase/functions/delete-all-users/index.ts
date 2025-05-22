@@ -21,7 +21,22 @@ serve(async (req) => {
       );
     }
     
-    // First delete all profiles (if any exist)
+    // First delete all assessment records explicitly to ensure clean removal
+    console.log("Deleting all assessment_results records...");
+    const { error: assessmentError } = await supabase
+      .from('assessment_results')
+      .delete()
+      .neq('id', '00000000-0000-0000-0000-000000000000');
+      
+    if (assessmentError) {
+      console.error("Error deleting assessment records:", assessmentError);
+      // Continue anyway as we want to delete users
+    } else {
+      console.log("Successfully deleted all assessment_results records");
+    }
+    
+    // Delete all profiles (if any exist)
+    console.log("Deleting all profiles records...");
     const { error: profilesError } = await supabase
       .from('profiles')
       .delete()
@@ -30,10 +45,15 @@ serve(async (req) => {
     if (profilesError) {
       console.error("Error deleting profiles:", profilesError);
       // Continue anyway as we want to delete users
+    } else {
+      console.log("Successfully deleted all profiles records");
     }
     
     // Get the list of all users
-    const { data: users, error: getUsersError } = await supabase.auth.admin.listUsers();
+    console.log("Fetching all users...");
+    const { data: users, error: getUsersError } = await supabase.auth.admin.listUsers({
+      perPage: 1000, // Maximum allowed to ensure we get all users
+    });
     
     if (getUsersError) {
       console.error("Error listing users:", getUsersError);
@@ -51,23 +71,32 @@ serve(async (req) => {
       );
     }
     
+    console.log(`Found ${users.users.length} users to delete`);
+    
     // Delete each user
     const deletionResults = [];
     
     for (const user of users.users) {
       try {
-        const { error } = await supabase.auth.admin.deleteUser(user.id);
+        console.log(`Attempting to delete user ${user.id} (${user.email})`);
+        const { error } = await supabase.auth.admin.deleteUser(user.id, {
+          shouldSoftDelete: false // Ensure hard deletion
+        });
         
         if (error) {
           console.error(`Error deleting user ${user.id}:`, error);
           deletionResults.push({ userId: user.id, email: user.email, success: false, error: error.message });
         } else {
+          console.log(`Successfully deleted user ${user.id} (${user.email})`);
           deletionResults.push({ userId: user.id, email: user.email, success: true });
         }
       } catch (err) {
         console.error(`Exception deleting user ${user.id}:`, err);
         deletionResults.push({ userId: user.id, email: user.email, success: false, error: err.message });
       }
+      
+      // Small delay between deletions to prevent rate limiting
+      await new Promise(resolve => setTimeout(resolve, 200));
     }
     
     return new Response(

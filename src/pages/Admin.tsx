@@ -22,9 +22,10 @@ const Admin = () => {
       </div>
 
       <Tabs defaultValue="schema">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="schema">Data Schema</TabsTrigger>
           <TabsTrigger value="reset">App Reset</TabsTrigger>
+          <TabsTrigger value="stats">System Status</TabsTrigger>
         </TabsList>
         
         <TabsContent value="schema" className="mt-6">
@@ -48,6 +49,7 @@ const Admin = () => {
                 <h3 className="font-medium mb-2">This will delete:</h3>
                 <ul className="list-disc pl-5 text-sm space-y-1">
                   <li>All user accounts in the Supabase Auth system</li>
+                  <li>All profiles records in the database</li>
                   <li>All assessment_results records in the database</li>
                   <li>All browser local storage data</li>
                 </ul>
@@ -56,6 +58,20 @@ const Admin = () => {
             <CardFooter>
               <ResetAppButton />
             </CardFooter>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="stats" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>System Status</CardTitle>
+              <CardDescription>
+                View current system statistics and status
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <SystemStatusViewer />
+            </CardContent>
           </Card>
         </TabsContent>
       </Tabs>

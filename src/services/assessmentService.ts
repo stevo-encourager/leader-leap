@@ -152,14 +152,12 @@ export const getAssessmentHistory = async () => {
     
     console.log('getAssessmentHistory - Fetching for user:', user.id);
     
-    // Only get a single record of each assessment using DISTINCT ON
-    // This will ensure we don't get duplicate rows with the same id
+    // Get distinct completed assessments by ID, ordering by created_at
     const { data: assessments, error } = await supabase
       .from('assessment_results')
       .select('id, created_at')
       .eq('user_id', user.id)
       .eq('completed', true)
-      .order('id', { ascending: true })
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -176,12 +174,21 @@ export const getAssessmentHistory = async () => {
       return { success: true, data: [] };
     }
 
-    // Use a Map for efficient deduplication (keeps only the first entry for each ID)
-    const uniqueAssessments = Array.from(
-      new Map(assessments.map(item => [item.id, item])).values()
-    );
+    // Create a Map to track unique assessment IDs
+    // We'll use this to deduplicate the results
+    const uniqueAssessmentMap = new Map();
     
-    console.log('getAssessmentHistory - After client deduplication:', uniqueAssessments);
+    // Process each assessment and only keep the first one we encounter for each ID
+    for (const assessment of assessments) {
+      if (!uniqueAssessmentMap.has(assessment.id)) {
+        uniqueAssessmentMap.set(assessment.id, assessment);
+      }
+    }
+    
+    // Convert the map values back to an array
+    const uniqueAssessments = Array.from(uniqueAssessmentMap.values());
+    
+    console.log('getAssessmentHistory - After deduplication:', uniqueAssessments);
     console.log('getAssessmentHistory - Before count:', assessments.length, 'After count:', uniqueAssessments.length);
     
     return { success: true, data: uniqueAssessments };

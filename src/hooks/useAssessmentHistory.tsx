@@ -23,18 +23,13 @@ export const useAssessmentHistory = () => {
       console.log('useAssessmentHistory - Assessment history fetch result:', result);
       
       if (result.success && result.data) {
-        // Store the raw count for debugging
+        // Store the raw count
         setAssessmentCount(result.data.length);
         
-        // Use a Map to ensure we keep only one assessment with each ID
-        const uniqueAssessments = Array.from(
-          new Map(result.data.map(item => [item.id, item])).values()
-        );
+        // The service should now return already deduplicated results
+        setAssessments(result.data);
         
-        console.log('useAssessmentHistory - Unique assessments:', uniqueAssessments);
-        console.log('useAssessmentHistory - Raw count:', result.data.length, 'Unique count:', uniqueAssessments.length);
-        
-        setAssessments(uniqueAssessments);
+        console.log('useAssessmentHistory - Assessments count:', result.data.length);
       } else {
         console.error('useAssessmentHistory - Failed to fetch history:', result.error);
         toast({

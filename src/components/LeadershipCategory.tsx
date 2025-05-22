@@ -1,155 +1,159 @@
 
-import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Slider } from "@/components/ui/slider";
-import { Category, Skill } from '@/utils/assessmentTypes';
-import { HelpCircle } from 'lucide-react';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Category, Skill } from '../utils/assessmentTypes';
 
 interface LeadershipCategoryProps {
   category: Category;
-  onSkillRating: (categoryId: string, skillId: string, type: 'current' | 'desired', value: number) => void;
-  hideHeader?: boolean;
+  onChange: (updatedCategory: Category) => void;
 }
 
-const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({ 
-  category, 
-  onSkillRating,
-  hideHeader = false
-}) => {
-  // Check if category and skills are defined
-  if (!category) {
-    console.error("LeadershipCategory received undefined category");
-    return null;
-  }
+const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({ category, onChange }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
 
-  // Ensure skills array exists
-  const skills = category.skills || [];
+  const handleRatingChange = (skillId: string, ratingType: 'current' | 'desired', value: number) => {
+    // Ensure value is a valid number
+    const numericValue = Number(value);
+    if (isNaN(numericValue)) {
+      console.error(`LeadershipCategory - Invalid rating value: ${value}`);
+      return;
+    }
+    
+    // Log rating change for debugging
+    console.log(`LeadershipCategory - Setting ${ratingType} rating for skill ${skillId} to ${numericValue}`);
+    
+    // Create a deep copy of the category to avoid reference issues
+    const updatedCategory: Category = JSON.parse(JSON.stringify(category));
+    
+    // Find the skill and update its rating
+    const skillToUpdate = updatedCategory.skills.find(skill => skill.id === skillId);
+    if (skillToUpdate) {
+      skillToUpdate.ratings[ratingType] = numericValue;
+      console.log(`LeadershipCategory - Updated ${category.title} -> ${skillToUpdate.name} -> ${ratingType} = ${numericValue}`);
+      onChange(updatedCategory);
+    } else {
+      console.error(`LeadershipCategory - Skill not found: ${skillId}`);
+    }
+  };
+
+  const toggleExpanded = () => {
+    setIsExpanded(!isExpanded);
+  };
 
   return (
-    <Card className="mb-8">
-      {!hideHeader && (
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <CardTitle className="text-[#242323]">{category.title}</CardTitle>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button className="cursor-help rounded-full inline-flex focus:outline-none focus:ring-2 focus:ring-primary">
-                  <HelpCircle size={18} className="text-encourager" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent 
-                className="bg-encourager text-white border-encourager max-w-xs"
-                sideOffset={5}
-              >
-                <p>Use the sliding scales below to rate your current ability and desired target level for each skill.</p>
-              </TooltipContent>
-            </Tooltip>
+    <Card className="w-full shadow-sm border border-gray-200 mb-6">
+      <CardHeader 
+        className="pb-2 cursor-pointer" 
+        onClick={toggleExpanded}
+      >
+        <CardTitle className="text-lg flex justify-between items-center">
+          <span>{category.title}</span>
+          <span className="text-sm text-gray-500">
+            {isExpanded ? '▲' : '▼'}
+          </span>
+        </CardTitle>
+        <CardDescription>{category.description}</CardDescription>
+      </CardHeader>
+      
+      {isExpanded && (
+        <CardContent>
+          <div className="space-y-6">
+            {category.skills.map((skill) => (
+              <SkillAssessment 
+                key={skill.id} 
+                skill={skill} 
+                onRatingChange={(ratingType, value) => handleRatingChange(skill.id, ratingType, value)}
+              />
+            ))}
           </div>
-          <div className="h-6"></div>
-          <CardDescription>{category.description}</CardDescription>
-        </CardHeader>
+        </CardContent>
       )}
-      <CardContent>
-        {skills.map((skill) => (
-          <div key={skill.id} className="mb-8 pt-6">
-            <div className="flex justify-between items-center mb-2">
-              <h4 className="text-lg font-medium text-[#242323]">{skill.name}</h4>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button className="cursor-help rounded-full inline-flex focus:outline-none focus:ring-2 focus:ring-encourager">
-                    <HelpCircle size={18} className="text-encourager" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent 
-                  className="bg-encourager text-white border-encourager max-w-xs"
-                  sideOffset={5}
-                >
-                  <p>Use the sliding scales below to rate your current ability (top slider) and desired target level (bottom slider).</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-            <p className="text-sm text-muted-foreground mb-6">{skill.description}</p>
-            
-            <div className="slider-container">
-              <span className="slider-label">Current ability:</span>
-              <div className="flex-1 px-2">
-                <div className="flex items-center">
-                  <div className="flex-1">
-                    <Slider
-                      defaultValue={[skill.ratings?.current || 0]}
-                      max={10}
-                      step={1}
-                      value={[skill.ratings?.current || 0]}
-                      onValueChange={(value) => {
-                        // Convert to number explicitly
-                        const numericValue = Number(value[0]);
-                        onSkillRating(category.id, skill.id, 'current', numericValue);
-                      }}
-                      className="mb-2"
-                    />
-                  </div>
-                  <span className="w-8 text-center font-medium ml-2">{skill.ratings?.current || 0}</span>
-                </div>
-                <div className="relative flex text-xs text-muted-foreground mt-1 h-5">
-                  <span style={{ position: 'absolute', left: '5%', transform: 'translateX(-50%)' }} className="text-center">Beginner</span>
-                  <span style={{ position: 'absolute', left: '35%', transform: 'translateX(-50%)' }} className="text-center">Proficient</span>
-                  <span style={{ position: 'absolute', left: '65%', transform: 'translateX(-50%)' }} className="text-center">Advanced</span>
-                  <span style={{ position: 'absolute', left: '90%', transform: 'translateX(-50%)' }} className="text-center">Expert</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="slider-container">
-              <span className="slider-label">Target<br />level:</span>
-              <div className="flex-1 px-2">
-                <div className="flex items-center">
-                  <div className="flex-1">
-                    <Slider
-                      defaultValue={[skill.ratings?.desired || 0]}
-                      max={10}
-                      step={1}
-                      value={[skill.ratings?.desired || 0]}
-                      onValueChange={(value) => {
-                        // Convert to number explicitly
-                        const numericValue = Number(value[0]);
-                        onSkillRating(category.id, skill.id, 'desired', numericValue);
-                      }}
-                      className="mb-2"
-                    />
-                  </div>
-                  <span className="w-8 text-center font-medium ml-2">{skill.ratings?.desired || 0}</span>
-                </div>
-                <div className="relative flex text-xs text-muted-foreground mt-1 h-5">
-                  <span style={{ position: 'absolute', left: '5%', transform: 'translateX(-50%)' }} className="text-center">Beginner</span>
-                  <span style={{ position: 'absolute', left: '35%', transform: 'translateX(-50%)' }} className="text-center">Proficient</span>
-                  <span style={{ position: 'absolute', left: '65%', transform: 'translateX(-50%)' }} className="text-center">Advanced</span>
-                  <span style={{ position: 'absolute', left: '90%', transform: 'translateX(-50%)' }} className="text-center">Expert</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="skill-rating mt-2">
-              <div 
-                className="skill-gap" 
-                style={{ 
-                  width: `${(skill.ratings?.current || 0) * 10}%`,
-                  backgroundColor: 'rgba(139, 172, 165, 0.2)'
-                }}
-              ></div>
-              <div 
-                className="absolute top-0 h-full border-r-2 border-secondary" 
-                style={{ left: `${(skill.ratings?.desired || 0) * 10}%` }}
-              ></div>
-            </div>
-          </div>
-        ))}
-      </CardContent>
     </Card>
+  );
+};
+
+interface SkillAssessmentProps {
+  skill: Skill;
+  onRatingChange: (ratingType: 'current' | 'desired', value: number) => void;
+}
+
+const SkillAssessment: React.FC<SkillAssessmentProps> = ({ skill, onRatingChange }) => {
+  // Ensure skill.ratings is properly initialized
+  const ratings = skill.ratings || { current: 0, desired: 0 };
+  
+  // Handle current rating change
+  const handleCurrentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    // Log for debugging
+    console.log(`SkillAssessment - Current rating change for ${skill.name}: ${value}`);
+    onRatingChange('current', value);
+  };
+  
+  // Handle desired rating change
+  const handleDesiredChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    // Log for debugging
+    console.log(`SkillAssessment - Desired rating change for ${skill.name}: ${value}`);
+    onRatingChange('desired', value);
+  };
+  
+  // Log current skill ratings for debugging
+  console.log(`SkillAssessment - Rendering ${skill.name} with ratings:`, {
+    current: ratings.current,
+    desired: ratings.desired
+  });
+
+  return (
+    <div className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+      <div className="mb-2">
+        <h4 className="text-md font-medium text-gray-800">{skill.name}</h4>
+        <p className="text-sm text-gray-600">{skill.description}</p>
+      </div>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        {/* Current Level */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Current Level: {ratings.current}
+          </label>
+          <input
+            type="range"
+            min="0"
+            max="10"
+            step="1"
+            value={ratings.current || 0}
+            onChange={handleCurrentChange}
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+          />
+          <div className="flex justify-between text-xs text-gray-500 mt-1">
+            <span>0</span>
+            <span>5</span>
+            <span>10</span>
+          </div>
+        </div>
+        
+        {/* Desired Level */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Desired Level: {ratings.desired}
+          </label>
+          <input
+            type="range"
+            min="0"
+            max="10"
+            step="1"
+            value={ratings.desired || 0}
+            onChange={handleDesiredChange}
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+          />
+          <div className="flex justify-between text-xs text-gray-500 mt-1">
+            <span>0</span>
+            <span>5</span>
+            <span>10</span>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

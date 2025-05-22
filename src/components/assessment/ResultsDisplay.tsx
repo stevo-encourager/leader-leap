@@ -27,6 +27,9 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
 
   // Enhanced validation and debug logging for the incoming data
   useEffect(() => {
+    console.log("ResultsDisplay - RECEIVED props.categories:", categories);
+    console.log("ResultsDisplay - RECEIVED props.categories stringified:", JSON.stringify(categories));
+    
     const debugInfo: any = {
       categoriesInput: {
         type: typeof categories,
@@ -34,16 +37,14 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
         length: categories?.length || 0,
         rawData: categories ? JSON.parse(JSON.stringify(categories)) : null
       },
-      demographicsInput: demographics ? { ...demographics } : null
+      demographicsInput: demographics ? { ...demographics } : null,
+      timestamp: new Date().toISOString(),
+      component: 'ResultsDisplay'
     };
-    
-    console.log("ResultsDisplay - Full input categories:", JSON.stringify(categories));
-    console.log("ResultsDisplay - Categories length:", categories?.length || 0);
-    console.log("ResultsDisplay - Demographics:", demographics);
     
     // First-level validation
     if (!categories || !Array.isArray(categories)) {
-      console.warn("ResultsDisplay - Invalid categories data:", categories);
+      console.error("ResultsDisplay - Invalid categories data:", categories);
       setErrorType("missing-categories");
       setDebugData({
         ...debugInfo,
@@ -53,7 +54,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
     }
     
     if (categories.length === 0) {
-      console.warn("ResultsDisplay - Empty categories array");
+      console.error("ResultsDisplay - Empty categories array");
       setErrorType("missing-categories");
       setDebugData({
         ...debugInfo,
@@ -69,19 +70,24 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
     let invalidSkillsCount = 0;
     let categoriesWithValidSkills = 0;
     let validationErrors: string[] = [];
+    
+    console.log("ResultsDisplay - Starting to validate", categories.length, "categories");
 
     // Validate and clean categories data
     const cleanCategories = categories.filter(category => {
       if (!category || !category.skills || !Array.isArray(category.skills)) {
         validationErrors.push(`Invalid category (null or no skills): ${category?.title || 'unknown'}`);
-        console.log("ResultsDisplay - Invalid category (null or no skills):", category);
+        console.error("ResultsDisplay - Invalid category (null or no skills):", category);
         return false;
       }
+      
+      console.log(`ResultsDisplay - Validating category: ${category.title} with ${category.skills.length} skills`);
       
       // Filter for valid skills with non-zero ratings
       const validSkills = category.skills.filter(skill => {
         if (!skill || !skill.ratings) {
           invalidSkillsCount++;
+          console.error(`ResultsDisplay - Invalid skill (null or no ratings): ${skill?.name || 'unknown'} in category ${category.title}`);
           return false;
         }
         
@@ -128,7 +134,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
           console.log(`ResultsDisplay - Valid skill: ${skill.name}, current=${current}, desired=${desired}`);
         } else {
           invalidSkillsCount++;
-          console.log(`ResultsDisplay - Skill with zero ratings: ${skill.name}`, skill.ratings);
+          console.warn(`ResultsDisplay - Skill with zero ratings: ${skill.name}`, skill.ratings);
         }
         
         return isValid;
@@ -142,7 +148,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
       }
       
       validationErrors.push(`Category ${category.title} has no valid skills`);
-      console.log(`ResultsDisplay - Category ${category.title} has no valid skills`);
+      console.error(`ResultsDisplay - Category ${category.title} has no valid skills`);
       return false;
     });
     
@@ -159,7 +165,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
     };
     
     if (cleanCategories.length === 0) {
-      console.warn("ResultsDisplay - No valid categories with skills found");
+      console.error("ResultsDisplay - No valid categories with skills found");
       setErrorType("invalid-format");
       setDebugData({
         ...debugInfo,
@@ -169,18 +175,17 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
     }
     
     debugInfo.cleanedCategories = cleanCategories;
-    console.log("ResultsDisplay - Cleaned categories:", JSON.stringify(cleanCategories));
     
     // Set the validated categories
     setValidatedCategories(cleanCategories);
     // Clear any previous error and debug data (showing successful processing)
     setErrorType(null);
     setDebugData(debugInfo);
-  }, [categories]);
+  }, [categories, demographics]);
 
   // If we have an error, show the error message
   if (errorType) {
-    console.warn(`ResultsDisplay - Showing error message: ${errorType}`);
+    console.error(`ResultsDisplay - Showing error message: ${errorType}`);
     return <InvalidResultsMessage 
              onRestart={onRestart} 
              onBack={onBack} 

@@ -31,62 +31,64 @@ const Results = () => {
     handleSaveResults
   } = useAssessment();
 
-  // Log assessment state data
+  // Log assessment state data with more detail
   useEffect(() => {
-    console.log("Results page - Current step:", currentStep);
+    console.log("Results page - Render triggered with:");
+    console.log("Results page - assessmentId:", assessmentId);
+    console.log("Results page - currentStep:", currentStep);
+    console.log("Results page - user authenticated:", !!user);
+    console.log("Results page - Categories from context:", categories);
     console.log("Results page - Categories count:", categories?.length || 0);
-    console.log("Results page - Has demographics:", !!demographics);
     
-    // Serialize categories to avoid circular references
-    const safeCategoriesData = categories ? JSON.parse(JSON.stringify(categories)) : null;
-    console.log("Results page - Categories data:", safeCategoriesData);
-    
-    // Log first category as sample (if exists)
     if (categories && categories.length > 0) {
-      console.log("Results page - First category title:", categories[0]?.title);
-      console.log("Results page - First category skills count:", categories[0]?.skills?.length || 0);
+      // Log the first category as a sample
+      console.log("Results page - First category sample:", JSON.stringify(categories[0]));
       
-      // Log first skill details if available
+      // Log first skill sample if available
       if (categories[0]?.skills?.length > 0) {
-        const firstSkill = categories[0].skills[0];
-        console.log("Results page - First skill:", {
-          name: firstSkill.name,
-          currentRating: firstSkill.ratings?.current,
-          desiredRating: firstSkill.ratings?.desired,
-          ratingType: {
-            current: typeof firstSkill.ratings?.current,
-            desired: typeof firstSkill.ratings?.desired
-          }
-        });
+        console.log("Results page - First skill sample:", JSON.stringify(categories[0].skills[0]));
+      }
+    } else {
+      console.warn("Results page - Categories array is empty or undefined");
+    }
+    
+    // Try to diagnose why categories might be empty
+    if (currentStep === 'results' && (!categories || categories.length === 0)) {
+      console.error("Results page - CRITICAL: Expected categories for 'results' step but received empty array");
+      
+      // Check if we just navigated to this page and need to load data
+      if (!saveTriggeredRef.current) {
+        console.log("Results page - First render detected, will trigger save/load");
       }
     }
-  }, [currentStep, categories, demographics]);
+  }, [currentStep, categories, demographics, assessmentId, user]);
 
+  // Load specific assessment if ID is provided
   const {
     loadingSpecificAssessment,
     specificAssessmentData,
     error: specificAssessmentError
   } = useSpecificAssessment(assessmentId);
 
-  // Log detailed information about the specific assessment if applicable
+  // Log information about specific assessment loading
   useEffect(() => {
     if (assessmentId) {
       console.log("Results page - Loading specific assessment:", assessmentId);
       console.log("Results page - Loading status:", loadingSpecificAssessment);
       
-      // Safely log specific assessment data
-      const safeSpecificData = specificAssessmentData ? {
-        ...specificAssessmentData,
-        categories: specificAssessmentData.categories ? 
-          JSON.parse(JSON.stringify(specificAssessmentData.categories)) : null
-      } : null;
+      if (specificAssessmentData) {
+        console.log("Results page - Specific assessment data loaded:");
+        console.log("Results page - Categories from specific assessment:", 
+          specificAssessmentData.categories ? JSON.stringify(specificAssessmentData.categories) : "none");
+      }
       
-      console.log("Results page - Specific assessment data:", safeSpecificData);
-      console.log("Results page - Error:", specificAssessmentError);
+      if (specificAssessmentError) {
+        console.error("Results page - Error loading specific assessment:", specificAssessmentError);
+      }
     }
   }, [assessmentId, loadingSpecificAssessment, specificAssessmentData, specificAssessmentError]);
 
-  // Use our updated hook to handle assessment data
+  // Process assessment data with our hook
   const {
     displayCategories,
     displayDemographics,
@@ -101,27 +103,22 @@ const Results = () => {
     demographics
   );
   
-  // Log the data that will be displayed in the results
+  // Log the processed data that will be displayed
   useEffect(() => {
-    console.log("Results page - Display categories count:", displayCategories?.length || 0);
+    console.log("Results page - Display data processed:");
+    console.log("Results page - Display categories length:", displayCategories?.length || 0);
     console.log("Results page - Is assessment data valid:", isAssessmentDataValid);
     console.log("Results page - Is assessment data loading:", isAssessmentDataLoading);
     
-    // Log detailed assessment debug data
-    if (debugData) {
-      console.log("Results page - Assessment debug data:", debugData);
-    }
-    
-    // Detailed validation of display categories
     if (displayCategories && displayCategories.length > 0) {
-      // Count ratings
+      console.log("Results page - First display category:", JSON.stringify(displayCategories[0]));
+      
+      // Log ratings statistics
       const ratingStats = {
         totalCategories: displayCategories.length,
         categoriesWithSkills: 0,
         totalSkills: 0,
-        skillsWithCurrentRating: 0,
-        skillsWithDesiredRating: 0,
-        skillsWithBothRatings: 0
+        skillsWithRatings: 0
       };
       
       displayCategories.forEach(category => {
@@ -130,24 +127,20 @@ const Results = () => {
           ratingStats.totalSkills += category.skills.length;
           
           category.skills.forEach(skill => {
-            const hasCurrentRating = typeof skill.ratings?.current === 'number' && 
-                                    !isNaN(skill.ratings.current) && 
-                                    skill.ratings.current > 0;
-                                    
-            const hasDesiredRating = typeof skill.ratings?.desired === 'number' && 
-                                    !isNaN(skill.ratings.desired) && 
-                                    skill.ratings.desired > 0;
-                                    
-            if (hasCurrentRating) ratingStats.skillsWithCurrentRating++;
-            if (hasDesiredRating) ratingStats.skillsWithDesiredRating++;
-            if (hasCurrentRating && hasDesiredRating) ratingStats.skillsWithBothRatings++;
+            if (skill.ratings && 
+                (typeof skill.ratings.current === 'number' && skill.ratings.current > 0) || 
+                (typeof skill.ratings.desired === 'number' && skill.ratings.desired > 0)) {
+              ratingStats.skillsWithRatings++;
+            }
           });
         }
       });
       
-      console.log("Results page - Display categories validation:", ratingStats);
+      console.log("Results page - Display categories stats:", JSON.stringify(ratingStats));
+    } else {
+      console.warn("Results page - Display categories is empty or invalid");
     }
-  }, [displayCategories, isAssessmentDataValid, isAssessmentDataLoading, debugData]);
+  }, [displayCategories, isAssessmentDataValid, isAssessmentDataLoading]);
 
   // Effect to handle result saving when user is logged in and viewing results
   useEffect(() => {
@@ -156,20 +149,26 @@ const Results = () => {
     // 2. We're on the results page (currentStep is 'results')
     // 3. We're not viewing a specific assessment (no assessmentId)
     // 4. We haven't already triggered a save in this component mount
-    // 5. We have valid data to save
     if (user && 
         currentStep === 'results' && 
         !assessmentId && 
-        !saveTriggeredRef.current && 
-        categories && categories.length > 0) {
+        !saveTriggeredRef.current) {
       
-      console.log('Results page - Triggering assessment save');
-      saveTriggeredRef.current = true;
+      console.log('Results page - Checking if we should save assessment');
       
-      // Use setTimeout to avoid race conditions and ensure this runs after render
-      setTimeout(() => {
-        handleSaveResults();
-      }, 0);
+      // Only save if we have categories with data
+      if (categories && categories.length > 0) {
+        console.log('Results page - Triggering assessment save with categories:', categories.length);
+        saveTriggeredRef.current = true;
+        
+        // Delay to ensure all state is properly set
+        setTimeout(() => {
+          handleSaveResults();
+        }, 100);
+      } else {
+        console.error('Results page - Cannot save assessment: categories is empty or invalid');
+        console.log('Results page - Categories value:', categories);
+      }
     }
   }, [user, currentStep, assessmentId, categories, handleSaveResults]);
 
@@ -180,6 +179,7 @@ const Results = () => {
 
   // Error state for specific assessment ID
   if (assessmentId && specificAssessmentError) {
+    console.error("Results page - Showing error for specific assessment:", specificAssessmentError);
     return (
       <div className="min-h-screen bg-slate-50">
         <div className="max-w-5xl mx-auto px-4 py-2">
@@ -208,10 +208,12 @@ const Results = () => {
   
   // If no valid assessment data is available
   if (!hasValidData) {
-    console.log("Results page - No valid assessment data available:", {
+    console.error("Results page - No valid assessment data available:", {
       assessmentId,
       hasSpecificData: Boolean(specificAssessmentData),
-      hasCategories: Boolean(categories && categories.length > 0)
+      specificDataLength: specificAssessmentData?.categories?.length || 0,
+      hasCategories: Boolean(categories && categories.length > 0),
+      categoriesLength: categories?.length || 0
     });
     
     return (
@@ -236,6 +238,9 @@ const Results = () => {
   }
 
   // If assessment data is valid, render the results
+  console.log("Results page - Rendering ResultsDisplay with valid data");
+  console.log("Results page - displayCategories count:", displayCategories.length);
+  
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="max-w-5xl mx-auto px-4 py-2">

@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Demographics } from '../../utils/assessmentTypes';
 import { Json } from '@/integrations/supabase/types';
@@ -6,7 +7,13 @@ import { Json } from '@/integrations/supabase/types';
  * Normalizes categories to ensure consistent format for database
  */
 const normalizeCategories = (categories: Category[]): Category[] => {
-  console.log("saveAssessment - Beginning categories normalization");
+  console.log("saveAssessment - Beginning categories normalization with raw input:", 
+    JSON.stringify({
+      categoriesType: typeof categories,
+      isArray: Array.isArray(categories),
+      length: categories?.length || 0,
+      firstCategory: categories && categories.length > 0 ? categories[0]?.title : 'none'
+    }));
   
   try {
     if (!categories || !Array.isArray(categories)) {
@@ -94,6 +101,12 @@ const normalizeCategories = (categories: Category[]): Category[] => {
       });
     
     console.log(`saveAssessment - Normalized ${result.length} categories with a total of ${result.reduce((count, cat) => count + cat.skills.length, 0)} skills`);
+    
+    // Log a sample of the result (first category if available)
+    if (result.length > 0) {
+      console.log("saveAssessment - First normalized category:", JSON.stringify(result[0]));
+    }
+    
     return result;
   } catch (error) {
     console.error("Error normalizing categories:", error);
@@ -106,6 +119,7 @@ const normalizeCategories = (categories: Category[]): Category[] => {
  */
 const hasValidRatings = (categories: Category[]): boolean => {
   if (!categories || !Array.isArray(categories) || categories.length === 0) {
+    console.error("saveAssessment - hasValidRatings: Categories is empty or invalid");
     return false;
   }
   
@@ -133,6 +147,18 @@ const hasValidRatings = (categories: Category[]): boolean => {
  */
 export const saveAssessmentResults = async (categories: Category[], demographics: Demographics) => {
   try {
+    // Add detailed logging of input parameters
+    console.log('saveAssessment - Starting saveAssessmentResults with params:', JSON.stringify({
+      categoriesProvided: !!categories,
+      categoriesLength: categories?.length || 0,
+      categoriesType: typeof categories,
+      isArray: Array.isArray(categories),
+      demographicsProvided: !!demographics,
+      firstCategory: categories && categories.length > 0 ? categories[0]?.title : null,
+      firstSkill: categories && categories.length > 0 && categories[0]?.skills?.length > 0 
+        ? categories[0].skills[0]?.name : null
+    }));
+    
     // Get the current user ID first
     const { data: { user } } = await supabase.auth.getUser();
     
@@ -220,9 +246,20 @@ const updateExistingAssessment = async (
   categories: Category[], 
   demographics: Demographics
 ) => {
-  console.log('updateExistingAssessment - Starting update with categories count:', categories?.length || 0);
+  console.log('updateExistingAssessment - Starting update with:', JSON.stringify({
+    assessmentId,
+    categoriesCount: categories?.length || 0,
+    hasRatings: hasValidRatings(categories),
+    demographicsProvided: !!demographics
+  }));
   
   try {
+    // Double-check there are categories before updating
+    if (!categories || !Array.isArray(categories) || categories.length === 0) {
+      console.error('updateExistingAssessment - No valid categories to save');
+      return { success: false, error: 'No valid categories to save' };
+    }
+    
     const { data, error } = await supabase
       .from('assessment_results')
       .update({
@@ -238,7 +275,7 @@ const updateExistingAssessment = async (
       return { success: false, error: error.message };
     }
     
-    console.log('updateExistingAssessment - Success, data:', data);
+    console.log('updateExistingAssessment - Success, updated assessment data:', JSON.stringify(data));
     return { success: true, data };
   } catch (err) {
     console.error('updateExistingAssessment - Exception:', err);
@@ -258,9 +295,30 @@ const createNewAssessment = async (
   categories: Category[],
   demographics: Demographics
 ) => {
-  console.log('createNewAssessment - Creating with categories count:', categories?.length || 0);
+  console.log('createNewAssessment - Creating with:', JSON.stringify({
+    userId,
+    categoriesCount: categories?.length || 0,
+    hasRatings: hasValidRatings(categories),
+    firstCategory: categories && categories.length > 0 ? categories[0]?.title : 'none',
+    demographicsProvided: !!demographics
+  }));
   
   try {
+    // Double-check there are categories before creating
+    if (!categories || !Array.isArray(categories) || categories.length === 0) {
+      console.error('createNewAssessment - No valid categories to save');
+      return { success: false, error: 'No valid categories to save' };
+    }
+    
+    // Log a sample of what we're saving
+    if (categories.length > 0 && categories[0].skills && categories[0].skills.length > 0) {
+      const sampleSkill = categories[0].skills[0];
+      console.log('createNewAssessment - Sample skill being saved:', JSON.stringify({
+        name: sampleSkill.name,
+        ratings: sampleSkill.ratings
+      }));
+    }
+    
     // Use insert with onConflict strategy to prevent duplicates at the database level
     const { data, error } = await supabase
       .from('assessment_results')
@@ -277,7 +335,7 @@ const createNewAssessment = async (
       return { success: false, error: error.message };
     }
 
-    console.log('createNewAssessment - Success, data:', data);
+    console.log('createNewAssessment - Success, created assessment data:', JSON.stringify(data));
     return { success: true, data };
   } catch (err) {
     console.error('createNewAssessment - Exception:', err);

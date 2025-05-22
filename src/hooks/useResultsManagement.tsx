@@ -18,6 +18,29 @@ export const useResultsManagement = (
   const [isSaving, setIsSaving] = useState(false);
   const { user } = useAuth();
   
+  // Log categories data for debugging
+  useEffect(() => {
+    console.log("useResultsManagement - Categories updated:", 
+      categories ? JSON.stringify({ length: categories.length, isArray: Array.isArray(categories) }) : "none");
+    
+    if (categories && categories.length > 0) {
+      // Count skills with ratings
+      let skillsWithRatings = 0;
+      categories.forEach(category => {
+        if (category && category.skills) {
+          category.skills.forEach(skill => {
+            if (skill && skill.ratings && 
+               (typeof skill.ratings.current === 'number' && skill.ratings.current > 0) ||
+               (typeof skill.ratings.desired === 'number' && skill.ratings.desired > 0)) {
+              skillsWithRatings++;
+            }
+          });
+        }
+      });
+      console.log(`useResultsManagement - Categories contain ${skillsWithRatings} skills with ratings`);
+    }
+  }, [categories]);
+  
   // Use our smaller, focused hooks
   const { 
     showAuthForm, 
@@ -44,16 +67,16 @@ export const useResultsManagement = (
     if (categories && categories.length > 0) {
       // Only reset if we have actual categories with data
       const hasRatings = categories.some(cat => 
-        cat.skills && cat.skills.some(skill => 
-          skill.ratings && (
-            typeof skill.ratings.current === 'number' || 
-            typeof skill.ratings.desired === 'number'
+        cat && cat.skills && cat.skills.some(skill => 
+          skill && skill.ratings && (
+            typeof skill.ratings.current === 'number' && skill.ratings.current > 0 || 
+            typeof skill.ratings.desired === 'number' && skill.ratings.desired > 0
           )
         )
       );
       
       if (hasRatings) {
-        console.log('Categories/demographics changed, resetting saved flag');
+        console.log('Categories/demographics changed with ratings, resetting saved flag');
         resetSaveState();
       }
     }
@@ -79,23 +102,52 @@ export const useResultsManagement = (
       return;
     }
     
-    // Check for valid data before saving
-    const hasValidData = categories && categories.length > 0 && 
-      categories.some(cat => 
-        cat.skills && cat.skills.some(skill => 
-          skill.ratings && 
-          typeof skill.ratings.current === 'number' && 
-          typeof skill.ratings.desired === 'number'
-        )
-      );
+    // Log the categories we're about to save
+    console.log("handleSaveResults - Starting save with categories:", 
+      categories ? JSON.stringify({ 
+        length: categories.length, 
+        isArray: Array.isArray(categories),
+        firstCategory: categories.length > 0 ? categories[0].title : 'none'
+      }) : "none");
     
-    if (!hasValidData) {
-      console.log('No valid assessment data to save, skipping');
+    // Check for valid data before saving
+    if (!categories || !Array.isArray(categories) || categories.length === 0) {
+      console.error('No valid categories to save, skipping');
+      toast({
+        title: "Error saving results",
+        description: "No valid assessment data to save.",
+        variant: "destructive",
+      });
       return;
     }
     
+    // Count skills with ratings to validate
+    let skillsWithRatings = 0;
+    categories.forEach(category => {
+      if (category && category.skills) {
+        category.skills.forEach(skill => {
+          if (skill && skill.ratings && 
+             (typeof skill.ratings.current === 'number' && skill.ratings.current > 0) ||
+             (typeof skill.ratings.desired === 'number' && skill.ratings.desired > 0)) {
+            skillsWithRatings++;
+          }
+        });
+      }
+    });
+    
+    if (skillsWithRatings === 0) {
+      console.error('No skills with ratings found, skipping save');
+      toast({
+        title: "Error saving results",
+        description: "No valid assessment ratings to save.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    console.log(`handleSaveResults - Found ${skillsWithRatings} skills with ratings, proceeding with save`);
+    
     setIsSaving(true);
-    console.log('Starting assessment save operation');
     
     try {
       // Check if we already saved an assessment today
@@ -104,14 +156,14 @@ export const useResultsManagement = (
         console.log('Already saved an assessment today, updating instead of creating a new one');
       }
       
-      console.log("Saving assessment results with categories:", categories);
-      
       const result = await saveAssessmentResults(categories, demographics);
       
       if (result.success) {
+        // Log success details
+        console.log('Successfully saved assessment results:', result.data);
+        
         // Mark as saved for this session
-        // Fix: Check if data exists and has at least one item before accessing it
-        if (result.success && 'data' in result && result.data && result.data.length > 0) {
+        if (result.data && result.data.length > 0) {
           const assessmentId = result.data[0].id;
           console.log('Saved assessment with ID:', assessmentId);
           markAsSaved(assessmentId, today);

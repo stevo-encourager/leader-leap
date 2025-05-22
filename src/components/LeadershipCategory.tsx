@@ -21,6 +21,15 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
   onSkillRating,
   hideHeader = false
 }) => {
+  // Check if category and skills are defined
+  if (!category) {
+    console.error("LeadershipCategory received undefined category");
+    return null;
+  }
+
+  // Ensure skills array exists
+  const skills = category.skills || [];
+
   return (
     <Card className="mb-8">
       {!hideHeader && (
@@ -46,7 +55,7 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
         </CardHeader>
       )}
       <CardContent>
-        {category.skills.map((skill) => (
+        {skills.map((skill) => (
           <div key={skill.id} className="mb-8 pt-6">
             <div className="flex justify-between items-center mb-2">
               <h4 className="text-lg font-medium text-[#242323]">{skill.name}</h4>
@@ -72,10 +81,10 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
                 <div className="flex items-center">
                   <div className="flex-1">
                     <Slider
-                      defaultValue={[skill.ratings.current]}
+                      defaultValue={[skill.ratings?.current || 0]}
                       max={10}
                       step={1}
-                      value={[skill.ratings.current]}
+                      value={[skill.ratings?.current || 0]}
                       onValueChange={(value) => {
                         // Convert to number explicitly
                         const numericValue = Number(value[0]);
@@ -84,7 +93,7 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
                       className="mb-2"
                     />
                   </div>
-                  <span className="w-8 text-center font-medium ml-2">{skill.ratings.current}</span>
+                  <span className="w-8 text-center font-medium ml-2">{skill.ratings?.current || 0}</span>
                 </div>
                 <div className="relative flex text-xs text-muted-foreground mt-1 h-5">
                   <span style={{ position: 'absolute', left: '5%', transform: 'translateX(-50%)' }} className="text-center">Beginner</span>
@@ -101,10 +110,10 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
                 <div className="flex items-center">
                   <div className="flex-1">
                     <Slider
-                      defaultValue={[skill.ratings.desired]}
+                      defaultValue={[skill.ratings?.desired || 0]}
                       max={10}
                       step={1}
-                      value={[skill.ratings.desired]}
+                      value={[skill.ratings?.desired || 0]}
                       onValueChange={(value) => {
                         // Convert to number explicitly
                         const numericValue = Number(value[0]);
@@ -113,7 +122,7 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
                       className="mb-2"
                     />
                   </div>
-                  <span className="w-8 text-center font-medium ml-2">{skill.ratings.desired}</span>
+                  <span className="w-8 text-center font-medium ml-2">{skill.ratings?.desired || 0}</span>
                 </div>
                 <div className="relative flex text-xs text-muted-foreground mt-1 h-5">
                   <span style={{ position: 'absolute', left: '5%', transform: 'translateX(-50%)' }} className="text-center">Beginner</span>
@@ -128,13 +137,13 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
               <div 
                 className="skill-gap" 
                 style={{ 
-                  width: `${skill.ratings.current * 10}%`,
+                  width: `${(skill.ratings?.current || 0) * 10}%`,
                   backgroundColor: 'rgba(139, 172, 165, 0.2)'
                 }}
               ></div>
               <div 
                 className="absolute top-0 h-full border-r-2 border-secondary" 
-                style={{ left: `${skill.ratings.desired * 10}%` }}
+                style={{ left: `${(skill.ratings?.desired || 0) * 10}%` }}
               ></div>
             </div>
           </div>

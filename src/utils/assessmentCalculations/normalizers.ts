@@ -45,23 +45,36 @@ export const normalizeSkill = (skill: any, categoryTitle: string): SkillWithMeta
 export const getAllSkillsWithMetadata = (categories: Category[]): SkillWithMetadata[] => {
   console.log("getAllSkillsWithMetadata - Input:", 
     categories?.length,
-    categories?.map(c => c.title)
+    categories?.map(c => c?.title)
   );
   
-  if (!categories || !Array.isArray(categories) || categories.length === 0) {
-    console.log("getAllSkillsWithMetadata: No valid categories provided");
+  // Add defensive check for undefined or null categories
+  if (!categories || !Array.isArray(categories)) {
+    console.error("getAllSkillsWithMetadata received invalid categories:", categories);
+    return [];
+  }
+  
+  if (categories.length === 0) {
+    console.log("getAllSkillsWithMetadata: No categories provided");
     return [];
   }
   
   const result: SkillWithMetadata[] = [];
   
   for (const category of categories) {
-    if (!category || !category.title) {
-      console.log("getAllSkillsWithMetadata: Invalid category");
+    // Skip undefined categories
+    if (!category) {
+      console.log("getAllSkillsWithMetadata: Found undefined category in array");
       continue;
     }
     
-    if (!category.skills || !Array.isArray(category.skills) || category.skills.length === 0) {
+    if (!category.title) {
+      console.log("getAllSkillsWithMetadata: Invalid category missing title");
+      continue;
+    }
+    
+    // Handle missing skills array
+    if (!category.skills || !Array.isArray(category.skills)) {
       console.log(`getAllSkillsWithMetadata: No skills array in category ${category.title}`);
       continue;
     }

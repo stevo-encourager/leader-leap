@@ -29,6 +29,9 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
   lowestSkills,
   categories
 }) => {
+  // Ensure categories is always an array to prevent "cannot read properties of undefined (reading 'skills')"
+  const safeCategories = Array.isArray(categories) ? categories : [];
+  
   // Open all sections by default
   const [openSections, setOpenSections] = useState({
     largestGaps: true,
@@ -47,27 +50,27 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
   
   // Detailed logging for debugging
   useEffect(() => {
-    console.log("KeyInsights - Component mounted with categories:", categories?.length || 0);
+    console.log("KeyInsights - Component mounted with categories:", safeCategories?.length || 0);
     console.log("KeyInsights - Average gap:", averageGap);
     console.log("KeyInsights - Strengths count:", strengths?.length || 0);
     console.log("KeyInsights - Lowest skills count:", lowestSkills?.length || 0);
     
     // Log first category details if available
-    if (categories && categories.length > 0) {
-      const firstCategory = categories[0];
+    if (safeCategories && safeCategories.length > 0) {
+      const firstCategory = safeCategories[0];
       console.log("KeyInsights - First category:", firstCategory?.title);
       
-      if (firstCategory.skills && firstCategory.skills.length > 0) {
+      if (firstCategory?.skills && firstCategory.skills.length > 0) {
         const firstSkill = firstCategory.skills[0];
         console.log("KeyInsights - First skill:", firstSkill?.name);
         console.log("KeyInsights - First skill ratings:", firstSkill?.ratings);
       }
     }
-  }, []);
+  }, [safeCategories, averageGap, strengths, lowestSkills]);
   
   // Compute derived data once categories are available
   useEffect(() => {
-    if (!categories || !Array.isArray(categories) || categories.length === 0) {
+    if (!safeCategories || safeCategories.length === 0) {
       console.log("KeyInsights - No valid categories provided");
       return;
     }
@@ -76,11 +79,11 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
     
     try {
       // Count skills with ratings for diagnostic purposes
-      const skillsWithRatings = categories.reduce((count, category) => {
-        if (!category.skills) return count;
+      const skillsWithRatings = safeCategories.reduce((count, category) => {
+        if (!category || !category.skills) return count;
         
         const categoryCount = category.skills.filter(skill => 
-          (Number(skill.ratings?.current) > 0 || Number(skill.ratings?.desired) > 0)
+          skill && skill.ratings && (Number(skill.ratings.current) > 0 || Number(skill.ratings.desired) > 0)
         ).length;
         
         console.log(`KeyInsights - Category ${category.title} has ${categoryCount} skills with ratings`);
@@ -92,10 +95,10 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
       // Only calculate insights if we have actual data
       if (skillsWithRatings > 0) {
         // Safely calculate insights
-        const largestCategoryGaps = getLargestCategoryGaps(categories, 3) || [];
-        const smallestCategoryGaps = getSmallestCategoryGaps(categories, 3) || [];
-        const skillsToImprove = getSkillsToImprove(categories, 3) || [];
-        const skillsMeetingExpectations = getSkillsMeetingExpectations(categories, 3) || [];
+        const largestCategoryGaps = getLargestCategoryGaps(safeCategories, 3) || [];
+        const smallestCategoryGaps = getSmallestCategoryGaps(safeCategories, 3) || [];
+        const skillsToImprove = getSkillsToImprove(safeCategories, 3) || [];
+        const skillsMeetingExpectations = getSkillsMeetingExpectations(safeCategories, 3) || [];
         
         console.log("KeyInsights - Calculated values:", {
           largestCategoryGaps: largestCategoryGaps.length,
@@ -123,7 +126,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
         skillsMeetingExpectations: []
       });
     }
-  }, [categories]);
+  }, [safeCategories]);
 
   const toggleSection = (section: keyof typeof openSections) => {
     setOpenSections(prev => ({
@@ -141,17 +144,21 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
   };
 
   // Calculate some diagnostic info
-  const skillCount = categories.reduce((acc, cat) => acc + (cat.skills?.length || 0), 0);
-  const skillsWithRatings = categories.reduce((count, category) => {
-    if (!category.skills) return count;
+  const skillCount = safeCategories.reduce((acc, cat) => {
+    if (!cat || !cat.skills) return acc;
+    return acc + cat.skills.length;
+  }, 0);
+  
+  const skillsWithRatings = safeCategories.reduce((count, category) => {
+    if (!category || !category.skills) return count;
     return count + category.skills.filter(skill => 
-      (Number(skill.ratings?.current) > 0 || Number(skill.ratings?.desired) > 0)
+      skill && skill.ratings && (Number(skill.ratings.current) > 0 || Number(skill.ratings.desired) > 0)
     ).length;
   }, 0);
   
-  const categoriesWithRatings = categories.filter(category => 
-    category.skills?.some(skill => 
-      Number(skill.ratings?.current) > 0 || Number(skill.ratings?.desired) > 0
+  const categoriesWithRatings = safeCategories.filter(category => 
+    category && category.skills && category.skills.some(skill => 
+      skill && skill.ratings && (Number(skill.ratings.current) > 0 || Number(skill.ratings.desired) > 0)
     )
   ).length;
 
@@ -173,7 +180,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
             {skillsWithRatings > 0 ? (
               <div>
                 <p>Data available for analysis</p>
-                <p className="text-xs text-slate-600">Categories with data: {categoriesWithRatings}/{categories.length}</p>
+                <p className="text-xs text-slate-600">Categories with data: {categoriesWithRatings}/{safeCategories.length}</p>
                 <p className="text-xs text-slate-600">Skills with ratings: {skillsWithRatings}/{skillCount}</p>
                 <p className="text-xs text-slate-600">Average competency gap: {formatNumber(averageGap)}</p>
               </div>
@@ -193,16 +200,16 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
                 {openSections.debug && (
                   <div className="mt-2 p-2 bg-amber-100 rounded text-xs font-mono overflow-auto">
                     <pre>
-                      Categories: {JSON.stringify(categories.map(c => c.title), null, 2)}
+                      Categories: {JSON.stringify(safeCategories.map(c => c?.title || 'undefined'), null, 2)}
                     </pre>
                     <pre className="mt-1">
                       averageGap: {averageGap}
                     </pre>
                     <pre className="mt-1">
-                      strengths: {JSON.stringify(strengths.map(s => s.name), null, 2)}
+                      strengths: {JSON.stringify(strengths?.map(s => s?.name || 'undefined') || [], null, 2)}
                     </pre>
                     <pre className="mt-1">
-                      lowestSkills: {JSON.stringify(lowestSkills.map(s => s.name), null, 2)}
+                      lowestSkills: {JSON.stringify(lowestSkills?.map(s => s?.name || 'undefined') || [], null, 2)}
                     </pre>
                   </div>
                 )}

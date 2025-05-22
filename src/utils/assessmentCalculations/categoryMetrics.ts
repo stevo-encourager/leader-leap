@@ -4,11 +4,29 @@ import { CategoryWithMetadata } from './types';
 
 // Calculate category-level gaps and metadata
 export const getCategoriesWithMetadata = (categories: Category[]): CategoryWithMetadata[] => {
-  if (!categories || !Array.isArray(categories) || categories.length === 0) {
+  // Add defensive check for undefined or null categories
+  if (!categories || !Array.isArray(categories)) {
+    console.error("getCategoriesWithMetadata received invalid categories:", categories);
+    return [];
+  }
+  
+  if (categories.length === 0) {
     return [];
   }
   
   return categories.map(category => {
+    // Skip undefined category objects
+    if (!category) {
+      console.warn("getCategoriesWithMetadata - Found undefined category");
+      return {
+        id: `category-${Math.random().toString(36).substring(2, 9)}`,
+        title: "Unknown Category",
+        description: "",
+        gap: 0,
+        averageRatings: { current: 0, desired: 0 }
+      };
+    }
+    
     // Default values in case there are no valid skills
     let avgCurrent = 0;
     let avgDesired = 0;
@@ -20,7 +38,7 @@ export const getCategoriesWithMetadata = (categories: Category[]): CategoryWithM
       let validSkillCount = 0;
       
       for (const skill of category.skills) {
-        if (!skill.ratings) continue;
+        if (!skill || !skill.ratings) continue;
         
         const current = Number(skill.ratings.current);
         const desired = Number(skill.ratings.desired);
@@ -40,9 +58,9 @@ export const getCategoriesWithMetadata = (categories: Category[]): CategoryWithM
     }
     
     return {
-      id: category.id,
-      title: category.title,
-      description: category.description,
+      id: category.id || `category-${Math.random().toString(36).substring(2, 9)}`,
+      title: category.title || "Unknown Category",
+      description: category.description || "",
       gap,
       averageRatings: { 
         current: avgCurrent, 
@@ -54,6 +72,12 @@ export const getCategoriesWithMetadata = (categories: Category[]): CategoryWithM
 
 // Get categories with largest gaps
 export const getLargestCategoryGaps = (categories: Category[], count: number = 3): CategoryWithMetadata[] => {
+  // Add defensive check for undefined or null categories
+  if (!categories || !Array.isArray(categories)) {
+    console.error("getLargestCategoryGaps received invalid categories:", categories);
+    return [];
+  }
+  
   const categoriesWithMetadata = getCategoriesWithMetadata(categories);
   
   if (categoriesWithMetadata.length === 0) return [];
@@ -67,6 +91,12 @@ export const getLargestCategoryGaps = (categories: Category[], count: number = 3
 
 // Get categories with smallest gaps
 export const getSmallestCategoryGaps = (categories: Category[], count: number = 3): CategoryWithMetadata[] => {
+  // Add defensive check for undefined or null categories
+  if (!categories || !Array.isArray(categories)) {
+    console.error("getSmallestCategoryGaps received invalid categories:", categories);
+    return [];
+  }
+  
   const categoriesWithMetadata = getCategoriesWithMetadata(categories);
   
   if (categoriesWithMetadata.length === 0) return [];

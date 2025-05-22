@@ -5,6 +5,12 @@ import { getAllSkillsWithMetadata } from './normalizers';
 
 // Get top strengths (highest current rating)
 export const getTopStrengths = (categories: Category[], count: number = 3): SkillWithMetadata[] => {
+  // Add defensive check for undefined or null categories
+  if (!categories || !Array.isArray(categories)) {
+    console.error("getTopStrengths received invalid categories:", categories);
+    return [];
+  }
+  
   const allSkills = getAllSkillsWithMetadata(categories);
   if (!allSkills || allSkills.length === 0) return [];
   
@@ -22,6 +28,12 @@ export const getTopStrengths = (categories: Category[], count: number = 3): Skil
 
 // Get lowest skills (lowest current rating)
 export const getLowestSkills = (categories: Category[], count: number = 3): SkillWithMetadata[] => {
+  // Add defensive check for undefined or null categories
+  if (!categories || !Array.isArray(categories)) {
+    console.error("getLowestSkills received invalid categories:", categories);
+    return [];
+  }
+  
   const allSkills = getAllSkillsWithMetadata(categories);
   if (!allSkills || allSkills.length === 0) return [];
   
@@ -39,6 +51,12 @@ export const getLowestSkills = (categories: Category[], count: number = 3): Skil
 
 // Get skills with largest gaps
 export const getLargestGaps = (categories: Category[], count: number = 3): SkillWithMetadata[] => {
+  // Add defensive check for undefined or null categories
+  if (!categories || !Array.isArray(categories)) {
+    console.error("getLargestGaps received invalid categories:", categories);
+    return [];
+  }
+  
   const allSkills = getAllSkillsWithMetadata(categories);
   if (!allSkills || allSkills.length === 0) return [];
   
@@ -56,6 +74,12 @@ export const getLargestGaps = (categories: Category[], count: number = 3): Skill
 
 // Get skills with smallest gaps
 export const getSmallestGaps = (categories: Category[], count: number = 3): SkillWithMetadata[] => {
+  // Add defensive check for undefined or null categories
+  if (!categories || !Array.isArray(categories)) {
+    console.error("getSmallestGaps received invalid categories:", categories);
+    return [];
+  }
+  
   const allSkills = getAllSkillsWithMetadata(categories);
   if (!allSkills || allSkills.length === 0) return [];
   
@@ -73,6 +97,12 @@ export const getSmallestGaps = (categories: Category[], count: number = 3): Skil
 
 // Get skills to improve (highest desired rating with a gap)
 export const getSkillsToImprove = (categories: Category[], count: number = 3): SkillWithMetadata[] => {
+  // Add defensive check for undefined or null categories
+  if (!categories || !Array.isArray(categories)) {
+    console.error("getSkillsToImprove received invalid categories:", categories);
+    return [];
+  }
+  
   const allSkills = getAllSkillsWithMetadata(categories);
   if (!allSkills || allSkills.length === 0) return [];
   
@@ -94,6 +124,12 @@ export const getSkillsToImprove = (categories: Category[], count: number = 3): S
 
 // Get skills meeting expectations (smallest gap)
 export const getSkillsMeetingExpectations = (categories: Category[], count: number = 3): SkillWithMetadata[] => {
+  // Add defensive check for undefined or null categories
+  if (!categories || !Array.isArray(categories)) {
+    console.error("getSkillsMeetingExpectations received invalid categories:", categories);
+    return [];
+  }
+  
   const allSkills = getAllSkillsWithMetadata(categories);
   if (!allSkills || allSkills.length === 0) return [];
   

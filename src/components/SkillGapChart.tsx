@@ -23,19 +23,32 @@ interface ChartData {
 }
 
 const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
-  console.log("SkillGapChart - Received categories:", categories?.length || 0);
+  // Ensure categories is always an array
+  const safeCategories = Array.isArray(categories) ? categories : [];
+  
+  console.log("SkillGapChart - Received categories:", safeCategories?.length || 0);
   
   // Process chart data with detailed logging
   const chartData = useMemo(() => {
     console.log("SkillGapChart - Processing chart data for categories:", 
-      categories?.map(c => c.title) || []);
+      safeCategories?.map(c => c?.title || 'undefined'));
     
-    if (!categories || !Array.isArray(categories) || categories.length === 0) {
+    if (!safeCategories || safeCategories.length === 0) {
       console.log("SkillGapChart - No valid categories");
       return [];
     }
     
-    return categories.map(category => {
+    return safeCategories.map(category => {
+      if (!category) {
+        console.warn("SkillGapChart - Found undefined category in array");
+        return {
+          subject: "Unknown Category",
+          current: 0,
+          desired: 0,
+          fullMark: 10
+        };
+      }
+      
       // Default values
       let avgCurrent = 0;
       let avgDesired = 0;
@@ -49,7 +62,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
         
         // Count valid skills and sum ratings
         for (const skill of category.skills) {
-          if (!skill.ratings) continue;
+          if (!skill || !skill.ratings) continue;
           
           const current = typeof skill.ratings.current === 'number' 
             ? skill.ratings.current 
@@ -76,6 +89,8 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
         } else {
           console.log(`SkillGapChart - Category ${category.title}: No skills with ratings`);
         }
+      } else {
+        console.log(`SkillGapChart - Category ${category.title || 'Unknown'}: No valid skills array`);
       }
       
       return {
@@ -85,7 +100,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
         fullMark: 10
       };
     });
-  }, [categories]);
+  }, [safeCategories]);
 
   console.log("SkillGapChart - Final chart data:", chartData);
 

@@ -3,6 +3,15 @@
  * Core assessment data types
  */
 
+// Import the base types from assessmentTypes.ts
+import { 
+  Category, 
+  Demographics, 
+  Skill, 
+  SkillRating,
+  AssessmentStep 
+} from '@/utils/assessmentTypes';
+
 // Re-export the base types from assessmentTypes.ts to maintain consistency
 export type { 
   Category, 
@@ -10,7 +19,7 @@ export type {
   Skill, 
   SkillRating,
   AssessmentStep
-} from '@/utils/assessmentTypes';
+};
 
 /**
  * Assessment record as stored in the database or retrieved from API

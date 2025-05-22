@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { useNavigationState } from './useNavigationState';
 import { Category, Demographics } from '@/utils/assessmentTypes';
@@ -81,6 +82,21 @@ export const useAssessment = () => {
       console.log(`useAssessment - Categories contain ${skillsWithRatings} skills with ratings`);
     }
   }, [categories]);
+
+  // Reset all categories to default values when starting a new assessment
+  const handleStartNewAssessment = () => {
+    console.log("Starting new assessment - resetting all categories to defaults");
+    
+    // Create fresh copy of default categories with all ratings reset to 0
+    const freshCategories = JSON.parse(JSON.stringify(allCategories));
+    
+    // Set fresh categories and reset demographics
+    setCategories(freshCategories);
+    setDemographics({});
+    
+    // Call the original handler
+    handleStartAssessment();
+  };
 
   // Handle categories and demographics updates
   const handleCategoriesUpdate = (newCategories: Category[]) => {
@@ -193,7 +209,7 @@ export const useAssessment = () => {
     handleDemographicsUpdate,
     
     // Navigation functions
-    handleStartAssessment,
+    handleStartAssessment: handleStartNewAssessment, // Use our custom handler that resets data
     handleContinueToAssessment,
     handleBackToIntro,
     handleBackToDemographics,

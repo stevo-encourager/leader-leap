@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { exportToPDF } from '@/utils/pdfUtils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { allCategories } from '@/utils/assessmentCategories';
 
 interface ResultsActionsProps {
   onBack: () => void;
@@ -62,6 +63,13 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
   };
 
   const handleNewAssessment = () => {
+    // Notify user that a new assessment is starting
+    toast({
+      title: "Starting new assessment",
+      description: "All previous ratings have been reset to default values.",
+    });
+    
+    // Call the provided restart function
     onRestart();
   };
   

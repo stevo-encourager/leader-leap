@@ -1,7 +1,7 @@
 
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { initialCategories } from '../utils/assessmentData'; 
+import { allCategories } from '@/utils/assessmentCategories';
 import { CircleGauge } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import LoadResultsButton from '@/components/assessment/LoadResultsButton';
@@ -23,7 +23,9 @@ const Index = () => {
   
   // Initialize categories from initial data
   useEffect(() => {
-    handleCategoriesUpdate(initialCategories);
+    // Create a fresh copy of the categories with reset ratings
+    const freshCategories = JSON.parse(JSON.stringify(allCategories));
+    handleCategoriesUpdate(freshCategories);
   }, [handleCategoriesUpdate]);
 
   // Wait for auth to initialize before rendering
@@ -52,7 +54,7 @@ const Index = () => {
         )}
         
         <IntroductionPage 
-          categories={initialCategories}
+          categories={allCategories}
           onStartAssessment={() => {
             handleStartAssessment();
             navigate('/assessment');

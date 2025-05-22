@@ -33,7 +33,7 @@ const Results = () => {
     specificAssessmentData
   } = useSpecificAssessment(assessmentId);
 
-  // Use our new hook to handle assessment data
+  // Use our updated hook to handle assessment data
   const {
     displayCategories,
     displayDemographics,

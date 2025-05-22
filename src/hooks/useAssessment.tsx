@@ -1,9 +1,10 @@
 
 import { useEffect } from 'react';
 import { useNavigationState } from './useNavigationState';
-import { useAssessmentData } from './useAssessmentData';
+import { Category, Demographics } from '@/utils/assessmentTypes';
 import { useResultsManagement } from './useResultsManagement';
 import { useAuth } from '@/contexts/AuthContext';
+import { useState } from 'react';
 
 export const useAssessment = () => {
   const {
@@ -16,12 +17,18 @@ export const useAssessment = () => {
     handleCompleteAssessment
   } = useNavigationState();
 
-  const {
-    categories,
-    demographics,
-    handleCategoriesUpdate,
-    handleDemographicsUpdate
-  } = useAssessmentData();
+  // Add local state for assessment data
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [demographics, setDemographics] = useState<Demographics>({});
+
+  // Handle categories and demographics updates
+  const handleCategoriesUpdate = (newCategories: Category[]) => {
+    setCategories(newCategories);
+  };
+
+  const handleDemographicsUpdate = (newDemographics: Demographics) => {
+    setDemographics(newDemographics);
+  };
 
   const {
     showAuthForm,
@@ -45,7 +52,7 @@ export const useAssessment = () => {
     if (user && currentStep === 'results') {
       handleSaveResults();
     }
-  }, [user, currentStep]);
+  }, [user, currentStep, handleSaveResults]);
 
   return {
     // Navigation state

@@ -52,7 +52,6 @@ const Results = () => {
   );
 
   // Effect to handle result saving when user is logged in and viewing results
-  // Uses a ref to ensure it only triggers once per session
   useEffect(() => {
     // Only attempt to save if:
     // 1. User is logged in
@@ -64,7 +63,7 @@ const Results = () => {
         currentStep === 'results' && 
         !assessmentId && 
         !saveTriggeredRef.current && 
-        isAssessmentDataValid) {
+        categories && categories.length > 0) {
       
       console.log('Triggering assessment save from Results page');
       saveTriggeredRef.current = true;
@@ -74,7 +73,7 @@ const Results = () => {
         handleSaveResults();
       }, 0);
     }
-  }, [user, currentStep, assessmentId, isAssessmentDataValid, handleSaveResults]);
+  }, [user, currentStep, assessmentId, categories, handleSaveResults]);
 
   // Wait for auth and data to initialize before rendering
   if (loading || isAssessmentDataLoading) {
@@ -104,8 +103,18 @@ const Results = () => {
     );
   }
 
-  // Invalid assessment data (no error but data is invalid)
-  if (assessmentId && !isAssessmentDataValid) {
+  // Check if we have valid assessment data to display
+  const hasValidData = (assessmentId && specificAssessmentData && specificAssessmentData.categories.length > 0) || 
+                      (!assessmentId && categories && categories.length > 0);
+  
+  // If no valid assessment data is available
+  if (!hasValidData) {
+    console.log("Results page - No valid assessment data available:", {
+      assessmentId,
+      hasSpecificData: Boolean(specificAssessmentData),
+      hasCategories: Boolean(categories && categories.length > 0)
+    });
+    
     return (
       <div className="min-h-screen bg-slate-50">
         <div className="max-w-5xl mx-auto px-4 py-2">
@@ -118,29 +127,7 @@ const Results = () => {
               handleStartAssessment();
               navigate('/assessment');
             }}
-            onBack={() => navigate('/previous-assessments')}
-            errorType="invalid-format"
-          />
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  // No assessment results available
-  if (!assessmentId && !isAssessmentDataValid) {
-    return (
-      <div className="min-h-screen bg-slate-50">
-        <div className="max-w-5xl mx-auto px-4 py-2">
-          <Navigation />
-        </div>
-        <main className="assessment-container max-w-5xl mx-auto px-4 py-8">
-          <UserHeader />
-          <InvalidResultsMessage 
-            onRestart={() => {
-              handleStartAssessment();
-              navigate('/assessment');
-            }}
+            onBack={assessmentId ? () => navigate('/previous-assessments') : undefined}
           />
         </main>
         <Footer />
@@ -164,7 +151,7 @@ const Results = () => {
         )}
         
         {/* Results content */}
-        {!showAuthForm && isAssessmentDataValid && (
+        {!showAuthForm && (
           <ResultsDisplay
             categories={displayCategories}
             demographics={displayDemographics}

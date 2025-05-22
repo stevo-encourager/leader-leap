@@ -26,30 +26,30 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   onBack,
   onSignup
 }) => {
-  // Debug received categories
+  // Debug received categories with more detailed logging
   useEffect(() => {
-    console.log("ResultsDashboard - Received categories:", categories);
+    console.log("ResultsDashboard - Received categories count:", categories?.length || 0);
     
-    // Check if categories have skills and ratings
-    if (categories && categories.length > 0) {
-      console.log("ResultsDashboard - First category:", categories[0]);
+    // Check actual rating data
+    let totalRatingsFound = 0;
+    let totalSkillsWithRatings = 0;
+    
+    categories.forEach(category => {
+      if (!category || !category.skills) return;
       
-      if (categories[0].skills && categories[0].skills.length > 0) {
-        console.log("ResultsDashboard - First skill:", categories[0].skills[0]);
-      }
-      
-      // Check data quality for calculations
-      const hasActualData = categories.some(cat => 
-        cat.skills && cat.skills.some(skill => 
-          skill.ratings && (
-            (typeof skill.ratings.current === 'number' && skill.ratings.current > 0) || 
-            (typeof skill.ratings.desired === 'number' && skill.ratings.desired > 0)
-          )
-        )
-      );
-      
-      console.log(`ResultsDashboard - Has actual rating data: ${hasActualData}`);
-    }
+      category.skills.forEach(skill => {
+        if (!skill || !skill.ratings) return;
+        
+        if (typeof skill.ratings.current === 'number') totalRatingsFound++;
+        if (typeof skill.ratings.desired === 'number') totalRatingsFound++;
+        
+        if (typeof skill.ratings.current === 'number' || typeof skill.ratings.desired === 'number') {
+          totalSkillsWithRatings++;
+        }
+      });
+    });
+    
+    console.log(`ResultsDashboard - Found ${totalRatingsFound} total rating values across ${totalSkillsWithRatings} skills`);
   }, [categories]);
   
   // Calculate metrics with extra error handling
@@ -58,15 +58,26 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   let lowestSkills = [];
   
   try {
-    console.log("ResultsDashboard - Calculating metrics...");
-    averageGap = calculateAverageGap(categories);
-    console.log("ResultsDashboard - Average gap calculated:", averageGap);
-    
-    strengths = getTopStrengths(categories, 3);
-    console.log("ResultsDashboard - Strengths calculated:", strengths?.length || 0);
-    
-    lowestSkills = getLowestSkills(categories, 3);
-    console.log("ResultsDashboard - Lowest skills calculated:", lowestSkills?.length || 0);
+    // Ensure we have valid categories before calculations
+    if (categories && categories.length > 0 && 
+        categories.some(cat => cat && cat.skills && cat.skills.some(skill => 
+          skill && skill.ratings && 
+          typeof skill.ratings.current === 'number' && 
+          typeof skill.ratings.desired === 'number'))) {
+      
+      console.log("ResultsDashboard - Calculating metrics with valid data");
+      averageGap = calculateAverageGap(categories);
+      strengths = getTopStrengths(categories, 3);
+      lowestSkills = getLowestSkills(categories, 3);
+      
+      console.log("ResultsDashboard - Metrics calculated:", {
+        averageGap,
+        strengthsCount: strengths?.length || 0,
+        lowestSkillsCount: lowestSkills?.length || 0
+      });
+    } else {
+      console.log("ResultsDashboard - Skipped metrics calculation due to invalid data");
+    }
   } catch (error) {
     console.error("ResultsDashboard - Error calculating metrics:", error);
   }

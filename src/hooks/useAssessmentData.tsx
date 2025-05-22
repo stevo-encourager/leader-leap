@@ -1,7 +1,6 @@
 
 import { useEffect, useState } from 'react';
 import { Category, Demographics } from '@/utils/assessmentTypes';
-import { isValidAssessmentResult } from '@/utils/assessmentValidation';
 
 interface UseAssessmentDataReturn {
   displayCategories: Category[];
@@ -38,35 +37,35 @@ export const useAssessmentData = (
     console.log("useAssessmentData - Display categories:", displayCategories);
     console.log("useAssessmentData - Display categories count:", displayCategories?.length || 0);
     
-    // More thorough validation
+    // Simpler validation to catch truly empty data
     if (!displayCategories || !Array.isArray(displayCategories) || displayCategories.length === 0) {
       console.log("useAssessmentData - Invalid category data (missing or empty array)");
       setIsAssessmentDataValid(false);
       return;
     }
     
-    // Check if all categories have skills
-    const missingSkills = displayCategories.some(category => 
-      !category.skills || !Array.isArray(category.skills) || category.skills.length === 0
+    // Ensure categories have skills (less strict validation)
+    const hasSkills = displayCategories.some(category => 
+      category && category.skills && Array.isArray(category.skills) && category.skills.length > 0
     );
     
-    if (missingSkills) {
-      console.log("useAssessmentData - Some categories are missing skills");
+    if (!hasSkills) {
+      console.log("useAssessmentData - No categories with skills found");
       setIsAssessmentDataValid(false);
       return;
     }
     
-    // Check if we have any valid ratings
-    const hasValidRatings = displayCategories.some(category => 
-      category.skills.some(skill => 
-        skill.ratings && (
-          (typeof skill.ratings.current === 'number' && skill.ratings.current > 0) || 
-          (typeof skill.ratings.desired === 'number' && skill.ratings.desired > 0)
+    // Check for any ratings data (less strict)
+    const hasAnyRatings = displayCategories.some(category => 
+      category && category.skills && category.skills.some(skill => 
+        skill && skill.ratings && (
+          typeof skill.ratings.current === 'number' || 
+          typeof skill.ratings.desired === 'number'
         )
       )
     );
     
-    if (!hasValidRatings) {
+    if (!hasAnyRatings) {
       console.log("useAssessmentData - No valid ratings found in categories");
       setIsAssessmentDataValid(false);
       return;

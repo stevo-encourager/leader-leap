@@ -27,6 +27,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
   const safeCategories = Array.isArray(categories) ? categories : [];
   
   console.log("SkillGapChart - Received categories:", safeCategories?.length || 0);
+  console.log("SkillGapChart - Categories data:", safeCategories);
   
   // Process chart data with detailed logging
   const chartData = useMemo(() => {
@@ -74,7 +75,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
           
           console.log(`SkillGapChart - Skill ${skill.name}: current=${current}, desired=${desired}`);
           
-          if (current > 0 || desired > 0) {
+          if (!isNaN(current) && !isNaN(desired)) {
             totalCurrent += current;
             totalDesired += desired;
             skillCount++;
@@ -117,7 +118,8 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
   
   // Filter to only show categories with actual data
   const validChartData = chartData.filter(
-    item => item.current > 0 || item.desired > 0
+    item => (item.current > 0 || item.desired > 0) && 
+           (!isNaN(item.current) && !isNaN(item.desired))
   );
   
   console.log("SkillGapChart - Valid chart data items:", validChartData.length);

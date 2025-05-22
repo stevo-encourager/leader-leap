@@ -41,6 +41,27 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
         }
       }
     }
+    
+    // Check if there are any valid ratings in the data
+    if (categories && Array.isArray(categories)) {
+      let totalRatings = 0;
+      categories.forEach(category => {
+        if (!category || !category.skills) return;
+        
+        category.skills.forEach(skill => {
+          if (!skill || !skill.ratings) return;
+          
+          if (typeof skill.ratings.current === 'number' && !isNaN(skill.ratings.current)) {
+            totalRatings++;
+          }
+          if (typeof skill.ratings.desired === 'number' && !isNaN(skill.ratings.desired)) {
+            totalRatings++;
+          }
+        });
+      });
+      
+      console.log(`ResultsDisplay - Found a total of ${totalRatings} valid ratings in the data`);
+    }
   }, [categories, demographics]);
 
   // Base-level validation

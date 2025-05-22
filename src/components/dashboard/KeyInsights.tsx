@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { BookOpen, AlertTriangle } from 'lucide-react';
 import { 
@@ -52,6 +51,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
   useEffect(() => {
     console.log("KeyInsights - Component mounted with categories:", safeCategories?.length || 0);
     console.log("KeyInsights - Average gap:", averageGap);
+    console.log("KeyInsights - Categories data:", safeCategories);
     console.log("KeyInsights - Strengths count:", strengths?.length || 0);
     console.log("KeyInsights - Lowest skills count:", lowestSkills?.length || 0);
     
@@ -83,7 +83,10 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
         if (!category || !category.skills) return count;
         
         const categoryCount = category.skills.filter(skill => 
-          skill && skill.ratings && (Number(skill.ratings.current) > 0 || Number(skill.ratings.desired) > 0)
+          skill && skill.ratings && (
+            (typeof skill.ratings.current === 'number' && !isNaN(skill.ratings.current) && skill.ratings.current > 0) || 
+            (typeof skill.ratings.desired === 'number' && !isNaN(skill.ratings.desired) && skill.ratings.desired > 0)
+          )
         ).length;
         
         console.log(`KeyInsights - Category ${category.title} has ${categoryCount} skills with ratings`);
@@ -152,13 +155,19 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
   const skillsWithRatings = safeCategories.reduce((count, category) => {
     if (!category || !category.skills) return count;
     return count + category.skills.filter(skill => 
-      skill && skill.ratings && (Number(skill.ratings.current) > 0 || Number(skill.ratings.desired) > 0)
+      skill && skill.ratings && (
+        (typeof skill.ratings.current === 'number' && !isNaN(skill.ratings.current) && skill.ratings.current > 0) || 
+        (typeof skill.ratings.desired === 'number' && !isNaN(skill.ratings.desired) && skill.ratings.desired > 0)
+      )
     ).length;
   }, 0);
   
   const categoriesWithRatings = safeCategories.filter(category => 
     category && category.skills && category.skills.some(skill => 
-      skill && skill.ratings && (Number(skill.ratings.current) > 0 || Number(skill.ratings.desired) > 0)
+      skill && skill.ratings && (
+        (typeof skill.ratings.current === 'number' && !isNaN(skill.ratings.current) && skill.ratings.current > 0) || 
+        (typeof skill.ratings.desired === 'number' && !isNaN(skill.ratings.desired) && skill.ratings.desired > 0)
+      )
     )
   ).length;
 

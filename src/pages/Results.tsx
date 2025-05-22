@@ -31,11 +31,34 @@ const Results = () => {
     handleSaveResults
   } = useAssessment();
 
+  // Log assessment state data
+  useEffect(() => {
+    console.log("Results page - Current step:", currentStep);
+    console.log("Results page - Categories count:", categories?.length || 0);
+    console.log("Results page - Has demographics:", !!demographics);
+    
+    // Log first category as sample (if exists)
+    if (categories && categories.length > 0) {
+      console.log("Results page - First category title:", categories[0]?.title);
+      console.log("Results page - First category skills count:", categories[0]?.skills?.length || 0);
+    }
+  }, [currentStep, categories, demographics]);
+
   const {
     loadingSpecificAssessment,
     specificAssessmentData,
     error: specificAssessmentError
   } = useSpecificAssessment(assessmentId);
+
+  // Log detailed information about the specific assessment if applicable
+  useEffect(() => {
+    if (assessmentId) {
+      console.log("Results page - Loading specific assessment:", assessmentId);
+      console.log("Results page - Loading status:", loadingSpecificAssessment);
+      console.log("Results page - Specific assessment data:", specificAssessmentData);
+      console.log("Results page - Error:", specificAssessmentError);
+    }
+  }, [assessmentId, loadingSpecificAssessment, specificAssessmentData, specificAssessmentError]);
 
   // Use our updated hook to handle assessment data
   const {
@@ -50,6 +73,13 @@ const Results = () => {
     categories,
     demographics
   );
+  
+  // Log the data that will be displayed in the results
+  useEffect(() => {
+    console.log("Results page - Display categories count:", displayCategories?.length || 0);
+    console.log("Results page - Is assessment data valid:", isAssessmentDataValid);
+    console.log("Results page - Is assessment data loading:", isAssessmentDataLoading);
+  }, [displayCategories, isAssessmentDataValid, isAssessmentDataLoading]);
 
   // Effect to handle result saving when user is logged in and viewing results
   useEffect(() => {
@@ -65,7 +95,7 @@ const Results = () => {
         !saveTriggeredRef.current && 
         categories && categories.length > 0) {
       
-      console.log('Triggering assessment save from Results page');
+      console.log('Results page - Triggering assessment save');
       saveTriggeredRef.current = true;
       
       // Use setTimeout to avoid race conditions and ensure this runs after render

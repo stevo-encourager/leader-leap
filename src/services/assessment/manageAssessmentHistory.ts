@@ -3,6 +3,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { Json } from '@/integrations/supabase/types';
 
+const LOCAL_STORAGE_KEYS = {
+  CATEGORIES: 'assessment_categories',
+  DEMOGRAPHICS: 'assessment_demographics',
+  TIMESTAMP: 'assessment_timestamp'
+};
+
 /**
  * Stores assessment data in the browser's local storage for immediate access
  * This provides a fallback if database storage fails or user is not authenticated
@@ -34,12 +40,12 @@ export const storeLocalAssessmentData = (categories: Category[], demographics: D
     const categoriesToStore = JSON.parse(JSON.stringify(categories));
     
     // Store the categories and demographics in localStorage
-    localStorage.setItem('assessment_categories', JSON.stringify(categoriesToStore));
-    localStorage.setItem('assessment_demographics', JSON.stringify(demographics));
-    localStorage.setItem('assessment_timestamp', new Date().toISOString());
+    localStorage.setItem(LOCAL_STORAGE_KEYS.CATEGORIES, JSON.stringify(categoriesToStore));
+    localStorage.setItem(LOCAL_STORAGE_KEYS.DEMOGRAPHICS, JSON.stringify(demographics));
+    localStorage.setItem(LOCAL_STORAGE_KEYS.TIMESTAMP, new Date().toISOString());
     
     // Verify the data was stored correctly by reading it back
-    const storedData = localStorage.getItem('assessment_categories');
+    const storedData = localStorage.getItem(LOCAL_STORAGE_KEYS.CATEGORIES);
     if (storedData) {
       const parsedData = JSON.parse(storedData);
       if (parsedData && parsedData.length > 0 && parsedData[0].skills && parsedData[0].skills.length > 0) {
@@ -65,17 +71,37 @@ export const storeLocalAssessmentData = (categories: Category[], demographics: D
  */
 export const getLocalAssessmentData = () => {
   try {
-    const categoriesStr = localStorage.getItem('assessment_categories');
-    const demographicsStr = localStorage.getItem('assessment_demographics');
-    const timestamp = localStorage.getItem('assessment_timestamp');
+    const categoriesStr = localStorage.getItem(LOCAL_STORAGE_KEYS.CATEGORIES);
+    const demographicsStr = localStorage.getItem(LOCAL_STORAGE_KEYS.DEMOGRAPHICS);
+    const timestamp = localStorage.getItem(LOCAL_STORAGE_KEYS.TIMESTAMP);
     
     if (!categoriesStr) {
       console.log("getLocalAssessmentData - No local assessment data found");
       return null;
     }
     
-    const categories = JSON.parse(categoriesStr);
+    const rawCategories = JSON.parse(categoriesStr);
     const demographics = demographicsStr ? JSON.parse(demographicsStr) : {};
+    
+    // Ensure ratings are parsed as numbers
+    const categories = rawCategories.map((category: any) => {
+      if (category && category.skills && Array.isArray(category.skills)) {
+        category.skills = category.skills.map((skill: any) => {
+          if (skill && skill.ratings) {
+            // Convert ratings to numbers explicitly
+            const current = typeof skill.ratings.current !== 'undefined' ? Number(skill.ratings.current) : 0;
+            const desired = typeof skill.ratings.desired !== 'undefined' ? Number(skill.ratings.desired) : 0;
+            
+            skill.ratings = {
+              current: isNaN(current) ? 0 : current,
+              desired: isNaN(desired) ? 0 : desired
+            };
+          }
+          return skill;
+        });
+      }
+      return category;
+    });
     
     console.log("getLocalAssessmentData - Retrieved local assessment data:", {
       categoriesCount: categories?.length || 0,
@@ -91,6 +117,15 @@ export const getLocalAssessmentData = () => {
           ratings: categories[0].skills[0].ratings
         })
       );
+      
+      // Check if we have any valid ratings (non-zero)
+      const hasRatings = categories.some((cat: any) => 
+        cat && cat.skills && cat.skills.some((skill: any) => 
+          skill && skill.ratings && (skill.ratings.current > 0 || skill.ratings.desired > 0)
+        )
+      );
+      
+      console.log("getLocalAssessmentData - Local data has valid ratings:", hasRatings);
     }
     
     return { categories, demographics, timestamp };
@@ -105,9 +140,12 @@ export const getLocalAssessmentData = () => {
  */
 export const clearLocalAssessmentData = () => {
   try {
-    localStorage.removeItem('assessment_categories');
-    localStorage.removeItem('assessment_demographics');
-    localStorage.removeItem('assessment_timestamp');
+    console.log("clearLocalAssessmentData - Clearing local assessment data");
+    
+    localStorage.removeItem(LOCAL_STORAGE_KEYS.CATEGORIES);
+    localStorage.removeItem(LOCAL_STORAGE_KEYS.DEMOGRAPHICS);
+    localStorage.removeItem(LOCAL_STORAGE_KEYS.TIMESTAMP);
+    
     return true;
   } catch (error) {
     console.error("Error clearing local assessment data:", error);

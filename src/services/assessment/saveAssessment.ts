@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Demographics } from '../../utils/assessmentTypes';
 import { Json } from '@/integrations/supabase/types';
@@ -142,7 +141,12 @@ const hasValidRatings = (categories: Category[]): boolean => {
       const current = typeof skill.ratings.current === 'number' ? skill.ratings.current : 0;
       const desired = typeof skill.ratings.desired === 'number' ? skill.ratings.desired : 0;
       
-      return !isNaN(current) && !isNaN(desired) && (current > 0 || desired > 0);
+      const isValid = !isNaN(current) && !isNaN(desired) && (current > 0 || desired > 0);
+      if (isValid) {
+        console.log(`saveAssessment - Found valid rating in ${category.title} - ${skill.name}: current=${current}, desired=${desired}`);
+      }
+      
+      return isValid;
     })
   );
   
@@ -247,7 +251,7 @@ export const saveAssessmentResults = async (categories: Category[], demographics
     }
     
     // If there's no assessment from today and no incomplete assessment, create a new one
-    console.log('saveAssessment - No existing assessment found, creating new one');
+    console.log('saveAssessment - No existing assessment found, creating new one for user:', user.id);
     return await createNewAssessment(user.id, normalizedCategories, demographics);
   } catch (error) {
     console.error('Error in saveAssessmentResults:', error);

@@ -13,11 +13,13 @@ import PreviousAssessments from "./pages/PreviousAssessments";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 
+// Configure the QueryClient with sensible defaults
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 1,
       staleTime: 30000,
+      refetchOnWindowFocus: false,
     },
   },
 });

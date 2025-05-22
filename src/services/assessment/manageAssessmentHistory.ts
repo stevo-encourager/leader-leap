@@ -2,12 +2,16 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { Json } from '@/integrations/supabase/types';
+import { 
+  AssessmentSummary, 
+  LocalAssessmentData 
+} from '@/types/assessment';
 
 /**
  * Stores assessment data in the browser's local storage for immediate access
  * This provides a fallback if database storage fails or user is not authenticated
  */
-export const storeLocalAssessmentData = (categories: Category[], demographics: Demographics) => {
+export const storeLocalAssessmentData = (categories: Category[], demographics: Demographics): boolean => {
   try {
     console.log("storeLocalAssessmentData - Storing assessment data locally:", {
       categoriesCount: categories?.length || 0,
@@ -63,7 +67,7 @@ export const storeLocalAssessmentData = (categories: Category[], demographics: D
 /**
  * Retrieves locally stored assessment data
  */
-export const getLocalAssessmentData = () => {
+export const getLocalAssessmentData = (): LocalAssessmentData | null => {
   try {
     const categoriesStr = localStorage.getItem('assessment_categories');
     const demographicsStr = localStorage.getItem('assessment_demographics');
@@ -93,7 +97,11 @@ export const getLocalAssessmentData = () => {
       );
     }
     
-    return { categories, demographics, timestamp };
+    return { 
+      categories, 
+      demographics, 
+      timestamp: timestamp || new Date().toISOString() 
+    };
   } catch (error) {
     console.error("Error retrieving local assessment data:", error);
     return null;
@@ -103,7 +111,7 @@ export const getLocalAssessmentData = () => {
 /**
  * Clear local assessment data when no longer needed
  */
-export const clearLocalAssessmentData = () => {
+export const clearLocalAssessmentData = (): boolean => {
   try {
     localStorage.removeItem('assessment_categories');
     localStorage.removeItem('assessment_demographics');
@@ -119,7 +127,11 @@ export const clearLocalAssessmentData = () => {
  * Retrieve assessment history from the database
  * Returns a list of previous assessments for the current user
  */
-export const getAssessmentHistory = async () => {
+export const getAssessmentHistory = async (): Promise<{ 
+  success: boolean; 
+  data?: AssessmentSummary[]; 
+  error?: string 
+}> => {
   try {
     console.log("getAssessmentHistory - Starting fetch");
     
@@ -159,7 +171,10 @@ export const getAssessmentHistory = async () => {
 /**
  * Delete an assessment by ID
  */
-export const deleteAssessment = async (assessmentId: string) => {
+export const deleteAssessment = async (assessmentId: string): Promise<{ 
+  success: boolean; 
+  error?: string 
+}> => {
   try {
     console.log("deleteAssessment - Deleting assessment:", assessmentId);
     
@@ -194,7 +209,10 @@ export const deleteAssessment = async (assessmentId: string) => {
 /**
  * Delete all assessments for the current user
  */
-export const deleteAllAssessments = async () => {
+export const deleteAllAssessments = async (): Promise<{ 
+  success: boolean; 
+  error?: string 
+}> => {
   try {
     console.log("deleteAllAssessments - Starting");
     

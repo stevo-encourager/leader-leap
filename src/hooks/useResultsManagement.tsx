@@ -1,10 +1,12 @@
 
-import { useState, useCallback, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { Category, Demographics } from '@/utils/assessmentTypes';
-import { saveAssessmentResults, getLatestAssessmentResults } from '@/services/assessmentService';
+import { saveAssessmentResults } from '@/services/assessmentService';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
+import { useAuthForm } from './useAuthForm';
+import { useSaveTracker } from './useSaveTracker';
+import { usePreviousResults } from './usePreviousResults';
 
 export const useResultsManagement = (
   categories: Category[],
@@ -13,22 +15,30 @@ export const useResultsManagement = (
   setDemographics: (demographics: Demographics) => void,
   setCurrentStep: (step: any) => void
 ) => {
-  const [showAuthForm, setShowAuthForm] = useState(false);
-  const [loadingPreviousResults, setLoadingPreviousResults] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const { user } = useAuth();
-  const navigate = useNavigate();
   
-  // Store the assessment ID in a ref to track which assessment we're currently viewing
-  const currentAssessmentIdRef = useRef<string | null>(null);
+  // Use our smaller, focused hooks
+  const { 
+    showAuthForm, 
+    setShowAuthForm, 
+    handleCloseAuthForm, 
+    handleShowSignupForm 
+  } = useAuthForm();
   
-  // Add a flag to track if results have been saved in the current session
-  // This prevents multiple saves when viewing the results page multiple times
-  const resultsSavedRef = useRef(false);
+  const {
+    isSaved,
+    lastSavedDate,
+    currentAssessmentId,
+    markAsSaved,
+    resetSaveState
+  } = useSaveTracker();
   
-  // Add a tracker to store the date when we last saved an assessment
-  const lastSavedDateRef = useRef<string | null>(null);
-  
+  const {
+    loadingPreviousResults,
+    handleLoadPreviousResults
+  } = usePreviousResults(setCategories, setDemographics, setCurrentStep);
+
   // Reset the saved flag when categories or demographics change
   useEffect(() => {
     if (categories && categories.length > 0) {
@@ -44,12 +54,12 @@ export const useResultsManagement = (
       
       if (hasRatings) {
         console.log('Categories/demographics changed, resetting saved flag');
-        resultsSavedRef.current = false;
+        resetSaveState();
       }
     }
   }, [categories, demographics]);
 
-  // Results management functions
+  // Results save function
   const handleSaveResults = async () => {
     // Prevent multiple simultaneous save operations
     if (isSaving) {
@@ -58,7 +68,7 @@ export const useResultsManagement = (
     }
     
     // Skip save if already saved in this session
-    if (resultsSavedRef.current) {
+    if (isSaved) {
       console.log('Results already saved in this session, skipping');
       return;
     }
@@ -88,7 +98,7 @@ export const useResultsManagement = (
     try {
       // Check if we already saved an assessment today
       const today = new Date().toISOString().split('T')[0];
-      if (lastSavedDateRef.current === today) {
+      if (lastSavedDate === today) {
         console.log('Already saved an assessment today, updating instead of creating a new one');
       }
       
@@ -98,15 +108,12 @@ export const useResultsManagement = (
       
       if (result.success) {
         // Mark as saved for this session
-        resultsSavedRef.current = true;
-        
-        // Store today's date as the last saved date
-        lastSavedDateRef.current = today;
-        
-        // Store the assessment ID to track which assessment we're viewing
         if (result.data && result.data.length > 0) {
-          currentAssessmentIdRef.current = result.data[0].id;
-          console.log('Saved assessment with ID:', currentAssessmentIdRef.current);
+          const assessmentId = result.data[0].id;
+          console.log('Saved assessment with ID:', assessmentId);
+          markAsSaved(assessmentId, today);
+        } else {
+          markAsSaved(undefined, today);
         }
         
         toast({
@@ -132,65 +139,6 @@ export const useResultsManagement = (
     }
   };
   
-  const handleLoadPreviousResults = async () => {
-    setLoadingPreviousResults(true);
-    
-    try {
-      const result = await getLatestAssessmentResults();
-      
-      if (result.success && result.data) {
-        const categoriesData = result.data.categories as unknown as Category[];
-        const demographicsData = result.data.demographics as unknown as Demographics;
-        
-        setCategories(categoriesData);
-        setDemographics(demographicsData || {});
-        setCurrentStep('results');
-        
-        // Store the assessment ID
-        if (result.data.id) {
-          currentAssessmentIdRef.current = result.data.id;
-          console.log('Loaded assessment with ID:', currentAssessmentIdRef.current);
-          
-          // Also set the last saved date
-          if (result.data.created_at) {
-            lastSavedDateRef.current = new Date(result.data.created_at).toISOString().split('T')[0];
-          }
-        }
-        
-        navigate('/results');
-        
-        toast({
-          title: "Previous results loaded",
-          description: "Your most recent assessment results have been loaded.",
-        });
-        
-        // Since we loaded existing results, mark them as already saved
-        resultsSavedRef.current = true;
-      } else {
-        toast({
-          title: "No previous results found",
-          description: "You don't have any saved assessment results yet.",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error loading results",
-        description: "An error occurred while loading your previous results.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoadingPreviousResults(false);
-    }
-  };
-  
-  const handleCloseAuthForm = useCallback(() => {
-    setShowAuthForm(false);
-  }, []);
-
-  const handleShowSignupForm = useCallback(() => {
-    setShowAuthForm(true);
-  }, []);
-
   return {
     showAuthForm,
     loadingPreviousResults,
@@ -198,6 +146,6 @@ export const useResultsManagement = (
     handleLoadPreviousResults,
     handleCloseAuthForm,
     handleShowSignupForm,
-    currentAssessmentId: currentAssessmentIdRef.current
+    currentAssessmentId
   };
 };

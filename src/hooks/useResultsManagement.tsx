@@ -108,11 +108,13 @@ export const useResultsManagement = (
       
       if (result.success) {
         // Mark as saved for this session
-        if (result.data && result.data.length > 0) {
+        // Fix: Check if data exists and has at least one item before accessing it
+        if (result.success && 'data' in result && result.data && result.data.length > 0) {
           const assessmentId = result.data[0].id;
           console.log('Saved assessment with ID:', assessmentId);
           markAsSaved(assessmentId, today);
         } else {
+          // Still mark as saved but without an assessment ID
           markAsSaved(undefined, today);
         }
         

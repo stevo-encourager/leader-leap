@@ -32,6 +32,7 @@ const PreviousAssessments = () => {
   const [assessments, setAssessments] = useState<AssessmentRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [assessmentCount, setAssessmentCount] = useState<number | null>(null);
 
   const fetchAssessments = async () => {
     setIsLoading(true);
@@ -41,25 +42,18 @@ const PreviousAssessments = () => {
       console.log('PreviousAssessments - Assessment history fetch result:', result);
       
       if (result.success && result.data) {
-        // Enhanced deduplication: Using a Map to ensure we keep only the most recent assessment
-        // when there are multiple entries with the same ID
-        const uniqueAssessments = new Map<string, AssessmentRecord>();
+        // Store the raw count for debugging
+        setAssessmentCount(result.data.length);
         
-        // Process from newest to oldest (already sorted in the service)
-        result.data.forEach(assessment => {
-          // Only add if we haven't seen this ID yet
-          if (!uniqueAssessments.has(assessment.id)) {
-            uniqueAssessments.set(assessment.id, assessment);
-          }
-        });
+        // Use a Map to ensure we keep only one assessment with each ID
+        const uniqueAssessments = Array.from(
+          new Map(result.data.map(item => [item.id, item])).values()
+        );
         
-        // Convert map values back to array
-        const finalAssessments = Array.from(uniqueAssessments.values());
+        console.log('PreviousAssessments - Unique assessments:', uniqueAssessments);
+        console.log('PreviousAssessments - Raw count:', result.data.length, 'Unique count:', uniqueAssessments.length);
         
-        console.log('PreviousAssessments - After deduplication:', finalAssessments);
-        console.log('PreviousAssessments - Original count:', result.data.length, 'Final count:', finalAssessments.length);
-        
-        setAssessments(finalAssessments);
+        setAssessments(uniqueAssessments);
       } else {
         console.error('PreviousAssessments - Failed to fetch history:', result.error);
         toast({
@@ -109,6 +103,7 @@ const PreviousAssessments = () => {
         });
         // Refresh the list
         setAssessments([]);
+        setAssessmentCount(0);
       } else {
         toast({
           title: "Error deleting assessments",
@@ -158,6 +153,8 @@ const PreviousAssessments = () => {
             <div className="flex items-center gap-2">
               <span className="text-sm text-slate-500">
                 {assessments.length} assessment{assessments.length !== 1 ? 's' : ''}
+                {assessmentCount !== null && assessmentCount !== assessments.length && 
+                  ` (deduped from ${assessmentCount})`}
               </span>
               
               <AlertDialog>

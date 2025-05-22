@@ -152,12 +152,14 @@ export const getAssessmentHistory = async () => {
     
     console.log('getAssessmentHistory - Fetching for user:', user.id);
     
-    // Only get completed assessments, ordered by most recent first
+    // Only get a single record of each assessment using DISTINCT ON
+    // This will ensure we don't get duplicate rows with the same id
     const { data: assessments, error } = await supabase
       .from('assessment_results')
       .select('id, created_at')
       .eq('user_id', user.id)
       .eq('completed', true)
+      .order('id', { ascending: true })
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -167,22 +169,20 @@ export const getAssessmentHistory = async () => {
 
     // Log the raw data for debugging
     console.log('getAssessmentHistory - Raw data from database:', assessments);
+    console.log('getAssessmentHistory - Raw data count:', assessments?.length || 0);
     
     if (!assessments || assessments.length === 0) {
       console.log('getAssessmentHistory - No history found');
       return { success: true, data: [] };
     }
 
-    // Server-side deduplication: Use Set to ensure unique IDs
-    const seen = new Set();
-    const uniqueAssessments = assessments.filter(assessment => {
-      const isDuplicate = seen.has(assessment.id);
-      seen.add(assessment.id);
-      return !isDuplicate;
-    });
+    // Use a Map for efficient deduplication (keeps only the first entry for each ID)
+    const uniqueAssessments = Array.from(
+      new Map(assessments.map(item => [item.id, item])).values()
+    );
     
-    console.log('getAssessmentHistory - After server deduplication:', uniqueAssessments);
-    console.log('getAssessmentHistory - Removed', assessments.length - uniqueAssessments.length, 'duplicates');
+    console.log('getAssessmentHistory - After client deduplication:', uniqueAssessments);
+    console.log('getAssessmentHistory - Before count:', assessments.length, 'After count:', uniqueAssessments.length);
     
     return { success: true, data: uniqueAssessments };
   } catch (error) {

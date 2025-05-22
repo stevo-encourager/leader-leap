@@ -115,15 +115,17 @@ const SkillAssessment: React.FC<SkillAssessmentProps> = ({ skill, onRatingChange
   const ratings = skill.ratings || { current: 0, desired: 0 };
   
   // Handle current rating change
-  const handleCurrentChange = (value: number[]) => {
-    console.log(`SkillAssessment - Current rating change for ${skill.name}: ${value[0]}`);
-    onRatingChange('current', value[0]);
+  const handleCurrentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    console.log(`SkillAssessment - Current rating change for ${skill.name}: ${value}`);
+    onRatingChange('current', value);
   };
   
   // Handle desired rating change
-  const handleDesiredChange = (value: number[]) => {
-    console.log(`SkillAssessment - Desired rating change for ${skill.name}: ${value[0]}`);
-    onRatingChange('desired', value[0]);
+  const handleDesiredChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value, 10);
+    console.log(`SkillAssessment - Desired rating change for ${skill.name}: ${value}`);
+    onRatingChange('desired', value);
   };
 
   return (
@@ -136,22 +138,26 @@ const SkillAssessment: React.FC<SkillAssessmentProps> = ({ skill, onRatingChange
           </label>
           <span className="text-lg font-medium text-encourager">{ratings.current}</span>
         </div>
-        <div className="relative pt-1">
-          <input
-            type="range"
-            min="0"
-            max="10"
-            step="1"
-            value={ratings.current || 0}
-            onChange={(e) => onRatingChange('current', parseInt(e.target.value, 10))}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-          />
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>Beginner</span>
-            <span>Proficient</span>
-            <span>Advanced</span>
-            <span>Expert</span>
-          </div>
+        <input
+          type="range"
+          min="0"
+          max="10"
+          step="1"
+          value={ratings.current || 0}
+          onChange={handleCurrentChange}
+          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-encourager"
+          style={{
+            background: 'linear-gradient(to right, #2F564D 0%, #2F564D 50%, #e5e7eb 50%, #e5e7eb 100%)',
+            backgroundSize: '100% 100%',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: `left ${ratings.current * 10}%`
+          }}
+        />
+        <div className="flex justify-between text-xs text-gray-500 mt-1">
+          <span>Beginner</span>
+          <span>Proficient</span>
+          <span>Advanced</span>
+          <span>Expert</span>
         </div>
       </div>
       
@@ -163,22 +169,26 @@ const SkillAssessment: React.FC<SkillAssessmentProps> = ({ skill, onRatingChange
           </label>
           <span className="text-lg font-medium text-encourager">{ratings.desired}</span>
         </div>
-        <div className="relative pt-1">
-          <input
-            type="range"
-            min="0"
-            max="10"
-            step="1"
-            value={ratings.desired || 0}
-            onChange={(e) => onRatingChange('desired', parseInt(e.target.value, 10))}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-          />
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>Beginner</span>
-            <span>Proficient</span>
-            <span>Advanced</span>
-            <span>Expert</span>
-          </div>
+        <input
+          type="range"
+          min="0"
+          max="10"
+          step="1"
+          value={ratings.desired || 0}
+          onChange={handleDesiredChange}
+          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-encourager"
+          style={{
+            background: 'linear-gradient(to right, #2F564D 0%, #2F564D 50%, #e5e7eb 50%, #e5e7eb 100%)',
+            backgroundSize: '100% 100%',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: `left ${ratings.desired * 10}%`
+          }}
+        />
+        <div className="flex justify-between text-xs text-gray-500 mt-1">
+          <span>Beginner</span>
+          <span>Proficient</span>
+          <span>Advanced</span>
+          <span>Expert</span>
         </div>
       </div>
 

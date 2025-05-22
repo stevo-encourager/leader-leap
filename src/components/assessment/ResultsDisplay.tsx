@@ -28,7 +28,6 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   // Enhanced validation and debug logging for the incoming data
   useEffect(() => {
     console.log("ResultsDisplay - RECEIVED props.categories:", categories);
-    console.log("ResultsDisplay - RECEIVED props.categories stringified:", JSON.stringify(categories));
     
     const debugInfo: any = {
       categoriesInput: {
@@ -91,40 +90,34 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
           return false;
         }
         
-        // Parse and verify ratings
+        // Ensure ratings are parsed as numbers
         let current = 0;
         let desired = 0;
         
-        // Handle current rating
-        if (typeof skill.ratings.current === 'number') {
-          current = skill.ratings.current;
-        } else if (skill.ratings.current !== undefined && skill.ratings.current !== null) {
-          try {
-            current = parseFloat(String(skill.ratings.current));
-          } catch (e) {
-            validationErrors.push(`Error parsing current rating for ${skill.name}: ${e}`);
-            console.warn(`ResultsDisplay - Error parsing current rating for ${skill.name}:`, e);
+        // Handle current rating - explicitly convert to number to ensure proper type
+        if (skill.ratings.current !== undefined && skill.ratings.current !== null) {
+          current = Number(skill.ratings.current);
+          if (isNaN(current)) {
+            console.warn(`ResultsDisplay - Invalid current rating for ${skill.name}, value: ${skill.ratings.current}`);
+            current = 0;
           }
         }
         
-        // Handle desired rating
-        if (typeof skill.ratings.desired === 'number') {
-          desired = skill.ratings.desired;
-        } else if (skill.ratings.desired !== undefined && skill.ratings.desired !== null) {
-          try {
-            desired = parseFloat(String(skill.ratings.desired));
-          } catch (e) {
-            validationErrors.push(`Error parsing desired rating for ${skill.name}: ${e}`);
-            console.warn(`ResultsDisplay - Error parsing desired rating for ${skill.name}:`, e);
+        // Handle desired rating - explicitly convert to number to ensure proper type
+        if (skill.ratings.desired !== undefined && skill.ratings.desired !== null) {
+          desired = Number(skill.ratings.desired);
+          if (isNaN(desired)) {
+            console.warn(`ResultsDisplay - Invalid desired rating for ${skill.name}, value: ${skill.ratings.desired}`);
+            desired = 0;
           }
         }
         
-        current = isNaN(current) ? 0 : current;
-        desired = isNaN(desired) ? 0 : desired;
-        
-        // Update the skill with cleaned values
+        // Update the skill with cleaned numeric values
         skill.ratings.current = current;
         skill.ratings.desired = desired;
+        
+        // Log all ratings for debugging
+        console.log(`ResultsDisplay - Skill ratings check: ${category.title} -> ${skill.name}: current=${current}, desired=${desired}`);
         
         // Count if either rating is non-zero
         const isValid = current > 0 || desired > 0;
@@ -137,12 +130,16 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
           console.warn(`ResultsDisplay - Skill with zero ratings: ${skill.name}`, skill.ratings);
         }
         
-        return isValid;
+        // Include all skills with ratings whether zero or not - we'll filter at render time if needed
+        return true;
       });
       
       if (validSkills.length > 0) {
         validCategoriesCount++;
-        categoriesWithValidSkills++;
+        // Only increment if at least one skill has non-zero ratings
+        if (validSkills.some(s => s.ratings.current > 0 || s.ratings.desired > 0)) {
+          categoriesWithValidSkills++;
+        }
         category.skills = validSkills;
         return true;
       }
@@ -164,6 +161,8 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
       errors: validationErrors
     };
     
+    // We'll accept all categories that have skills, even if ratings are zero
+    // This allows us to show the structure even if no ratings were provided
     if (cleanCategories.length === 0) {
       console.error("ResultsDisplay - No valid categories with skills found");
       setErrorType("invalid-format");

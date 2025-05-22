@@ -19,10 +19,39 @@ export const storeLocalAssessmentData = (categories: Category[], demographics: D
       demographicsProvided: !!demographics
     });
     
+    // Debug the first category's ratings before storage
+    if (categories && categories.length > 0 && categories[0].skills && categories[0].skills.length > 0) {
+      console.log("storeLocalAssessmentData - Sample data before storage:", 
+        JSON.stringify({
+          category: categories[0].title,
+          skill: categories[0].skills[0].name,
+          ratings: categories[0].skills[0].ratings
+        })
+      );
+    }
+    
+    // Ensure we have a deep copy to avoid reference issues
+    const categoriesToStore = JSON.parse(JSON.stringify(categories));
+    
     // Store the categories and demographics in localStorage
-    localStorage.setItem('assessment_categories', JSON.stringify(categories));
+    localStorage.setItem('assessment_categories', JSON.stringify(categoriesToStore));
     localStorage.setItem('assessment_demographics', JSON.stringify(demographics));
     localStorage.setItem('assessment_timestamp', new Date().toISOString());
+    
+    // Verify the data was stored correctly by reading it back
+    const storedData = localStorage.getItem('assessment_categories');
+    if (storedData) {
+      const parsedData = JSON.parse(storedData);
+      if (parsedData && parsedData.length > 0 && parsedData[0].skills && parsedData[0].skills.length > 0) {
+        console.log("storeLocalAssessmentData - Verification of stored data:", 
+          JSON.stringify({
+            category: parsedData[0].title,
+            skill: parsedData[0].skills[0].name,
+            ratings: parsedData[0].skills[0].ratings
+          })
+        );
+      }
+    }
     
     return true;
   } catch (error) {
@@ -52,6 +81,17 @@ export const getLocalAssessmentData = () => {
       categoriesCount: categories?.length || 0,
       timestamp: timestamp || 'unknown'
     });
+    
+    // Debug the first category's ratings after retrieval
+    if (categories && categories.length > 0 && categories[0].skills && categories[0].skills.length > 0) {
+      console.log("getLocalAssessmentData - Sample data after retrieval:", 
+        JSON.stringify({
+          category: categories[0].title,
+          skill: categories[0].skills[0].name,
+          ratings: categories[0].skills[0].ratings
+        })
+      );
+    }
     
     return { categories, demographics, timestamp };
   } catch (error) {

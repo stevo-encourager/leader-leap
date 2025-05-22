@@ -31,6 +31,15 @@ const normalizeCategories = (categories: Category[]): Category[] => {
       normalizedCategories = [...categories]; // Fallback to shallow clone
     }
     
+    // Log the first category's ratings before processing (if available)
+    if (normalizedCategories.length > 0 && normalizedCategories[0].skills && normalizedCategories[0].skills.length > 0) {
+      const firstSkill = normalizedCategories[0].skills[0];
+      console.log("saveAssessment - First skill before normalization:", JSON.stringify({
+        name: firstSkill.name,
+        ratings: firstSkill.ratings
+      }));
+    }
+    
     // Process each category
     const result = normalizedCategories
       .filter((category: any) => category && typeof category === 'object')
@@ -59,36 +68,29 @@ const normalizeCategories = (categories: Category[]): Category[] => {
                 }
               };
               
-              // Parse ratings
+              // Parse ratings - explicitly convert to numbers to maintain proper type
               if (skill.ratings) {
-                // Handle current rating
-                let current = 0;
-                if (typeof skill.ratings.current === 'number') {
-                  current = skill.ratings.current;
-                } else if (skill.ratings.current !== undefined && skill.ratings.current !== null) {
-                  try {
-                    current = parseFloat(String(skill.ratings.current));
-                  } catch (e) {
-                    console.warn(`saveAssessment - Could not parse current rating for ${skill.name}:`, e);
-                    current = 0;
+                // Handle current rating - ensure it's stored as a number
+                if (skill.ratings.current !== undefined && skill.ratings.current !== null) {
+                  const current = Number(skill.ratings.current);
+                  normalizedSkill.ratings.current = isNaN(current) ? 0 : current;
+                  
+                  // Log if the rating is being preserved or reset
+                  if (current > 0) {
+                    console.log(`saveAssessment - Preserving current rating ${current} for skill ${skill.name}`);
                   }
                 }
                 
-                // Handle desired rating
-                let desired = 0;
-                if (typeof skill.ratings.desired === 'number') {
-                  desired = skill.ratings.desired;
-                } else if (skill.ratings.desired !== undefined && skill.ratings.desired !== null) {
-                  try {
-                    desired = parseFloat(String(skill.ratings.desired));
-                  } catch (e) {
-                    console.warn(`saveAssessment - Could not parse desired rating for ${skill.name}:`, e);
-                    desired = 0;
+                // Handle desired rating - ensure it's stored as a number
+                if (skill.ratings.desired !== undefined && skill.ratings.desired !== null) {
+                  const desired = Number(skill.ratings.desired);
+                  normalizedSkill.ratings.desired = isNaN(desired) ? 0 : desired;
+                  
+                  // Log if the rating is being preserved or reset
+                  if (desired > 0) {
+                    console.log(`saveAssessment - Preserving desired rating ${desired} for skill ${skill.name}`);
                   }
                 }
-                
-                normalizedSkill.ratings.current = isNaN(current) ? 0 : current;
-                normalizedSkill.ratings.desired = isNaN(desired) ? 0 : desired;
                 
                 console.log(`saveAssessment - Normalized skill: ${skill.name}, current=${normalizedSkill.ratings.current}, desired=${normalizedSkill.ratings.desired}`);
               }
@@ -105,6 +107,15 @@ const normalizeCategories = (categories: Category[]): Category[] => {
     // Log a sample of the result (first category if available)
     if (result.length > 0) {
       console.log("saveAssessment - First normalized category:", JSON.stringify(result[0]));
+      
+      // Check if ratings were preserved in first skill
+      if (result[0].skills && result[0].skills.length > 0) {
+        const firstSkill = result[0].skills[0];
+        console.log("saveAssessment - First skill after normalization:", JSON.stringify({
+          name: firstSkill.name,
+          ratings: firstSkill.ratings
+        }));
+      }
     }
     
     return result;
@@ -158,6 +169,16 @@ export const saveAssessmentResults = async (categories: Category[], demographics
       firstSkill: categories && categories.length > 0 && categories[0]?.skills?.length > 0 
         ? categories[0].skills[0]?.name : null
     }));
+    
+    // Log ratings for first skill if available
+    if (categories && categories.length > 0 && 
+        categories[0].skills && categories[0].skills.length > 0) {
+      const firstSkill = categories[0].skills[0];
+      console.log('saveAssessment - First skill ratings before save:', JSON.stringify({
+        name: firstSkill.name,
+        ratings: firstSkill.ratings
+      }));
+    }
     
     // Get the current user ID first
     const { data: { user } } = await supabase.auth.getUser();

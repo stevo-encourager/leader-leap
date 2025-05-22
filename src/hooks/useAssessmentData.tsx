@@ -78,12 +78,26 @@ export const useAssessmentData = (
         }
       }
       
-      // Log the raw categories from the selected source
+      // Log the raw categories from the selected source - focusing on ratings
       console.log("useAssessmentData - Processing raw categories:", {
         categoriesLength: sourcedCategories?.length || 0,
         isArray: Array.isArray(sourcedCategories),
         firstCategoryTitle: sourcedCategories && sourcedCategories.length > 0 ? sourcedCategories[0]?.title : 'none'
       });
+      
+      // Log first skill's ratings if available
+      if (sourcedCategories && sourcedCategories.length > 0 && 
+          sourcedCategories[0].skills && sourcedCategories[0].skills.length > 0) {
+        const firstSkill = sourcedCategories[0].skills[0];
+        console.log("useAssessmentData - First skill ratings before processing:", JSON.stringify({
+          name: firstSkill.name,
+          ratings: firstSkill.ratings,
+          ratingsCurrent: firstSkill.ratings ? firstSkill.ratings.current : 'undefined',
+          ratingsCurrentType: firstSkill.ratings ? typeof firstSkill.ratings.current : 'n/a',
+          ratingsDesired: firstSkill.ratings ? firstSkill.ratings.desired : 'undefined',
+          ratingsDesiredType: firstSkill.ratings ? typeof firstSkill.ratings.desired : 'n/a'
+        }));
+      }
       
       console.log("useAssessmentData - Raw demographics:", sourcedDemographics);
       
@@ -137,29 +151,27 @@ export const useAssessmentData = (
                     }
                   };
                   
-                  // Process ratings
+                  // Process ratings - CRITICAL: Convert all values to numbers
                   if (skill.ratings) {
-                    // Handle current rating
-                    if (typeof skill.ratings.current === 'number') {
-                      processedSkill.ratings.current = skill.ratings.current;
-                    } else if (skill.ratings.current !== undefined && skill.ratings.current !== null) {
-                      try {
-                        const parsedCurrent = parseFloat(String(skill.ratings.current));
-                        processedSkill.ratings.current = isNaN(parsedCurrent) ? 0 : parsedCurrent;
-                      } catch (e) {
-                        console.warn(`useAssessmentData - Error parsing current rating for ${skill.name}:`, e);
+                    // Handle current rating - explicitly ensure we store a number
+                    if (skill.ratings.current !== undefined && skill.ratings.current !== null) {
+                      const current = Number(skill.ratings.current);
+                      processedSkill.ratings.current = isNaN(current) ? 0 : current;
+                      
+                      // Log non-zero ratings for debugging
+                      if (current > 0) {
+                        console.log(`useAssessmentData - Valid current rating for ${skill.name}: ${current}`);
                       }
                     }
                     
-                    // Handle desired rating
-                    if (typeof skill.ratings.desired === 'number') {
-                      processedSkill.ratings.desired = skill.ratings.desired;
-                    } else if (skill.ratings.desired !== undefined && skill.ratings.desired !== null) {
-                      try {
-                        const parsedDesired = parseFloat(String(skill.ratings.desired));
-                        processedSkill.ratings.desired = isNaN(parsedDesired) ? 0 : parsedDesired;
-                      } catch (e) {
-                        console.warn(`useAssessmentData - Error parsing desired rating for ${skill.name}:`, e);
+                    // Handle desired rating - explicitly ensure we store a number
+                    if (skill.ratings.desired !== undefined && skill.ratings.desired !== null) {
+                      const desired = Number(skill.ratings.desired);
+                      processedSkill.ratings.desired = isNaN(desired) ? 0 : desired;
+                      
+                      // Log non-zero ratings for debugging
+                      if (desired > 0) {
+                        console.log(`useAssessmentData - Valid desired rating for ${skill.name}: ${desired}`);
                       }
                     }
                     

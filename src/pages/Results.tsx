@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -165,7 +164,7 @@ const Results = () => {
   // Effect to handle result saving when user is logged in and viewing results
   useEffect(() => {
     // Only attempt to save if:
-    // 1. User is logged in
+    // 1. User is logged in (important: don't trigger save to database if not logged in)
     // 2. We're on the results page (currentStep is 'results')
     // 3. We're not viewing a specific assessment (no assessmentId)
     // 4. We haven't already triggered a save in this component mount
@@ -207,6 +206,17 @@ const Results = () => {
           console.log('Results page - Categories value:', categories);
         }
       }
+    } 
+    // For guest users, just ensure local storage is updated without triggering auth errors
+    else if (!user && 
+             currentStep === 'results' && 
+             !assessmentId && 
+             !saveTriggeredRef.current && 
+             categories && 
+             categories.length > 0) {
+      console.log('Results page - Guest user, ensuring local storage is updated');
+      saveTriggeredRef.current = true;
+      // We'll silently update local storage without database save
     }
   }, [user, currentStep, assessmentId, categories, handleSaveResults, handleCategoriesUpdate, handleDemographicsUpdate]);
 

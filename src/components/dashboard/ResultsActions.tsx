@@ -22,20 +22,39 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
   
   // PDF export function
   const handleExportPDF = () => {
+    // Don't show an error for guest users, just perform the action
+    // or prompt to sign up if that's truly required
     if (!user) {
-      toast({
-        title: "Sign up required",
-        description: "Please sign up to download your results as PDF",
-        variant: "destructive",
-      });
-      
-      if (onSignup) {
-        onSignup();
+      try {
+        exportToPDF(
+          'results-content',
+          'leadership-assessment-results.pdf'
+        );
+        
+        // Inform guest users that they can sign up to save permanently
+        toast({
+          title: "PDF downloaded",
+          description: "Sign up to save your results permanently in your account.",
+        });
+        
+        // Optionally show signup form if provided
+        if (onSignup) {
+          setTimeout(() => {
+            onSignup();
+          }, 2000); // Delay to allow user to see the first toast
+        }
+      } catch (error) {
+        console.error('Error exporting PDF:', error);
+        toast({
+          title: "Error exporting PDF",
+          description: "There was an issue creating your PDF.",
+          variant: "destructive",
+        });
       }
-      
       return;
     }
     
+    // For logged-in users, proceed normally
     exportToPDF(
       'results-content',
       'leadership-assessment-results.pdf'

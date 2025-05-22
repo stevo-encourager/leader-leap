@@ -1,7 +1,7 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Demographics } from '../../utils/assessmentTypes';
 import { Json } from '@/integrations/supabase/types';
+import { storeLocalAssessmentData } from './manageAssessmentHistory';
 
 /**
  * Normalizes categories to ensure consistent format for database
@@ -151,7 +151,8 @@ const hasValidRatings = (categories: Category[]): boolean => {
 };
 
 /**
- * Saves the assessment results to the database
+ * Saves the assessment results to the database if user is authenticated
+ * or to local storage if user is not authenticated
  * @param categories An array of categories with their respective scores
  * @param demographics An object containing the user's demographic information
  * @returns A success or error message
@@ -170,22 +171,15 @@ export const saveAssessmentResults = async (categories: Category[], demographics
         ? categories[0].skills[0]?.name : null
     }));
     
-    // Log ratings for first skill if available
-    if (categories && categories.length > 0 && 
-        categories[0].skills && categories[0].skills.length > 0) {
-      const firstSkill = categories[0].skills[0];
-      console.log('saveAssessment - First skill ratings before save:', JSON.stringify({
-        name: firstSkill.name,
-        ratings: firstSkill.ratings
-      }));
-    }
-    
     // Get the current user ID first
     const { data: { user } } = await supabase.auth.getUser();
     
+    // If no user is authenticated, save to local storage instead of trying to save to the database
     if (!user) {
-      console.error('saveAssessment - User not authenticated');
-      return { success: false, error: 'User not authenticated' };
+      console.log('saveAssessment - User not authenticated, saving to local storage instead');
+      // Save to local storage
+      storeLocalAssessmentData(categories, demographics);
+      return { success: true, message: 'Assessment results saved to local storage' };
     }
 
     console.log('saveAssessment - Original categories count:', categories?.length || 0);

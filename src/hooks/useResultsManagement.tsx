@@ -116,9 +116,10 @@ export const useResultsManagement = (
       return;
     }
 
-    // If user isn't authenticated, check for local data anyway
+    // If user isn't authenticated, quietly save to local storage without showing auth form
+    // unless explicitly requested to show auth form by the "sign up to save" button
     if (!user) {
-      console.log('User not authenticated, showing auth form');
+      console.log('User not authenticated, saving assessment to local storage');
       
       // CRITICAL FIX: Load data from local storage if available
       const localData = getLocalAssessmentData();
@@ -130,13 +131,18 @@ export const useResultsManagement = (
         }
       }
       
-      setShowAuthForm(true);
+      // Only show auth form if explicitly requested (e.g., by clicking "Sign up to save")
+      // setShowAuthForm(true); // Removing this line prevents auth form from showing automatically
       
-      // Add toast to inform the user about data persistence
-      toast({
-        title: "Sign up to save your results",
-        description: "Create an account to access your assessment history anytime.",
-      });
+      // Save assessment data to local storage
+      try {
+        const saveResult = await saveAssessmentResults(categories, demographics);
+        if (saveResult.success) {
+          console.log('Assessment saved to local storage successfully');
+        }
+      } catch (error) {
+        console.error('Error saving to local storage:', error);
+      }
       
       return;
     }

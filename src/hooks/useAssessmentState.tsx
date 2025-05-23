@@ -1,75 +1,56 @@
 
 import { useState, useEffect } from 'react';
 import { Category, Demographics } from '@/utils/assessmentTypes';
-import { storeLocalAssessmentData } from '@/services/assessment/manageAssessmentHistory';
+import { saveLocalAssessmentData, clearLocalAssessmentData } from '@/services/assessment/manageAssessmentHistory';
 
-export const useAssessmentState = (initialCategories: Category[]) => {
-  const [categories, setCategories] = useState<Category[]>(initialCategories);
+export const useAssessmentState = (initialCategories: Category[] = []) => {
+  const [categories, setCategories] = useState<Category[]>([]);
   const [demographics, setDemographics] = useState<Demographics>({});
 
-  // Log when categories are updated for debugging
+  // Initialize categories when initialCategories becomes available
   useEffect(() => {
-    console.log("useAssessmentState - Categories updated, new length:", categories?.length || 0);
-    if (categories && categories.length > 0) {
-      // Count skills with ratings
-      let skillsWithRatings = 0;
-      categories.forEach(category => {
-        if (category && category.skills) {
-          category.skills.forEach(skill => {
-            if (skill && skill.ratings && 
-               (typeof skill.ratings.current === 'number' && skill.ratings.current > 0) ||
-               (typeof skill.ratings.desired === 'number' && skill.ratings.desired > 0)) {
-              skillsWithRatings++;
-            }
-          });
-        }
-      });
-      console.log(`useAssessmentState - Categories contain ${skillsWithRatings} skills with ratings`);
+    if (initialCategories && initialCategories.length > 0 && categories.length === 0) {
+      console.log("useAssessmentState - Initializing with categories:", initialCategories.length);
+      setCategories(initialCategories);
     }
-  }, [categories]);
+  }, [initialCategories, categories.length]);
 
-  const handleCategoriesUpdate = (newCategories: Category[]) => {
-    console.log("handleCategoriesUpdate - Received new categories:", 
-                newCategories ? JSON.stringify({ length: newCategories.length, isArray: Array.isArray(newCategories) }) : "none");
+  const handleCategoriesUpdate = (updatedCategories: Category[]) => {
+    console.log("useAssessmentState - Categories updated, new length:", updatedCategories.length);
+    setCategories(updatedCategories);
     
-    if (newCategories && Array.isArray(newCategories) && newCategories.length > 0) {
-      // Count skills with ratings in new data
-      let skillsWithRatings = 0;
-      newCategories.forEach(category => {
-        if (category && category.skills) {
-          category.skills.forEach(skill => {
-            if (skill && skill.ratings && 
-               (typeof skill.ratings.current === 'number' && skill.ratings.current > 0) ||
-               (typeof skill.ratings.desired === 'number' && skill.ratings.desired > 0)) {
-              skillsWithRatings++;
-            }
-          });
-        }
-      });
-      console.log(`handleCategoriesUpdate - New categories have ${skillsWithRatings} skills with ratings`);
-      
-      setCategories(newCategories);
-    } else {
-      console.error("handleCategoriesUpdate: Invalid categories data:", newCategories);
-    }
+    // Save to local storage for persistence
+    saveLocalAssessmentData(updatedCategories, demographics);
   };
 
-  const handleDemographicsUpdate = (newDemographics: Demographics) => {
-    console.log("handleDemographicsUpdate - Received new demographics:", newDemographics);
-    setDemographics(newDemographics);
+  const handleDemographicsUpdate = (updatedDemographics: Demographics) => {
+    console.log("useAssessmentState - Demographics updated:", updatedDemographics);
+    setDemographics(updatedDemographics);
+    
+    // Save to local storage for persistence
+    saveLocalAssessmentData(categories, updatedDemographics);
   };
 
-  // Reset all categories to default values
-  const resetAssessment = (freshCategories: Category[]) => {
+  const resetAssessment = (freshCategories?: Category[]) => {
     console.log("resetAssessment - Resetting all categories to defaults with zero ratings");
     
-    // Set fresh categories and reset demographics
-    setCategories(freshCategories);
-    setDemographics({});
-    
-    // Clear any existing local storage data to prevent it from interfering
-    localStorage.removeItem('assessmentData');
+    // Clear local storage first
+    clearLocalAssessmentData();
     console.log("resetAssessment - Cleared local storage assessment data for new assessment");
+    
+    // Reset state
+    if (freshCategories && freshCategories.length > 0) {
+      console.log("resetAssessment - Using provided fresh categories:", freshCategories.length);
+      setCategories(freshCategories);
+    } else if (initialCategories && initialCategories.length > 0) {
+      console.log("resetAssessment - Using initial categories:", initialCategories.length);
+      setCategories(initialCategories);
+    } else {
+      console.log("resetAssessment - No categories available, setting empty array");
+      setCategories([]);
+    }
+    
+    setDemographics({});
   };
 
   return {

@@ -18,15 +18,17 @@ export const useAssessment = () => {
     handleCompleteAssessment
   } = useNavigationState();
 
-  // Use our hooks for managing assessment state
-  const { createFreshCategories } = useAssessmentInitialization();
+  // Initialize categories first
+  const { categories: initializedCategories, createFreshCategories, isInitialized } = useAssessmentInitialization();
+
+  // Use our hooks for managing assessment state - pass the initialized categories
   const { 
     categories, 
     demographics, 
     handleCategoriesUpdate, 
     handleDemographicsUpdate, 
     resetAssessment 
-  } = useAssessmentState([]);
+  } = useAssessmentState(initializedCategories);
 
   const { handleCompleteAssessment: wrappedHandleCompleteAssessment } = 
     useAssessmentCompletion(categories, demographics, handleCompleteAssessment);
@@ -36,6 +38,7 @@ export const useAssessment = () => {
     console.log("useAssessment - Starting new assessment with fresh categories");
     // Create completely fresh copy of default categories with all ratings reset to 0
     const freshCategories = createFreshCategories();
+    console.log("useAssessment - Fresh categories created:", freshCategories?.length || 0);
     resetAssessment(freshCategories);
     
     // Call the original handler
@@ -72,8 +75,8 @@ export const useAssessment = () => {
     // Navigation state
     currentStep,
     
-    // Assessment data
-    categories,
+    // Assessment data - use the categories from useAssessmentState, but ensure they're initialized
+    categories: isInitialized ? categories : [],
     demographics,
     handleCategoriesUpdate,
     handleDemographicsUpdate,

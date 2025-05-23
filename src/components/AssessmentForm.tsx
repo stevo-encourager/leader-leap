@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,6 +31,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
 }) => {
   const [activeCategory, setActiveCategory] = useState<number>(0);
   const [showMidpointDialog, setShowMidpointDialog] = useState<boolean>(false);
+  const [midpointDialogShown, setMidpointDialogShown] = useState<boolean>(false);
   const [dataValidationError, setDataValidationError] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -65,10 +65,15 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
     }
     
     const midpoint = Math.floor(categories.length / 2);
-    if (activeCategory === midpoint) {
+    
+    // Only show the dialog if:
+    // 1. We're at the midpoint category
+    // 2. The dialog hasn't been shown yet in this session
+    if (activeCategory === midpoint && !midpointDialogShown) {
       setShowMidpointDialog(true);
+      setMidpointDialogShown(true); // Mark that we've shown it
     }
-  }, [activeCategory, categories]);
+  }, [activeCategory, categories, midpointDialogShown]);
 
   const handleSkillRating = (categoryId: string, skillId: string, type: 'current' | 'desired', value: number) => {
     console.log(`Updating skill rating: category=${categoryId}, skill=${skillId}, type=${type}, value=${value}`);

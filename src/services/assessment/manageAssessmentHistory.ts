@@ -186,19 +186,43 @@ export const deleteAssessment = async (assessmentId: string): Promise<{
       return { success: false, error: 'User not authenticated' };
     }
     
-    // Delete the assessment
-    const { error } = await supabase
+    // First check if the assessment exists and belongs to this user
+    const { data: existingAssessment, error: fetchError } = await supabase
       .from('assessment_results')
-      .delete()
+      .select('id, user_id')
       .eq('id', assessmentId)
-      .eq('user_id', user.id); // Ensure user can only delete their own assessments
+      .eq('user_id', user.id)
+      .single();
       
-    if (error) {
-      console.error("deleteAssessment - Error:", error);
-      return { success: false, error: error.message };
+    if (fetchError) {
+      console.error("deleteAssessment - Error checking assessment existence:", fetchError);
+      return { success: false, error: 'Assessment not found or access denied' };
     }
     
-    console.log("deleteAssessment - Successfully deleted");
+    if (!existingAssessment) {
+      console.error("deleteAssessment - Assessment not found for user");
+      return { success: false, error: 'Assessment not found' };
+    }
+    
+    // Delete the assessment
+    const { error: deleteError, count } = await supabase
+      .from('assessment_results')
+      .delete({ count: 'exact' })
+      .eq('id', assessmentId)
+      .eq('user_id', user.id);
+      
+    if (deleteError) {
+      console.error("deleteAssessment - Delete error:", deleteError);
+      return { success: false, error: deleteError.message };
+    }
+    
+    console.log(`deleteAssessment - Successfully deleted ${count} record(s)`);
+    
+    if (count === 0) {
+      console.warn("deleteAssessment - No records were deleted");
+      return { success: false, error: 'No records were deleted' };
+    }
+    
     return { success: true };
   } catch (error) {
     console.error("Error in deleteAssessment:", error);

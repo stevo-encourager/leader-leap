@@ -11,6 +11,7 @@ import { Link } from 'react-router-dom';
 
 const Admin = () => {
   console.log("Admin page: Rendering admin dashboard");
+  console.log("Admin page: SystemStatusViewer component imported:", !!SystemStatusViewer);
   
   return (
     <div className="container max-w-6xl py-10 space-y-8">

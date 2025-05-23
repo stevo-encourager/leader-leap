@@ -26,19 +26,14 @@ const Admin = () => {
         </Link>
       </div>
 
-      {/* Debug info to confirm component is loading */}
-      <div className="bg-yellow-100 border border-yellow-400 rounded p-4 text-sm">
-        <strong>Debug Info:</strong> Admin page loaded. SystemStatusViewer component: {SystemStatusViewer ? 'Available' : 'NOT FOUND'}
-      </div>
-
-      <Tabs defaultValue="stats" className="w-full">
+      <Tabs defaultValue="status" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="stats">System Status</TabsTrigger>
+          <TabsTrigger value="status">System Status</TabsTrigger>
           <TabsTrigger value="schema">Data Schema</TabsTrigger>
           <TabsTrigger value="reset">App Reset</TabsTrigger>
         </TabsList>
         
-        <TabsContent value="stats" className="mt-6">
+        <TabsContent value="status" className="mt-6">
           <Card>
             <CardHeader>
               <CardTitle>System Status</CardTitle>
@@ -47,18 +42,7 @@ const Admin = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="bg-blue-50 border border-blue-200 rounded p-4 mb-4">
-                <p className="text-blue-800 font-medium">SystemStatusViewer Component Test</p>
-                <p className="text-blue-600 text-sm">This should be followed by the actual component below:</p>
-              </div>
-              {SystemStatusViewer ? (
-                <SystemStatusViewer />
-              ) : (
-                <div className="bg-red-50 border border-red-200 rounded p-4">
-                  <p className="text-red-800 font-medium">ERROR: SystemStatusViewer component not found</p>
-                  <p className="text-red-600 text-sm">The component failed to import properly.</p>
-                </div>
-              )}
+              <SystemStatusViewer />
             </CardContent>
           </Card>
         </TabsContent>

@@ -27,18 +27,23 @@ export const useResultsManagement = (
     if (categories && categories.length > 0) {
       // Count skills with ratings
       let skillsWithRatings = 0;
+      let totalRatings = 0;
       categories.forEach(category => {
         if (category && category.skills) {
           category.skills.forEach(skill => {
-            if (skill && skill.ratings && 
-               (typeof skill.ratings.current === 'number' && skill.ratings.current > 0) ||
-               (typeof skill.ratings.desired === 'number' && skill.ratings.desired > 0)) {
-              skillsWithRatings++;
+            if (skill && skill.ratings) {
+              const currentRating = Number(skill.ratings.current) || 0;
+              const desiredRating = Number(skill.ratings.desired) || 0;
+              
+              if (currentRating > 0 || desiredRating > 0) {
+                skillsWithRatings++;
+                totalRatings += (currentRating > 0 ? 1 : 0) + (desiredRating > 0 ? 1 : 0);
+              }
             }
           });
         }
       });
-      console.log(`useResultsManagement - Categories contain ${skillsWithRatings} skills with ratings`);
+      console.log(`useResultsManagement - Categories contain ${skillsWithRatings} skills with ratings (${totalRatings} total rating values)`);
     }
   }, [categories]);
   
@@ -70,8 +75,8 @@ export const useResultsManagement = (
       const hasRatings = categories.some(cat => 
         cat && cat.skills && cat.skills.some(skill => 
           skill && skill.ratings && (
-            typeof skill.ratings.current === 'number' && skill.ratings.current > 0 || 
-            typeof skill.ratings.desired === 'number' && skill.ratings.desired > 0
+            (typeof skill.ratings.current === 'number' && skill.ratings.current > 0) || 
+            (typeof skill.ratings.desired === 'number' && skill.ratings.desired > 0)
           )
         )
       );
@@ -89,8 +94,8 @@ export const useResultsManagement = (
       const hasRatings = categories.some(cat => 
         cat && cat.skills && cat.skills.some(skill => 
           skill && skill.ratings && (
-            typeof skill.ratings.current === 'number' && skill.ratings.current > 0 || 
-            typeof skill.ratings.desired === 'number' && skill.ratings.desired > 0
+            (typeof skill.ratings.current === 'number' && skill.ratings.current > 0) || 
+            (typeof skill.ratings.desired === 'number' && skill.ratings.desired > 0)
           )
         )
       );
@@ -116,12 +121,11 @@ export const useResultsManagement = (
       return;
     }
 
-    // If user isn't authenticated, quietly save to local storage without showing auth form
-    // unless explicitly requested to show auth form by the "sign up to save" button
+    // If user isn't authenticated, save to local storage only
     if (!user) {
-      console.log('User not authenticated, saving assessment to local storage');
+      console.log('User not authenticated, saving assessment to local storage only');
       
-      // CRITICAL FIX: Load data from local storage if available
+      // Load data from local storage if categories is empty
       const localData = getLocalAssessmentData();
       if (localData && (!categories || categories.length === 0)) {
         console.log('Found local assessment data, using that');
@@ -130,9 +134,6 @@ export const useResultsManagement = (
           setDemographics(localData.demographics);
         }
       }
-      
-      // Only show auth form if explicitly requested (e.g., by clicking "Sign up to save")
-      // setShowAuthForm(true); // Removing this line prevents auth form from showing automatically
       
       // Save assessment data to local storage
       try {
@@ -147,7 +148,7 @@ export const useResultsManagement = (
       return;
     }
     
-    // CRITICAL FIX: Try to get local data if categories is empty
+    // Try to get local data if categories is empty
     if (!categories || !Array.isArray(categories) || categories.length === 0) {
       const localData = getLocalAssessmentData();
       if (localData) {
@@ -184,29 +185,34 @@ export const useResultsManagement = (
     
     // Count skills with ratings to validate
     let skillsWithRatings = 0;
+    let totalRatingValues = 0;
     categories.forEach(category => {
       if (category && category.skills) {
         category.skills.forEach(skill => {
-          if (skill && skill.ratings && 
-             (typeof skill.ratings.current === 'number' && skill.ratings.current > 0) ||
-             (typeof skill.ratings.desired === 'number' && skill.ratings.desired > 0)) {
-            skillsWithRatings++;
+          if (skill && skill.ratings) {
+            const currentRating = Number(skill.ratings.current) || 0;
+            const desiredRating = Number(skill.ratings.desired) || 0;
+            
+            if (currentRating > 0 || desiredRating > 0) {
+              skillsWithRatings++;
+              totalRatingValues += (currentRating > 0 ? 1 : 0) + (desiredRating > 0 ? 1 : 0);
+            }
           }
         });
       }
     });
     
-    if (skillsWithRatings === 0) {
+    if (skillsWithRatings === 0 || totalRatingValues === 0) {
       console.error('No skills with ratings found, skipping save');
       toast({
         title: "Error saving results",
-        description: "No valid assessment ratings to save.",
+        description: "No valid assessment ratings to save. Please complete the assessment with actual ratings.",
         variant: "destructive",
       });
       return;
     }
     
-    console.log(`handleSaveResults - Found ${skillsWithRatings} skills with ratings, proceeding with save`);
+    console.log(`handleSaveResults - Found ${skillsWithRatings} skills with ratings (${totalRatingValues} total rating values), proceeding with save`);
     
     setIsSaving(true);
     

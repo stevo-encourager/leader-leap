@@ -1,27 +1,43 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Json } from '@/integrations/supabase/types';
-import { Category } from '@/utils/assessmentTypes';
+import { Category, Demographics } from '@/utils/assessmentTypes';
+import { normalizeCategories, normalizeDemographics } from '@/utils/dataNormalizer';
 
-/**
- * Retrieves the latest assessment results for the logged-in user
- * @returns An array of categories with their respective scores, or null if no results are found
- */
-export const getLatestAssessmentResults = async () => {
+export interface AssessmentResult {
+  id: string;
+  categories: Category[];
+  demographics: Demographics;
+  created_at: string;
+  completed: boolean;
+}
+
+export interface FetchAssessmentResult {
+  success: boolean;
+  data?: AssessmentResult;
+  error?: string;
+}
+
+export const getLatestAssessmentResults = async (): Promise<FetchAssessmentResult> => {
+  console.log("getLatestAssessmentResults - Starting fetch");
+  
   try {
-    console.log("getLatestAssessmentResults - Starting fetch of latest assessment");
+    // Check if user is authenticated
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
     
-    // Get the current user ID first
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      console.error("getLatestAssessmentResults - User not authenticated");
-      return { success: false, error: 'User not authenticated' };
+    if (authError) {
+      console.error("getLatestAssessmentResults - Auth error:", authError);
+      return { success: false, error: "Authentication error" };
     }
-    
-    console.log("getLatestAssessmentResults - Fetching for user ID:", user.id);
-    
-    const { data: assessments, error } = await supabase
+
+    if (!user) {
+      console.log("getLatestAssessmentResults - No authenticated user");
+      return { success: false, error: "User not authenticated" };
+    }
+
+    console.log(`getLatestAssessmentResults - Fetching for user: ${user.id}`);
+
+    // Fetch the most recent completed assessment
+    const { data, error } = await supabase
       .from('assessment_results')
       .select('*')
       .eq('user_id', user.id)
@@ -30,213 +46,135 @@ export const getLatestAssessmentResults = async () => {
       .limit(1);
 
     if (error) {
-      console.error('Error fetching latest assessment results:', error);
+      console.error("getLatestAssessmentResults - Database error:", error);
       return { success: false, error: error.message };
     }
 
-    if (!assessments || assessments.length === 0) {
-      console.log("getLatestAssessmentResults - No assessments found for user");
-      return { success: false, data: null };
+    if (!data || data.length === 0) {
+      console.log("getLatestAssessmentResults - No assessment found for user");
+      return { success: false, error: "No assessment found" };
     }
 
-    // Log details of the retrieved assessment
-    console.log("getLatestAssessmentResults - Found assessment:", JSON.stringify({
-      id: assessments[0].id,
-      created_at: assessments[0].created_at,
-      categoriesType: typeof assessments[0].categories,
-      categoriesProvided: !!assessments[0].categories,
-      categoriesIsArray: Array.isArray(assessments[0].categories),
-      categoriesLength: Array.isArray(assessments[0].categories) 
-        ? assessments[0].categories.length 
-        : (typeof assessments[0].categories === 'object' && assessments[0].categories !== null)
-          ? Object.keys(assessments[0].categories).length
-          : 0
-    }));
-    
-    // If categories exist, log a sample
-    if (assessments[0].categories) {
-      try {
-        // Handle different possible formats
-        let categoriesArray: any;
-        
-        if (Array.isArray(assessments[0].categories)) {
-          categoriesArray = assessments[0].categories;
-        } else if (typeof assessments[0].categories === 'string') {
-          categoriesArray = JSON.parse(assessments[0].categories);
-        } else if (typeof assessments[0].categories === 'object') {
-          categoriesArray = Object.values(assessments[0].categories);
-        } else {
-          categoriesArray = [];
-        }
-        
-        if (categoriesArray.length > 0) {
-          const sampleCategory = categoriesArray[0];
-          console.log("getLatestAssessmentResults - First category:", JSON.stringify({
-            title: sampleCategory.title,
-            skillsCount: sampleCategory.skills?.length || 0,
-            firstSkill: sampleCategory.skills && sampleCategory.skills.length > 0 
-              ? {
-                  name: sampleCategory.skills[0].name,
-                  ratings: sampleCategory.skills[0].ratings
-                }
-              : null
-          }));
-        }
-      } catch (e) {
-        console.error("getLatestAssessmentResults - Error parsing categories sample:", e);
-      }
+    const assessment = data[0];
+    console.log("getLatestAssessmentResults - Raw assessment data:", {
+      id: assessment.id,
+      categoriesType: typeof assessment.categories,
+      categoriesLength: Array.isArray(assessment.categories) ? assessment.categories.length : 'not array',
+      demographicsType: typeof assessment.demographics,
+      created_at: assessment.created_at
+    });
+
+    // Validate and normalize the categories data
+    const rawCategories = assessment.categories;
+    if (!rawCategories || !Array.isArray(rawCategories)) {
+      console.error("getLatestAssessmentResults - Invalid categories data:", rawCategories);
+      return { success: false, error: "Invalid assessment data format" };
     }
 
-    return { success: true, data: assessments[0] };
+    // Normalize the data to ensure consistent format
+    const normalizedCategories = normalizeCategories(rawCategories);
+    const normalizedDemographics = normalizeDemographics(assessment.demographics);
+
+    // Validate that we have meaningful data after normalization
+    const validCategories = normalizedCategories.filter(cat => 
+      cat && cat.skills && cat.skills.length > 0 &&
+      cat.skills.some(skill => 
+        skill && skill.ratings && 
+        (skill.ratings.current > 0 || skill.ratings.desired > 0)
+      )
+    );
+
+    if (validCategories.length === 0) {
+      console.error("getLatestAssessmentResults - No valid categories with ratings found");
+      return { success: false, error: "Assessment contains no valid rating data" };
+    }
+
+    console.log(`getLatestAssessmentResults - Successfully normalized ${validCategories.length} categories with rating data`);
+
+    const result: AssessmentResult = {
+      id: assessment.id,
+      categories: validCategories,
+      demographics: normalizedDemographics,
+      created_at: assessment.created_at,
+      completed: assessment.completed
+    };
+
+    return { success: true, data: result };
+
   } catch (error) {
-    console.error('Error in getLatestAssessmentResults:', error);
-    return { success: false, error: 'Failed to fetch latest assessment results' };
+    console.error("getLatestAssessmentResults - Unexpected error:", error);
+    return { success: false, error: "An unexpected error occurred while fetching assessment" };
   }
 };
 
-/**
- * Fetches a specific assessment result by ID
- * @param id The ID of the assessment to fetch
- * @returns The assessment data or null if not found
- */
-export const getAssessmentById = async (id: string) => {
+export const getSpecificAssessmentResults = async (assessmentId: string): Promise<FetchAssessmentResult> => {
+  console.log(`getSpecificAssessmentResults - Fetching assessment: ${assessmentId}`);
+  
   try {
-    console.log('getAssessmentById - Fetching assessment:', id);
+    // Check if user is authenticated
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
     
-    const { data: assessment, error } = await supabase
+    if (authError) {
+      console.error("getSpecificAssessmentResults - Auth error:", authError);
+      return { success: false, error: "Authentication error" };
+    }
+
+    if (!user) {
+      console.log("getSpecificAssessmentResults - No authenticated user");
+      return { success: false, error: "User not authenticated" };
+    }
+
+    // Fetch the specific assessment
+    const { data, error } = await supabase
       .from('assessment_results')
       .select('*')
-      .eq('id', id)
-      .single();
+      .eq('id', assessmentId)
+      .eq('user_id', user.id)
+      .limit(1);
 
     if (error) {
-      console.error('getAssessmentById - Error fetching:', error);
+      console.error("getSpecificAssessmentResults - Database error:", error);
       return { success: false, error: error.message };
     }
 
-    if (!assessment) {
-      console.error('getAssessmentById - No assessment found with ID:', id);
-      return { success: false, error: 'Assessment not found' };
+    if (!data || data.length === 0) {
+      console.log("getSpecificAssessmentResults - Assessment not found");
+      return { success: false, error: "Assessment not found" };
     }
-    
-    console.log('getAssessmentById - Raw data retrieved:', JSON.stringify({
+
+    const assessment = data[0];
+    console.log("getSpecificAssessmentResults - Raw assessment data:", {
       id: assessment.id,
-      created_at: assessment.created_at,
       categoriesType: typeof assessment.categories,
-      categoriesProvided: !!assessment.categories,
-      categoriesIsArray: Array.isArray(assessment.categories),
-      demographicsProvided: !!assessment.demographics
-    }));
-    
-    // Fix any potential issues with the data format
-    if (assessment && assessment.categories) {
-      let categoriesData: any = assessment.categories;
-      
-      // Handle case where categories might be stored as a string
-      if (typeof categoriesData === 'string') {
-        try {
-          categoriesData = JSON.parse(categoriesData);
-          console.log('getAssessmentById - Parsed categories from string:', JSON.stringify({
-            parsed: true,
-            length: Array.isArray(categoriesData) ? categoriesData.length : 0,
-            isArray: Array.isArray(categoriesData)
-          }));
-        } catch (e) {
-          console.error('getAssessmentById - Failed to parse categories string:', e);
-        }
-      }
-      
-      // Ensure we have an array to work with
-      if (!Array.isArray(categoriesData)) {
-        console.log('getAssessmentById - Categories is not an array, attempting to convert');
-        if (typeof categoriesData === 'object' && categoriesData !== null) {
-          categoriesData = Object.values(categoriesData);
-          console.log('getAssessmentById - Converted object to array, length:', categoriesData.length);
-        } else {
-          console.error('getAssessmentById - Could not convert categories to array');
-          categoriesData = [];
-        }
-      }
-      
-      // Count ratings before fixing
-      const beforeCounts = {
-        categories: categoriesData.length,
-        totalSkills: 0,
-        skillsWithRatings: 0
-      };
-      
-      categoriesData.forEach((cat: any) => {
-        if (cat && cat.skills && Array.isArray(cat.skills)) {
-          beforeCounts.totalSkills += cat.skills.length;
-          cat.skills.forEach((skill: any) => {
-            if (skill && skill.ratings && 
-               (typeof skill.ratings.current === 'number' || 
-                typeof skill.ratings.desired === 'number')) {
-              beforeCounts.skillsWithRatings++;
-            }
-          });
-        }
-      });
-      
-      console.log('getAssessmentById - Before fixing, found:', JSON.stringify(beforeCounts));
-      
-      // Ensure all categories have properly formatted skills and ratings
-      const fixedCategories = categoriesData.map((category: any) => ({
-        ...category,
-        id: category.id || `category-${Math.random().toString(36).substring(2, 9)}`,
-        title: category.title || 'Unknown Category',
-        description: category.description || '',
-        skills: (category.skills || []).map((skill: any) => ({
-          id: skill.id || `skill-${Math.random().toString(36).substring(2, 9)}`,
-          name: skill.name || skill.competency || 'Unnamed Skill',
-          description: skill.description || '',
-          ratings: {
-            current: typeof skill.ratings?.current === 'number' ? skill.ratings.current : 0,
-            desired: typeof skill.ratings?.desired === 'number' ? skill.ratings.desired : 0
-          }
-        }))
-      }));
-      
-      // Count ratings after fixing
-      const afterCounts = {
-        categories: fixedCategories.length,
-        totalSkills: 0,
-        skillsWithRatings: 0
-      };
-      
-      fixedCategories.forEach((cat: Category) => {
-        if (cat && cat.skills && Array.isArray(cat.skills)) {
-          afterCounts.totalSkills += cat.skills.length;
-          cat.skills.forEach(skill => {
-            if (skill && skill.ratings && 
-               (typeof skill.ratings.current === 'number' || 
-                typeof skill.ratings.desired === 'number')) {
-              afterCounts.skillsWithRatings++;
-            }
-          });
-        }
-      });
-      
-      console.log('getAssessmentById - After fixing, found:', JSON.stringify(afterCounts));
+      categoriesLength: Array.isArray(assessment.categories) ? assessment.categories.length : 'not array',
+      demographicsType: typeof assessment.demographics
+    });
 
-      assessment.categories = fixedCategories as unknown as Json;
-      
-      // Log sample of fixed data
-      if (fixedCategories.length > 0 && fixedCategories[0].skills && fixedCategories[0].skills.length > 0) {
-        console.log('getAssessmentById - Sample of fixed data:', JSON.stringify({
-          categoryTitle: fixedCategories[0].title,
-          skillCount: fixedCategories[0].skills.length,
-          firstSkill: {
-            name: fixedCategories[0].skills[0].name,
-            ratings: fixedCategories[0].skills[0].ratings
-          }
-        }));
-      }
+    // Validate and normalize the categories data
+    const rawCategories = assessment.categories;
+    if (!rawCategories || !Array.isArray(rawCategories)) {
+      console.error("getSpecificAssessmentResults - Invalid categories data:", rawCategories);
+      return { success: false, error: "Invalid assessment data format" };
     }
 
-    return { success: true, data: assessment };
+    // Normalize the data to ensure consistent format
+    const normalizedCategories = normalizeCategories(rawCategories);
+    const normalizedDemographics = normalizeDemographics(assessment.demographics);
+
+    console.log(`getSpecificAssessmentResults - Successfully normalized ${normalizedCategories.length} categories`);
+
+    const result: AssessmentResult = {
+      id: assessment.id,
+      categories: normalizedCategories,
+      demographics: normalizedDemographics,
+      created_at: assessment.created_at,
+      completed: assessment.completed
+    };
+
+    return { success: true, data: result };
+
   } catch (error) {
-    console.error('getAssessmentById - Error:', error);
-    return { success: false, error: 'Failed to fetch assessment by ID' };
+    console.error("getSpecificAssessmentResults - Unexpected error:", error);
+    return { success: false, error: "An unexpected error occurred while fetching assessment" };
   }
 };

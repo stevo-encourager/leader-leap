@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { formatDate } from '@/lib/utils';
 import { Pagination } from '@/components/ui/pagination';
-import { AlertTriangle, Trash2 } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
+import DeleteAssessmentDialog from './DeleteAssessmentDialog';
 
 interface AssessmentRecord {
   id: string;
@@ -99,14 +100,10 @@ const AssessmentsList = ({
                           </Button>
                         </Link>
                         {onDeleteAssessment && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="ml-2 text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 hover:border-red-300"
-                            onClick={() => onDeleteAssessment(assessment.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <DeleteAssessmentDialog
+                            assessmentId={assessment.id}
+                            onDeleteAssessment={onDeleteAssessment}
+                          />
                         )}
                       </>
                     )}

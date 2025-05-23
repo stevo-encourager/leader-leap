@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { Category, Demographics } from '@/utils/assessmentTypes';
-import { saveLocalAssessmentData, clearLocalAssessmentData } from '@/services/assessment/manageAssessmentHistory';
+import { storeLocalAssessmentData, clearLocalAssessmentData } from '@/services/assessment/manageAssessmentHistory';
 
 export const useAssessmentState = (initialCategories: Category[] = []) => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -20,7 +20,7 @@ export const useAssessmentState = (initialCategories: Category[] = []) => {
     setCategories(updatedCategories);
     
     // Save to local storage for persistence
-    saveLocalAssessmentData(updatedCategories, demographics);
+    storeLocalAssessmentData(updatedCategories, demographics);
   };
 
   const handleDemographicsUpdate = (updatedDemographics: Demographics) => {
@@ -28,7 +28,7 @@ export const useAssessmentState = (initialCategories: Category[] = []) => {
     setDemographics(updatedDemographics);
     
     // Save to local storage for persistence
-    saveLocalAssessmentData(categories, updatedDemographics);
+    storeLocalAssessmentData(categories, updatedDemographics);
   };
 
   const resetAssessment = (freshCategories?: Category[]) => {

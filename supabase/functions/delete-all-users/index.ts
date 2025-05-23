@@ -5,19 +5,38 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
 serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
   // Create a Supabase client with the service role key (admin privileges)
   const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
   
   try {
-    // Parse the request body
-    const { confirm } = await req.json();
+    // Parse the request body safely
+    let requestBody;
+    try {
+      const bodyText = await req.text();
+      requestBody = bodyText ? JSON.parse(bodyText) : {};
+    } catch (parseError) {
+      console.error("Error parsing request body:", parseError);
+      requestBody = {}; // Default to empty object if parsing fails
+    }
+    
+    const { confirm } = requestBody;
     
     // Safety check to prevent accidental calls
     if (!confirm) {
       return new Response(
         JSON.stringify({ success: false, error: "Confirmation required" }),
-        { headers: { "Content-Type": "application/json" }, status: 400 }
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 400 }
       );
     }
     
@@ -59,7 +78,7 @@ serve(async (req) => {
       console.error("Error listing users:", getUsersError);
       return new Response(
         JSON.stringify({ success: false, error: getUsersError.message }),
-        { headers: { "Content-Type": "application/json" }, status: 500 }
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
       );
     }
     
@@ -67,7 +86,7 @@ serve(async (req) => {
     if (!users || users.users.length === 0) {
       return new Response(
         JSON.stringify({ success: true, message: "No users to delete" }),
-        { headers: { "Content-Type": "application/json" } }
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
     
@@ -140,14 +159,14 @@ serve(async (req) => {
         verificationMessage,
         results: deletionResults
       }),
-      { headers: { "Content-Type": "application/json" } }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
     
   } catch (err) {
     console.error("Error in delete-all-users function:", err);
     return new Response(
       JSON.stringify({ success: false, error: err.message }),
-      { headers: { "Content-Type": "application/json" }, status: 500 }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 }
     );
   }
 });

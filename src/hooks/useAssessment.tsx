@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { useNavigationState } from './useNavigationState';
 import { Category, Demographics } from '@/utils/assessmentTypes';
@@ -25,6 +24,20 @@ export const useAssessment = () => {
   const [demographics, setDemographics] = useState<Demographics>({});
   const [isInitialized, setIsInitialized] = useState(false);
 
+  // Function to create fresh categories with all ratings reset to 0
+  const createFreshCategories = () => {
+    return JSON.parse(JSON.stringify(allCategories)).map((category: Category) => ({
+      ...category,
+      skills: category.skills.map(skill => ({
+        ...skill,
+        ratings: {
+          current: 0,
+          desired: 0
+        }
+      }))
+    }));
+  };
+
   // Initialize categories with default data
   useEffect(() => {
     if (!isInitialized && (!categories || categories.length === 0)) {
@@ -42,14 +55,14 @@ export const useAssessment = () => {
           return;
         }
         
-        // Otherwise use default categories
-        const defaultCategories = JSON.parse(JSON.stringify(allCategories));
-        if (defaultCategories && defaultCategories.length > 0) {
-          console.log(`useAssessment - Loaded ${defaultCategories.length} default categories`);
-          setCategories(defaultCategories);
+        // Otherwise use fresh categories with reset ratings
+        const freshCategories = createFreshCategories();
+        if (freshCategories && freshCategories.length > 0) {
+          console.log(`useAssessment - Loaded ${freshCategories.length} fresh categories with reset ratings`);
+          setCategories(freshCategories);
           setIsInitialized(true);
         } else {
-          console.error("useAssessment - Default categories are empty or invalid");
+          console.error("useAssessment - Fresh categories are empty or invalid");
           toast({
             title: "Error loading categories",
             description: "Could not load assessment categories. Please refresh the page.",
@@ -85,14 +98,18 @@ export const useAssessment = () => {
 
   // Reset all categories to default values when starting a new assessment
   const handleStartNewAssessment = () => {
-    console.log("Starting new assessment - resetting all categories to defaults");
+    console.log("Starting new assessment - resetting all categories to defaults with zero ratings");
     
-    // Create fresh copy of default categories with all ratings reset to 0
-    const freshCategories = JSON.parse(JSON.stringify(allCategories));
+    // Create completely fresh copy of default categories with all ratings reset to 0
+    const freshCategories = createFreshCategories();
     
     // Set fresh categories and reset demographics
     setCategories(freshCategories);
     setDemographics({});
+    
+    // Clear any existing local storage data to prevent it from interfering
+    localStorage.removeItem('assessmentData');
+    console.log("Cleared local storage assessment data for new assessment");
     
     // Call the original handler
     handleStartAssessment();

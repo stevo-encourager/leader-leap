@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import ResultsDashboard from '../ResultsDashboard';
 import { Category, Demographics } from '../../utils/assessmentTypes';
 import InvalidResultsMessage from './InvalidResultsMessage';
+import AssessmentLoading from './AssessmentLoading';
 
 interface ResultsDisplayProps {
   categories: Category[];
@@ -23,14 +24,14 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
 }) => {
   const [validatedCategories, setValidatedCategories] = useState<Category[]>([]);
   const [errorType, setErrorType] = useState<string | null>(null);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [debugData, setDebugData] = useState<any>(null);
 
-  // Enhanced validation with better loading state handling
+  // Enhanced validation with improved loading state handling
   useEffect(() => {
     console.log("ResultsDisplay - RECEIVED props.categories:", categories);
     
-    // Give a brief moment for data to settle before validation
+    // Only proceed with validation after a delay to let state settle
     const validationTimer = setTimeout(() => {
       const debugInfo: any = {
         categoriesInput: {
@@ -44,51 +45,49 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
         component: 'ResultsDisplay'
       };
       
-      // More lenient initial validation
+      // Validate categories data structure
       if (!categories || !Array.isArray(categories)) {
         console.error("ResultsDisplay - Invalid categories data:", categories);
-        if (!isInitialLoad) { // Only show error after initial load
-          setErrorType("missing-categories");
-          setDebugData({
-            ...debugInfo,
-            error: "Categories is not an array or is undefined/null"
-          });
-        }
+        setErrorType("missing-categories");
+        setDebugData({
+          ...debugInfo,
+          error: "Categories is not an array or is undefined/null"
+        });
+        setIsLoading(false);
         return;
       }
       
       if (categories.length === 0) {
         console.error("ResultsDisplay - Empty categories array");
-        if (!isInitialLoad) { // Only show error after initial load
-          setErrorType("missing-categories");
-          setDebugData({
-            ...debugInfo,
-            error: "Categories array is empty"
-          });
-        }
+        setErrorType("missing-categories");
+        setDebugData({
+          ...debugInfo,
+          error: "Categories array is empty"
+        });
+        setIsLoading(false);
         return;
       }
       
-      // Simplified validation process
+      // Log validation details
       let validCategoriesCount = 0;
       let validationErrors: string[] = [];
       
       console.log("ResultsDisplay - Starting to validate", categories.length, "categories");
 
-      // Clean and validate categories with more lenient approach
+      // Process and validate categories
       const cleanCategories = categories.filter(category => {
         if (!category || !category.skills || !Array.isArray(category.skills)) {
           validationErrors.push(`Invalid category: ${category?.title || 'unknown'}`);
           return false;
         }
         
-        // More lenient skill validation - accept all skills with ratings structure
+        // Validate skills with ratings
         const validSkills = category.skills.filter(skill => {
           if (!skill || !skill.ratings) {
             return false;
           }
           
-          // Ensure ratings are properly formatted
+          // Normalize ratings to ensure they're numbers
           let current = 0;
           let desired = 0;
           
@@ -125,38 +124,36 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
         errors: validationErrors
       };
       
-      // Accept any categories that have skills structure
-      if (cleanCategories.length === 0 && !isInitialLoad) {
+      // Finalize validation results
+      if (cleanCategories.length === 0) {
         console.error("ResultsDisplay - No valid categories found");
         setErrorType("invalid-format");
         setDebugData({
           ...debugInfo,
           error: "No valid categories found after cleaning"
         });
-        return;
-      }
-      
-      if (cleanCategories.length > 0) {
+      } else {
         debugInfo.cleanedCategories = cleanCategories;
         setValidatedCategories(cleanCategories);
         setErrorType(null);
         setDebugData(debugInfo);
       }
       
-      setIsInitialLoad(false);
-    }, isInitialLoad ? 300 : 100); // Longer delay on initial load
+      // Always set loading to false when validation completes
+      setIsLoading(false);
+    }, 500); // Use a consistent delay to allow for data to settle
 
     return () => clearTimeout(validationTimer);
-  }, [categories, demographics, isInitialLoad]);
+  }, [categories, demographics]);
 
-  // Show loading state during initial validation
-  if (isInitialLoad && (!categories || categories.length === 0)) {
-    console.log("ResultsDisplay - Initial loading state");
-    return null; // Return null instead of error message during initial load
+  // Show loading state while validation is in progress
+  if (isLoading) {
+    console.log("ResultsDisplay - Showing loading state");
+    return <AssessmentLoading />;
   }
 
-  // Show error only after initial load is complete
-  if (errorType && !isInitialLoad) {
+  // Show error if validation failed
+  if (errorType) {
     console.error(`ResultsDisplay - Showing error message: ${errorType}`);
     return <InvalidResultsMessage 
              onRestart={onRestart} 
@@ -180,8 +177,8 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
     );
   }
 
-  // Loading state for ongoing validation
-  return null;
+  // Fallback - should not reach here in normal flow
+  return <AssessmentLoading />;
 };
 
 export default ResultsDisplay;

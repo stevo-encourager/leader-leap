@@ -7,7 +7,7 @@ interface InvalidResultsMessageProps {
   onRestart: () => void;
   onBack?: () => void;
   errorType?: string | null;
-  debugData?: any; // Add debug data parameter
+  debugData?: any;
 }
 
 const InvalidResultsMessage: React.FC<InvalidResultsMessageProps> = ({ 
@@ -28,6 +28,8 @@ const InvalidResultsMessage: React.FC<InvalidResultsMessageProps> = ({
     errorMessage = "The assessment data is missing required skill information. Please try completing the assessment again.";
   } else if (errorType === "missing-categories") {
     errorMessage = "No assessment categories were found. Please try completing the assessment again.";
+  } else if (errorType === "missing-data") {
+    errorMessage = "No assessment data was found. Please try completing a new assessment.";
   } else if (errorType === "loading") {
     errorTitle = "Loading assessment results";
     errorMessage = "Please wait while we load your assessment results...";
@@ -36,7 +38,7 @@ const InvalidResultsMessage: React.FC<InvalidResultsMessageProps> = ({
   const [showDebug, setShowDebug] = React.useState(false);
 
   return (
-    <div className="p-6 text-center border border-red-200 rounded-lg bg-red-50 max-w-2xl mx-auto">
+    <div className="p-6 text-center border border-red-200 rounded-lg bg-red-50 max-w-2xl mx-auto fade-in">
       <div className="flex justify-center mb-4">
         <AlertTriangle className="h-10 w-10 text-red-500" />
       </div>

@@ -1,11 +1,21 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { formatDate } from '@/lib/utils';
 import { Pagination } from '@/components/ui/pagination';
 import { AlertTriangle, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface AssessmentRecord {
   id: string;
@@ -50,6 +60,25 @@ const AssessmentsList = ({
   validateAssessment
 }: AssessmentsListProps) => {
   const totalPages = Math.ceil(totalAssessments / pageSize);
+  
+  // State for deletion confirmation
+  const [assessmentToDelete, setAssessmentToDelete] = useState<string | null>(null);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  
+  // Handle delete confirmation
+  const handleDeleteConfirm = async () => {
+    if (assessmentToDelete && onDeleteAssessment) {
+      await onDeleteAssessment(assessmentToDelete);
+      setAssessmentToDelete(null);
+    }
+    setIsConfirmOpen(false);
+  };
+
+  // Open delete confirmation dialog
+  const openDeleteDialog = (id: string) => {
+    setAssessmentToDelete(id);
+    setIsConfirmOpen(true);
+  };
   
   return (
     <div className="space-y-6">
@@ -103,7 +132,7 @@ const AssessmentsList = ({
                             size="sm"
                             variant="outline"
                             className="ml-2 text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 hover:border-red-300"
-                            onClick={() => onDeleteAssessment(assessment.id)}
+                            onClick={() => openDeleteDialog(assessment.id)}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -131,6 +160,27 @@ const AssessmentsList = ({
       <div className="text-xs text-slate-500 mt-2">
         Showing {assessments.length} of {totalAssessments} total assessments
       </div>
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Assessment?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this assessment result. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteConfirm}
+              className="bg-red-600 text-white hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

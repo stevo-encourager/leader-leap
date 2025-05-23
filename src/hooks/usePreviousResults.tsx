@@ -162,12 +162,18 @@ export const usePreviousResults = (
             description: "Your most recent assessment results have been loaded.",
           });
         } else {
-          console.log('usePreviousResults - Database data invalid, trying local storage fallback');
-          tryLoadFromLocalStorage();
+          console.log('usePreviousResults - Database data invalid, showing fallback message');
+          toast({
+            title: "No valid assessment data",
+            description: "Your saved assessment doesn't contain complete ratings. Please complete a new assessment.",
+          });
         }
       } else {
-        console.log('usePreviousResults - No database results found, trying local storage fallback');
-        tryLoadFromLocalStorage();
+        console.log('usePreviousResults - No database results found');
+        toast({
+          title: "No previous results found",
+          description: "You don't have any saved assessment results yet. Please complete the assessment.",
+        });
       }
     } catch (error) {
       console.error('usePreviousResults - Error loading previous results:', error);
@@ -176,45 +182,9 @@ export const usePreviousResults = (
         description: "An error occurred while loading your previous results.",
         variant: "destructive",
       });
-      tryLoadFromLocalStorage();
     } finally {
       setLoadingPreviousResults(false);
     }
-  };
-  
-  // Helper function to attempt loading from local storage
-  const tryLoadFromLocalStorage = () => {
-    const localData = getLocalAssessmentData();
-    
-    if (localData && localData.categories) {
-      const validatedCategories = validateAndProcessCategories(localData.categories);
-      
-      if (validatedCategories) {
-        console.log('usePreviousResults - Using validated local storage fallback data');
-        setCategories(validatedCategories);
-        setDemographics(localData.demographics || {});
-        setCurrentStep('results');
-        
-        navigate('/results');
-        
-        toast({
-          title: "Local results loaded",
-          description: user 
-            ? "These results haven't been saved to your account yet. Complete the assessment again while logged in to save them."
-            : "Create an account to save your results permanently.",
-        });
-        
-        return true;
-      }
-    }
-    
-    console.log('usePreviousResults - No valid local assessment data found');
-    toast({
-      title: "No previous results found",
-      description: "You don't have any saved assessment results yet. Please complete the assessment.",
-    });
-    
-    return false;
   };
   
   return {

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { allCategories } from '@/utils/assessmentCategories';
 import { CircleGauge } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import LoadResultsButton from '@/components/assessment/LoadResultsButton';
 import Navigation from '@/components/layout/Navigation';
 import Footer from '@/components/layout/Footer';
 import IntroductionPage from '@/components/IntroductionPage';
@@ -14,6 +15,8 @@ const Index = () => {
   const {
     handleCategoriesUpdate,
     handleStartAssessment,
+    handleLoadPreviousResults,
+    loadingPreviousResults
   } = useAssessment();
   
   const { user, loading } = useAuth();
@@ -53,6 +56,13 @@ const Index = () => {
         <Navigation />
       </div>
       <main className="assessment-container max-w-5xl mx-auto px-4 py-8">
+        {user && (
+          <LoadResultsButton 
+            onLoadPreviousResults={handleLoadPreviousResults}
+            isLoading={loadingPreviousResults}
+          />
+        )}
+        
         <IntroductionPage 
           categories={allCategories}
           onStartAssessment={() => {

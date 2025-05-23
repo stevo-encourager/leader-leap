@@ -54,10 +54,32 @@ export const useAssessmentForm = (categories: Category[]) => {
   const handleNextCategory = (onComplete: () => void) => {
     console.log(`Navigating from category ${activeCategory} to ${activeCategory + 1}. Total categories: ${categories.length}`);
     
+    // Check if the current category is fully completed before proceeding
+    const currentCategory = categories[activeCategory];
+    if (!isCategoryCompleted(currentCategory)) {
+      toast({
+        title: "Incomplete category",
+        description: "Please rate all skills in this category before proceeding.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     if (activeCategory < categories.length - 1) {
       setActiveCategory(activeCategory + 1);
       window.scrollTo(0, 0);
     } else {
+      // Verify all categories are completed before finishing assessment
+      const allCompleted = categories.every(isCategoryCompleted);
+      if (!allCompleted) {
+        toast({
+          title: "Incomplete assessment",
+          description: "Please ensure all skills in all categories have ratings before completing.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       // Log categories before completing to verify data
       console.log("Completing assessment with categories:", categories);
       onComplete();
@@ -80,11 +102,14 @@ export const useAssessmentForm = (categories: Category[]) => {
       return false;
     }
     
+    // Check that every skill has both current and desired ratings
     return category.skills.every(skill => 
       skill && 
       skill.ratings &&
       typeof skill.ratings.current === 'number' && 
-      typeof skill.ratings.desired === 'number'
+      skill.ratings.current > 0 &&
+      typeof skill.ratings.desired === 'number' && 
+      skill.ratings.desired > 0
     );
   };
 

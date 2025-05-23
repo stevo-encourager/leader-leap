@@ -23,22 +23,32 @@ export const useAssessmentCompletion = (
       return;
     }
     
-    // Count skills with ratings
-    let skillsWithRatings = 0;
+    // Count skills with ratings to ensure the assessment is complete
+    let totalSkills = 0;
+    let skillsWithBothRatings = 0;
+    
     categories.forEach(category => {
       if (category && category.skills) {
         category.skills.forEach(skill => {
+          totalSkills++;
           if (skill && skill.ratings && 
-             (typeof skill.ratings.current === 'number' && skill.ratings.current > 0) ||
+             (typeof skill.ratings.current === 'number' && skill.ratings.current > 0) &&
              (typeof skill.ratings.desired === 'number' && skill.ratings.desired > 0)) {
-            skillsWithRatings++;
+            skillsWithBothRatings++;
           }
         });
       }
     });
     
-    if (skillsWithRatings === 0) {
-      console.warn("handleCompleteAssessment - No skills with ratings found");
+    // Check if all skills have been rated
+    if (skillsWithBothRatings < totalSkills) {
+      console.warn(`handleCompleteAssessment - Incomplete assessment: ${skillsWithBothRatings}/${totalSkills} skills rated`);
+      toast({
+        title: "Incomplete Assessment",
+        description: `Please complete all ratings (${skillsWithBothRatings} of ${totalSkills} completed).`,
+        variant: "destructive",
+      });
+      return;
     }
     
     // CRITICAL FIX: Store assessment data locally before changing page

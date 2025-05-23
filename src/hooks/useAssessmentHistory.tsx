@@ -7,6 +7,7 @@ import { toast } from '@/hooks/use-toast';
 interface AssessmentRecord {
   id: string;
   created_at: string;
+  completed?: boolean;
 }
 
 export const useAssessmentHistory = () => {
@@ -28,18 +29,23 @@ export const useAssessmentHistory = () => {
       console.log('useAssessmentHistory - Assessment history fetch result:', result);
       
       if (result.success && result.data) {
-        // Store the total count
-        setTotalAssessments(result.data.length);
+        // Filter out incomplete assessments
+        const completedAssessments = result.data.filter(assessment => 
+          assessment.completed === true
+        );
+        
+        // Store the total count of completed assessments
+        setTotalAssessments(completedAssessments.length);
         
         // Sort by date (newest first) without grouping
-        const sortedAssessments = [...result.data].sort((a, b) => 
+        const sortedAssessments = [...completedAssessments].sort((a, b) => 
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         );
         
         // Set all assessments
         setAssessments(sortedAssessments);
         
-        console.log('useAssessmentHistory - Assessments count:', sortedAssessments.length);
+        console.log('useAssessmentHistory - Completed assessments count:', sortedAssessments.length);
       } else {
         console.error('useAssessmentHistory - Failed to fetch history:', result.error);
         toast({

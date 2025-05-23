@@ -10,13 +10,15 @@ interface CategoryNavigationProps {
   onNextCategory: () => void;
   isFirstCategory: boolean;
   isLastCategory: boolean;
+  isCategoryComplete: boolean;
 }
 
 const CategoryNavigationControls: React.FC<CategoryNavigationProps> = ({
   onPrevCategory,
   onNextCategory,
   isFirstCategory,
-  isLastCategory
+  isLastCategory,
+  isCategoryComplete
 }) => {
   return (
     <div className="flex justify-between mt-6">
@@ -31,6 +33,8 @@ const CategoryNavigationControls: React.FC<CategoryNavigationProps> = ({
       <Button
         onClick={onNextCategory}
         className="bg-encourager hover:bg-encourager-light"
+        disabled={!isCategoryComplete}
+        title={!isCategoryComplete ? "Please rate all skills in this category" : ""}
       >
         {isLastCategory ? 'View Results' : 'Next'}
       </Button>

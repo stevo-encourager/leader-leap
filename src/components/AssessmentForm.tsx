@@ -30,7 +30,8 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
     showMidpointDialog,
     setShowMidpointDialog,
     handleNextCategory,
-    handlePrevCategory
+    handlePrevCategory,
+    isCategoryCompleted
   } = useAssessmentForm(categories);
 
   const handleSkillRating = (categoryId: string, skillId: string, type: 'current' | 'desired', value: number) => {
@@ -121,6 +122,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
   
   const isLastCategory = activeCategory === categories.length - 1;
   const isFirstCategory = activeCategory === 0;
+  const isCategoryComplete = isCategoryCompleted(currentCategory);
 
   return (
     <div className="fade-in">
@@ -157,6 +159,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
         onNextCategory={() => handleNextCategory(onComplete)}
         isFirstCategory={isFirstCategory}
         isLastCategory={isLastCategory}
+        isCategoryComplete={isCategoryComplete}
       />
 
       <MidpointDialog 

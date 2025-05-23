@@ -23,30 +23,33 @@ export const saveAssessmentResults = async (
   }
 
   // Count and validate skills with ratings
-  let skillsWithRatings = 0;
-  let totalRatingValues = 0;
+  let totalSkills = 0;
+  let skillsWithBothRatings = 0;
   
   categories.forEach(category => {
     if (category && category.skills && Array.isArray(category.skills)) {
       category.skills.forEach(skill => {
+        totalSkills++;
         if (skill && skill.ratings) {
           const currentRating = Number(skill.ratings.current) || 0;
           const desiredRating = Number(skill.ratings.desired) || 0;
           
-          if (currentRating > 0 || desiredRating > 0) {
-            skillsWithRatings++;
-            totalRatingValues += (currentRating > 0 ? 1 : 0) + (desiredRating > 0 ? 1 : 0);
+          if (currentRating > 0 && desiredRating > 0) {
+            skillsWithBothRatings++;
           }
         }
       });
     }
   });
 
-  console.log(`saveAssessmentResults - Found ${skillsWithRatings} skills with ratings (${totalRatingValues} total rating values)`);
+  console.log(`saveAssessmentResults - Found ${skillsWithBothRatings}/${totalSkills} skills with complete ratings`);
 
-  if (skillsWithRatings === 0) {
-    console.error("saveAssessmentResults - No skills with valid ratings found");
-    return { success: false, error: "No valid assessment ratings found to save" };
+  // Check if the assessment is complete (all skills have both ratings)
+  const isComplete = totalSkills > 0 && skillsWithBothRatings === totalSkills;
+  
+  if (!isComplete) {
+    console.error("saveAssessmentResults - Assessment is incomplete");
+    return { success: false, error: "Assessment is incomplete. All skills must be rated." };
   }
 
   // Always store locally first as a backup
@@ -121,7 +124,7 @@ export const saveAssessmentResults = async (
         .update({
           categories: processedCategories,
           demographics: demographicsObject,
-          completed: true
+          completed: isComplete
         })
         .eq('id', recentAssessment.id)
         .eq('user_id', user.id)
@@ -135,7 +138,7 @@ export const saveAssessmentResults = async (
           user_id: user.id,
           categories: processedCategories,
           demographics: demographicsObject,
-          completed: true
+          completed: isComplete
         })
         .select();
     }

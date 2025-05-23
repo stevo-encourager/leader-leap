@@ -12,6 +12,7 @@ import { Link } from 'react-router-dom';
 const Admin = () => {
   console.log("Admin page: Rendering admin dashboard");
   console.log("Admin page: SystemStatusViewer component imported:", !!SystemStatusViewer);
+  console.log("Admin page: Current URL:", window.location.href);
   
   return (
     <div className="container max-w-6xl py-10 space-y-8">
@@ -23,6 +24,11 @@ const Admin = () => {
             Back to Home
           </Button>
         </Link>
+      </div>
+
+      {/* Debug info to confirm component is loading */}
+      <div className="bg-yellow-100 border border-yellow-400 rounded p-4 text-sm">
+        <strong>Debug Info:</strong> Admin page loaded. SystemStatusViewer component: {SystemStatusViewer ? 'Available' : 'NOT FOUND'}
       </div>
 
       <Tabs defaultValue="stats" className="w-full">
@@ -41,7 +47,18 @@ const Admin = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <SystemStatusViewer />
+              <div className="bg-blue-50 border border-blue-200 rounded p-4 mb-4">
+                <p className="text-blue-800 font-medium">SystemStatusViewer Component Test</p>
+                <p className="text-blue-600 text-sm">This should be followed by the actual component below:</p>
+              </div>
+              {SystemStatusViewer ? (
+                <SystemStatusViewer />
+              ) : (
+                <div className="bg-red-50 border border-red-200 rounded p-4">
+                  <p className="text-red-800 font-medium">ERROR: SystemStatusViewer component not found</p>
+                  <p className="text-red-600 text-sm">The component failed to import properly.</p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

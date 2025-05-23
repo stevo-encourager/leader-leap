@@ -10,6 +10,8 @@ import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Admin = () => {
+  console.log("Admin page: Rendering admin dashboard");
+  
   return (
     <div className="container max-w-6xl py-10 space-y-8">
       <div className="flex items-center justify-between">
@@ -22,12 +24,26 @@ const Admin = () => {
         </Link>
       </div>
 
-      <Tabs defaultValue="schema">
+      <Tabs defaultValue="stats" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="stats">System Status</TabsTrigger>
           <TabsTrigger value="schema">Data Schema</TabsTrigger>
           <TabsTrigger value="reset">App Reset</TabsTrigger>
-          <TabsTrigger value="stats">System Status</TabsTrigger>
         </TabsList>
+        
+        <TabsContent value="stats" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>System Status</CardTitle>
+              <CardDescription>
+                View current system statistics and status
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <SystemStatusViewer />
+            </CardContent>
+          </Card>
+        </TabsContent>
         
         <TabsContent value="schema" className="mt-6">
           <DataSchemaViewer />
@@ -59,20 +75,6 @@ const Admin = () => {
             <CardFooter>
               <ResetAppButton />
             </CardFooter>
-          </Card>
-        </TabsContent>
-        
-        <TabsContent value="stats" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>System Status</CardTitle>
-              <CardDescription>
-                View current system statistics and status
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <SystemStatusViewer />
-            </CardContent>
           </Card>
         </TabsContent>
       </Tabs>

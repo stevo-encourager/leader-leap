@@ -1,10 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { CircleGauge, RefreshCw } from 'lucide-react';
+import { CircleGauge, RefreshCw, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
 
 const SystemStatusViewer = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -13,102 +12,164 @@ const SystemStatusViewer = () => {
     assessmentCount: number | null;
     profileCount: number | null;
     error: string | null;
+    lastUpdated: string | null;
   }>({
     userCount: null,
     assessmentCount: null,
     profileCount: null,
-    error: null
+    error: null,
+    lastUpdated: null
   });
-  const { user } = useAuth();
 
   const fetchStats = async () => {
     setIsLoading(true);
+    console.log("SystemStatusViewer: Starting to fetch stats...");
     
     try {
+      // Reset error state
+      setStats(prev => ({ ...prev, error: null }));
+      
       // Get assessment count
+      console.log("SystemStatusViewer: Fetching assessment count...");
       const { count: assessmentCount, error: assessmentError } = await supabase
         .from('assessment_results')
         .select('*', { count: 'exact', head: true });
       
       if (assessmentError) {
+        console.error("SystemStatusViewer: Error getting assessment count:", assessmentError);
         throw new Error(`Error getting assessment count: ${assessmentError.message}`);
       }
+      console.log("SystemStatusViewer: Assessment count:", assessmentCount);
       
       // Get profile count
+      console.log("SystemStatusViewer: Fetching profile count...");
       const { count: profileCount, error: profileError } = await supabase
         .from('profiles')
         .select('*', { count: 'exact', head: true });
       
       if (profileError) {
+        console.error("SystemStatusViewer: Error getting profile count:", profileError);
         throw new Error(`Error getting profile count: ${profileError.message}`);
       }
+      console.log("SystemStatusViewer: Profile count:", profileCount);
       
-      // Get user count via admin function (requires special permissions)
+      // Get user count via admin function
+      console.log("SystemStatusViewer: Fetching user count via edge function...");
       const { data: userData, error: userError } = await supabase.functions.invoke('count-users');
       
       if (userError) {
+        console.error("SystemStatusViewer: Error getting user count:", userError);
         throw new Error(`Error getting user count: ${userError.message}`);
       }
+      console.log("SystemStatusViewer: User count response:", userData);
+      
+      const userCount = userData?.count || 0;
+      const timestamp = new Date().toLocaleString();
       
       setStats({
-        userCount: userData?.count || 0,
+        userCount,
         assessmentCount: assessmentCount || 0,
         profileCount: profileCount || 0,
-        error: null
+        error: null,
+        lastUpdated: timestamp
+      });
+      
+      console.log("SystemStatusViewer: Stats updated successfully:", {
+        userCount,
+        assessmentCount,
+        profileCount,
+        timestamp
       });
       
     } catch (error: any) {
-      console.error('Error fetching system stats:', error);
-      setStats({
-        ...stats,
-        error: error.message
-      });
+      console.error('SystemStatusViewer: Error fetching system stats:', error);
+      setStats(prev => ({
+        ...prev,
+        error: error.message,
+        lastUpdated: new Date().toLocaleString()
+      }));
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
+    console.log("SystemStatusViewer: Component mounted, fetching initial stats...");
     fetchStats();
   }, []); 
 
+  console.log("SystemStatusViewer: Rendering with stats:", stats, "isLoading:", isLoading);
+
   return (
     <div className="space-y-4">
+      <div className="text-sm text-muted-foreground mb-4">
+        System Status Dashboard - Monitor user accounts and data
+      </div>
+      
       {stats.error && (
         <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
           <AlertTitle>Error fetching system status</AlertTitle>
           <AlertDescription>{stats.error}</AlertDescription>
         </Alert>
       )}
       
-      <div className="grid grid-cols-3 gap-4">
-        <div className="border rounded-md p-4">
-          <h3 className="font-medium text-sm text-muted-foreground mb-1">User Accounts</h3>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="border rounded-lg p-4 bg-card">
+          <h3 className="font-medium text-sm text-muted-foreground mb-2">User Accounts</h3>
           <div className="text-2xl font-bold">
-            {isLoading ? <CircleGauge className="animate-spin h-6 w-6" /> : stats.userCount}
+            {isLoading ? (
+              <div className="flex items-center">
+                <CircleGauge className="animate-spin h-6 w-6 mr-2" />
+                <span className="text-sm">Loading...</span>
+              </div>
+            ) : (
+              stats.userCount !== null ? stats.userCount : 'Error'
+            )}
           </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Supabase Auth accounts
+          </p>
         </div>
         
-        <div className="border rounded-md p-4">
-          <h3 className="font-medium text-sm text-muted-foreground mb-1">User Profiles</h3>
+        <div className="border rounded-lg p-4 bg-card">
+          <h3 className="font-medium text-sm text-muted-foreground mb-2">User Profiles</h3>
           <div className="text-2xl font-bold">
-            {isLoading ? <CircleGauge className="animate-spin h-6 w-6" /> : stats.profileCount}
+            {isLoading ? (
+              <div className="flex items-center">
+                <CircleGauge className="animate-spin h-6 w-6 mr-2" />
+                <span className="text-sm">Loading...</span>
+              </div>
+            ) : (
+              stats.profileCount !== null ? stats.profileCount : 'Error'
+            )}
           </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Database profile records
+          </p>
         </div>
         
-        <div className="border rounded-md p-4">
-          <h3 className="font-medium text-sm text-muted-foreground mb-1">Assessment Records</h3>
+        <div className="border rounded-lg p-4 bg-card">
+          <h3 className="font-medium text-sm text-muted-foreground mb-2">Assessment Records</h3>
           <div className="text-2xl font-bold">
-            {isLoading ? <CircleGauge className="animate-spin h-6 w-6" /> : stats.assessmentCount}
+            {isLoading ? (
+              <div className="flex items-center">
+                <CircleGauge className="animate-spin h-6 w-6 mr-2" />
+                <span className="text-sm">Loading...</span>
+              </div>
+            ) : (
+              stats.assessmentCount !== null ? stats.assessmentCount : 'Error'
+            )}
           </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            Completed assessments
+          </p>
         </div>
       </div>
       
       <div className="flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
-          {!isLoading && 
-            `Last updated: ${new Date().toLocaleTimeString()}`
-          }
+          {stats.lastUpdated && `Last updated: ${stats.lastUpdated}`}
         </div>
         <Button 
           variant="outline" 
@@ -130,25 +191,44 @@ const SystemStatusViewer = () => {
         </Button>
       </div>
       
-      {!isLoading && (stats.userCount || 0) > 0 && (
-        <Alert variant="destructive">
-          <AlertTitle>System not in clean state</AlertTitle>
-          <AlertDescription>
-            There are still {stats.userCount} user accounts in the system. 
-            Use the App Reset function to completely clear all data.
-          </AlertDescription>
-        </Alert>
+      {/* System Status Alerts */}
+      {!isLoading && !stats.error && (
+        <>
+          {(stats.userCount || 0) > 0 && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>System not in clean state</AlertTitle>
+              <AlertDescription>
+                There are still {stats.userCount} user accounts in the system. 
+                Use the App Reset function to completely clear all data.
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          {(stats.userCount || 0) === 0 && (stats.assessmentCount || 0) === 0 && (stats.profileCount || 0) === 0 && (
+            <Alert className="bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-800">
+              <AlertCircle className="h-4 w-4 text-green-600" />
+              <AlertTitle className="text-green-800 dark:text-green-200">System in clean state</AlertTitle>
+              <AlertDescription className="text-green-700 dark:text-green-300">
+                All user accounts and data have been successfully deleted. 
+                The system is ready for testing from scratch.
+              </AlertDescription>
+            </Alert>
+          )}
+        </>
       )}
       
-      {!isLoading && (stats.userCount || 0) === 0 && (stats.assessmentCount || 0) === 0 && (stats.profileCount || 0) === 0 && (
-        <Alert className="bg-green-50 border-green-200">
-          <AlertTitle>System in clean state</AlertTitle>
-          <AlertDescription>
-            All user accounts and data have been successfully deleted. 
-            The system is ready for testing from scratch.
-          </AlertDescription>
-        </Alert>
-      )}
+      {/* Debug Info */}
+      <div className="border-t pt-4 text-xs text-muted-foreground">
+        <details>
+          <summary className="cursor-pointer hover:text-foreground">Debug Information</summary>
+          <div className="mt-2 space-y-1">
+            <div>Component state: {isLoading ? 'Loading' : 'Loaded'}</div>
+            <div>Error state: {stats.error ? 'Yes' : 'No'}</div>
+            <div>Raw stats: {JSON.stringify(stats, null, 2)}</div>
+          </div>
+        </details>
+      </div>
     </div>
   );
 };

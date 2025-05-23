@@ -31,12 +31,12 @@ export const useAssessmentHistory = () => {
         // Store the total count
         setTotalAssessments(result.data.length);
         
-        // Natural sort by date (newest first)
+        // Sort by date (newest first) without grouping
         const sortedAssessments = [...result.data].sort((a, b) => 
           new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         );
         
-        // Set the assessments
+        // Set all assessments
         setAssessments(sortedAssessments);
         
         console.log('useAssessmentHistory - Assessments count:', sortedAssessments.length);
@@ -100,7 +100,7 @@ export const useAssessmentHistory = () => {
     setCurrentPage(page);
   };
 
-  // Get paginated data
+  // Get paginated data (now showing all assessments, not grouped)
   const getPaginatedData = () => {
     const startIndex = (currentPage - 1) * pageSize;
     return assessments.slice(startIndex, startIndex + pageSize);

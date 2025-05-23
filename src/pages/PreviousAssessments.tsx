@@ -48,7 +48,7 @@ const PreviousAssessments = () => {
     setLastRefreshed(new Date().toISOString());
     toast({
       title: "Assessment list refreshed",
-      description: "Showing latest assessments with duplicates grouped by day"
+      description: "Showing all your assessments in chronological order"
     });
   };
 
@@ -92,7 +92,7 @@ const PreviousAssessments = () => {
                 
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-slate-500">
-                    Showing assessments grouped by day
+                    All assessments shown
                   </span>
                   
                   <DeleteAllAssessmentsDialog 
@@ -111,13 +111,6 @@ const PreviousAssessments = () => {
           <EmptyAssessmentsList isLoading={isLoading} />
         ) : (
           <>
-            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-6">
-              <p className="text-sm text-yellow-800">
-                <strong>Note:</strong> To simplify your assessment history, we're now showing only one assessment per day (the most recent one). 
-                If you completed multiple assessments on the same day, only the latest will be displayed.
-              </p>
-            </div>
-            
             <AssessmentsList 
               assessments={assessments} 
               currentPage={currentPage}

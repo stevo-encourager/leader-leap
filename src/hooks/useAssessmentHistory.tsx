@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getAssessmentHistory, deleteAllAssessments } from '@/services/assessment/manageAssessmentHistory';
+import { getAssessmentHistory, deleteAllAssessments, deleteAssessment } from '@/services/assessment/manageAssessmentHistory';
 import { toast } from '@/hooks/use-toast';
 
 interface AssessmentRecord {
@@ -61,6 +61,54 @@ export const useAssessmentHistory = () => {
       setIsLoading(false);
     }
   }, []);
+
+  const handleDeleteAssessment = async (assessmentId: string) => {
+    setIsDeleting(true);
+    try {
+      const result = await deleteAssessment(assessmentId);
+      
+      if (result.success) {
+        toast({
+          title: "Assessment deleted",
+          description: "The selected assessment has been deleted",
+        });
+        
+        // Update the assessment list after deletion
+        setAssessments(prevAssessments => 
+          prevAssessments.filter(assessment => assessment.id !== assessmentId)
+        );
+        
+        // Update total count
+        setTotalAssessments(prev => Math.max(0, prev - 1));
+        
+        // Adjust current page if needed (if last item on page was deleted)
+        const currentPageItemCount = assessments.filter(
+          (_, index) => 
+            index >= (currentPage - 1) * pageSize && 
+            index < currentPage * pageSize
+        ).length;
+        
+        if (currentPageItemCount === 1 && currentPage > 1) {
+          setCurrentPage(prev => prev - 1);
+        }
+      } else {
+        toast({
+          title: "Error deleting assessment",
+          description: result.error || "Failed to delete the assessment",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting assessment:', error);
+      toast({
+        title: "Error deleting assessment",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const handleDeleteAllAssessments = async () => {
     setIsDeleting(true);
@@ -123,6 +171,7 @@ export const useAssessmentHistory = () => {
     currentPage,
     pageSize,
     fetchAssessments,
+    handleDeleteAssessment,
     handleDeleteAllAssessments,
     handlePageChange
   };

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { formatDate } from '@/lib/utils';
 import { Pagination } from '@/components/ui/pagination';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Trash2 } from 'lucide-react';
 
 interface AssessmentRecord {
   id: string;
@@ -19,6 +19,7 @@ interface AssessmentsListProps {
   pageSize: number;
   totalAssessments: number;
   onPageChange: (page: number) => void;
+  onDeleteAssessment?: (id: string) => Promise<void>;
   validateAssessment?: (id: string) => Promise<boolean>;
 }
 
@@ -45,6 +46,7 @@ const AssessmentsList = ({
   pageSize,
   totalAssessments,
   onPageChange,
+  onDeleteAssessment,
   validateAssessment
 }: AssessmentsListProps) => {
   const totalPages = Math.ceil(totalAssessments / pageSize);
@@ -80,21 +82,33 @@ const AssessmentsList = ({
                   <TableCell className="text-muted-foreground text-sm">
                     {assessment.id}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right flex justify-end items-center gap-2">
                     {assessment.hasValidData === false ? (
                       <div className="flex items-center justify-end gap-2">
                         <AlertTriangle className="h-4 w-4 text-amber-500" />
                         <span className="text-xs text-amber-600">Invalid data</span>
                       </div>
                     ) : (
-                      <Link to={`/results/${assessment.id}`}>
-                        <Button 
-                          size="sm" 
-                          className="bg-encourager hover:bg-encourager-light"
-                        >
-                          View Results
-                        </Button>
-                      </Link>
+                      <>
+                        <Link to={`/results/${assessment.id}`}>
+                          <Button 
+                            size="sm" 
+                            className="bg-encourager hover:bg-encourager-light"
+                          >
+                            View Results
+                          </Button>
+                        </Link>
+                        {onDeleteAssessment && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="ml-2 text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 hover:border-red-300"
+                            onClick={() => onDeleteAssessment(assessment.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </>
                     )}
                   </TableCell>
                 </TableRow>

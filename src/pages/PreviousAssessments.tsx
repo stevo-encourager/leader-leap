@@ -23,6 +23,7 @@ const PreviousAssessments = () => {
     currentPage,
     pageSize,
     fetchAssessments, 
+    handleDeleteAssessment,
     handleDeleteAllAssessments,
     handlePageChange
   } = useAssessmentHistory();
@@ -117,6 +118,7 @@ const PreviousAssessments = () => {
               pageSize={pageSize}
               totalAssessments={totalAssessments}
               onPageChange={handlePageChange}
+              onDeleteAssessment={handleDeleteAssessment}
             />
             
             {lastRefreshed && (

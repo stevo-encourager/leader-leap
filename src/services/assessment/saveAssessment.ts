@@ -104,6 +104,10 @@ export const saveAssessmentResults = async (
 
     let result;
 
+    // Convert Demographics to a regular object to satisfy TypeScript
+    // This ensures it's compatible with the Json type Supabase expects
+    const demographicsObject = { ...demographics };
+
     if (existingAssessment && existingAssessment.length > 0) {
       // Update existing assessment
       console.log(`saveAssessmentResults - Updating existing assessment: ${existingAssessment[0].id}`);
@@ -111,7 +115,7 @@ export const saveAssessmentResults = async (
         .from('assessment_results')
         .update({
           categories: processedCategories,
-          demographics: demographics || {},
+          demographics: demographicsObject,
           completed: true
         })
         .eq('id', existingAssessment[0].id)
@@ -122,12 +126,12 @@ export const saveAssessmentResults = async (
       console.log("saveAssessmentResults - Creating new assessment");
       result = await supabase
         .from('assessment_results')
-        .insert([{
+        .insert({
           user_id: user.id,
           categories: processedCategories,
-          demographics: demographics || {},
+          demographics: demographicsObject,
           completed: true
-        }])
+        })
         .select();
     }
 

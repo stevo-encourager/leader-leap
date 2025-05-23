@@ -107,20 +107,21 @@ export const getLatestAssessmentResults = async (): Promise<FetchAssessmentResul
   }
 };
 
-export const getSpecificAssessmentResults = async (assessmentId: string): Promise<FetchAssessmentResult> => {
-  console.log(`getSpecificAssessmentResults - Fetching assessment: ${assessmentId}`);
+// Add the getAssessmentById function that was missing
+export const getAssessmentById = async (assessmentId: string): Promise<FetchAssessmentResult> => {
+  console.log(`getAssessmentById - Fetching assessment: ${assessmentId}`);
   
   try {
     // Check if user is authenticated
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
     if (authError) {
-      console.error("getSpecificAssessmentResults - Auth error:", authError);
+      console.error("getAssessmentById - Auth error:", authError);
       return { success: false, error: "Authentication error" };
     }
 
     if (!user) {
-      console.log("getSpecificAssessmentResults - No authenticated user");
+      console.log("getAssessmentById - No authenticated user");
       return { success: false, error: "User not authenticated" };
     }
 
@@ -133,17 +134,17 @@ export const getSpecificAssessmentResults = async (assessmentId: string): Promis
       .limit(1);
 
     if (error) {
-      console.error("getSpecificAssessmentResults - Database error:", error);
+      console.error("getAssessmentById - Database error:", error);
       return { success: false, error: error.message };
     }
 
     if (!data || data.length === 0) {
-      console.log("getSpecificAssessmentResults - Assessment not found");
+      console.log("getAssessmentById - Assessment not found");
       return { success: false, error: "Assessment not found" };
     }
 
     const assessment = data[0];
-    console.log("getSpecificAssessmentResults - Raw assessment data:", {
+    console.log("getAssessmentById - Raw assessment data:", {
       id: assessment.id,
       categoriesType: typeof assessment.categories,
       categoriesLength: Array.isArray(assessment.categories) ? assessment.categories.length : 'not array',
@@ -153,7 +154,7 @@ export const getSpecificAssessmentResults = async (assessmentId: string): Promis
     // Validate and normalize the categories data
     const rawCategories = assessment.categories;
     if (!rawCategories || !Array.isArray(rawCategories)) {
-      console.error("getSpecificAssessmentResults - Invalid categories data:", rawCategories);
+      console.error("getAssessmentById - Invalid categories data:", rawCategories);
       return { success: false, error: "Invalid assessment data format" };
     }
 
@@ -161,7 +162,7 @@ export const getSpecificAssessmentResults = async (assessmentId: string): Promis
     const normalizedCategories = normalizeCategories(rawCategories);
     const normalizedDemographics = normalizeDemographics(assessment.demographics);
 
-    console.log(`getSpecificAssessmentResults - Successfully normalized ${normalizedCategories.length} categories`);
+    console.log(`getAssessmentById - Successfully normalized ${normalizedCategories.length} categories`);
 
     const result: AssessmentResult = {
       id: assessment.id,
@@ -174,7 +175,7 @@ export const getSpecificAssessmentResults = async (assessmentId: string): Promis
     return { success: true, data: result };
 
   } catch (error) {
-    console.error("getSpecificAssessmentResults - Unexpected error:", error);
+    console.error("getAssessmentById - Unexpected error:", error);
     return { success: false, error: "An unexpected error occurred while fetching assessment" };
   }
 };

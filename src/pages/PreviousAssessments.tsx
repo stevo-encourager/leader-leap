@@ -8,6 +8,7 @@ import Footer from '@/components/layout/Footer';
 import { useAssessmentHistory } from '@/hooks/useAssessmentHistory';
 import AssessmentsList from '@/components/previous-assessments/AssessmentsList';
 import EmptyAssessmentsList from '@/components/previous-assessments/EmptyAssessmentsList';
+import DeleteAllAssessmentsDialog from '@/components/previous-assessments/DeleteAllAssessmentsDialog';
 import { toast } from '@/hooks/use-toast';
 
 const PreviousAssessments = () => {
@@ -23,6 +24,7 @@ const PreviousAssessments = () => {
     pageSize,
     fetchAssessments, 
     handleDeleteAssessment,
+    handleDeleteAllAssessments,
     handlePageChange
   } = useAssessmentHistory();
 
@@ -77,16 +79,31 @@ const PreviousAssessments = () => {
             </Button>
           </Link>
           
-          {allAssessments.length > 0 && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleRefresh} 
-              disabled={isLoading}
-            >
-              Refresh List
-            </Button>
-          )}
+          <div className="flex items-center gap-4">
+            {allAssessments.length > 0 && (
+              <>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleRefresh} 
+                  disabled={isLoading}
+                >
+                  Refresh List
+                </Button>
+                
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-slate-500">
+                    All assessments shown
+                  </span>
+                  
+                  <DeleteAllAssessmentsDialog 
+                    isDeleting={isDeleting}
+                    onDeleteAll={handleDeleteAllAssessments}
+                  />
+                </div>
+              </>
+            )}
+          </div>
         </div>
 
         <h1 className="text-3xl font-bold text-encourager mb-8">Your Previous Assessments</h1>

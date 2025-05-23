@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { getAssessmentHistory, deleteAssessment } from '@/services/assessment/manageAssessmentHistory';
+import { getAssessmentHistory, deleteAllAssessments, deleteAssessment } from '@/services/assessment/manageAssessmentHistory';
 import { toast } from '@/hooks/use-toast';
 
 interface AssessmentRecord {
@@ -110,6 +110,39 @@ export const useAssessmentHistory = () => {
     }
   };
 
+  const handleDeleteAllAssessments = async () => {
+    setIsDeleting(true);
+    try {
+      const result = await deleteAllAssessments();
+      
+      if (result.success) {
+        toast({
+          title: "Assessments deleted",
+          description: "All your completed assessments have been deleted",
+        });
+        // Reset pagination and assessments
+        setCurrentPage(1);
+        setAssessments([]);
+        setTotalAssessments(0);
+      } else {
+        toast({
+          title: "Error deleting assessments",
+          description: result.error || "Failed to delete your assessments",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting assessments:', error);
+      toast({
+        title: "Error deleting assessments",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   // Function to handle page changes
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -139,6 +172,7 @@ export const useAssessmentHistory = () => {
     pageSize,
     fetchAssessments,
     handleDeleteAssessment,
+    handleDeleteAllAssessments,
     handlePageChange
   };
 };

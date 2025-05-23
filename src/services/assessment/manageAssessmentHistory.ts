@@ -176,7 +176,7 @@ export const deleteAssessment = async (assessmentId: string): Promise<{
   error?: string 
 }> => {
   try {
-    console.log("deleteAssessment - Deleting assessment:", assessmentId);
+    console.log("deleteAssessment - Starting deletion for assessment:", assessmentId);
     
     // Verify user is authenticated
     const { data: { user } } = await supabase.auth.getUser();
@@ -185,6 +185,8 @@ export const deleteAssessment = async (assessmentId: string): Promise<{
       console.error("deleteAssessment - User not authenticated");
       return { success: false, error: 'User not authenticated' };
     }
+    
+    console.log("deleteAssessment - Authenticated user ID:", user.id);
     
     // First check if the assessment exists and belongs to this user
     const { data: existingAssessment, error: fetchError } = await supabase
@@ -203,6 +205,8 @@ export const deleteAssessment = async (assessmentId: string): Promise<{
       console.error("deleteAssessment - Assessment not found for user");
       return { success: false, error: 'Assessment not found' };
     }
+    
+    console.log("deleteAssessment - Found assessment to delete:", existingAssessment);
     
     // Delete the assessment
     const { error: deleteError, count } = await supabase

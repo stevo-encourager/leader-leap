@@ -11,6 +11,7 @@ import DeleteAssessmentDialog from './DeleteAssessmentDialog';
 interface AssessmentRecord {
   id: string;
   created_at: string;
+  completed?: boolean;
   hasValidData?: boolean;
 }
 
@@ -82,12 +83,20 @@ const AssessmentsList = ({
                   </TableCell>
                   <TableCell className="text-muted-foreground text-sm">
                     {assessment.id}
+                    {assessment.completed === false && (
+                      <span className="ml-2 text-xs text-amber-500">(incomplete)</span>
+                    )}
                   </TableCell>
                   <TableCell className="text-right flex justify-end items-center gap-2">
                     {assessment.hasValidData === false ? (
                       <div className="flex items-center justify-end gap-2">
                         <AlertTriangle className="h-4 w-4 text-amber-500" />
                         <span className="text-xs text-amber-600">Invalid data</span>
+                      </div>
+                    ) : assessment.completed === false ? (
+                      <div className="flex items-center justify-end gap-2">
+                        <AlertTriangle className="h-4 w-4 text-amber-500" />
+                        <span className="text-xs text-amber-600">Incomplete assessment</span>
                       </div>
                     ) : (
                       <>

@@ -7,6 +7,13 @@ import {
   LocalAssessmentData 
 } from '@/types/assessment';
 
+// Update the AssessmentSummary interface in this file or ensure it's properly defined in types/assessment.ts
+interface AssessmentRecord {
+  id: string;
+  created_at: string;
+  completed?: boolean;
+}
+
 /**
  * Stores assessment data in the browser's local storage for immediate access
  * This provides a fallback if database storage fails or user is not authenticated
@@ -129,7 +136,7 @@ export const clearLocalAssessmentData = (): boolean => {
  */
 export const getAssessmentHistory = async (): Promise<{ 
   success: boolean; 
-  data?: AssessmentSummary[]; 
+  data?: AssessmentRecord[]; 
   error?: string 
 }> => {
   try {
@@ -146,9 +153,8 @@ export const getAssessmentHistory = async (): Promise<{
     // Fetch all completed assessments for this user
     const { data: assessments, error } = await supabase
       .from('assessment_results')
-      .select('id, created_at')
+      .select('id, created_at, completed')
       .eq('user_id', user.id)
-      .eq('completed', true)
       .order('created_at', { ascending: false });
       
     if (error) {
@@ -160,7 +166,7 @@ export const getAssessmentHistory = async (): Promise<{
     
     return { 
       success: true, 
-      data: assessments 
+      data: assessments as AssessmentRecord[]
     };
   } catch (error) {
     console.error("Error in getAssessmentHistory:", error);

@@ -29,9 +29,10 @@ export const useAssessmentHistory = () => {
       console.log('useAssessmentHistory - Assessment history fetch result:', result);
       
       if (result.success && result.data) {
-        // Filter out incomplete assessments
+        // Filter to include only completed assessments
+        // Note: Older assessments might not have the completed flag, so consider them completed by default
         const completedAssessments = result.data.filter(assessment => 
-          assessment.completed === true
+          assessment.completed !== false // Show if completed is true or undefined (legacy data)
         );
         
         // Store the total count of completed assessments

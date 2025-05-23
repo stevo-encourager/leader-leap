@@ -22,39 +22,38 @@ export const useAssessmentInitialization = () => {
     }));
   };
 
-  // Initialize categories with default data
+  // Initialize categories with default data - only run once
   useEffect(() => {
-    if (!isInitialized && (!categories || categories.length === 0)) {
-      console.log("useAssessmentInitialization - Initializing with default categories");
+    if (!isInitialized) {
+      console.log("useAssessmentInitialization - Initializing categories");
       try {
         // First check if we have locally stored assessment data
         const localData = getLocalAssessmentData();
         if (localData && localData.categories && localData.categories.length > 0) {
           console.log("useAssessmentInitialization - Found local assessment data, using that");
           setCategories(localData.categories);
-          setIsInitialized(true);
-          return;
-        }
-        
-        // Otherwise use fresh categories with reset ratings
-        const freshCategories = createFreshCategories();
-        if (freshCategories && freshCategories.length > 0) {
-          console.log(`useAssessmentInitialization - Loaded ${freshCategories.length} fresh categories with reset ratings`);
-          setCategories(freshCategories);
-          setIsInitialized(true);
         } else {
-          console.error("useAssessmentInitialization - Fresh categories are empty or invalid");
-          toast({
-            title: "Error loading categories",
-            description: "Could not load assessment categories. Please refresh the page.",
-            variant: "destructive",
-          });
+          // Otherwise use fresh categories with reset ratings
+          const freshCategories = createFreshCategories();
+          if (freshCategories && freshCategories.length > 0) {
+            console.log(`useAssessmentInitialization - Loaded ${freshCategories.length} fresh categories`);
+            setCategories(freshCategories);
+          } else {
+            console.error("useAssessmentInitialization - Fresh categories are empty or invalid");
+            toast({
+              title: "Error loading categories",
+              description: "Could not load assessment categories. Please refresh the page.",
+              variant: "destructive",
+            });
+          }
         }
+        setIsInitialized(true);
       } catch (error) {
         console.error("useAssessmentInitialization - Error initializing categories:", error);
+        setIsInitialized(true);
       }
     }
-  }, [categories, isInitialized]);
+  }, [isInitialized]);
 
   return {
     categories,

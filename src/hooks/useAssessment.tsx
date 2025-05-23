@@ -18,20 +18,22 @@ export const useAssessment = () => {
     handleCompleteAssessment
   } = useNavigationState();
 
-  // Use our new hooks for better separation of concerns
-  const { categories: initialCategories, createFreshCategories } = useAssessmentInitialization();
+  // Use our hooks for managing assessment state
+  const { createFreshCategories } = useAssessmentInitialization();
   const { 
     categories, 
     demographics, 
     handleCategoriesUpdate, 
     handleDemographicsUpdate, 
     resetAssessment 
-  } = useAssessmentState(initialCategories);
+  } = useAssessmentState([]);
+
   const { handleCompleteAssessment: wrappedHandleCompleteAssessment } = 
     useAssessmentCompletion(categories, demographics, handleCompleteAssessment);
 
   // Reset all categories to default values when starting a new assessment
   const handleStartNewAssessment = () => {
+    console.log("useAssessment - Starting new assessment with fresh categories");
     // Create completely fresh copy of default categories with all ratings reset to 0
     const freshCategories = createFreshCategories();
     resetAssessment(freshCategories);
@@ -77,7 +79,7 @@ export const useAssessment = () => {
     handleDemographicsUpdate,
     
     // Navigation functions
-    handleStartAssessment: handleStartNewAssessment, // Use our custom handler that resets data
+    handleStartAssessment: handleStartNewAssessment,
     handleContinueToAssessment,
     handleBackToIntro,
     handleBackToDemographics,

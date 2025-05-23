@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { allCategories } from '@/utils/assessmentCategories';
 import { CircleGauge } from 'lucide-react';
@@ -11,29 +11,8 @@ import { useAssessment } from '@/hooks/useAssessment';
 
 const Index = () => {
   const navigate = useNavigate();
-  const {
-    handleCategoriesUpdate,
-    handleStartAssessment,
-  } = useAssessment();
-  
+  const { handleStartAssessment } = useAssessment();
   const { user, loading } = useAuth();
-  
-  // Initialize categories from initial data - but only for display purposes
-  // When starting a new assessment, fresh categories will be created
-  useEffect(() => {
-    // Create a fresh copy of the categories with reset ratings for display
-    const displayCategories = JSON.parse(JSON.stringify(allCategories)).map(category => ({
-      ...category,
-      skills: category.skills.map(skill => ({
-        ...skill,
-        ratings: {
-          current: 0,
-          desired: 0
-        }
-      }))
-    }));
-    handleCategoriesUpdate(displayCategories);
-  }, [handleCategoriesUpdate]);
 
   // Wait for auth to initialize before rendering
   if (loading) {

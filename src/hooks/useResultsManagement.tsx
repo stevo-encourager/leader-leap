@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { saveAssessmentResults } from '@/services/assessment/saveAssessment';
 import { storeLocalAssessmentData, getLocalAssessmentData } from '@/services/assessment/manageAssessmentHistory';
@@ -17,6 +17,7 @@ export const useResultsManagement = (
   setCurrentStep: (step: any) => void
 ) => {
   const [isSaving, setIsSaving] = useState(false);
+  const saveInProgressRef = useRef(false); // Additional ref to prevent race conditions
   const { user } = useAuth();
   
   // Log categories data for debugging
@@ -109,8 +110,8 @@ export const useResultsManagement = (
 
   // Results save function
   const handleSaveResults = async () => {
-    // Prevent multiple simultaneous save operations
-    if (isSaving) {
+    // Prevent multiple simultaneous save operations using both state and ref
+    if (isSaving || saveInProgressRef.current) {
       console.log('Already saving results, skipping duplicate call');
       return;
     }
@@ -121,6 +122,9 @@ export const useResultsManagement = (
       return;
     }
 
+    // Set both flags to prevent race conditions
+    saveInProgressRef.current = true;
+    
     // If user isn't authenticated, save to local storage only
     if (!user) {
       console.log('User not authenticated, saving assessment to local storage only');
@@ -143,6 +147,8 @@ export const useResultsManagement = (
         }
       } catch (error) {
         console.error('Error saving to local storage:', error);
+      } finally {
+        saveInProgressRef.current = false;
       }
       
       return;
@@ -159,7 +165,10 @@ export const useResultsManagement = (
         }
         
         // Wait a bit for state to update before continuing
-        setTimeout(() => handleSaveResults(), 200);
+        setTimeout(() => {
+          saveInProgressRef.current = false; // Reset the ref before retry
+          handleSaveResults();
+        }, 200);
         return;
       }
     }
@@ -180,6 +189,7 @@ export const useResultsManagement = (
         description: "No valid assessment data to save.",
         variant: "destructive",
       });
+      saveInProgressRef.current = false;
       return;
     }
     
@@ -209,6 +219,7 @@ export const useResultsManagement = (
         description: "No valid assessment ratings to save. Please complete the assessment with actual ratings.",
         variant: "destructive",
       });
+      saveInProgressRef.current = false;
       return;
     }
     
@@ -261,6 +272,7 @@ export const useResultsManagement = (
       });
     } finally {
       setIsSaving(false);
+      saveInProgressRef.current = false; // Reset the ref flag
       console.log('Assessment save operation completed');
     }
   };

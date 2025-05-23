@@ -85,32 +85,37 @@ export const saveAssessmentResults = async (
       }))
     }));
 
-    // First check if there's already an assessment for today
-    const today = new Date().toISOString().split('T')[0];
-    const startOfDay = `${today}T00:00:00.000Z`;
-    const endOfDay = `${today}T23:59:59.999Z`;
+    // Convert Demographics to a regular object to satisfy TypeScript
+    const demographicsObject = { ...demographics };
 
-    const { data: existingAssessment, error: fetchError } = await supabase
+    // Use a more robust approach to prevent duplicates
+    // Create a unique constraint based on user_id and a time window
+    const now = new Date();
+    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000); // 5 minutes ago
+    
+    console.log("saveAssessmentResults - Checking for recent assessments within 5 minutes");
+    
+    // Check for any assessment created in the last 5 minutes
+    const { data: recentAssessments, error: fetchError } = await supabase
       .from('assessment_results')
-      .select('id')
+      .select('id, created_at')
       .eq('user_id', user.id)
-      .gte('created_at', startOfDay)
-      .lte('created_at', endOfDay)
+      .gte('created_at', fiveMinutesAgo.toISOString())
+      .order('created_at', { ascending: false })
       .limit(1);
 
     if (fetchError) {
-      console.error("saveAssessmentResults - Error checking for existing assessment:", fetchError);
+      console.error("saveAssessmentResults - Error checking for recent assessments:", fetchError);
+      // Continue with insert if we can't check for duplicates
     }
 
     let result;
 
-    // Convert Demographics to a regular object to satisfy TypeScript
-    // This ensures it's compatible with the Json type Supabase expects
-    const demographicsObject = { ...demographics };
-
-    if (existingAssessment && existingAssessment.length > 0) {
-      // Update existing assessment
-      console.log(`saveAssessmentResults - Updating existing assessment: ${existingAssessment[0].id}`);
+    if (recentAssessments && recentAssessments.length > 0) {
+      // Update the most recent assessment instead of creating a new one
+      const recentAssessment = recentAssessments[0];
+      console.log(`saveAssessmentResults - Updating recent assessment: ${recentAssessment.id} (created at: ${recentAssessment.created_at})`);
+      
       result = await supabase
         .from('assessment_results')
         .update({
@@ -118,12 +123,12 @@ export const saveAssessmentResults = async (
           demographics: demographicsObject,
           completed: true
         })
-        .eq('id', existingAssessment[0].id)
+        .eq('id', recentAssessment.id)
         .eq('user_id', user.id)
         .select();
     } else {
-      // Create new assessment
-      console.log("saveAssessmentResults - Creating new assessment");
+      // Create new assessment only if no recent one exists
+      console.log("saveAssessmentResults - Creating new assessment (no recent assessments found)");
       result = await supabase
         .from('assessment_results')
         .insert({

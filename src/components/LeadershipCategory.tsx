@@ -91,8 +91,8 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
         <CardContent>
           <div className="space-y-8">
             {category.skills.map((skill, index) => (
-              <Card key={skill.id} className="border border-gray-100 shadow-sm">
-                <CardHeader className={`pb-2 ${index === 0 ? 'pt-8' : 'pt-6'}`}>
+              <Card key={skill.id} className={`border border-gray-100 shadow-sm ${index === 0 ? 'mt-8' : ''}`}>
+                <CardHeader className="pb-2 pt-6">
                   <div className="flex justify-between items-start">
                     <div className="flex-1 pr-4">
                       <h4 className="text-lg font-medium text-gray-800">{skill.name}</h4>

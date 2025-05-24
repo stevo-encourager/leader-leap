@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { CircleHelp } from 'lucide-react';
@@ -108,9 +109,11 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
                             <div className="space-y-2">
                               <p className="font-medium">{skill.name}</p>
                               <p className="text-sm">{skill.description}</p>
-                              <div className="text-xs text-slate-500 mt-2">
+                              <div className="text-xs text-slate-500 mt-2 space-y-1">
                                 <p><strong>Current ability:</strong> Rate your current skill level from 0-10</p>
                                 <p><strong>Target level:</strong> Set your desired skill level to work towards</p>
+                                <p>For Target level, consider context i.e. think about what's truly important for your current role or your next step (a specific role or promotion you are aiming for).</p>
+                                <p>You must select a rating for every skill before proceeding.</p>
                               </div>
                             </div>
                           </TooltipContent>

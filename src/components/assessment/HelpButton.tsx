@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Help } from 'lucide-react';
+import { HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -21,7 +21,7 @@ const HelpButton: React.FC = () => {
         onClick={() => setIsOpen(true)}
         className="flex items-center gap-2"
       >
-        <Help size={16} />
+        <HelpCircle size={16} />
         Help
       </Button>
 

@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import { 
   ResponsiveContainer,
@@ -30,8 +31,8 @@ const CustomTick = (props: any) => {
   const angle = Math.atan2(y - cy, x - cx);
   
   // Use a moderate radius from center for balanced positioning
-  // 160px provides good separation without being too far
-  const labelRadius = 160; // Increased from 140 for better spacing
+  // 175px provides optimal separation - not too close, not too far
+  const labelRadius = 175; // Increased from 160 for slightly more spacing
   
   const labelX = cx + labelRadius * Math.cos(angle);
   const labelY = cy + labelRadius * Math.sin(angle);

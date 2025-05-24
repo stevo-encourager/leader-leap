@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { CircleGauge, AlertTriangle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
@@ -126,6 +127,8 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
   const isFirstCategory = activeCategory === 0;
   const isCategoryComplete = isCategoryCompleted(currentCategory);
 
+  console.log("Rendering HelpButton in header section");
+
   return (
     <div className="fade-in">
       <div className="flex justify-between items-center mb-8">
@@ -136,7 +139,6 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
           </h1>
         </div>
         <div className="flex items-center gap-4">
-          {console.log("Rendering HelpButton in header section")}
           <HelpButton />
           <img 
             src="/lovable-uploads/8320d514-fba5-4e1b-a658-1563758db943.png" 

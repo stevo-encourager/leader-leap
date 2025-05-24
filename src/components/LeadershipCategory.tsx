@@ -1,7 +1,7 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Category, Skill } from '../utils/assessmentTypes';
-import { Slider } from './ui/slider';
 
 interface LeadershipCategoryProps {
   category: Category;
@@ -138,15 +138,20 @@ const SkillAssessment: React.FC<SkillAssessmentProps> = ({ skill, onRatingChange
           </label>
           <span className="text-lg font-medium text-encourager">{ratings.current}</span>
         </div>
-        <input
-          type="range"
-          min="0"
-          max="10"
-          step="1"
-          value={ratings.current || 0}
-          onChange={handleCurrentChange}
-          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-        />
+        <div className="relative">
+          <input
+            type="range"
+            min="0"
+            max="10"
+            step="1"
+            value={ratings.current || 0}
+            onChange={handleCurrentChange}
+            className="assessment-slider w-full h-2 bg-transparent appearance-none cursor-pointer"
+            style={{
+              background: `linear-gradient(to right, #2F564D 0%, #2F564D ${(ratings.current / 10) * 100}%, #8baca5 ${(ratings.current / 10) * 100}%, #8baca5 100%)`
+            }}
+          />
+        </div>
         <div className="flex justify-between text-xs text-gray-500 mt-1">
           <span>Beginner</span>
           <span>Proficient</span>
@@ -163,15 +168,20 @@ const SkillAssessment: React.FC<SkillAssessmentProps> = ({ skill, onRatingChange
           </label>
           <span className="text-lg font-medium text-encourager">{ratings.desired}</span>
         </div>
-        <input
-          type="range"
-          min="0"
-          max="10"
-          step="1"
-          value={ratings.desired || 0}
-          onChange={handleDesiredChange}
-          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-        />
+        <div className="relative">
+          <input
+            type="range"
+            min="0"
+            max="10"
+            step="1"
+            value={ratings.desired || 0}
+            onChange={handleDesiredChange}
+            className="assessment-slider w-full h-2 bg-transparent appearance-none cursor-pointer"
+            style={{
+              background: `linear-gradient(to right, #2F564D 0%, #2F564D ${(ratings.desired / 10) * 100}%, #8baca5 ${(ratings.desired / 10) * 100}%, #8baca5 100%)`
+            }}
+          />
+        </div>
         <div className="flex justify-between text-xs text-gray-500 mt-1">
           <span>Beginner</span>
           <span>Proficient</span>

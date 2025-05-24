@@ -131,6 +131,37 @@
   height: 500px;
 }
 
+/* Custom slider styles for assessment */
+.assessment-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 8px;
+  border-radius: 4px;
+  outline: none;
+}
+
+.assessment-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid #2F564D;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.assessment-slider::-moz-range-thumb {
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid #2F564D;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 /* Animation for transitions */
 .fade-in {
   @apply transition-opacity duration-500;
@@ -168,4 +199,3 @@
 .encourager-header {
   @apply text-encourager font-bold font-playfair;
 }
-

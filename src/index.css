@@ -146,9 +146,9 @@
   width: 20px;
   border-radius: 50%;
   background: white;
-  border: 3px solid #2F564D;
+  border: 2px solid #2F564D;
   cursor: pointer;
-  box-shadow: 0 0 0 3px white, 0 0 0 6px #2F564D, 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 0 2px white, 0 0 0 4px #2F564D, 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .assessment-slider::-moz-range-thumb {
@@ -156,9 +156,9 @@
   width: 20px;
   border-radius: 50%;
   background: white;
-  border: 3px solid #2F564D;
+  border: 2px solid #2F564D;
   cursor: pointer;
-  box-shadow: 0 0 0 3px white, 0 0 0 6px #2F564D, 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 0 2px white, 0 0 0 4px #2F564D, 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Animation for transitions */

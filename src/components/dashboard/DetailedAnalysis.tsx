@@ -73,11 +73,11 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({ categories, classNa
           
           <TabsContent value="radar-chart" className="mt-0">
             {hasCategories ? (
-              <div className="h-[400px] w-full p-4">
+              <div className="h-[500px] w-full p-6">
                 <SkillGapChart categories={categories} />
               </div>
             ) : (
-              <div className="h-[400px] w-full flex items-center justify-center bg-slate-50">
+              <div className="h-[500px] w-full flex items-center justify-center bg-slate-50">
                 <p className="text-slate-500 text-center">
                   No category data available for visualization. Please complete an assessment first.
                 </p>
@@ -86,7 +86,7 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({ categories, classNa
           </TabsContent>
           
           <TabsContent value="key-insights" className="mt-0">
-            <div className="h-[400px] w-full p-4 flex items-center justify-center bg-slate-50">
+            <div className="h-[500px] w-full p-4 flex items-center justify-center bg-slate-50">
               <p className="text-slate-500 text-center">
                 Key insights content will be displayed here.
               </p>

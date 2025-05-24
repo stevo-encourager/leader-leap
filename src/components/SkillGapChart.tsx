@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { 
   ResponsiveContainer,
@@ -191,14 +190,14 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
     <ResponsiveContainer width="100%" height="100%">
       <RadarChart 
         data={validChartData} 
-        margin={{ top: 20, right: 30, left: 20, bottom: 10 }}
+        margin={{ top: 40, right: 60, left: 60, bottom: 40 }}
       >
         <PolarGrid strokeDasharray="3 3" />
         <PolarAngleAxis 
           dataKey="subject"
           tick={{ 
-            fill: '#4B5563', 
-            fontSize: 12,
+            fill: '#2F564D', 
+            fontSize: 14,
             fontWeight: 500
           }}
         />

@@ -220,15 +220,15 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
 
   console.log("SkillGapChart - Rendering radar chart with data:", validChartData);
 
-  // Radar chart implementation with larger size and custom tick component
+  // Radar chart implementation with maximum size and custom tick component
   return (
     <ResponsiveContainer width="100%" height="100%">
       <RadarChart 
         data={validChartData} 
-        margin={{ top: 40, right: 80, left: 80, bottom: 40 }}
+        margin={{ top: 50, right: 100, left: 100, bottom: 50 }}
         cx="50%" 
         cy="50%"
-        outerRadius="65%"
+        outerRadius="75%"
       >
         <PolarGrid 
           strokeDasharray="2 2" 

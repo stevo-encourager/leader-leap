@@ -21,7 +21,7 @@ const SkillsToImproveSection: React.FC<SkillsToImproveSectionProps> = ({
 }) => {
   return (
     <InsightSection
-      title="Top 2 Individual Skills You Want to Improve"
+      title="Top 3 Individual Skills You Want to Improve"
       isOpen={isOpen}
       onToggle={onToggle}
     >

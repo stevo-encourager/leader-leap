@@ -21,7 +21,7 @@ const LargestGapsSection: React.FC<LargestGapsSectionProps> = ({
 }) => {
   return (
     <InsightSection
-      title="Your 2 Largest Competency Gaps"
+      title="Your Top 3 Largest Competency Gaps"
       isOpen={isOpen}
       onToggle={onToggle}
     >

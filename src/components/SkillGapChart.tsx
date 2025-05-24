@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import { 
   ResponsiveContainer,
@@ -21,6 +22,32 @@ interface ChartData {
   fullMark: number;
   skillCount?: number;
 }
+
+// Custom tick component for competency names with increased spacing
+const CustomTick = (props: any) => {
+  const { payload, x, y, cx, cy } = props;
+  
+  // Calculate angle and position labels further from center
+  const angle = Math.atan2(y - cy, x - cx);
+  const labelRadius = 140; // Increased radius for more spacing
+  
+  const labelX = cx + labelRadius * Math.cos(angle);
+  const labelY = cy + labelRadius * Math.sin(angle);
+  
+  return (
+    <text
+      x={labelX}
+      y={labelY}
+      textAnchor={labelX > cx ? 'start' : 'end'}
+      dominantBaseline="middle"
+      fill="#2F564D"
+      fontSize="14"
+      fontWeight="500"
+    >
+      {payload.value}
+    </text>
+  );
+};
 
 const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
   // Ensure categories is always an array
@@ -185,15 +212,15 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
 
   console.log("SkillGapChart - Rendering radar chart with data:", validChartData);
 
-  // Radar chart implementation with increased spacing between competency names and chart lines
+  // Radar chart implementation with custom tick component for better label spacing
   return (
     <ResponsiveContainer width="100%" height="100%">
       <RadarChart 
         data={validChartData} 
-        margin={{ top: 30, right: 50, left: 50, bottom: 20 }}
+        margin={{ top: 30, right: 60, left: 60, bottom: 20 }}
         cx="50%" 
         cy="45%"
-        outerRadius="55%"
+        outerRadius="50%"
       >
         <PolarGrid 
           strokeDasharray="2 2" 
@@ -203,13 +230,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
         />
         <PolarAngleAxis 
           dataKey="subject"
-          tick={{ 
-            fill: '#2F564D', 
-            fontSize: 14,
-            fontWeight: 500
-          }}
-          tickFormatter={(value) => value}
-          radius={120}
+          tick={CustomTick}
         />
         <Radar
           name="Current Level"

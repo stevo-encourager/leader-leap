@@ -1,4 +1,3 @@
-
 import React, { useMemo } from 'react';
 import { 
   ResponsiveContainer,
@@ -23,16 +22,16 @@ interface ChartData {
   skillCount?: number;
 }
 
-// Custom tick component for competency names with closer positioning
+// Custom tick component for competency names with balanced positioning
 const CustomTick = (props: any) => {
   const { payload, x, y, cx, cy, textAnchor, index } = props;
   
   // Calculate angle from center to current position
   const angle = Math.atan2(y - cy, x - cx);
   
-  // Use a fixed radius from center for consistent positioning closer to chart
-  // This is more reliable than adding to originalRadius
-  const labelRadius = 140; // Fixed distance from center (reduced for closer positioning)
+  // Use a moderate radius from center for balanced positioning
+  // 160px provides good separation without being too far
+  const labelRadius = 160; // Increased from 140 for better spacing
   
   const labelX = cx + labelRadius * Math.cos(angle);
   const labelY = cy + labelRadius * Math.sin(angle);

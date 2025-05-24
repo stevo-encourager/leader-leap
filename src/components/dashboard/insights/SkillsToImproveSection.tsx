@@ -2,26 +2,31 @@
 import React from 'react';
 import { SkillWithMetadata } from '@/utils/assessmentCalculations';
 import InsightSection from './InsightSection';
+import InsightSummary from './InsightSummary';
 
 interface SkillsToImproveSectionProps {
   skills: SkillWithMetadata[];
   isOpen: boolean;
   onToggle: () => void;
   formatNumber: (num: number | string) => string;
+  averageGap: string | number;
 }
 
 const SkillsToImproveSection: React.FC<SkillsToImproveSectionProps> = ({
   skills,
   isOpen,
   onToggle,
-  formatNumber
+  formatNumber,
+  averageGap
 }) => {
   return (
     <InsightSection
-      title="Top 3 Individual Skills You Want to Improve"
+      title="Top 2 Individual Skills You Want to Improve"
       isOpen={isOpen}
       onToggle={onToggle}
     >
+      <InsightSummary averageGap={averageGap} />
+      
       {skills && skills.length > 0 ? (
         skills.map((skill) => (
           <div key={`improve-${skill.id}`} className="bg-secondary/10 p-3 rounded-lg">

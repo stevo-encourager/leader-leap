@@ -2,26 +2,31 @@
 import React from 'react';
 import { CategoryWithMetadata } from '@/utils/assessmentCalculations';
 import InsightSection from './InsightSection';
+import InsightSummary from './InsightSummary';
 
 interface LargestGapsSectionProps {
   categoryGaps: CategoryWithMetadata[];
   isOpen: boolean;
   onToggle: () => void;
   formatNumber: (num: number | string) => string;
+  averageGap: string | number;
 }
 
 const LargestGapsSection: React.FC<LargestGapsSectionProps> = ({
   categoryGaps,
   isOpen,
   onToggle,
-  formatNumber
+  formatNumber,
+  averageGap
 }) => {
   return (
     <InsightSection
-      title="Your Top 3 Largest Competency Gaps"
+      title="Your 2 Largest Competency Gaps"
       isOpen={isOpen}
       onToggle={onToggle}
     >
+      <InsightSummary averageGap={averageGap} />
+      
       {categoryGaps && categoryGaps.length > 0 && categoryGaps.some(category => category.gap > 0) ? (
         categoryGaps.map((category) => (
           <div key={`largest-gap-${category.id}`} className="bg-secondary/10 p-3 rounded-lg">

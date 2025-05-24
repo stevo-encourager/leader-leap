@@ -155,14 +155,13 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
           
           {skillsWithRatings > 0 ? (
             <>
-              <InsightSummary averageGap={formatNumber(averageGap)} />
-              
               {/* Largest Competency Gaps */}
               <LargestGapsSection 
                 categoryGaps={insightData.largestCategoryGaps}
                 isOpen={openSections.largestGaps}
                 onToggle={() => toggleSection('largestGaps')}
                 formatNumber={formatNumber}
+                averageGap={formatNumber(averageGap)}
               />
               
               {/* Individual Skills You Want to Improve */}
@@ -171,6 +170,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
                 isOpen={openSections.skillsToImprove}
                 onToggle={() => toggleSection('skillsToImprove')}
                 formatNumber={formatNumber}
+                averageGap={formatNumber(averageGap)}
               />
             </>
           ) : (

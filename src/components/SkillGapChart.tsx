@@ -220,15 +220,15 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
 
   console.log("SkillGapChart - Rendering radar chart with data:", validChartData);
 
-  // Radar chart implementation with maximum size and custom tick component
+  // Radar chart implementation with adjusted margins for legend positioning
   return (
     <ResponsiveContainer width="100%" height="100%">
       <RadarChart 
         data={validChartData} 
-        margin={{ top: 50, right: 100, left: 100, bottom: 50 }}
+        margin={{ top: 50, right: 100, left: 100, bottom: 120 }}
         cx="50%" 
-        cy="50%"
-        outerRadius="75%"
+        cy="45%"
+        outerRadius="80%"
       >
         <PolarGrid 
           strokeDasharray="2 2" 
@@ -261,9 +261,11 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
           verticalAlign="bottom"
           align="center"
           wrapperStyle={{
-            paddingTop: '15px',
-            fontSize: '16px',
-            fontWeight: '500'
+            paddingTop: '40px',
+            fontSize: '18px',
+            fontWeight: '600',
+            position: 'relative',
+            bottom: '-20px'
           }}
         />
       </RadarChart>

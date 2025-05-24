@@ -190,9 +190,17 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
     <ResponsiveContainer width="100%" height="100%">
       <RadarChart 
         data={validChartData} 
-        margin={{ top: 40, right: 60, left: 60, bottom: 40 }}
+        margin={{ top: 20, right: 40, left: 40, bottom: 80 }}
+        cx="50%" 
+        cy="45%"
+        outerRadius="70%"
       >
-        <PolarGrid strokeDasharray="3 3" />
+        <PolarGrid 
+          strokeDasharray="2 2" 
+          stroke="#94a3b8"
+          strokeWidth={1.2}
+          gridType="polygon"
+        />
         <PolarAngleAxis 
           dataKey="subject"
           tick={{ 
@@ -200,6 +208,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
             fontSize: 14,
             fontWeight: 500
           }}
+          tickFormatter={(value) => value}
         />
         <Radar
           name="Current Level"
@@ -207,6 +216,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
           stroke="#2F564D"
           fill="#2F564D"
           fillOpacity={0.6}
+          strokeWidth={2}
         />
         <Radar
           name="Desired Level"
@@ -214,9 +224,17 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
           stroke="#8baca5"
           fill="#8baca5"
           fillOpacity={0.6}
+          strokeWidth={2}
         />
         <Tooltip />
-        <Legend />
+        <Legend 
+          verticalAlign="bottom"
+          align="center"
+          wrapperStyle={{
+            paddingTop: '30px',
+            fontSize: '14px'
+          }}
+        />
       </RadarChart>
     </ResponsiveContainer>
   );

@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import { 
   ResponsiveContainer,
@@ -220,15 +221,15 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
 
   console.log("SkillGapChart - Rendering radar chart with data:", validChartData);
 
-  // Radar chart implementation with large chart and well-positioned legend
+  // Radar chart implementation with maximized chart size and properly positioned legend
   return (
     <ResponsiveContainer width="100%" height="100%">
       <RadarChart 
         data={validChartData} 
-        margin={{ top: 40, right: 80, left: 80, bottom: 140 }}
+        margin={{ top: 30, right: 60, left: 60, bottom: 150 }}
         cx="50%" 
-        cy="42%"
-        outerRadius="85%"
+        cy="38%"
+        outerRadius="90%"
       >
         <PolarGrid 
           strokeDasharray="2 2" 
@@ -261,11 +262,10 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
           verticalAlign="bottom"
           align="center"
           wrapperStyle={{
-            paddingTop: '50px',
-            fontSize: '20px',
-            fontWeight: '700',
-            position: 'relative',
-            bottom: '-30px'
+            paddingTop: '60px',
+            fontSize: '18px',
+            fontWeight: '600',
+            color: '#2F564D'
           }}
         />
       </RadarChart>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { CircleHelp } from 'lucide-react';
@@ -91,9 +90,9 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
       {shouldShowContent && (
         <CardContent>
           <div className="space-y-8">
-            {category.skills.map((skill) => (
+            {category.skills.map((skill, index) => (
               <Card key={skill.id} className="border border-gray-100 shadow-sm">
-                <CardHeader className="pb-2">
+                <CardHeader className={`pb-2 ${index === 0 ? 'pt-8' : 'pt-6'}`}>
                   <div className="flex justify-between items-start">
                     <div className="flex-1 pr-4">
                       <h4 className="text-lg font-medium text-gray-800">{skill.name}</h4>

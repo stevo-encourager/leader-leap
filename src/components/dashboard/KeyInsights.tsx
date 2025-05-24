@@ -1,19 +1,16 @@
+
 import React, { useState, useEffect } from 'react';
 import { BookOpen, AlertTriangle } from 'lucide-react';
 import { 
   SkillWithMetadata,
   CategoryWithMetadata,
   getLargestCategoryGaps,
-  getSmallestCategoryGaps,
-  getSkillsToImprove,
-  getSkillsMeetingExpectations 
+  getSkillsToImprove
 } from '@/utils/assessmentCalculations';
 import { Category } from '@/utils/assessmentTypes';
 import InsightSummary from './insights/InsightSummary';
 import LargestGapsSection from './insights/LargestGapsSection';
-import SmallestGapsSection from './insights/SmallestGapsSection';
 import SkillsToImproveSection from './insights/SkillsToImproveSection';
-import SkillsMeetingExpectationsSection from './insights/SkillsMeetingExpectationsSection';
 
 interface KeyInsightsProps {
   averageGap: number;
@@ -35,16 +32,12 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
   const [openSections, setOpenSections] = useState({
     largestGaps: true,
     skillsToImprove: true,
-    smallestGaps: true,
-    skillsMeeting: true,
     debug: false // Debug section closed by default
   });
   
   const [insightData, setInsightData] = useState({
     largestCategoryGaps: [] as CategoryWithMetadata[],
-    smallestCategoryGaps: [] as CategoryWithMetadata[],
-    skillsToImprove: [] as SkillWithMetadata[],
-    skillsMeetingExpectations: [] as SkillWithMetadata[]
+    skillsToImprove: [] as SkillWithMetadata[]
   });
   
   // Detailed logging for debugging
@@ -99,22 +92,16 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
       if (skillsWithRatings > 0) {
         // Safely calculate insights
         const largestCategoryGaps = getLargestCategoryGaps(safeCategories, 3) || [];
-        const smallestCategoryGaps = getSmallestCategoryGaps(safeCategories, 3) || [];
         const skillsToImprove = getSkillsToImprove(safeCategories, 3) || [];
-        const skillsMeetingExpectations = getSkillsMeetingExpectations(safeCategories, 3) || [];
         
         console.log("KeyInsights - Calculated values:", {
           largestCategoryGaps: largestCategoryGaps.length,
-          smallestCategoryGaps: smallestCategoryGaps.length,
-          skillsToImprove: skillsToImprove.length,
-          skillsMeetingExpectations: skillsMeetingExpectations.length
+          skillsToImprove: skillsToImprove.length
         });
         
         setInsightData({
           largestCategoryGaps,
-          smallestCategoryGaps,
-          skillsToImprove,
-          skillsMeetingExpectations
+          skillsToImprove
         });
       } else {
         console.log("KeyInsights - No skills with ratings, skipping calculations");
@@ -124,9 +111,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
       // Set empty arrays as fallback
       setInsightData({
         largestCategoryGaps: [],
-        smallestCategoryGaps: [],
-        skillsToImprove: [],
-        skillsMeetingExpectations: []
+        skillsToImprove: []
       });
     }
   }, [safeCategories]);
@@ -243,22 +228,6 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
                 skills={insightData.skillsToImprove}
                 isOpen={openSections.skillsToImprove}
                 onToggle={() => toggleSection('skillsToImprove')}
-                formatNumber={formatNumber}
-              />
-              
-              {/* Your Smallest Competency Gaps */}
-              <SmallestGapsSection 
-                categoryGaps={insightData.smallestCategoryGaps}
-                isOpen={openSections.smallestGaps}
-                onToggle={() => toggleSection('smallestGaps')}
-                formatNumber={formatNumber}
-              />
-              
-              {/* Individual Skills Meeting Your Expectations */}
-              <SkillsMeetingExpectationsSection 
-                skills={insightData.skillsMeetingExpectations}
-                isOpen={openSections.skillsMeeting}
-                onToggle={() => toggleSection('skillsMeeting')}
                 formatNumber={formatNumber}
               />
             </>

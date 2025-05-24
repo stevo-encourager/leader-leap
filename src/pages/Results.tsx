@@ -59,8 +59,8 @@ const Results = () => {
     console.log("Results page - Categories from context:", categories);
     console.log("Results page - Categories count:", categories?.length || 0);
     
-    // Try to load local data if categories are empty
-    if ((!categories || categories.length === 0) && !localDataLoadedRef.current) {
+    // Try to load local data if categories are empty AND we're not viewing a specific assessment
+    if ((!categories || categories.length === 0) && !localDataLoadedRef.current && !assessmentId) {
       console.log("Results page - Trying to load from local storage");
       const localData = getLocalAssessmentData();
       if (localData && localData.categories && localData.categories.length > 0) {
@@ -98,18 +98,22 @@ const Results = () => {
     demographics
   );
 
-  // Effect to handle result saving when user is logged in and viewing results
-  // ONLY save for new assessments (when no assessmentId is present)
+  // CRITICAL FIX: Only save for NEW assessments, never for existing ones being viewed
   useEffect(() => {
+    // IMMEDIATELY RETURN if we're viewing an existing assessment
+    if (assessmentId) {
+      console.log('Results page - Viewing existing assessment, NEVER save to prevent duplicates');
+      return;
+    }
+    
     // Only attempt to save if:
     // 1. User is logged in
     // 2. On results page (currentStep === 'results')
-    // 3. NOT viewing an existing assessment (no assessmentId)
+    // 3. NOT viewing an existing assessment (no assessmentId) - already checked above
     // 4. Haven't already triggered save
     // 5. Page is ready and initial data is checked
     if (user && 
         currentStep === 'results' && 
-        !assessmentId && // This is the key change - don't save when viewing existing assessment
         !saveTriggeredRef.current && 
         isPageReady &&
         isInitialDataChecked) {
@@ -151,17 +155,12 @@ const Results = () => {
     // For guest users, just ensure local storage is updated without triggering auth errors
     else if (!user && 
              currentStep === 'results' && 
-             !assessmentId && 
              !saveTriggeredRef.current && 
              categories && 
              categories.length > 0 &&
              isPageReady) {
       console.log('Results page - Guest user, ensuring local storage is updated');
       saveTriggeredRef.current = true;
-    }
-    // When viewing existing assessment (assessmentId present), do NOT save
-    else if (assessmentId) {
-      console.log('Results page - Viewing existing assessment, skipping save to prevent duplicates');
     }
   }, [user, currentStep, assessmentId, categories, handleSaveResults, handleCategoriesUpdate, handleDemographicsUpdate, isPageReady, isInitialDataChecked]);
 
@@ -232,8 +231,8 @@ const Results = () => {
     finalDisplayDemographics = displayDemographics || {};
     hasValidData = true;
   }
-  // Case 4: Try local storage as last resort
-  else {
+  // Case 4: Try local storage as last resort (only for new assessments, not existing ones)
+  else if (!assessmentId) {
     console.log("Results page - Checking local storage for data");
     const localData = getLocalAssessmentData();
     if (localData && localData.categories && localData.categories.length > 0) {

@@ -22,7 +22,7 @@ interface ChartData {
   skillCount?: number;
 }
 
-// Custom tick component for competency names with increased spacing
+// Custom tick component for competency names with reduced spacing
 const CustomTick = (props: any) => {
   const { payload, x, y, cx, cy, textAnchor, index } = props;
   
@@ -31,8 +31,8 @@ const CustomTick = (props: any) => {
   const originalRadius = Math.sqrt(Math.pow(x - cx, 2) + Math.pow(y - cy, 2));
   const angle = Math.atan2(y - cy, x - cx);
   
-  // Extended radius for more spacing from chart lines
-  const extendedRadius = originalRadius + 35; // Add 35px more spacing
+  // Reduced radius for closer spacing to chart lines
+  const extendedRadius = originalRadius + 25; // Reduced from 35px to 25px
   
   const labelX = cx + extendedRadius * Math.cos(angle);
   const labelY = cy + extendedRadius * Math.sin(angle);

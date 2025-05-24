@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { CircleGauge, AlertTriangle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
@@ -139,7 +138,6 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
           </h1>
         </div>
         <div className="flex items-center gap-4">
-          <HelpButton />
           <img 
             src="/lovable-uploads/8320d514-fba5-4e1b-a658-1563758db943.png" 
             alt="Company Logo" 

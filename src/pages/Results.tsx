@@ -99,20 +99,26 @@ const Results = () => {
   );
 
   // Effect to handle result saving when user is logged in and viewing results
+  // ONLY save for new assessments (when no assessmentId is present)
   useEffect(() => {
-    // Only attempt to save if user is logged in, on results page, and not viewing existing assessment
+    // Only attempt to save if:
+    // 1. User is logged in
+    // 2. On results page (currentStep === 'results')
+    // 3. NOT viewing an existing assessment (no assessmentId)
+    // 4. Haven't already triggered save
+    // 5. Page is ready and initial data is checked
     if (user && 
         currentStep === 'results' && 
-        !assessmentId && 
+        !assessmentId && // This is the key change - don't save when viewing existing assessment
         !saveTriggeredRef.current && 
         isPageReady &&
         isInitialDataChecked) {
       
-      console.log('Results page - Checking if we should save assessment');
+      console.log('Results page - Checking if we should save NEW assessment (no assessmentId present)');
       
       // Only save if we have categories with data
       if (categories && categories.length > 0) {
-        console.log('Results page - Triggering assessment save with categories:', categories.length);
+        console.log('Results page - Triggering assessment save for NEW assessment with categories:', categories.length);
         saveTriggeredRef.current = true;
         
         // Delay to ensure all state is properly set
@@ -152,6 +158,10 @@ const Results = () => {
              isPageReady) {
       console.log('Results page - Guest user, ensuring local storage is updated');
       saveTriggeredRef.current = true;
+    }
+    // When viewing existing assessment (assessmentId present), do NOT save
+    else if (assessmentId) {
+      console.log('Results page - Viewing existing assessment, skipping save to prevent duplicates');
     }
   }, [user, currentStep, assessmentId, categories, handleSaveResults, handleCategoriesUpdate, handleDemographicsUpdate, isPageReady, isInitialDataChecked]);
 

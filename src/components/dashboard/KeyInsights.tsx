@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { BookOpen, AlertTriangle } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
 import { 
   SkillWithMetadata,
   CategoryWithMetadata,
@@ -31,8 +30,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
   // Open all sections by default
   const [openSections, setOpenSections] = useState({
     largestGaps: true,
-    skillsToImprove: true,
-    debug: false // Debug section closed by default
+    skillsToImprove: true
   });
   
   const [insightData, setInsightData] = useState({
@@ -146,15 +144,6 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
       )
     ).length;
   }, 0);
-  
-  const categoriesWithRatings = safeCategories.filter(category => 
-    category && category.skills && category.skills.some(skill => 
-      skill && skill.ratings && (
-        (typeof skill.ratings.current === 'number' && !isNaN(skill.ratings.current) && skill.ratings.current > 0) || 
-        (typeof skill.ratings.desired === 'number' && !isNaN(skill.ratings.desired) && skill.ratings.desired > 0)
-      )
-    )
-  ).length;
 
   return (
     <div className="bg-encourager/5 p-4 rounded-lg border border-encourager/20">
@@ -164,54 +153,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
           <h3 className="text-lg font-medium mb-2">Skills & Competencies to Work On</h3>
           <p className="text-sm text-slate-500 mb-3">Based on your 1-10 rating scale assessment</p>
           
-          {/* Assessment status panel */}
-          <div className="bg-amber-50 p-3 mb-4 rounded text-sm">
-            <div className="flex items-center gap-2 mb-2">
-              <AlertTriangle className="h-4 w-4 text-amber-600" />
-              <strong className="text-amber-800">Assessment Status</strong>
-            </div>
-            
-            {skillsWithRatings > 0 ? (
-              <div>
-                <p>Data available for analysis</p>
-                <p className="text-xs text-slate-600">Categories with data: {categoriesWithRatings}/{safeCategories.length}</p>
-                <p className="text-xs text-slate-600">Skills with ratings: {skillsWithRatings}/{skillCount}</p>
-                <p className="text-xs text-slate-600">Average competency gap: {formatNumber(averageGap)}</p>
-              </div>
-            ) : (
-              <div>
-                <p className="text-amber-700">No assessment data available</p>
-                <p className="text-xs text-amber-600 mt-1">
-                  To see insights, please complete the assessment by providing ratings for your current and desired skill levels.
-                </p>
-                <button 
-                  className="mt-2 text-xs bg-amber-200 hover:bg-amber-300 text-amber-900 px-3 py-1 rounded"
-                  onClick={() => toggleSection('debug')}
-                >
-                  {openSections.debug ? 'Hide Debug Info' : 'Show Debug Info'}
-                </button>
-                
-                {openSections.debug && (
-                  <div className="mt-2 p-2 bg-amber-100 rounded text-xs font-mono overflow-auto">
-                    <pre>
-                      Categories: {JSON.stringify(safeCategories.map(c => c?.title || 'undefined'), null, 2)}
-                    </pre>
-                    <pre className="mt-1">
-                      averageGap: {averageGap}
-                    </pre>
-                    <pre className="mt-1">
-                      strengths: {JSON.stringify(strengths?.map(s => s?.name || 'undefined') || [], null, 2)}
-                    </pre>
-                    <pre className="mt-1">
-                      lowestSkills: {JSON.stringify(lowestSkills?.map(s => s?.name || 'undefined') || [], null, 2)}
-                    </pre>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-          
-          {skillsWithRatings > 0 && (
+          {skillsWithRatings > 0 ? (
             <>
               <InsightSummary averageGap={formatNumber(averageGap)} />
               
@@ -231,6 +173,11 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
                 formatNumber={formatNumber}
               />
             </>
+          ) : (
+            <div className="text-center py-8 text-slate-500">
+              <p>No assessment data available to display insights.</p>
+              <p className="text-sm mt-1">Please complete the assessment to see your development opportunities.</p>
+            </div>
           )}
         </div>
       </div>

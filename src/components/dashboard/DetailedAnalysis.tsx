@@ -35,9 +35,11 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({ categories, classNa
     <Card className={`overflow-hidden ${className}`}>
       <CardHeader className="bg-slate-50 border-b">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <BarChart2 className="h-5 w-5 text-encourager" />
-            <CardTitle className="text-lg font-medium text-slate-700">Competency Analysis</CardTitle>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="bg-encourager-accent/20 p-3 rounded-full">
+              <BarChart2 className="text-encourager" size={24} strokeWidth={1.5} />
+            </div>
+            <h2 className="text-2xl font-bold text-encourager">Competency Analysis</h2>
           </div>
           <TooltipProvider>
             <Tooltip>

@@ -35,11 +35,16 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({ categories, classNa
     <Card className={`overflow-hidden ${className}`}>
       <CardHeader className="bg-slate-50 border-b">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center gap-3">
             <div className="bg-encourager-accent/20 p-3 rounded-full">
               <BarChart2 className="text-encourager" size={24} strokeWidth={1.5} />
             </div>
-            <h2 className="text-2xl font-bold text-encourager">Competency Analysis</h2>
+            <div>
+              <h2 className="text-2xl font-bold text-encourager">Competency Analysis</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Visualize and analyze your leadership competency gaps and insights
+              </p>
+            </div>
           </div>
           <TooltipProvider>
             <Tooltip>
@@ -52,9 +57,6 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({ categories, classNa
             </Tooltip>
           </TooltipProvider>
         </div>
-        <CardDescription>
-          Visualize and analyze your leadership competency gaps and insights
-        </CardDescription>
       </CardHeader>
       <CardContent className="p-0">
         <Tabs defaultValue="radar-chart" className="w-full">

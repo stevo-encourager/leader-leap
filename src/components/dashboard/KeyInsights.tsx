@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { BookOpen } from 'lucide-react';
 import { 
@@ -148,40 +147,44 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
 
   return (
     <div className="bg-encourager/5 p-4 rounded-lg border border-encourager/20">
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex items-center gap-3">
         <div className="bg-encourager-accent/20 p-3 rounded-full">
           <BookOpen className="text-encourager" size={24} strokeWidth={1.5} />
         </div>
-        <h2 className="text-2xl font-bold text-encourager">Skills & Competencies to Work On</h2>
-      </div>
-      <p className="text-sm text-slate-500 mb-3">Based on your 1-10 rating scale assessment</p>
-      
-      {skillsWithRatings > 0 ? (
-        <>
-          {/* Largest Competency Gaps */}
-          <LargestGapsSection 
-            categoryGaps={insightData.largestCategoryGaps}
-            isOpen={openSections.largestGaps}
-            onToggle={() => toggleSection('largestGaps')}
-            formatNumber={formatNumber}
-            averageGap={formatNumber(averageGap)}
-          />
-          
-          {/* Individual Skills You Want to Improve */}
-          <SkillsToImproveSection 
-            skills={insightData.skillsToImprove}
-            isOpen={openSections.skillsToImprove}
-            onToggle={() => toggleSection('skillsToImprove')}
-            formatNumber={formatNumber}
-            averageGap={formatNumber(averageGap)}
-          />
-        </>
-      ) : (
-        <div className="text-center py-8 text-slate-500">
-          <p>No assessment data available to display insights.</p>
-          <p className="text-sm mt-1">Please complete the assessment to see your development opportunities.</p>
+        <div>
+          <h2 className="text-2xl font-bold text-encourager">Skills & Competencies to Work On</h2>
+          <p className="text-sm text-slate-500 mt-1">Based on your 1-10 rating scale assessment</p>
         </div>
-      )}
+      </div>
+      
+      <div className="mt-4">
+        {skillsWithRatings > 0 ? (
+          <>
+            {/* Largest Competency Gaps */}
+            <LargestGapsSection 
+              categoryGaps={insightData.largestCategoryGaps}
+              isOpen={openSections.largestGaps}
+              onToggle={() => toggleSection('largestGaps')}
+              formatNumber={formatNumber}
+              averageGap={formatNumber(averageGap)}
+            />
+            
+            {/* Individual Skills You Want to Improve */}
+            <SkillsToImproveSection 
+              skills={insightData.skillsToImprove}
+              isOpen={openSections.skillsToImprove}
+              onToggle={() => toggleSection('skillsToImprove')}
+              formatNumber={formatNumber}
+              averageGap={formatNumber(averageGap)}
+            />
+          </>
+        ) : (
+          <div className="text-center py-8 text-slate-500">
+            <p>No assessment data available to display insights.</p>
+            <p className="text-sm mt-1">Please complete the assessment to see your development opportunities.</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

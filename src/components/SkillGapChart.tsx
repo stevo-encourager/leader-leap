@@ -25,20 +25,29 @@ interface ChartData {
 
 // Custom tick component for competency names with increased spacing
 const CustomTick = (props: any) => {
-  const { payload, x, y, cx, cy } = props;
+  const { payload, x, y, cx, cy, textAnchor, index } = props;
   
-  // Calculate angle and position labels further from center
+  // Use the original angle calculation from the chart library
+  // but extend the radius for label positioning
+  const originalRadius = Math.sqrt(Math.pow(x - cx, 2) + Math.pow(y - cy, 2));
   const angle = Math.atan2(y - cy, x - cx);
-  const labelRadius = 140; // Increased radius for more spacing
   
-  const labelX = cx + labelRadius * Math.cos(angle);
-  const labelY = cy + labelRadius * Math.sin(angle);
+  // Extended radius for more spacing from chart lines
+  const extendedRadius = originalRadius + 35; // Add 35px more spacing
+  
+  const labelX = cx + extendedRadius * Math.cos(angle);
+  const labelY = cy + extendedRadius * Math.sin(angle);
+  
+  // Determine text anchor based on position relative to center
+  let anchor = 'middle';
+  if (labelX > cx + 5) anchor = 'start';
+  else if (labelX < cx - 5) anchor = 'end';
   
   return (
     <text
       x={labelX}
       y={labelY}
-      textAnchor={labelX > cx ? 'start' : 'end'}
+      textAnchor={anchor}
       dominantBaseline="middle"
       fill="#2F564D"
       fontSize="14"

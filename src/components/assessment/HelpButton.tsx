@@ -38,15 +38,15 @@ const HelpButton: React.FC = () => {
           <DialogHeader>
             <DialogTitle>How to Use the Assessment</DialogTitle>
             <DialogDescription className="text-left space-y-3 pt-2">
-              <p>
+              <div>
                 For each competency, use the sliders to rate your current ability and your target level.
-              </p>
-              <p>
+              </div>
+              <div>
                 Move the dot along the scale to choose your rating. You must select a rating for every skill before proceeding.
-              </p>
-              <p>
+              </div>
+              <div>
                 For Target level, consider context i.e. think about what's truly important for your current role or your next step (a specific role or promotion you are aiming for).
-              </p>
+              </div>
             </DialogDescription>
           </DialogHeader>
         </DialogContent>

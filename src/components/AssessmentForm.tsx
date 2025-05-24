@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { CircleGauge, AlertTriangle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
@@ -34,6 +33,8 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
     handlePrevCategory,
     isCategoryCompleted
   } = useAssessmentForm(categories);
+
+  console.log("AssessmentForm rendering, about to render HelpButton");
 
   const handleSkillRating = (categoryId: string, skillId: string, type: 'current' | 'desired', value: number) => {
     console.log(`Updating skill rating: category=${categoryId}, skill=${skillId}, type=${type}, value=${value}`);
@@ -135,6 +136,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
           </h1>
         </div>
         <div className="flex items-center gap-4">
+          {console.log("Rendering HelpButton in header section")}
           <HelpButton />
           <img 
             src="/lovable-uploads/8320d514-fba5-4e1b-a658-1563758db943.png" 

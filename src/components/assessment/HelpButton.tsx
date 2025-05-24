@@ -13,13 +13,21 @@ import {
 const HelpButton: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
 
+  console.log("HelpButton component is rendering");
+
+  const handleButtonClick = () => {
+    console.log("Help button clicked!");
+    setIsOpen(true);
+  };
+
   return (
     <>
       <Button
         variant="outline"
         size="sm"
-        onClick={() => setIsOpen(true)}
-        className="flex items-center gap-2"
+        onClick={handleButtonClick}
+        className="flex items-center gap-2 z-10"
+        style={{ minWidth: '80px' }}
       >
         <HelpCircle size={16} />
         Help

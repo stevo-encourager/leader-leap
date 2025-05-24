@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Category, Skill } from '../utils/assessmentTypes';
@@ -146,7 +145,7 @@ const SkillAssessment: React.FC<SkillAssessmentProps> = ({ skill, onRatingChange
             step="1"
             value={ratings.current || 0}
             onChange={handleCurrentChange}
-            className="assessment-slider w-full h-2 bg-transparent appearance-none cursor-pointer"
+            className="assessment-slider current-ability w-full h-2 bg-transparent appearance-none cursor-pointer"
             style={{
               background: `linear-gradient(to right, #2F564D 0%, #2F564D ${(ratings.current / 10) * 100}%, #8baca5 ${(ratings.current / 10) * 100}%, #8baca5 100%)`
             }}

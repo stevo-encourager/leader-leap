@@ -185,15 +185,15 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
 
   console.log("SkillGapChart - Rendering radar chart with data:", validChartData);
 
-  // Radar chart implementation with more space for competency names and reduced bottom spacing
+  // Radar chart implementation with increased spacing between competency names and chart lines
   return (
     <ResponsiveContainer width="100%" height="100%">
       <RadarChart 
         data={validChartData} 
-        margin={{ top: 20, right: 30, left: 30, bottom: 20 }}
+        margin={{ top: 30, right: 50, left: 50, bottom: 20 }}
         cx="50%" 
         cy="45%"
-        outerRadius="60%"
+        outerRadius="55%"
       >
         <PolarGrid 
           strokeDasharray="2 2" 
@@ -209,6 +209,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
             fontWeight: 500
           }}
           tickFormatter={(value) => value}
+          radius={120}
         />
         <Radar
           name="Current Level"

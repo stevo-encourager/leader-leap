@@ -37,7 +37,7 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({ categories, classNa
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <BarChart2 className="h-5 w-5 text-encourager" />
-            <CardTitle className="text-lg font-medium">Competency Analysis</CardTitle>
+            <CardTitle className="text-lg font-medium text-slate-700">Competency Analysis</CardTitle>
           </div>
           <TooltipProvider>
             <Tooltip>

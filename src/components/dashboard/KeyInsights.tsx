@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { BookOpen } from 'lucide-react';
 import { 
@@ -150,7 +151,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
       <div className="flex items-start gap-3">
         <BookOpen className="text-encourager h-5 w-5 mt-1" />
         <div className="w-full">
-          <h3 className="text-lg font-medium mb-2">Skills & Competencies to Work On</h3>
+          <h3 className="text-lg font-medium mb-2 text-slate-700">Skills & Competencies to Work On</h3>
           <p className="text-sm text-slate-500 mb-3">Based on your 1-10 rating scale assessment</p>
           
           {skillsWithRatings > 0 ? (

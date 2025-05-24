@@ -227,7 +227,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
         data={validChartData} 
         margin={{ top: 50, right: 100, left: 100, bottom: 50 }}
         cx="50%" 
-        cy="50%"
+        cy="45%"
         outerRadius="75%"
       >
         <PolarGrid 
@@ -258,12 +258,13 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
         />
         <Tooltip />
         <Legend 
+          layout="horizontal"
           verticalAlign="bottom"
           align="center"
           wrapperStyle={{
-            paddingTop: '15px',
-            fontSize: '16px',
-            fontWeight: '500'
+            marginTop: '60px',
+            fontSize: '18px',
+            fontWeight: '600'
           }}
         />
       </RadarChart>

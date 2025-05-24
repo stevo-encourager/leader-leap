@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { CircleHelp } from 'lucide-react';
@@ -94,27 +95,29 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
               <Card key={skill.id} className="border border-gray-100 shadow-sm">
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start">
-                    <div className="flex-1">
+                    <div className="flex-1 pr-4">
                       <h4 className="text-lg font-medium text-gray-800">{skill.name}</h4>
                       <p className="text-sm text-gray-600">{skill.description}</p>
                     </div>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <CircleHelp className="h-4 w-4 text-slate-400 cursor-help ml-2 flex-shrink-0" />
-                        </TooltipTrigger>
-                        <TooltipContent className="w-80" side="left">
-                          <div className="space-y-2">
-                            <p className="font-medium">{skill.name}</p>
-                            <p className="text-sm">{skill.description}</p>
-                            <div className="text-xs text-slate-500 mt-2">
-                              <p><strong>Current ability:</strong> Rate your current skill level from 0-10</p>
-                              <p><strong>Target level:</strong> Set your desired skill level to work towards</p>
+                    <div className="flex-shrink-0">
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <CircleHelp className="h-5 w-5 text-gray-600 hover:text-gray-800 cursor-help transition-colors" />
+                          </TooltipTrigger>
+                          <TooltipContent className="w-80" side="left">
+                            <div className="space-y-2">
+                              <p className="font-medium">{skill.name}</p>
+                              <p className="text-sm">{skill.description}</p>
+                              <div className="text-xs text-slate-500 mt-2">
+                                <p><strong>Current ability:</strong> Rate your current skill level from 0-10</p>
+                                <p><strong>Target level:</strong> Set your desired skill level to work towards</p>
+                              </div>
                             </div>
-                          </div>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>

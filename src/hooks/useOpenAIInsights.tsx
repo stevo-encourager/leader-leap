@@ -55,6 +55,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
   };
 
   // Auto-generate insights when component mounts with valid data
+  // This will only generate new insights if none exist in the database
   useEffect(() => {
     if (categories && categories.length > 0 && averageGap !== undefined) {
       generateInsights();
@@ -65,6 +66,6 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     insights,
     isLoading,
     error
-    // Removed regenerateInsights function - no longer available
+    // Refresh functionality is intentionally removed - insights are generated once and persisted
   };
 };

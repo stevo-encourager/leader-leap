@@ -23,13 +23,103 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
     const paragraphs = text.split('\n\n');
     
     return paragraphs.map((paragraph, index) => {
-      // Check if it's a header (starts with ###)
-      if (paragraph.startsWith('###')) {
-        const headerText = paragraph.replace(/^###\s*/, '').trim();
+      // Check if it's a main section header (starts with **...:** pattern)
+      const mainHeaderMatch = paragraph.match(/^\*\*(.*?):\*\*$/);
+      if (mainHeaderMatch) {
+        const headerText = mainHeaderMatch[1].trim();
         return (
           <h3 key={index} className="text-xl font-bold text-encourager mb-4 mt-6 font-playfair">
-            {headerText}
+            {headerText}:
           </h3>
+        );
+      }
+      
+      // Check if it's a numbered section with header (e.g., "1. **Emotional Intelligence (EI):**")
+      const numberedHeaderMatch = paragraph.match(/^(\d+)\.\s*\*\*(.*?):\*\*(.*)$/s);
+      if (numberedHeaderMatch) {
+        const number = numberedHeaderMatch[1];
+        const headerText = numberedHeaderMatch[2].trim();
+        const content = numberedHeaderMatch[3].trim();
+        
+        return (
+          <div key={index} className="mb-6">
+            <h4 className="text-lg font-bold text-encourager mb-3 font-playfair">
+              {number}. {headerText}:
+            </h4>
+            {content && (
+              <div className="ml-4 space-y-2">
+                {content.split('\n').map((line, lineIndex) => {
+                  // Handle sub-headers like "**Recommendation:**" or "**Action Plan:**"
+                  const subHeaderMatch = line.match(/^\s*-?\s*\*\*(.*?):\*\*(.*)$/);
+                  if (subHeaderMatch) {
+                    const subHeaderText = subHeaderMatch[1].trim();
+                    const subContent = subHeaderMatch[2].trim();
+                    return (
+                      <div key={lineIndex} className="mb-2">
+                        <p className="font-semibold text-encourager-gray mb-1">
+                          {subHeaderText}:
+                        </p>
+                        {subContent && (
+                          <p className="text-slate-700 ml-2">
+                            {subContent}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  }
+                  
+                  // Regular bullet point or content line
+                  if (line.trim().startsWith('-') || line.trim()) {
+                    return (
+                      <p key={lineIndex} className="text-slate-700 mb-1">
+                        {line.trim()}
+                      </p>
+                    );
+                  }
+                  return null;
+                })}
+              </div>
+            )}
+          </div>
+        );
+      }
+      
+      // Check if paragraph contains sub-headers with content
+      if (paragraph.includes('**') && paragraph.includes(':')) {
+        const lines = paragraph.split('\n');
+        return (
+          <div key={index} className="mb-4 space-y-3">
+            {lines.map((line, lineIndex) => {
+              // Handle sub-headers like "**Recommendation:**" or "**Action Plan:**"
+              const subHeaderMatch = line.match(/^\s*-?\s*\*\*(.*?):\*\*(.*)$/);
+              if (subHeaderMatch) {
+                const subHeaderText = subHeaderMatch[1].trim();
+                const subContent = subHeaderMatch[2].trim();
+                return (
+                  <div key={lineIndex} className="mb-3">
+                    <p className="font-semibold text-encourager-gray mb-1">
+                      {subHeaderText}:
+                    </p>
+                    {subContent && (
+                      <p className="text-slate-700 ml-2 leading-relaxed">
+                        {subContent}
+                      </p>
+                    )}
+                  </div>
+                );
+              }
+              
+              // Regular content line
+              if (line.trim()) {
+                return (
+                  <p key={lineIndex} className="text-slate-700 leading-relaxed">
+                    {line.trim()}
+                  </p>
+                );
+              }
+              return null;
+            })}
+          </div>
         );
       }
       
@@ -37,7 +127,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
       if (paragraph.match(/^\d+\./m) || paragraph.includes('•') || paragraph.includes('-')) {
         const lines = paragraph.split('\n');
         return (
-          <div key={index} className="mb-4">
+          <div key={index} className="mb-4 space-y-2">
             {lines.map((line, lineIndex) => {
               // Style numbered items differently
               if (line.match(/^\d+\./)) {
@@ -49,7 +139,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
               }
               // Style bullet points and sub-items
               return (
-                <p key={lineIndex} className="mb-1 text-slate-600 ml-4">
+                <p key={lineIndex} className="mb-1 text-slate-600 ml-4 leading-relaxed">
                   {line.trim()}
                 </p>
               );
@@ -60,7 +150,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
       
       // Regular paragraph
       return (
-        <p key={index} className="mb-3 text-slate-700 leading-relaxed">
+        <p key={index} className="mb-4 text-slate-700 leading-relaxed">
           {paragraph.trim()}
         </p>
       );
@@ -71,7 +161,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
     <div className="space-y-6">
       {/* AI-Powered Insights Header */}
       <div className="bg-encourager/5 p-6 rounded-lg border border-encourager/20">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="bg-encourager-accent/20 p-3 rounded-full">
               <Bot className="text-encourager" size={24} strokeWidth={1.5} />

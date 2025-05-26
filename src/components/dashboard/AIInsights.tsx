@@ -136,7 +136,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
                     return (
                       <div key={lineIndex} className="mb-4">
                         <p className="text-slate-700 mb-2 leading-relaxed">
-                          <span className="font-medium">{number}. {skillName}{gapValue ? ` (Gap: ${gapValue})` : ''}: Recommendations:</span> {skillContent}
+                          <span className="font-medium">{number}. {skillName}{gapValue ? ` (Gap: ${gapValue})` : ''}</span>: Recommendations: {skillContent}
                         </p>
                       </div>
                     );
@@ -194,64 +194,6 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
                   }
                   
                   // Regular content line - check for bullet points
-                  if (trimmedLine.startsWith('-') || trimmedLine.startsWith('•')) {
-                    return (
-                      <p key={lineIndex} className="text-slate-600 mb-2 ml-2 leading-relaxed">
-                        {trimmedLine}
-                      </p>
-                    );
-                  }
-                  
-                  return (
-                    <p key={lineIndex} className="text-slate-600 mb-2 leading-relaxed">
-                      {trimmedLine}
-                    </p>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        );
-      }
-      
-      // Check if it's a numbered section (e.g., "1. Emotional Intelligence (EI):")
-      const numberedHeaderMatch = paragraph.match(/^(\d+)\.\s*(.*?):\s*(.*)$/s);
-      if (numberedHeaderMatch) {
-        const number = numberedHeaderMatch[1];
-        const headerText = numberedHeaderMatch[2].trim();
-        const content = numberedHeaderMatch[3].trim();
-        
-        return (
-          <div key={index} className="mb-6">
-            <p className="text-slate-700 font-bold mb-3">
-              {number}. {headerText}:
-            </p>
-            {content && (
-              <div className="ml-4 space-y-2">
-                {content.split('\n').map((line, lineIndex) => {
-                  const trimmedLine = line.trim();
-                  if (!trimmedLine) return null;
-                  
-                  // Handle sub-headers like "Recommendations:" or "Action Plan:"
-                  const subHeaderMatch = trimmedLine.match(/^(.*?):\s*(.*)$/);
-                  if (subHeaderMatch && subHeaderMatch[1].length < 30) { // Only treat short lines as headers
-                    const subHeaderText = subHeaderMatch[1].trim();
-                    const subContent = subHeaderMatch[2].trim();
-                    return (
-                      <div key={lineIndex} className="mb-3">
-                        <p className="font-bold text-slate-700 mb-2">
-                          {subHeaderText}:
-                        </p>
-                        {subContent && (
-                          <p className="text-slate-600 ml-2 leading-relaxed">
-                            {subContent}
-                          </p>
-                        )}
-                      </div>
-                    );
-                  }
-                  
-                  // Regular bullet point or content line
                   if (trimmedLine.startsWith('-') || trimmedLine.startsWith('•')) {
                     return (
                       <p key={lineIndex} className="text-slate-600 mb-2 ml-2 leading-relaxed">

@@ -23,16 +23,37 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
     const paragraphs = text.split('\n\n');
     
     return paragraphs.map((paragraph, index) => {
+      // Check if it's a header (starts with ###)
+      if (paragraph.startsWith('###')) {
+        const headerText = paragraph.replace(/^###\s*/, '').trim();
+        return (
+          <h3 key={index} className="text-xl font-bold text-encourager mb-4 mt-6 font-playfair">
+            {headerText}
+          </h3>
+        );
+      }
+      
       // Check if it's a numbered list or bullet point
       if (paragraph.match(/^\d+\./m) || paragraph.includes('•') || paragraph.includes('-')) {
         const lines = paragraph.split('\n');
         return (
           <div key={index} className="mb-4">
-            {lines.map((line, lineIndex) => (
-              <p key={lineIndex} className="mb-1 text-slate-700">
-                {line.trim()}
-              </p>
-            ))}
+            {lines.map((line, lineIndex) => {
+              // Style numbered items differently
+              if (line.match(/^\d+\./)) {
+                return (
+                  <p key={lineIndex} className="mb-2 text-slate-700 font-medium">
+                    {line.trim()}
+                  </p>
+                );
+              }
+              // Style bullet points and sub-items
+              return (
+                <p key={lineIndex} className="mb-1 text-slate-600 ml-4">
+                  {line.trim()}
+                </p>
+              );
+            })}
           </div>
         );
       }
@@ -47,61 +68,68 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
   };
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="bg-blue-100 p-2 rounded-full">
-            <Bot className="text-blue-600" size={20} />
+    <div className="space-y-6">
+      {/* AI-Powered Insights Header */}
+      <div className="bg-encourager/5 p-6 rounded-lg border border-encourager/20">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="bg-encourager-accent/20 p-3 rounded-full">
+              <Bot className="text-encourager" size={24} strokeWidth={1.5} />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold text-encourager font-playfair">AI-Powered Insights</h2>
+              <p className="text-sm text-slate-600 mt-1">
+                Personalized leadership development recommendations powered by GPT-4o
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-lg font-semibold text-blue-900">AI-Powered Insights</h3>
-            <p className="text-sm text-blue-600">Personalized recommendations from GPT-4o</p>
-          </div>
+          
+          <Button
+            variant="encourager"
+            size="sm"
+            onClick={regenerateInsights}
+            disabled={isLoading}
+            className="shadow-sm"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            {isLoading ? 'Generating...' : 'Refresh'}
+          </Button>
         </div>
-        
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={regenerateInsights}
-          disabled={isLoading}
-          className="border-blue-300 text-blue-700 hover:bg-blue-100"
-        >
-          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-          {isLoading ? 'Generating...' : 'Refresh'}
-        </Button>
+
+        {isLoading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="flex items-center gap-3 text-encourager">
+              <Bot className="animate-pulse" size={24} />
+              <span className="text-lg">AI is analyzing your assessment results...</span>
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <AlertCircle className="text-red-500" size={20} />
+            <div>
+              <p className="text-red-700 font-medium">Unable to generate insights</p>
+              <p className="text-red-600 text-sm">{error}</p>
+            </div>
+          </div>
+        )}
+
+        {insights && !isLoading && (
+          <div className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
+            <div className="prose prose-slate max-w-none">
+              {formatInsights(insights)}
+            </div>
+          </div>
+        )}
+
+        {!insights && !isLoading && !error && (
+          <div className="text-center py-8 text-slate-500">
+            <Bot className="mx-auto mb-3" size={40} />
+            <p className="text-lg">AI insights will appear here once your assessment data is analyzed.</p>
+          </div>
+        )}
       </div>
-
-      {isLoading && (
-        <div className="flex items-center justify-center py-8">
-          <div className="flex items-center gap-3 text-blue-600">
-            <Bot className="animate-pulse" size={24} />
-            <span>AI is analyzing your assessment results...</span>
-          </div>
-        </div>
-      )}
-
-      {error && (
-        <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <AlertCircle className="text-red-500" size={20} />
-          <div>
-            <p className="text-red-700 font-medium">Unable to generate insights</p>
-            <p className="text-red-600 text-sm">{error}</p>
-          </div>
-        </div>
-      )}
-
-      {insights && !isLoading && (
-        <div className="prose prose-slate max-w-none">
-          {formatInsights(insights)}
-        </div>
-      )}
-
-      {!insights && !isLoading && !error && (
-        <div className="text-center py-6 text-slate-500">
-          <Bot className="mx-auto mb-2" size={32} />
-          <p>AI insights will appear here once your assessment data is analyzed.</p>
-        </div>
-      )}
     </div>
   );
 };

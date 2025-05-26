@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { BookOpen } from 'lucide-react';
 import { 
@@ -6,23 +7,26 @@ import {
   getLargestCategoryGaps,
   getSkillsToImprove
 } from '@/utils/assessmentCalculations';
-import { Category } from '@/utils/assessmentTypes';
+import { Category, Demographics } from '@/utils/assessmentTypes';
 import InsightSummary from './insights/InsightSummary';
 import LargestGapsSection from './insights/LargestGapsSection';
 import SkillsToImproveSection from './insights/SkillsToImproveSection';
+import AIInsights from './AIInsights';
 
 interface KeyInsightsProps {
   averageGap: number;
   strengths: SkillWithMetadata[];
   lowestSkills: SkillWithMetadata[];
   categories: Category[];
+  demographics?: Demographics;
 }
 
 const KeyInsights: React.FC<KeyInsightsProps> = ({ 
   averageGap, 
   strengths,
   lowestSkills,
-  categories
+  categories,
+  demographics = {}
 }) => {
   // Ensure categories is always an array to prevent "cannot read properties of undefined (reading 'skills')"
   const safeCategories = Array.isArray(categories) ? categories : [];
@@ -147,19 +151,26 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
 
   return (
     <div className="bg-encourager/5 p-4 rounded-lg border border-encourager/20">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 mb-6">
         <div className="bg-encourager-accent/20 p-3 rounded-full">
           <BookOpen className="text-encourager" size={24} strokeWidth={1.5} />
         </div>
         <div>
           <h2 className="text-2xl font-bold text-encourager">Skills & Competencies to Work On</h2>
-          <p className="text-sm text-slate-500 mt-1">Based on your 1-10 rating scale assessment</p>
+          <p className="text-sm text-slate-500 mt-1">AI-powered insights and development recommendations</p>
         </div>
       </div>
       
-      <div className="mt-4">
+      <div className="space-y-6">
         {skillsWithRatings > 0 ? (
           <>
+            {/* AI-Powered Insights - New section at the top */}
+            <AIInsights 
+              categories={safeCategories}
+              demographics={demographics}
+              averageGap={averageGap}
+            />
+            
             {/* Largest Competency Gaps */}
             <LargestGapsSection 
               categoryGaps={insightData.largestCategoryGaps}

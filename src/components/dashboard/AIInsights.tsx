@@ -18,6 +18,43 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
     assessmentId
   });
 
+  // Calculate category gaps for display
+  const getCategoryGaps = () => {
+    const categoryGaps: { [key: string]: number } = {};
+    
+    categories.forEach(category => {
+      if (category && category.skills && Array.isArray(category.skills)) {
+        let totalCurrent = 0;
+        let totalDesired = 0;
+        let validSkillCount = 0;
+        
+        category.skills.forEach(skill => {
+          if (skill && skill.ratings) {
+            const current = Number(skill.ratings.current) || 0;
+            const desired = Number(skill.ratings.desired) || 0;
+            
+            if (current > 0 || desired > 0) {
+              totalCurrent += current;
+              totalDesired += desired;
+              validSkillCount++;
+            }
+          }
+        });
+        
+        if (validSkillCount > 0) {
+          const avgCurrent = totalCurrent / validSkillCount;
+          const avgDesired = totalDesired / validSkillCount;
+          const gap = Math.abs(avgDesired - avgCurrent);
+          categoryGaps[category.title.toLowerCase()] = parseFloat(gap.toFixed(1));
+        }
+      }
+    });
+    
+    return categoryGaps;
+  };
+
+  const categoryGaps = getCategoryGaps();
+
   const formatInsights = (text: string) => {
     // Define the main headers that should be styled as section headers
     const mainHeaders = [
@@ -67,12 +104,55 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
                   const trimmedLine = line.trim();
                   if (!trimmedLine) return null;
                   
-                  // Check if it's a numbered section (e.g., "1. Emotional Intelligence (EI):")
-                  const numberedMatch = trimmedLine.match(/^(\d+)\.\s*(.*?):\s*(.*)$/);
-                  if (numberedMatch) {
+                  // Check if it's a numbered section for Top 3 Priority Development Areas
+                  const numberedMatch = trimmedLine.match(/^(\d+)\.\s*(.*?)(?:\s*-\s*Recommendations?:)?\s*(.*)$/);
+                  if (numberedMatch && matchedHeader.toLowerCase().includes('priority development')) {
                     const number = numberedMatch[1];
                     const skillName = numberedMatch[2].trim();
-                    const skillContent = numberedMatch[3].trim();
+                    let skillContent = numberedMatch[3].trim();
+                    
+                    // Try to find a matching category gap
+                    const skillNameLower = skillName.toLowerCase();
+                    let gapValue = null;
+                    
+                    // Check for various patterns to match skill names with categories
+                    Object.keys(categoryGaps).forEach(categoryKey => {
+                      if (skillNameLower.includes(categoryKey) || 
+                          categoryKey.includes(skillNameLower.replace(/\s*\([^)]*\)/, '').trim().toLowerCase()) ||
+                          (skillNameLower.includes('emotional intelligence') && categoryKey.includes('emotional')) ||
+                          (skillNameLower.includes('change management') && categoryKey.includes('change')) ||
+                          (skillNameLower.includes('communication') && categoryKey.includes('communication')) ||
+                          (skillNameLower.includes('conflict') && categoryKey.includes('conflict')) ||
+                          (skillNameLower.includes('decision') && categoryKey.includes('decision')) ||
+                          (skillNameLower.includes('delegation') && categoryKey.includes('delegation')) ||
+                          (skillNameLower.includes('strategic') && categoryKey.includes('strategic')) ||
+                          (skillNameLower.includes('team') && categoryKey.includes('team')) ||
+                          (skillNameLower.includes('time') && categoryKey.includes('time')) ||
+                          (skillNameLower.includes('professional') && categoryKey.includes('professional'))) {
+                        gapValue = categoryGaps[categoryKey];
+                      }
+                    });
+                    
+                    return (
+                      <div key={lineIndex} className="mb-4">
+                        <p className="text-encourager font-bold mb-2">
+                          {number}. {skillName}{gapValue ? ` (Gap: ${gapValue})` : ''} - <span className="font-normal">Recommendations:</span>
+                        </p>
+                        {skillContent && (
+                          <p className="text-slate-600 ml-4 leading-relaxed">
+                            {skillContent}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  }
+                  
+                  // Check if it's a numbered section (e.g., "1. Emotional Intelligence (EI):")
+                  const numberedMatch2 = trimmedLine.match(/^(\d+)\.\s*(.*?):\s*(.*)$/);
+                  if (numberedMatch2) {
+                    const number = numberedMatch2[1];
+                    const skillName = numberedMatch2[2].trim();
+                    const skillContent = numberedMatch2[3].trim();
                     
                     return (
                       <div key={lineIndex} className="mb-4">
@@ -88,13 +168,13 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
                     );
                   }
                   
-                  // Handle "Recommendation:" specifically - show inline
-                  const recommendationMatch = trimmedLine.match(/^-?\s*Recommendation:\s*(.*)$/);
+                  // Handle "Recommendation:" specifically - show inline with normal font weight
+                  const recommendationMatch = trimmedLine.match(/^-?\s*Recommendations?:\s*(.*)$/);
                   if (recommendationMatch) {
                     const recommendationText = recommendationMatch[1].trim();
                     return (
                       <p key={lineIndex} className="text-slate-600 mb-3 ml-4 leading-relaxed">
-                        <span className="font-bold">Recommendation:</span> {recommendationText}
+                        <span className="font-normal">Recommendations:</span> {recommendationText}
                       </p>
                     );
                   }

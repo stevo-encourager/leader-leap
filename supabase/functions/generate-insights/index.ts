@@ -145,31 +145,52 @@ Top Strength Areas (High Current Ratings, Low Gaps):
 ${topStrengths.map((cat, i) => `${i+1}. ${cat.title}: Current ${cat.averageCurrentRating.toFixed(1)}, Gap ${cat.gap.toFixed(1)}`).join('\n')}
 `;
 
-    // The main prompt for ChatGPT
+    // The main prompt for ChatGPT with the new format requirements
     const prompt = `${assessmentDataSection}
 
-You are an expert leadership coach and assessment analyst. Based on the provided assessment data (including competency names, gap scores, and strengths), generate AI insights for both the "Top 3 Priority Development Areas" and the "Key Strengths to Leverage" for a user's leadership assessment.
+You are an expert leadership coach and assessment analyst. Based on the provided assessment data, generate AI insights in the exact JSON format specified below.
 
-Instructions:
+Required Output Format - you MUST output a single JSON object with these exact fields:
 
-Output must be a single JSON object containing two arrays: "priority_areas" and "key_strengths".
-"priority_areas" is an array with exactly 3 objects, one for each priority development area.
-Each object must have:
-"competency" (string): the name of the competency (e.g., "Emotional Intelligence (EI)")
-"gap" (number): the gap score (e.g., 6.3)
-"recommendations" (array of objects): each object must contain:
-"advice" (string): a concise, actionable recommendation sentence
-"resource" (string): a practical resource, such as a link to a best practice article, a description of a recognized methodology, or a named book/course, that the user can consult to learn more or take action. The resource must be directly relevant and actionable.
-"key_strengths" is an array of the user's leadership strengths (number as appropriate, but at least 2).
-Each object must have:
-"competency" (string): the name of the strength (e.g., "Collaboration")
-"example" (string): a concrete example of this strength in action (drawn from provided data, or plausible if not explicit)
-"leverage_advice" (string): a practical suggestion for how to use this strength even more effectively
-Do NOT include any text or markdown before or after the JSON block.
-Do NOT use any formatting other than valid JSON.
-If any field is missing, leave it blank or use null. Do not invent or embellish.
-Use only the data provided.
-The resources and examples in the output should be relevant and practical, not always the same as shown in the example.`;
+{
+  "summary": "A concise 2-4 sentence summary highlighting overall results and main themes from the assessment",
+  "priority_areas": [
+    {
+      "competency": "Name of the competency (e.g., Emotional Intelligence)",
+      "gap": number (the gap score),
+      "recommendations": [
+        "First specific, actionable recommendation for this competency",
+        "Second practical suggestion tailored to this competency", 
+        "Third recommendation that references and encourages use of the resource provided"
+      ],
+      "resource": "A directly relevant and practical resource (link, methodology, or named book/course) that matches what's referenced in the third recommendation"
+    }
+    // Exactly 3 priority areas total
+  ],
+  "key_strengths": [
+    {
+      "competency": "Name of the strength competency",
+      "example": "A concrete example of this strength in action",
+      "leverage_advice": [
+        "First specific suggestion for leveraging this strength",
+        "Second practical way to use this strength more effectively",
+        "Third actionable advice for maximizing this strength"
+      ]
+    }
+    // At least 2 key strengths
+  ]
+}
+
+Critical Instructions:
+- Output ONLY valid JSON with the exact structure above
+- NO text or markdown before or after the JSON
+- Use only the assessment data provided - do not invent data
+- Each recommendation and leverage advice item must be distinct and actionable
+- The resource field must match what is referenced in the third recommendation
+- Make recommendations specific to each competency, not generic advice
+- Ensure the summary captures the key themes from the actual assessment results
+
+Base your insights on the assessment data provided above.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -187,7 +208,7 @@ The resources and examples in the output should be relevant and practical, not a
           { role: 'user', content: prompt }
         ],
         temperature: 0.1, // Very low temperature for maximum consistency
-        max_tokens: 1500
+        max_tokens: 2000 // Increased for the more detailed format
       }),
     });
 
@@ -210,20 +231,28 @@ The resources and examples in the output should be relevant and practical, not a
     const cleanedInsights = cleanJsonResponse(rawInsights);
     console.log('Cleaned insights JSON:', cleanedInsights);
 
-    // Validate that the cleaned response is valid JSON
+    // Validate that the cleaned response is valid JSON with the new structure
     try {
       const parsedInsights = JSON.parse(cleanedInsights);
       
-      // Basic validation of the structure
-      if (!parsedInsights.priority_areas || !parsedInsights.key_strengths) {
-        throw new Error('Invalid JSON structure - missing required arrays');
+      // Basic validation of the new structure
+      if (!parsedInsights.summary || !parsedInsights.priority_areas || !parsedInsights.key_strengths) {
+        throw new Error('Invalid JSON structure - missing required fields: summary, priority_areas, or key_strengths');
       }
       
       if (!Array.isArray(parsedInsights.priority_areas) || !Array.isArray(parsedInsights.key_strengths)) {
         throw new Error('Invalid JSON structure - priority_areas and key_strengths must be arrays');
       }
+
+      if (parsedInsights.priority_areas.length !== 3) {
+        throw new Error('Invalid JSON structure - priority_areas must have exactly 3 items');
+      }
+
+      if (parsedInsights.key_strengths.length < 2) {
+        throw new Error('Invalid JSON structure - key_strengths must have at least 2 items');
+      }
       
-      console.log('Successfully validated JSON structure');
+      console.log('Successfully validated JSON structure with new format');
     } catch (jsonError) {
       console.error('Invalid JSON response from OpenAI after cleaning:', jsonError);
       console.error('Cleaned response was:', cleanedInsights);
@@ -250,7 +279,7 @@ The resources and examples in the output should be relevant and practical, not a
       }
     }
 
-    console.log('Successfully generated and saved insights');
+    console.log('Successfully generated and saved insights with new format');
 
     return new Response(JSON.stringify({ insights: cleanedInsights }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

@@ -11,24 +11,21 @@ interface AIInsightsProps {
   assessmentId?: string;
 }
 
-interface Recommendation {
-  advice: string;
-  resource: string;
-}
-
 interface PriorityArea {
   competency: string;
   gap: number;
-  recommendations: Recommendation[];
+  recommendations: string[];
+  resource: string;
 }
 
 interface KeyStrength {
   competency: string;
   example: string;
-  leverage_advice: string;
+  leverage_advice: string[];
 }
 
 interface AIInsightsData {
+  summary: string;
   priority_areas: PriorityArea[];
   key_strengths: KeyStrength[];
 }
@@ -45,9 +42,9 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
     try {
       const parsed = JSON.parse(insightsText);
       
-      // Validate structure
-      if (!parsed.priority_areas || !parsed.key_strengths) {
-        console.error('Invalid insights structure - missing required arrays');
+      // Validate new structure
+      if (!parsed.summary || !parsed.priority_areas || !parsed.key_strengths) {
+        console.error('Invalid insights structure - missing required fields');
         return null;
       }
       
@@ -63,6 +60,13 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
     }
   };
 
+  const renderSummary = (summary: string) => (
+    <div className="mb-8 bg-blue-50 p-6 rounded-lg border border-blue-200">
+      <h3 className="text-xl font-bold text-encourager mb-3 font-playfair">Assessment Summary</h3>
+      <p className="text-slate-700 leading-relaxed">{summary}</p>
+    </div>
+  );
+
   const renderPriorityAreas = (priorityAreas: PriorityArea[]) => (
     <div className="mb-8">
       <h3 className="text-xl font-bold text-encourager mb-4 font-playfair border-b border-encourager/20 pb-2 flex items-center gap-2">
@@ -71,8 +75,8 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
       </h3>
       <div className="space-y-6">
         {priorityAreas.map((area, index) => (
-          <div key={index} className="bg-white rounded-lg p-4 border border-slate-200 shadow-sm">
-            <div className="mb-3">
+          <div key={index} className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
+            <div className="mb-4">
               <h4 className="font-semibold text-lg text-slate-800">
                 {index + 1}. {area.competency}
               </h4>
@@ -80,22 +84,34 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
                 Gap: {area.gap.toFixed(1)}
               </span>
             </div>
-            <div className="space-y-3">
-              <h5 className="font-medium text-slate-700">Recommendations:</h5>
-              {area.recommendations.map((rec, recIndex) => (
-                <div key={recIndex} className="bg-slate-50 p-3 rounded border-l-4 border-encourager">
-                  <p className="text-slate-700 mb-2">{rec.advice}</p>
+            <div className="space-y-4">
+              <div>
+                <h5 className="font-medium text-slate-700 mb-3">Recommendations:</h5>
+                <ul className="space-y-3">
+                  {area.recommendations.map((rec, recIndex) => (
+                    <li key={recIndex} className="flex items-start gap-3">
+                      <span className="flex-shrink-0 w-6 h-6 bg-encourager text-white rounded-full flex items-center justify-center text-sm font-medium">
+                        {recIndex + 1}
+                      </span>
+                      <p className="text-slate-700 leading-relaxed">{rec}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              {area.resource && (
+                <div className="bg-slate-50 p-4 rounded border-l-4 border-encourager">
+                  <h6 className="font-medium text-slate-700 mb-2">Recommended Resource:</h6>
                   <a 
-                    href={rec.resource} 
+                    href={area.resource.startsWith('http') ? area.resource : '#'} 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="text-encourager hover:text-encourager-light text-sm flex items-center gap-1 underline"
                   >
                     <ExternalLink className="h-3 w-3" />
-                    Resource
+                    {area.resource}
                   </a>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         ))}
@@ -109,20 +125,29 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
         <TrendingUp className="h-5 w-5" />
         Key Strengths to Leverage
       </h3>
-      <div className="space-y-4">
+      <div className="space-y-6">
         {keyStrengths.map((strength, index) => (
-          <div key={index} className="bg-white rounded-lg p-4 border border-slate-200 shadow-sm">
-            <h4 className="font-semibold text-lg text-slate-800 mb-2">
+          <div key={index} className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
+            <h4 className="font-semibold text-lg text-slate-800 mb-4">
               {strength.competency}
             </h4>
-            <div className="space-y-2">
-              <div className="bg-green-50 p-3 rounded border-l-4 border-green-400">
-                <p className="text-sm text-slate-600 font-medium">Example:</p>
+            <div className="space-y-4">
+              <div className="bg-green-50 p-4 rounded border-l-4 border-green-400">
+                <p className="text-sm text-slate-600 font-medium mb-2">Example:</p>
                 <p className="text-slate-700">{strength.example}</p>
               </div>
-              <div className="bg-blue-50 p-3 rounded border-l-4 border-blue-400">
-                <p className="text-sm text-slate-600 font-medium">How to leverage further:</p>
-                <p className="text-slate-700">{strength.leverage_advice}</p>
+              <div className="bg-blue-50 p-4 rounded border-l-4 border-blue-400">
+                <p className="text-sm text-slate-600 font-medium mb-3">How to leverage further:</p>
+                <ul className="space-y-2">
+                  {strength.leverage_advice.map((advice, adviceIndex) => (
+                    <li key={adviceIndex} className="flex items-start gap-3">
+                      <span className="flex-shrink-0 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-medium">
+                        {adviceIndex + 1}
+                      </span>
+                      <p className="text-slate-700 text-sm leading-relaxed">{advice}</p>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
           </div>
@@ -185,6 +210,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
 
               return (
                 <div className="prose prose-slate max-w-none">
+                  {parsedInsights.summary && renderSummary(parsedInsights.summary)}
                   {renderPriorityAreas(parsedInsights.priority_areas)}
                   {renderKeyStrengths(parsedInsights.key_strengths)}
                 </div>

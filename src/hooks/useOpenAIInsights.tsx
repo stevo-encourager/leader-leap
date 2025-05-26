@@ -21,12 +21,6 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       return;
     }
 
-    // If we already have insights, don't generate new ones
-    if (insights && insights.trim()) {
-      console.log('Insights already exist, not regenerating');
-      return;
-    }
-
     setIsLoading(true);
     setError(null);
 
@@ -48,7 +42,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
 
       if (data && data.insights) {
         setInsights(data.insights);
-        console.log('Successfully received AI insights (will be saved permanently)');
+        console.log('Successfully received AI insights (saved permanently to database)');
       } else {
         throw new Error('No insights received from OpenAI');
       }
@@ -83,13 +77,13 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
         }
 
         if (assessment && assessment.ai_insights && assessment.ai_insights.trim()) {
-          console.log('Found existing insights, using saved version');
+          console.log('Found existing insights, using saved version - NEVER regenerating');
           setInsights(assessment.ai_insights);
           return; // Don't generate new insights
         }
 
         // Only generate if no existing insights found
-        console.log('No existing insights found, generating new ones');
+        console.log('No existing insights found, generating new ones (ONLY ONCE)');
         generateInsights();
       } catch (err) {
         console.error('Error checking for existing insights:', err);

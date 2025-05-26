@@ -12,29 +12,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Input validation helper functions
-const isValidCategories = (categories: any): boolean => {
-  return Array.isArray(categories) && 
-         categories.length > 0 && 
-         categories.every(cat => 
-           cat && 
-           typeof cat.title === 'string' && 
-           Array.isArray(cat.skills) &&
-           cat.skills.length > 0
-         );
-};
-
-const isValidDemographics = (demographics: any): boolean => {
-  return typeof demographics === 'object' && demographics !== null;
-};
-
-const isValidAverageGap = (averageGap: any): boolean => {
-  return typeof averageGap === 'number' && 
-         !isNaN(averageGap) && 
-         isFinite(averageGap) &&
-         averageGap >= 0;
-};
-
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -59,49 +36,12 @@ serve(async (req) => {
       });
     }
 
-    // Parse and validate request body
-    let requestBody;
-    try {
-      requestBody = await req.json();
-    } catch (parseError) {
-      console.error('Invalid JSON in request body');
-      return new Response(JSON.stringify({ error: 'Invalid request format' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    const { categories, demographics, averageGap, assessmentId } = requestBody;
+    const { categories, demographics, averageGap, assessmentId } = await req.json();
     
-    // Input validation
-    if (!isValidCategories(categories)) {
-      console.error('Invalid or missing categories data');
-      return new Response(JSON.stringify({ error: 'Invalid categories data provided' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    if (!isValidDemographics(demographics)) {
-      console.error('Invalid demographics data');
-      return new Response(JSON.stringify({ error: 'Invalid demographics data provided' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    if (!isValidAverageGap(averageGap)) {
-      console.error('Invalid averageGap value:', averageGap);
-      return new Response(JSON.stringify({ error: 'Invalid average gap value provided' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
     // Initialize Supabase client
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // CRITICAL: Always check if insights already exist first
+    // CRITICAL: Always check if insights already exist first - NEVER regenerate
     if (assessmentId) {
       console.log('Checking for existing insights for assessment:', assessmentId);
       
@@ -130,7 +70,7 @@ serve(async (req) => {
 
     console.log('No existing insights found - generating new insights (ONLY ONCE)');
 
-    // Prepare assessment data summary for OpenAI with safe access
+    // Prepare assessment data summary for OpenAI
     const assessmentSummary = {
       totalCategories: categories.length,
       averageGap: averageGap,
@@ -163,8 +103,8 @@ serve(async (req) => {
       .sort((a, b) => b.gap - a.gap)
       .slice(0, 3);
 
-    // VERY SPECIFIC PROMPT to ensure consistent formatting
-    const prompt = `As a leadership development expert, analyze this assessment and provide insights in the EXACT format specified below. Do not deviate from this format.
+    // EXTREMELY SPECIFIC PROMPT to ensure 100% consistent formatting
+    const prompt = `You are a leadership development expert. You MUST respond in the EXACT format specified below. Do not deviate from this format under any circumstances.
 
 Assessment Data:
 - Overall Average Gap: ${averageGap.toFixed(2)}
@@ -175,30 +115,33 @@ Assessment Data:
 Top 3 Categories by Gap:
 ${topGapCategories.map((cat, i) => `${i+1}. ${cat.title}: Gap ${cat.gap.toFixed(1)}`).join('\n')}
 
-You MUST respond in this EXACT format with these exact section headers:
+You MUST respond in this EXACT format with these exact section headers. Do not change the headers or structure:
 
 ## Overall Assessment
 
-[Write 2-3 sentences about the overall leadership profile and main development themes]
+[Write exactly 2-3 sentences about the overall leadership profile and main development themes]
 
 ## Top 3 Priority Development Areas
 
-${topGapCategories.map((cat, i) => `${i+1}. ${cat.title} (Gap: ${cat.gap.toFixed(1)}): Recommendations: [Provide 2-3 specific, actionable recommendations separated by semicolons]`).join('\n\n')}
+${topGapCategories.map((cat, i) => `${i+1}. ${cat.title} (Gap: ${cat.gap.toFixed(1)}): Recommendations: [Write exactly 3 specific recommendations separated by semicolons]`).join('\n\n')}
 
 ## Key Strengths to Leverage
 
-[List 2-3 key strengths as bullet points with - ]
+- [Write exactly 3 key strengths as bullet points]
+- [Second strength]
+- [Third strength]
 
 ## Actionable Next Step for This Week
 
-[Provide ONE specific action they can take this week]
+[Write exactly ONE specific action they can take this week]
 
-CRITICAL FORMATTING RULES:
-- Use exactly these section headers with ##
-- For Priority Development Areas, format exactly as: "Competency Name (Gap: X.X): Recommendations: recommendation 1; recommendation 2; recommendation 3"
-- Keep each priority area as one paragraph
-- Use bullet points (-) for strengths
-- Be specific and actionable in all recommendations`;
+CRITICAL FORMATTING RULES - DO NOT DEVIATE:
+1. Use exactly these section headers with ##
+2. For Priority Development Areas, format exactly as: "Number. Competency Name (Gap: X.X): Recommendations: recommendation 1; recommendation 2; recommendation 3"
+3. Each priority area must be exactly one paragraph
+4. Use exactly 3 bullet points (-) for strengths
+5. Write exactly ONE actionable next step
+6. Be specific and actionable in all recommendations`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -211,11 +154,11 @@ CRITICAL FORMATTING RULES:
         messages: [
           { 
             role: 'system', 
-            content: 'You are a leadership development expert. You MUST follow the exact formatting instructions provided. Do not deviate from the specified format under any circumstances. Always use the exact section headers and formatting specified in the prompt.'
+            content: 'You are a leadership development expert. You MUST follow the exact formatting instructions provided. Do not deviate from the specified format under any circumstances. Always use the exact section headers and formatting specified in the prompt. Be consistent and precise.'
           },
           { role: 'user', content: prompt }
         ],
-        temperature: 0.3, // Lower temperature for more consistent output
+        temperature: 0.1, // Very low temperature for maximum consistency
         max_tokens: 1200
       }),
     });
@@ -226,30 +169,10 @@ CRITICAL FORMATTING RULES:
       throw new Error(`OpenAI API error: ${response.status}`);
     }
 
-    let data;
-    try {
-      data = await response.json();
-    } catch (jsonError) {
-      console.error('Failed to parse OpenAI response as JSON');
-      throw new Error('Invalid response from OpenAI API');
-    }
-
-    // Defensive checks for OpenAI response structure
-    if (!data || !data.choices || !Array.isArray(data.choices) || data.choices.length === 0) {
-      console.error('Invalid OpenAI response structure - no choices array');
-      throw new Error('Invalid response structure from OpenAI API');
-    }
-
-    const choice = data.choices[0];
-    if (!choice || !choice.message || typeof choice.message.content !== 'string') {
-      console.error('Invalid OpenAI response structure - no message content');
-      throw new Error('Invalid message structure from OpenAI API');
-    }
-
-    const insights = choice.message.content.trim();
+    const data = await response.json();
+    const insights = data.choices[0].message.content.trim();
     
     if (!insights) {
-      console.error('Empty insights received from OpenAI');
       throw new Error('Empty response from OpenAI API');
     }
 

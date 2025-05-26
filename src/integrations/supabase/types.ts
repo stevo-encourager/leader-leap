@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       assessment_results: {
         Row: {
+          ai_insights: string | null
           categories: Json
           completed: boolean | null
           created_at: string
@@ -19,6 +20,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          ai_insights?: string | null
           categories: Json
           completed?: boolean | null
           created_at?: string
@@ -27,6 +29,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          ai_insights?: string | null
           categories?: Json
           completed?: boolean | null
           created_at?: string

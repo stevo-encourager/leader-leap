@@ -1,4 +1,5 @@
 
+
 import React, { useMemo } from 'react';
 import { 
   ResponsiveContainer,
@@ -264,7 +265,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
           wrapperStyle={{
             marginTop: '60px',
             fontSize: '18px',
-            fontWeight: '600'
+            fontWeight: 'normal'
           }}
         />
       </RadarChart>
@@ -273,3 +274,4 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
 };
 
 export default React.memo(SkillGapChart);
+

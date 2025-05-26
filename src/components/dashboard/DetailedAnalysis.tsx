@@ -17,6 +17,7 @@ interface DetailedAnalysisProps {
   categories: Category[];
   demographics?: Demographics;
   averageGap?: number;
+  assessmentId?: string;
   className?: string;
 }
 
@@ -24,6 +25,7 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
   categories, 
   demographics = {},
   averageGap = 0,
+  assessmentId,
   className = '' 
 }) => {
   // Add extensive validation to ensure we have data to render
@@ -100,6 +102,7 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
                   categories={categories}
                   demographics={demographics}
                   averageGap={averageGap}
+                  assessmentId={assessmentId}
                 />
               </div>
             ) : (

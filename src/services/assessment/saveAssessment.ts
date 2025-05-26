@@ -124,7 +124,8 @@ export const saveAssessmentResults = async (
         .update({
           categories: processedCategories,
           demographics: demographicsObject,
-          completed: isComplete
+          completed: isComplete,
+          ai_insights: null // Initialize as null, will be populated when first accessed
         })
         .eq('id', recentAssessment.id)
         .eq('user_id', user.id)
@@ -138,7 +139,8 @@ export const saveAssessmentResults = async (
           user_id: user.id,
           categories: processedCategories,
           demographics: demographicsObject,
-          completed: isComplete
+          completed: isComplete,
+          ai_insights: null // Initialize as null, will be populated when first accessed
         })
         .select();
     }

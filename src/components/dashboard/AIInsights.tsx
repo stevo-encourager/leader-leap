@@ -1,7 +1,5 @@
-
 import React from 'react';
-import { Bot, RefreshCw, AlertCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Bot, AlertCircle } from 'lucide-react';
 import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 
@@ -9,13 +7,15 @@ interface AIInsightsProps {
   categories: Category[];
   demographics: Demographics;
   averageGap: number;
+  assessmentId?: string;
 }
 
-const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, averageGap }) => {
-  const { insights, isLoading, error, regenerateInsights } = useOpenAIInsights({
+const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, averageGap, assessmentId }) => {
+  const { insights, isLoading, error } = useOpenAIInsights({
     categories,
     demographics,
-    averageGap
+    averageGap,
+    assessmentId
   });
 
   const formatInsights = (text: string) => {
@@ -289,17 +289,6 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
               </p>
             </div>
           </div>
-          
-          <Button
-            variant="encourager"
-            size="sm"
-            onClick={regenerateInsights}
-            disabled={isLoading}
-            className="bg-encourager hover:bg-encourager-light text-white shadow-sm"
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-            {isLoading ? 'Generating...' : 'Refresh'}
-          </Button>
         </div>
 
         {isLoading && (

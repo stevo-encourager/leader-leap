@@ -1,8 +1,11 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+const supabaseUrl = Deno.env.get('SUPABASE_URL');
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -39,10 +42,18 @@ serve(async (req) => {
   }
 
   try {
-    // Validate OpenAI API key
+    // Validate environment variables
     if (!openAIApiKey) {
       console.error('OpenAI API key not configured');
       return new Response(JSON.stringify({ error: 'OpenAI API key not configured' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!supabaseUrl || !supabaseServiceKey) {
+      console.error('Supabase configuration not complete');
+      return new Response(JSON.stringify({ error: 'Supabase configuration not complete' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -60,7 +71,7 @@ serve(async (req) => {
       });
     }
 
-    const { categories, demographics, averageGap } = requestBody;
+    const { categories, demographics, averageGap, assessmentId } = requestBody;
     
     // Input validation
     if (!isValidCategories(categories)) {
@@ -87,7 +98,31 @@ serve(async (req) => {
       });
     }
 
-    console.log('Generating insights for validated assessment data');
+    // Initialize Supabase client
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // If assessmentId is provided, check if insights already exist
+    if (assessmentId) {
+      console.log('Checking for existing insights for assessment:', assessmentId);
+      
+      const { data: existingAssessment, error: fetchError } = await supabase
+        .from('assessment_results')
+        .select('ai_insights')
+        .eq('id', assessmentId)
+        .single();
+
+      if (fetchError) {
+        console.error('Error fetching existing assessment:', fetchError);
+        // Continue with generation if we can't fetch
+      } else if (existingAssessment && existingAssessment.ai_insights) {
+        console.log('Found existing insights, returning them');
+        return new Response(JSON.stringify({ insights: existingAssessment.ai_insights }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    console.log('Generating new insights for assessment data');
 
     // Prepare assessment data summary for OpenAI with safe access
     const assessmentSummary = {
@@ -188,6 +223,23 @@ Keep the response professional, encouraging, and actionable. Format with clear s
     if (!insights) {
       console.error('Empty insights received from OpenAI');
       throw new Error('Empty response from OpenAI API');
+    }
+
+    // Save insights to database if assessmentId is provided
+    if (assessmentId) {
+      console.log('Saving insights to assessment:', assessmentId);
+      
+      const { error: updateError } = await supabase
+        .from('assessment_results')
+        .update({ ai_insights: insights })
+        .eq('id', assessmentId);
+
+      if (updateError) {
+        console.error('Error saving insights to database:', updateError);
+        // Continue and return insights even if saving fails
+      } else {
+        console.log('Successfully saved insights to database');
+      }
     }
 
     console.log('Successfully generated insights');

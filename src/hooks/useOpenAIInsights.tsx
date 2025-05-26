@@ -7,9 +7,10 @@ interface UseOpenAIInsightsProps {
   categories: Category[];
   demographics: Demographics;
   averageGap: number;
+  assessmentId?: string;
 }
 
-export const useOpenAIInsights = ({ categories, demographics, averageGap }: UseOpenAIInsightsProps) => {
+export const useOpenAIInsights = ({ categories, demographics, averageGap, assessmentId }: UseOpenAIInsightsProps) => {
   const [insights, setInsights] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,13 +25,14 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap }: UseO
     setError(null);
 
     try {
-      console.log('Calling generate-insights function');
+      console.log('Calling generate-insights function with assessmentId:', assessmentId);
       
       const { data, error: functionError } = await supabase.functions.invoke('generate-insights', {
         body: {
           categories,
           demographics,
-          averageGap
+          averageGap,
+          assessmentId
         }
       });
 
@@ -57,12 +59,12 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap }: UseO
     if (categories && categories.length > 0 && averageGap !== undefined) {
       generateInsights();
     }
-  }, [categories, demographics, averageGap]);
+  }, [categories, demographics, averageGap, assessmentId]);
 
   return {
     insights,
     isLoading,
-    error,
-    regenerateInsights: generateInsights
+    error
+    // Removed regenerateInsights function - no longer available
   };
 };

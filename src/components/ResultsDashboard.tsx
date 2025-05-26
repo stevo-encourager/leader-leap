@@ -17,6 +17,7 @@ interface ResultsDashboardProps {
   onRestart: () => void;
   onBack: () => void;
   onSignup?: () => void;
+  assessmentId?: string;
 }
 
 const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ 
@@ -24,7 +25,8 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   demographics, 
   onRestart, 
   onBack,
-  onSignup
+  onSignup,
+  assessmentId
 }) => {
   // Debug received categories with more detailed logging
   useEffect(() => {
@@ -109,6 +111,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
             categories={categories} 
             demographics={demographics}
             averageGap={averageGap}
+            assessmentId={assessmentId}
           />
 
           {/* Skills & Competencies to Work On - Renamed from Key Insights */}

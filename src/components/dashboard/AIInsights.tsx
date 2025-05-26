@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Bot, RefreshCw, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -93,7 +94,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
                     const recommendationText = recommendationMatch[1].trim();
                     return (
                       <p key={lineIndex} className="text-slate-600 mb-3 ml-4 leading-relaxed">
-                        <span>Recommendation:</span> {recommendationText}
+                        <span className="font-bold">Recommendation:</span> {recommendationText}
                       </p>
                     );
                   }

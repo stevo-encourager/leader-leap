@@ -28,8 +28,8 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
       'Actionable Next Step for This Week'
     ];
 
-    // Remove hashtags and clean up the text
-    const cleanedText = text.replace(/#{1,6}\s*/g, '');
+    // Remove ALL hashtags and asterisks completely
+    const cleanedText = text.replace(/#{1,6}\s*/g, '').replace(/\*+/g, '');
     
     // Split by double newlines to create paragraphs
     const paragraphs = cleanedText.split('\n\n');
@@ -53,8 +53,8 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
         );
       }
       
-      // Check if it's a numbered section with header (e.g., "1. Emotional Intelligence (EI):")
-      const numberedHeaderMatch = paragraph.match(/^(\d+)\.\s*\**(.*?):\**(.*)$/s);
+      // Check if it's a numbered section (e.g., "1. Emotional Intelligence (EI):")
+      const numberedHeaderMatch = paragraph.match(/^(\d+)\.\s*(.*?):\s*(.*)$/s);
       if (numberedHeaderMatch) {
         const number = numberedHeaderMatch[1];
         const headerText = numberedHeaderMatch[2].trim();
@@ -62,9 +62,9 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
         
         return (
           <div key={index} className="mb-6">
-            <h4 className="text-lg font-bold text-encourager-gray mb-3">
+            <p className="text-slate-700 font-bold mb-3">
               {number}. {headerText}:
-            </h4>
+            </p>
             {content && (
               <div className="ml-4 space-y-2">
                 {content.split('\n').map((line, lineIndex) => {
@@ -72,8 +72,8 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
                   if (!trimmedLine) return null;
                   
                   // Handle sub-headers like "Recommendations:" or "Action Plan:"
-                  const subHeaderMatch = trimmedLine.match(/^\**(.*?):\**(.*)$/);
-                  if (subHeaderMatch) {
+                  const subHeaderMatch = trimmedLine.match(/^(.*?):\s*(.*)$/);
+                  if (subHeaderMatch && subHeaderMatch[1].length < 30) { // Only treat short lines as headers
                     const subHeaderText = subHeaderMatch[1].trim();
                     const subContent = subHeaderMatch[2].trim();
                     return (
@@ -112,7 +112,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
       }
       
       // Check if paragraph contains sub-headers with content (but not main headers)
-      if (paragraph.includes('**') && paragraph.includes(':')) {
+      if (paragraph.includes(':')) {
         const lines = paragraph.split('\n');
         return (
           <div key={index} className="mb-4 space-y-3">
@@ -121,8 +121,8 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
               if (!trimmedLine) return null;
               
               // Handle sub-headers like "Recommendations:" or "Action Plan:"
-              const subHeaderMatch = trimmedLine.match(/^\**(.*?):\**(.*)$/);
-              if (subHeaderMatch) {
+              const subHeaderMatch = trimmedLine.match(/^(.*?):\s*(.*)$/);
+              if (subHeaderMatch && subHeaderMatch[1].length < 30) { // Only treat short lines as headers
                 const subHeaderText = subHeaderMatch[1].trim();
                 const subContent = subHeaderMatch[2].trim();
                 return (

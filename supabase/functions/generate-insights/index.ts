@@ -12,27 +12,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Helper function to clean and extract JSON from OpenAI response
-const cleanJsonResponse = (response: string): string => {
-  // Remove any markdown code block formatting
-  let cleaned = response.trim();
-  
-  // Remove ```json at the beginning
-  if (cleaned.startsWith('```json')) {
-    cleaned = cleaned.substring(7);
-  }
-  
-  // Remove ``` at the end
-  if (cleaned.endsWith('```')) {
-    cleaned = cleaned.substring(0, cleaned.length - 3);
-  }
-  
-  // Remove any other markdown formatting
-  cleaned = cleaned.replace(/^```[\w]*\n?/, '').replace(/\n?```$/, '');
-  
-  return cleaned.trim();
-};
-
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -198,21 +177,15 @@ The resources and examples in the output should be relevant and practical, not a
     }
 
     const data = await response.json();
-    const rawInsights = data.choices[0].message.content.trim();
+    const insights = data.choices[0].message.content.trim();
     
-    if (!rawInsights) {
+    if (!insights) {
       throw new Error('Empty response from OpenAI API');
     }
 
-    console.log('Raw OpenAI response:', rawInsights);
-
-    // Clean the response to remove any markdown formatting
-    const cleanedInsights = cleanJsonResponse(rawInsights);
-    console.log('Cleaned insights JSON:', cleanedInsights);
-
-    // Validate that the cleaned response is valid JSON
+    // Validate that the response is valid JSON
     try {
-      const parsedInsights = JSON.parse(cleanedInsights);
+      const parsedInsights = JSON.parse(insights);
       
       // Basic validation of the structure
       if (!parsedInsights.priority_areas || !parsedInsights.key_strengths) {
@@ -225,9 +198,8 @@ The resources and examples in the output should be relevant and practical, not a
       
       console.log('Successfully validated JSON structure');
     } catch (jsonError) {
-      console.error('Invalid JSON response from OpenAI after cleaning:', jsonError);
-      console.error('Cleaned response was:', cleanedInsights);
-      throw new Error('OpenAI returned invalid JSON format even after cleaning');
+      console.error('Invalid JSON response from OpenAI:', jsonError);
+      throw new Error('OpenAI returned invalid JSON format');
     }
 
     // ALWAYS save insights to database if assessmentId is provided
@@ -236,7 +208,7 @@ The resources and examples in the output should be relevant and practical, not a
       
       const { error: updateError } = await supabase
         .from('assessment_results')
-        .update({ ai_insights: cleanedInsights })
+        .update({ ai_insights: insights })
         .eq('id', assessmentId);
 
       if (updateError) {
@@ -252,7 +224,7 @@ The resources and examples in the output should be relevant and practical, not a
 
     console.log('Successfully generated and saved insights');
 
-    return new Response(JSON.stringify({ insights: cleanedInsights }), {
+    return new Response(JSON.stringify({ insights }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {

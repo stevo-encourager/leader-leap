@@ -19,23 +19,42 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
   });
 
   const formatInsights = (text: string) => {
+    // Define the main headers that should be styled as section headers
+    const mainHeaders = [
+      'Overall Assessment',
+      'Top 3 Priority Development Areas',
+      'Top Three Priority Development Areas',
+      'Key Strengths to Leverage',
+      'Actionable Next Step for This Week'
+    ];
+
+    // Remove hashtags and clean up the text
+    const cleanedText = text.replace(/#{1,6}\s*/g, '');
+    
     // Split by double newlines to create paragraphs
-    const paragraphs = text.split('\n\n');
+    const paragraphs = cleanedText.split('\n\n');
     
     return paragraphs.map((paragraph, index) => {
-      // Check if it's a main section header (starts with **...:** pattern)
-      const mainHeaderMatch = paragraph.match(/^\*\*(.*?):\*\*$/);
-      if (mainHeaderMatch) {
-        const headerText = mainHeaderMatch[1].trim();
+      const trimmedParagraph = paragraph.trim();
+      if (!trimmedParagraph) return null;
+
+      // Check if this paragraph starts with one of our main headers
+      const isMainHeader = mainHeaders.some(header => 
+        trimmedParagraph.toLowerCase().startsWith(header.toLowerCase())
+      );
+
+      if (isMainHeader) {
+        // Extract the header text (remove any trailing colons or punctuation)
+        const headerText = trimmedParagraph.split(':')[0].trim();
         return (
-          <h3 key={index} className="text-xl font-bold text-encourager mb-4 mt-6 font-playfair">
-            {headerText}:
+          <h3 key={index} className="text-xl font-bold text-encourager mb-4 mt-8 font-playfair border-b border-encourager/20 pb-2">
+            {headerText}
           </h3>
         );
       }
       
-      // Check if it's a numbered section with header (e.g., "1. **Emotional Intelligence (EI):**")
-      const numberedHeaderMatch = paragraph.match(/^(\d+)\.\s*\*\*(.*?):\*\*(.*)$/s);
+      // Check if it's a numbered section with header (e.g., "1. Emotional Intelligence (EI):")
+      const numberedHeaderMatch = paragraph.match(/^(\d+)\.\s*\**(.*?):\**(.*)$/s);
       if (numberedHeaderMatch) {
         const number = numberedHeaderMatch[1];
         const headerText = numberedHeaderMatch[2].trim();
@@ -43,24 +62,27 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
         
         return (
           <div key={index} className="mb-6">
-            <h4 className="text-lg font-bold text-encourager mb-3 font-playfair">
+            <h4 className="text-lg font-bold text-encourager-gray mb-3">
               {number}. {headerText}:
             </h4>
             {content && (
               <div className="ml-4 space-y-2">
                 {content.split('\n').map((line, lineIndex) => {
-                  // Handle sub-headers like "**Recommendation:**" or "**Action Plan:**"
-                  const subHeaderMatch = line.match(/^\s*-?\s*\*\*(.*?):\*\*(.*)$/);
+                  const trimmedLine = line.trim();
+                  if (!trimmedLine) return null;
+                  
+                  // Handle sub-headers like "Recommendations:" or "Action Plan:"
+                  const subHeaderMatch = trimmedLine.match(/^\**(.*?):\**(.*)$/);
                   if (subHeaderMatch) {
                     const subHeaderText = subHeaderMatch[1].trim();
                     const subContent = subHeaderMatch[2].trim();
                     return (
-                      <div key={lineIndex} className="mb-2">
-                        <p className="font-semibold text-encourager-gray mb-1">
+                      <div key={lineIndex} className="mb-3">
+                        <p className="font-bold text-slate-700 mb-2">
                           {subHeaderText}:
                         </p>
                         {subContent && (
-                          <p className="text-slate-700 ml-2">
+                          <p className="text-slate-600 ml-2 leading-relaxed">
                             {subContent}
                           </p>
                         )}
@@ -69,14 +91,19 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
                   }
                   
                   // Regular bullet point or content line
-                  if (line.trim().startsWith('-') || line.trim()) {
+                  if (trimmedLine.startsWith('-') || trimmedLine.startsWith('•')) {
                     return (
-                      <p key={lineIndex} className="text-slate-700 mb-1">
-                        {line.trim()}
+                      <p key={lineIndex} className="text-slate-600 mb-2 ml-2 leading-relaxed">
+                        {trimmedLine}
                       </p>
                     );
                   }
-                  return null;
+                  
+                  return (
+                    <p key={lineIndex} className="text-slate-600 mb-2 leading-relaxed">
+                      {trimmedLine}
+                    </p>
+                  );
                 })}
               </div>
             )}
@@ -84,24 +111,27 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
         );
       }
       
-      // Check if paragraph contains sub-headers with content
+      // Check if paragraph contains sub-headers with content (but not main headers)
       if (paragraph.includes('**') && paragraph.includes(':')) {
         const lines = paragraph.split('\n');
         return (
           <div key={index} className="mb-4 space-y-3">
             {lines.map((line, lineIndex) => {
-              // Handle sub-headers like "**Recommendation:**" or "**Action Plan:**"
-              const subHeaderMatch = line.match(/^\s*-?\s*\*\*(.*?):\*\*(.*)$/);
+              const trimmedLine = line.trim();
+              if (!trimmedLine) return null;
+              
+              // Handle sub-headers like "Recommendations:" or "Action Plan:"
+              const subHeaderMatch = trimmedLine.match(/^\**(.*?):\**(.*)$/);
               if (subHeaderMatch) {
                 const subHeaderText = subHeaderMatch[1].trim();
                 const subContent = subHeaderMatch[2].trim();
                 return (
                   <div key={lineIndex} className="mb-3">
-                    <p className="font-semibold text-encourager-gray mb-1">
+                    <p className="font-bold text-slate-700 mb-2">
                       {subHeaderText}:
                     </p>
                     {subContent && (
-                      <p className="text-slate-700 ml-2 leading-relaxed">
+                      <p className="text-slate-600 ml-2 leading-relaxed">
                         {subContent}
                       </p>
                     )}
@@ -110,14 +140,11 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
               }
               
               // Regular content line
-              if (line.trim()) {
-                return (
-                  <p key={lineIndex} className="text-slate-700 leading-relaxed">
-                    {line.trim()}
-                  </p>
-                );
-              }
-              return null;
+              return (
+                <p key={lineIndex} className="text-slate-600 leading-relaxed mb-2">
+                  {trimmedLine}
+                </p>
+              );
             })}
           </div>
         );
@@ -129,18 +156,21 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
         return (
           <div key={index} className="mb-4 space-y-2">
             {lines.map((line, lineIndex) => {
+              const trimmedLine = line.trim();
+              if (!trimmedLine) return null;
+              
               // Style numbered items differently
-              if (line.match(/^\d+\./)) {
+              if (trimmedLine.match(/^\d+\./)) {
                 return (
                   <p key={lineIndex} className="mb-2 text-slate-700 font-medium">
-                    {line.trim()}
+                    {trimmedLine}
                   </p>
                 );
               }
               // Style bullet points and sub-items
               return (
                 <p key={lineIndex} className="mb-1 text-slate-600 ml-4 leading-relaxed">
-                  {line.trim()}
+                  {trimmedLine}
                 </p>
               );
             })}
@@ -150,8 +180,8 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
       
       // Regular paragraph
       return (
-        <p key={index} className="mb-4 text-slate-700 leading-relaxed">
-          {paragraph.trim()}
+        <p key={index} className="mb-4 text-slate-600 leading-relaxed">
+          {trimmedParagraph}
         </p>
       );
     });
@@ -179,7 +209,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
             size="sm"
             onClick={regenerateInsights}
             disabled={isLoading}
-            className="shadow-sm"
+            className="bg-encourager hover:bg-encourager-light text-white shadow-sm"
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
             {isLoading ? 'Generating...' : 'Refresh'}

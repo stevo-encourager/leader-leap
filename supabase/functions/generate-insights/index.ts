@@ -9,6 +9,29 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Input validation helper functions
+const isValidCategories = (categories: any): boolean => {
+  return Array.isArray(categories) && 
+         categories.length > 0 && 
+         categories.every(cat => 
+           cat && 
+           typeof cat.title === 'string' && 
+           Array.isArray(cat.skills) &&
+           cat.skills.length > 0
+         );
+};
+
+const isValidDemographics = (demographics: any): boolean => {
+  return typeof demographics === 'object' && demographics !== null;
+};
+
+const isValidAverageGap = (averageGap: any): boolean => {
+  return typeof averageGap === 'number' && 
+         !isNaN(averageGap) && 
+         isFinite(averageGap) &&
+         averageGap >= 0;
+};
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -16,27 +39,87 @@ serve(async (req) => {
   }
 
   try {
-    const { categories, demographics, averageGap } = await req.json();
-    
-    console.log('Generating insights for assessment data');
+    // Validate OpenAI API key
+    if (!openAIApiKey) {
+      console.error('OpenAI API key not configured');
+      return new Response(JSON.stringify({ error: 'OpenAI API key not configured' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
-    // Prepare assessment data summary for OpenAI
+    // Parse and validate request body
+    let requestBody;
+    try {
+      requestBody = await req.json();
+    } catch (parseError) {
+      console.error('Invalid JSON in request body');
+      return new Response(JSON.stringify({ error: 'Invalid request format' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const { categories, demographics, averageGap } = requestBody;
+    
+    // Input validation
+    if (!isValidCategories(categories)) {
+      console.error('Invalid or missing categories data');
+      return new Response(JSON.stringify({ error: 'Invalid categories data provided' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!isValidDemographics(demographics)) {
+      console.error('Invalid demographics data');
+      return new Response(JSON.stringify({ error: 'Invalid demographics data provided' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!isValidAverageGap(averageGap)) {
+      console.error('Invalid averageGap value:', averageGap);
+      return new Response(JSON.stringify({ error: 'Invalid average gap value provided' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log('Generating insights for validated assessment data');
+
+    // Prepare assessment data summary for OpenAI with safe access
     const assessmentSummary = {
       totalCategories: categories.length,
       averageGap: averageGap,
       demographics: demographics,
-      categoryBreakdown: categories.map(cat => ({
-        title: cat.title,
-        skillCount: cat.skills?.length || 0,
-        averageCurrentRating: cat.skills?.reduce((sum, skill) => sum + (skill.ratings?.current || 0), 0) / (cat.skills?.length || 1),
-        averageDesiredRating: cat.skills?.reduce((sum, skill) => sum + (skill.ratings?.desired || 0), 0) / (cat.skills?.length || 1)
-      }))
+      categoryBreakdown: categories.map(cat => {
+        const skills = cat.skills || [];
+        const validSkills = skills.filter(skill => 
+          skill && 
+          skill.ratings && 
+          typeof skill.ratings.current === 'number' && 
+          typeof skill.ratings.desired === 'number'
+        );
+        
+        const currentSum = validSkills.reduce((sum, skill) => sum + skill.ratings.current, 0);
+        const desiredSum = validSkills.reduce((sum, skill) => sum + skill.ratings.desired, 0);
+        const skillCount = validSkills.length || 1; // Prevent division by zero
+        
+        return {
+          title: cat.title,
+          skillCount: skillCount,
+          averageCurrentRating: currentSum / skillCount,
+          averageDesiredRating: desiredSum / skillCount
+        };
+      })
     };
 
     const prompt = `As an expert leadership development coach, analyze this leadership assessment data and provide personalized insights:
 
 Assessment Summary:
-- Average Competency Gap: ${averageGap}
+- Average Competency Gap: ${averageGap.toFixed(2)}
 - Role: ${demographics.role || 'Not specified'}
 - Years of Experience: ${demographics.yearsOfExperience || 'Not specified'}
 - Industry: ${demographics.industry || 'Not specified'}
@@ -75,11 +158,37 @@ Keep the response professional, encouraging, and actionable. Format with clear s
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`OpenAI API error: ${response.status} - ${errorText}`);
       throw new Error(`OpenAI API error: ${response.status}`);
     }
 
-    const data = await response.json();
-    const insights = data.choices[0].message.content;
+    let data;
+    try {
+      data = await response.json();
+    } catch (jsonError) {
+      console.error('Failed to parse OpenAI response as JSON');
+      throw new Error('Invalid response from OpenAI API');
+    }
+
+    // Defensive checks for OpenAI response structure
+    if (!data || !data.choices || !Array.isArray(data.choices) || data.choices.length === 0) {
+      console.error('Invalid OpenAI response structure - no choices array');
+      throw new Error('Invalid response structure from OpenAI API');
+    }
+
+    const choice = data.choices[0];
+    if (!choice || !choice.message || typeof choice.message.content !== 'string') {
+      console.error('Invalid OpenAI response structure - no message content');
+      throw new Error('Invalid message structure from OpenAI API');
+    }
+
+    const insights = choice.message.content.trim();
+    
+    if (!insights) {
+      console.error('Empty insights received from OpenAI');
+      throw new Error('Empty response from OpenAI API');
+    }
 
     console.log('Successfully generated insights');
 
@@ -88,7 +197,13 @@ Keep the response professional, encouraging, and actionable. Format with clear s
     });
   } catch (error) {
     console.error('Error in generate-insights function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    
+    // Provide user-friendly error messages
+    const errorMessage = error.message.includes('OpenAI') 
+      ? 'Unable to generate insights due to AI service error. Please try again later.'
+      : 'An unexpected error occurred while generating insights. Please try again.';
+    
+    return new Response(JSON.stringify({ error: errorMessage }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

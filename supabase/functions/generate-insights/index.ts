@@ -103,9 +103,14 @@ serve(async (req) => {
       .sort((a, b) => b.gap - a.gap)
       .slice(0, 3);
 
-    // EXTREMELY SPECIFIC PROMPT to ensure 100% consistent formatting
-    const prompt = `You are a leadership development expert. You MUST respond in the EXACT format specified below. Do not deviate from this format under any circumstances.
+    // Find the top strengths (categories with smallest gaps and high current ratings)
+    const topStrengths = assessmentSummary.categoryBreakdown
+      .filter(cat => cat.averageCurrentRating >= 3.5) // Only consider categories with decent current ratings
+      .sort((a, b) => a.gap - b.gap) // Sort by smallest gap (closest to desired)
+      .slice(0, 3);
 
+    // Create the assessment data section for the prompt
+    const assessmentDataSection = `
 Assessment Data:
 - Overall Average Gap: ${averageGap.toFixed(2)}
 - Role: ${demographics.role || 'Not specified'}
@@ -113,35 +118,37 @@ Assessment Data:
 - Industry: ${demographics.industry || 'Not specified'}
 
 Top 3 Categories by Gap:
-${topGapCategories.map((cat, i) => `${i+1}. ${cat.title}: Gap ${cat.gap.toFixed(1)}`).join('\n')}
+${topGapCategories.map((cat, i) => `${i+1}. ${cat.title}: Gap ${cat.gap.toFixed(1)} (Current: ${cat.averageCurrentRating.toFixed(1)}, Desired: ${cat.averageDesiredRating.toFixed(1)})`).join('\n')}
 
-You MUST respond in this EXACT format with these exact section headers. Do not change the headers or structure:
+Top Strength Areas (High Current Ratings, Low Gaps):
+${topStrengths.map((cat, i) => `${i+1}. ${cat.title}: Current ${cat.averageCurrentRating.toFixed(1)}, Gap ${cat.gap.toFixed(1)}`).join('\n')}
+`;
 
-## Overall Assessment
+    // The main prompt for ChatGPT
+    const prompt = `${assessmentDataSection}
 
-[Write exactly 2-3 sentences about the overall leadership profile and main development themes]
+You are an expert leadership coach and assessment analyst. Based on the provided assessment data (including competency names, gap scores, and strengths), generate AI insights for both the "Top 3 Priority Development Areas" and the "Key Strengths to Leverage" for a user's leadership assessment.
 
-## Top 3 Priority Development Areas
+Instructions:
 
-${topGapCategories.map((cat, i) => `${i+1}. ${cat.title} (Gap: ${cat.gap.toFixed(1)}): Recommendations: [Write exactly 3 specific recommendations separated by semicolons]`).join('\n\n')}
-
-## Key Strengths to Leverage
-
-- [Write exactly 3 key strengths as bullet points]
-- [Second strength]
-- [Third strength]
-
-## Actionable Next Step for This Week
-
-[Write exactly ONE specific action they can take this week]
-
-CRITICAL FORMATTING RULES - DO NOT DEVIATE:
-1. Use exactly these section headers with ##
-2. For Priority Development Areas, format exactly as: "Number. Competency Name (Gap: X.X): Recommendations: recommendation 1; recommendation 2; recommendation 3"
-3. Each priority area must be exactly one paragraph
-4. Use exactly 3 bullet points (-) for strengths
-5. Write exactly ONE actionable next step
-6. Be specific and actionable in all recommendations`;
+Output must be a single JSON object containing two arrays: "priority_areas" and "key_strengths".
+"priority_areas" is an array with exactly 3 objects, one for each priority development area.
+Each object must have:
+"competency" (string): the name of the competency (e.g., "Emotional Intelligence (EI)")
+"gap" (number): the gap score (e.g., 6.3)
+"recommendations" (array of objects): each object must contain:
+"advice" (string): a concise, actionable recommendation sentence
+"resource" (string): a practical resource, such as a link to a best practice article, a description of a recognized methodology, or a named book/course, that the user can consult to learn more or take action. The resource must be directly relevant and actionable.
+"key_strengths" is an array of the user's leadership strengths (number as appropriate, but at least 2).
+Each object must have:
+"competency" (string): the name of the strength (e.g., "Collaboration")
+"example" (string): a concrete example of this strength in action (drawn from provided data, or plausible if not explicit)
+"leverage_advice" (string): a practical suggestion for how to use this strength even more effectively
+Do NOT include any text or markdown before or after the JSON block.
+Do NOT use any formatting other than valid JSON.
+If any field is missing, leave it blank or use null. Do not invent or embellish.
+Use only the data provided.
+The resources and examples in the output should be relevant and practical, not always the same as shown in the example.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -154,12 +161,12 @@ CRITICAL FORMATTING RULES - DO NOT DEVIATE:
         messages: [
           { 
             role: 'system', 
-            content: 'You are a leadership development expert. You MUST follow the exact formatting instructions provided. Do not deviate from the specified format under any circumstances. Always use the exact section headers and formatting specified in the prompt. Be consistent and precise.'
+            content: 'You are an expert leadership coach and assessment analyst. You MUST respond with valid JSON only, no additional text or formatting. Always follow the exact structure specified in the user prompt.'
           },
           { role: 'user', content: prompt }
         ],
         temperature: 0.1, // Very low temperature for maximum consistency
-        max_tokens: 1200
+        max_tokens: 1500
       }),
     });
 
@@ -174,6 +181,25 @@ CRITICAL FORMATTING RULES - DO NOT DEVIATE:
     
     if (!insights) {
       throw new Error('Empty response from OpenAI API');
+    }
+
+    // Validate that the response is valid JSON
+    try {
+      const parsedInsights = JSON.parse(insights);
+      
+      // Basic validation of the structure
+      if (!parsedInsights.priority_areas || !parsedInsights.key_strengths) {
+        throw new Error('Invalid JSON structure - missing required arrays');
+      }
+      
+      if (!Array.isArray(parsedInsights.priority_areas) || !Array.isArray(parsedInsights.key_strengths)) {
+        throw new Error('Invalid JSON structure - priority_areas and key_strengths must be arrays');
+      }
+      
+      console.log('Successfully validated JSON structure');
+    } catch (jsonError) {
+      console.error('Invalid JSON response from OpenAI:', jsonError);
+      throw new Error('OpenAI returned invalid JSON format');
     }
 
     // ALWAYS save insights to database if assessmentId is provided

@@ -1,6 +1,8 @@
+
 import React from 'react';
-import { Category } from '@/utils/assessmentTypes';
+import { Category, Demographics } from '@/utils/assessmentTypes';
 import SkillGapChart from '../SkillGapChart';
+import AIInsights from './AIInsights';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart2, HelpCircle, Target, TrendingUp } from 'lucide-react';
@@ -13,10 +15,17 @@ import {
 
 interface DetailedAnalysisProps {
   categories: Category[];
+  demographics?: Demographics;
+  averageGap?: number;
   className?: string;
 }
 
-const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({ categories, className = '' }) => {
+const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({ 
+  categories, 
+  demographics = {},
+  averageGap = 0,
+  className = '' 
+}) => {
   // Add extensive validation to ensure we have data to render
   const hasCategories = categories && 
     Array.isArray(categories) && 
@@ -85,11 +94,21 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({ categories, classNa
           </TabsContent>
           
           <TabsContent value="key-insights" className="mt-0">
-            <div className="h-[600px] w-full p-4 flex items-center justify-center bg-slate-50">
-              <p className="text-slate-500 text-center">
-                Key insights content will be displayed here.
-              </p>
-            </div>
+            {hasCategories ? (
+              <div className="h-[600px] w-full p-6 overflow-y-auto">
+                <AIInsights 
+                  categories={categories}
+                  demographics={demographics}
+                  averageGap={averageGap}
+                />
+              </div>
+            ) : (
+              <div className="h-[600px] w-full flex items-center justify-center bg-slate-50">
+                <p className="text-slate-500 text-center">
+                  No assessment data available for AI insights. Please complete an assessment first.
+                </p>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </CardContent>

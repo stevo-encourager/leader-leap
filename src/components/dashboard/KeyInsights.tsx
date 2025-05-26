@@ -11,7 +11,6 @@ import { Category, Demographics } from '@/utils/assessmentTypes';
 import InsightSummary from './insights/InsightSummary';
 import LargestGapsSection from './insights/LargestGapsSection';
 import SkillsToImproveSection from './insights/SkillsToImproveSection';
-import AIInsights from './AIInsights';
 
 interface KeyInsightsProps {
   averageGap: number;
@@ -157,20 +156,13 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
         </div>
         <div>
           <h2 className="text-2xl font-bold text-encourager">Skills & Competencies to Work On</h2>
-          <p className="text-sm text-slate-500 mt-1">AI-powered insights and development recommendations</p>
+          <p className="text-sm text-slate-500 mt-1">Development recommendations based on your assessment</p>
         </div>
       </div>
       
       <div className="space-y-6">
         {skillsWithRatings > 0 ? (
           <>
-            {/* AI-Powered Insights - New section at the top */}
-            <AIInsights 
-              categories={safeCategories}
-              demographics={demographics}
-              averageGap={averageGap}
-            />
-            
             {/* Largest Competency Gaps */}
             <LargestGapsSection 
               categoryGaps={insightData.largestCategoryGaps}

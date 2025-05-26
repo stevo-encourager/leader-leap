@@ -104,10 +104,14 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
           {/* Profile Summary */}
           <ProfileSummary demographics={demographics} />
 
-          {/* Detailed Analysis */}
-          <DetailedAnalysis categories={categories} />
+          {/* Detailed Analysis - Now includes AI insights in Key Insights tab */}
+          <DetailedAnalysis 
+            categories={categories} 
+            demographics={demographics}
+            averageGap={averageGap}
+          />
 
-          {/* Key Insights - Now with AI-powered insights and demographics */}
+          {/* Skills & Competencies to Work On - Renamed from Key Insights */}
           <KeyInsights 
             averageGap={averageGap} 
             strengths={strengths} 

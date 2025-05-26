@@ -76,7 +76,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
                     
                     return (
                       <div key={lineIndex} className="mb-4">
-                        <p className="text-slate-700 font-bold mb-2">
+                        <p className="text-encourager font-bold mb-2">
                           {number}. {skillName}:
                         </p>
                         {skillContent && (
@@ -88,9 +88,20 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
                     );
                   }
                   
-                  // Handle sub-headers like "Recommendations:" or "Action Plan:"
+                  // Handle "Recommendation:" specifically - show inline
+                  const recommendationMatch = trimmedLine.match(/^-?\s*Recommendation:\s*(.*)$/);
+                  if (recommendationMatch) {
+                    const recommendationText = recommendationMatch[1].trim();
+                    return (
+                      <p key={lineIndex} className="text-slate-600 mb-3 ml-4 leading-relaxed">
+                        <span className="font-bold">Recommendation:</span> {recommendationText}
+                      </p>
+                    );
+                  }
+                  
+                  // Handle other sub-headers like "Action Plan:" but not "Recommendation"
                   const subHeaderMatch = trimmedLine.match(/^(.*?):\s*(.*)$/);
-                  if (subHeaderMatch && subHeaderMatch[1].length < 30) {
+                  if (subHeaderMatch && subHeaderMatch[1].length < 30 && !subHeaderMatch[1].toLowerCase().includes('recommendation')) {
                     const subHeaderText = subHeaderMatch[1].trim();
                     const subContent = subHeaderMatch[2].trim();
                     return (

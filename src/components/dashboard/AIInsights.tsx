@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Bot, AlertCircle } from 'lucide-react';
 import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
@@ -18,274 +19,111 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
     assessmentId
   });
 
-  // Calculate category gaps for display
-  const getCategoryGaps = () => {
-    const categoryGaps: { [key: string]: number } = {};
-    
-    categories.forEach(category => {
-      if (category && category.skills && Array.isArray(category.skills)) {
-        let totalCurrent = 0;
-        let totalDesired = 0;
-        let validSkillCount = 0;
-        
-        category.skills.forEach(skill => {
-          if (skill && skill.ratings) {
-            const current = Number(skill.ratings.current) || 0;
-            const desired = Number(skill.ratings.desired) || 0;
-            
-            if (current > 0 || desired > 0) {
-              totalCurrent += current;
-              totalDesired += desired;
-              validSkillCount++;
-            }
-          }
-        });
-        
-        if (validSkillCount > 0) {
-          const avgCurrent = totalCurrent / validSkillCount;
-          const avgDesired = totalDesired / validSkillCount;
-          const gap = Math.abs(avgDesired - avgCurrent);
-          categoryGaps[category.title.toLowerCase()] = parseFloat(gap.toFixed(1));
-        }
-      }
-    });
-    
-    return categoryGaps;
-  };
-
-  const categoryGaps = getCategoryGaps();
-
   const formatInsights = (text: string) => {
-    // Define the main headers that should be styled as section headers
-    const mainHeaders = [
-      'Overall Assessment',
-      'Top 3 Priority Development Areas',
-      'Top Three Priority Development Areas',
-      'Key Strengths to Leverage',
-      'Actionable Next Step for This Week'
-    ];
+    // Since we now have a very structured format from the prompt, we can parse it more predictably
+    const sections = text.split('## ').filter(section => section.trim());
 
-    // Remove ALL hashtags and asterisks completely
-    const cleanedText = text.replace(/#{1,6}\s*/g, '').replace(/\*+/g, '');
-    
-    // Split by double newlines to create paragraphs
-    const paragraphs = cleanedText.split('\n\n');
-    
-    return paragraphs.map((paragraph, index) => {
-      const trimmedParagraph = paragraph.trim();
-      if (!trimmedParagraph) return null;
+    return sections.map((section, index) => {
+      const lines = section.trim().split('\n');
+      const title = lines[0].trim();
+      const content = lines.slice(1).join('\n').trim();
 
-      // Check if this paragraph starts with one of our main headers
-      const matchedHeader = mainHeaders.find(header => 
-        trimmedParagraph.toLowerCase().startsWith(header.toLowerCase())
-      );
-
-      if (matchedHeader) {
-        // Split the paragraph to separate header from content
-        const lines = trimmedParagraph.split('\n');
-        const headerLine = lines[0];
-        const contentLines = lines.slice(1);
-        
-        // Extract just the header text (remove any trailing colons or punctuation)
-        const headerText = headerLine.split(':')[0].trim();
-        
-        // Get the remaining content after the header
-        const remainingContent = contentLines.length > 0 ? contentLines.join('\n') : 
-          (headerLine.includes(':') ? headerLine.split(':').slice(1).join(':').trim() : '');
-        
+      if (title === 'Overall Assessment') {
         return (
           <div key={index} className="mb-8">
             <h3 className="text-xl font-bold text-encourager mb-4 font-playfair border-b border-encourager/20 pb-2">
-              {headerText}
+              Overall Assessment
             </h3>
-            {remainingContent && (
-              <div className="space-y-3">
-                {remainingContent.split('\n').map((line, lineIndex) => {
-                  const trimmedLine = line.trim();
-                  if (!trimmedLine) return null;
-                  
-                  // Check if it's a numbered section for Top 3 Priority Development Areas
-                  const numberedMatch = trimmedLine.match(/^(\d+)\.\s*(.*?)(?:\s*-\s*Recommendations?:)?\s*(.*)$/);
-                  if (numberedMatch && matchedHeader.toLowerCase().includes('priority development')) {
-                    const number = numberedMatch[1];
-                    const skillName = numberedMatch[2].trim();
-                    let skillContent = numberedMatch[3].trim();
-                    
-                    // Try to find a matching category gap
-                    const skillNameLower = skillName.toLowerCase();
-                    let gapValue = null;
-                    
-                    // Check for various patterns to match skill names with categories
-                    Object.keys(categoryGaps).forEach(categoryKey => {
-                      if (skillNameLower.includes(categoryKey) || 
-                          categoryKey.includes(skillNameLower.replace(/\s*\([^)]*\)/, '').trim().toLowerCase()) ||
-                          (skillNameLower.includes('emotional intelligence') && categoryKey.includes('emotional')) ||
-                          (skillNameLower.includes('change management') && categoryKey.includes('change')) ||
-                          (skillNameLower.includes('communication') && categoryKey.includes('communication')) ||
-                          (skillNameLower.includes('conflict') && categoryKey.includes('conflict')) ||
-                          (skillNameLower.includes('decision') && categoryKey.includes('decision')) ||
-                          (skillNameLower.includes('delegation') && categoryKey.includes('delegation')) ||
-                          (skillNameLower.includes('strategic') && categoryKey.includes('strategic')) ||
-                          (skillNameLower.includes('team') && categoryKey.includes('team')) ||
-                          (skillNameLower.includes('time') && categoryKey.includes('time')) ||
-                          (skillNameLower.includes('professional') && categoryKey.includes('professional'))) {
-                        gapValue = categoryGaps[categoryKey];
-                      }
-                    });
-                    
-                    return (
-                      <div key={lineIndex} className="mb-4">
-                        <p className="text-slate-700 mb-2 leading-relaxed">
-                          <span className="font-medium">{number}. {skillName}{gapValue ? ` (Gap: ${gapValue})` : ''}</span>: Recommendations: {skillContent}
-                        </p>
-                      </div>
-                    );
-                  }
-                  
-                  // Check if it's a numbered section (e.g., "1. Emotional Intelligence (EI):")
-                  const numberedMatch2 = trimmedLine.match(/^(\d+)\.\s*(.*?):\s*(.*)$/);
-                  if (numberedMatch2) {
-                    const number = numberedMatch2[1];
-                    const skillName = numberedMatch2[2].trim();
-                    const skillContent = numberedMatch2[3].trim();
-                    
-                    return (
-                      <div key={lineIndex} className="mb-4">
-                        <p className="text-encourager font-bold mb-2">
-                          {number}. {skillName}:
-                        </p>
-                        {skillContent && (
-                          <p className="text-slate-600 ml-4 leading-relaxed">
-                            {skillContent}
-                          </p>
-                        )}
-                      </div>
-                    );
-                  }
-                  
-                  // Handle "Recommendation:" specifically - show inline with normal font weight
-                  const recommendationMatch = trimmedLine.match(/^-?\s*Recommendations?:\s*(.*)$/);
-                  if (recommendationMatch) {
-                    const recommendationText = recommendationMatch[1].trim();
-                    return (
-                      <p key={lineIndex} className="text-slate-600 mb-3 ml-4 leading-relaxed">
-                        <span className="font-normal">Recommendations:</span> {recommendationText}
-                      </p>
-                    );
-                  }
-                  
-                  // Handle other sub-headers like "Action Plan:" but not "Recommendation"
-                  const subHeaderMatch = trimmedLine.match(/^(.*?):\s*(.*)$/);
-                  if (subHeaderMatch && subHeaderMatch[1].length < 30 && !subHeaderMatch[1].toLowerCase().includes('recommendation')) {
-                    const subHeaderText = subHeaderMatch[1].trim();
-                    const subContent = subHeaderMatch[2].trim();
-                    return (
-                      <div key={lineIndex} className="mb-3">
-                        <p className="font-bold text-slate-700 mb-2">
-                          {subHeaderText}:
-                        </p>
-                        {subContent && (
-                          <p className="text-slate-600 ml-2 leading-relaxed">
-                            {subContent}
-                          </p>
-                        )}
-                      </div>
-                    );
-                  }
-                  
-                  // Regular content line - check for bullet points
-                  if (trimmedLine.startsWith('-') || trimmedLine.startsWith('•')) {
-                    return (
-                      <p key={lineIndex} className="text-slate-600 mb-2 ml-2 leading-relaxed">
-                        {trimmedLine}
-                      </p>
-                    );
-                  }
+            <p className="text-slate-600 leading-relaxed">
+              {content}
+            </p>
+          </div>
+        );
+      }
+
+      if (title === 'Top 3 Priority Development Areas') {
+        return (
+          <div key={index} className="mb-8">
+            <h3 className="text-xl font-bold text-encourager mb-4 font-playfair border-b border-encourager/20 pb-2">
+              Top 3 Priority Development Areas
+            </h3>
+            <div className="space-y-4">
+              {content.split('\n\n').map((item, itemIndex) => {
+                const trimmedItem = item.trim();
+                if (!trimmedItem) return null;
+
+                // Parse the structured format: "1. Competency (Gap: X.X): Recommendations: text"
+                const match = trimmedItem.match(/^(\d+)\.\s*(.+?)\s*\(Gap:\s*([\d.]+)\):\s*Recommendations:\s*(.+)$/s);
+                
+                if (match) {
+                  const [, number, competency, gap, recommendations] = match;
                   
                   return (
-                    <p key={lineIndex} className="text-slate-600 mb-2 leading-relaxed">
-                      {trimmedLine}
-                    </p>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        );
-      }
-      
-      // Check if paragraph contains sub-headers with content (but not main headers)
-      if (paragraph.includes(':')) {
-        const lines = paragraph.split('\n');
-        return (
-          <div key={index} className="mb-4 space-y-3">
-            {lines.map((line, lineIndex) => {
-              const trimmedLine = line.trim();
-              if (!trimmedLine) return null;
-              
-              // Handle sub-headers like "Recommendations:" or "Action Plan:"
-              const subHeaderMatch = trimmedLine.match(/^(.*?):\s*(.*)$/);
-              if (subHeaderMatch && subHeaderMatch[1].length < 30) { // Only treat short lines as headers
-                const subHeaderText = subHeaderMatch[1].trim();
-                const subContent = subHeaderMatch[2].trim();
-                return (
-                  <div key={lineIndex} className="mb-3">
-                    <p className="font-bold text-slate-700 mb-2">
-                      {subHeaderText}:
-                    </p>
-                    {subContent && (
-                      <p className="text-slate-600 ml-2 leading-relaxed">
-                        {subContent}
+                    <div key={itemIndex} className="mb-4">
+                      <p className="text-slate-700 leading-relaxed">
+                        <span className="font-medium">{number}. {competency.trim()} (Gap: {gap})</span>: Recommendations: {recommendations.trim()}
                       </p>
-                    )}
-                  </div>
+                    </div>
+                  );
+                }
+
+                // Fallback for any non-matching content
+                return (
+                  <p key={itemIndex} className="text-slate-600 leading-relaxed mb-2">
+                    {trimmedItem}
+                  </p>
                 );
-              }
-              
-              // Regular content line
-              return (
-                <p key={lineIndex} className="text-slate-600 leading-relaxed mb-2">
-                  {trimmedLine}
-                </p>
-              );
-            })}
+              })}
+            </div>
           </div>
         );
       }
-      
-      // Check if it's a numbered list or bullet point
-      if (paragraph.match(/^\d+\./m) || paragraph.includes('•') || paragraph.includes('-')) {
-        const lines = paragraph.split('\n');
+
+      if (title === 'Key Strengths to Leverage') {
         return (
-          <div key={index} className="mb-4 space-y-2">
-            {lines.map((line, lineIndex) => {
-              const trimmedLine = line.trim();
-              if (!trimmedLine) return null;
-              
-              // Style numbered items differently
-              if (trimmedLine.match(/^\d+\./)) {
+          <div key={index} className="mb-8">
+            <h3 className="text-xl font-bold text-encourager mb-4 font-playfair border-b border-encourager/20 pb-2">
+              Key Strengths to Leverage
+            </h3>
+            <div className="space-y-2">
+              {content.split('\n').map((line, lineIndex) => {
+                const trimmedLine = line.trim();
+                if (!trimmedLine) return null;
+                
                 return (
-                  <p key={lineIndex} className="mb-2 text-slate-700 font-medium">
+                  <p key={lineIndex} className="text-slate-600 leading-relaxed">
                     {trimmedLine}
                   </p>
                 );
-              }
-              // Style bullet points and sub-items
-              return (
-                <p key={lineIndex} className="mb-1 text-slate-600 ml-4 leading-relaxed">
-                  {trimmedLine}
-                </p>
-              );
-            })}
+              })}
+            </div>
           </div>
         );
       }
-      
-      // Regular paragraph
+
+      if (title === 'Actionable Next Step for This Week') {
+        return (
+          <div key={index} className="mb-8">
+            <h3 className="text-xl font-bold text-encourager mb-4 font-playfair border-b border-encourager/20 pb-2">
+              Actionable Next Step for This Week
+            </h3>
+            <p className="text-slate-600 leading-relaxed">
+              {content}
+            </p>
+          </div>
+        );
+      }
+
+      // Fallback for any unexpected sections
       return (
-        <p key={index} className="mb-4 text-slate-600 leading-relaxed">
-          {trimmedParagraph}
-        </p>
+        <div key={index} className="mb-8">
+          <h3 className="text-xl font-bold text-encourager mb-4 font-playfair border-b border-encourager/20 pb-2">
+            {title}
+          </h3>
+          <p className="text-slate-600 leading-relaxed">
+            {content}
+          </p>
+        </div>
       );
     });
   };

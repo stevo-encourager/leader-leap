@@ -101,7 +101,7 @@ serve(async (req) => {
     // Initialize Supabase client
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // If assessmentId is provided, check if insights already exist
+    // CRITICAL: Always check if insights already exist first
     if (assessmentId) {
       console.log('Checking for existing insights for assessment:', assessmentId);
       
@@ -113,16 +113,22 @@ serve(async (req) => {
 
       if (fetchError) {
         console.error('Error fetching existing assessment:', fetchError);
-        // Continue with generation if we can't fetch
-      } else if (existingAssessment && existingAssessment.ai_insights) {
-        console.log('Found existing insights, returning them');
+        return new Response(JSON.stringify({ error: 'Could not check for existing insights' }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      // If insights already exist, return them immediately - NEVER regenerate
+      if (existingAssessment && existingAssessment.ai_insights && existingAssessment.ai_insights.trim()) {
+        console.log('Found existing insights, returning saved version - NEVER regenerating');
         return new Response(JSON.stringify({ insights: existingAssessment.ai_insights }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
     }
 
-    console.log('Generating new insights for assessment data');
+    console.log('No existing insights found - generating new insights (ONLY ONCE)');
 
     // Prepare assessment data summary for OpenAI with safe access
     const assessmentSummary = {
@@ -140,37 +146,59 @@ serve(async (req) => {
         
         const currentSum = validSkills.reduce((sum, skill) => sum + skill.ratings.current, 0);
         const desiredSum = validSkills.reduce((sum, skill) => sum + skill.ratings.desired, 0);
-        const skillCount = validSkills.length || 1; // Prevent division by zero
+        const skillCount = validSkills.length || 1;
         
         return {
           title: cat.title,
           skillCount: skillCount,
           averageCurrentRating: currentSum / skillCount,
-          averageDesiredRating: desiredSum / skillCount
+          averageDesiredRating: desiredSum / skillCount,
+          gap: (desiredSum / skillCount) - (currentSum / skillCount)
         };
       })
     };
 
-    const prompt = `As an expert leadership development coach, analyze this leadership assessment data and provide personalized insights:
+    // Find the top 3 categories with the largest gaps
+    const topGapCategories = assessmentSummary.categoryBreakdown
+      .sort((a, b) => b.gap - a.gap)
+      .slice(0, 3);
 
-Assessment Summary:
-- Average Competency Gap: ${averageGap.toFixed(2)}
+    // VERY SPECIFIC PROMPT to ensure consistent formatting
+    const prompt = `As a leadership development expert, analyze this assessment and provide insights in the EXACT format specified below. Do not deviate from this format.
+
+Assessment Data:
+- Overall Average Gap: ${averageGap.toFixed(2)}
 - Role: ${demographics.role || 'Not specified'}
-- Years of Experience: ${demographics.yearsOfExperience || 'Not specified'}
+- Experience: ${demographics.yearsOfExperience || 'Not specified'} years
 - Industry: ${demographics.industry || 'Not specified'}
 
-Competency Categories Performance:
-${assessmentSummary.categoryBreakdown.map(cat => 
-  `- ${cat.title}: Current avg ${cat.averageCurrentRating.toFixed(1)}, Desired avg ${cat.averageDesiredRating.toFixed(1)}, Gap: ${(cat.averageDesiredRating - cat.averageCurrentRating).toFixed(1)}`
-).join('\n')}
+Top 3 Categories by Gap:
+${topGapCategories.map((cat, i) => `${i+1}. ${cat.title}: Gap ${cat.gap.toFixed(1)}`).join('\n')}
 
-Please provide:
-1. A brief overall assessment (2-3 sentences)
-2. Top 3 priority development areas with specific recommendations
-3. Key strengths to leverage
-4. One specific actionable next step for this week
+You MUST respond in this EXACT format with these exact section headers:
 
-Keep the response professional, encouraging, and actionable. Format with clear sections and bullet points.`;
+## Overall Assessment
+
+[Write 2-3 sentences about the overall leadership profile and main development themes]
+
+## Top 3 Priority Development Areas
+
+${topGapCategories.map((cat, i) => `${i+1}. ${cat.title} (Gap: ${cat.gap.toFixed(1)}): Recommendations: [Provide 2-3 specific, actionable recommendations separated by semicolons]`).join('\n\n')}
+
+## Key Strengths to Leverage
+
+[List 2-3 key strengths as bullet points with - ]
+
+## Actionable Next Step for This Week
+
+[Provide ONE specific action they can take this week]
+
+CRITICAL FORMATTING RULES:
+- Use exactly these section headers with ##
+- For Priority Development Areas, format exactly as: "Competency Name (Gap: X.X): Recommendations: recommendation 1; recommendation 2; recommendation 3"
+- Keep each priority area as one paragraph
+- Use bullet points (-) for strengths
+- Be specific and actionable in all recommendations`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -183,12 +211,12 @@ Keep the response professional, encouraging, and actionable. Format with clear s
         messages: [
           { 
             role: 'system', 
-            content: 'You are an expert leadership development coach with 20+ years of experience. Provide personalized, actionable insights based on leadership assessment data. Be encouraging yet direct, focusing on practical development strategies.'
+            content: 'You are a leadership development expert. You MUST follow the exact formatting instructions provided. Do not deviate from the specified format under any circumstances. Always use the exact section headers and formatting specified in the prompt.'
           },
           { role: 'user', content: prompt }
         ],
-        temperature: 0.7,
-        max_tokens: 1000
+        temperature: 0.3, // Lower temperature for more consistent output
+        max_tokens: 1200
       }),
     });
 
@@ -225,9 +253,9 @@ Keep the response professional, encouraging, and actionable. Format with clear s
       throw new Error('Empty response from OpenAI API');
     }
 
-    // Save insights to database if assessmentId is provided
+    // ALWAYS save insights to database if assessmentId is provided
     if (assessmentId) {
-      console.log('Saving insights to assessment:', assessmentId);
+      console.log('Saving NEW insights to assessment (will NEVER be regenerated):', assessmentId);
       
       const { error: updateError } = await supabase
         .from('assessment_results')
@@ -236,13 +264,16 @@ Keep the response professional, encouraging, and actionable. Format with clear s
 
       if (updateError) {
         console.error('Error saving insights to database:', updateError);
-        // Continue and return insights even if saving fails
+        return new Response(JSON.stringify({ error: 'Failed to save insights to database' }), {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
       } else {
-        console.log('Successfully saved insights to database');
+        console.log('Successfully saved insights to database - will be reused forever');
       }
     }
 
-    console.log('Successfully generated insights');
+    console.log('Successfully generated and saved insights');
 
     return new Response(JSON.stringify({ insights }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -250,7 +281,6 @@ Keep the response professional, encouraging, and actionable. Format with clear s
   } catch (error) {
     console.error('Error in generate-insights function:', error);
     
-    // Provide user-friendly error messages
     const errorMessage = error.message.includes('OpenAI') 
       ? 'Unable to generate insights due to AI service error. Please try again later.'
       : 'An unexpected error occurred while generating insights. Please try again.';

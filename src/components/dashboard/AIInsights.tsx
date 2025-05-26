@@ -39,17 +39,92 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
       if (!trimmedParagraph) return null;
 
       // Check if this paragraph starts with one of our main headers
-      const isMainHeader = mainHeaders.some(header => 
+      const matchedHeader = mainHeaders.find(header => 
         trimmedParagraph.toLowerCase().startsWith(header.toLowerCase())
       );
 
-      if (isMainHeader) {
-        // Extract the header text (remove any trailing colons or punctuation)
-        const headerText = trimmedParagraph.split(':')[0].trim();
+      if (matchedHeader) {
+        // Split the paragraph to separate header from content
+        const lines = trimmedParagraph.split('\n');
+        const headerLine = lines[0];
+        const contentLines = lines.slice(1);
+        
+        // Extract just the header text (remove any trailing colons or punctuation)
+        const headerText = headerLine.split(':')[0].trim();
+        
+        // Get the remaining content after the header
+        const remainingContent = contentLines.length > 0 ? contentLines.join('\n') : 
+          (headerLine.includes(':') ? headerLine.split(':').slice(1).join(':').trim() : '');
+        
         return (
-          <h3 key={index} className="text-xl font-bold text-encourager mb-4 mt-8 font-playfair border-b border-encourager/20 pb-2">
-            {headerText}
-          </h3>
+          <div key={index} className="mb-8">
+            <h3 className="text-xl font-bold text-encourager mb-4 font-playfair border-b border-encourager/20 pb-2">
+              {headerText}
+            </h3>
+            {remainingContent && (
+              <div className="space-y-3">
+                {remainingContent.split('\n').map((line, lineIndex) => {
+                  const trimmedLine = line.trim();
+                  if (!trimmedLine) return null;
+                  
+                  // Check if it's a numbered section (e.g., "1. Emotional Intelligence (EI):")
+                  const numberedMatch = trimmedLine.match(/^(\d+)\.\s*(.*?):\s*(.*)$/);
+                  if (numberedMatch) {
+                    const number = numberedMatch[1];
+                    const skillName = numberedMatch[2].trim();
+                    const skillContent = numberedMatch[3].trim();
+                    
+                    return (
+                      <div key={lineIndex} className="mb-4">
+                        <p className="text-slate-700 font-bold mb-2">
+                          {number}. {skillName}:
+                        </p>
+                        {skillContent && (
+                          <p className="text-slate-600 ml-4 leading-relaxed">
+                            {skillContent}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  }
+                  
+                  // Handle sub-headers like "Recommendations:" or "Action Plan:"
+                  const subHeaderMatch = trimmedLine.match(/^(.*?):\s*(.*)$/);
+                  if (subHeaderMatch && subHeaderMatch[1].length < 30) {
+                    const subHeaderText = subHeaderMatch[1].trim();
+                    const subContent = subHeaderMatch[2].trim();
+                    return (
+                      <div key={lineIndex} className="mb-3">
+                        <p className="font-bold text-slate-700 mb-2">
+                          {subHeaderText}:
+                        </p>
+                        {subContent && (
+                          <p className="text-slate-600 ml-2 leading-relaxed">
+                            {subContent}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  }
+                  
+                  // Regular content line - check for bullet points
+                  if (trimmedLine.startsWith('-') || trimmedLine.startsWith('•')) {
+                    return (
+                      <p key={lineIndex} className="text-slate-600 mb-2 ml-2 leading-relaxed">
+                        {trimmedLine}
+                      </p>
+                    );
+                  }
+                  
+                  return (
+                    <p key={lineIndex} className="text-slate-600 mb-2 leading-relaxed">
+                      {trimmedLine}
+                    </p>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         );
       }
       

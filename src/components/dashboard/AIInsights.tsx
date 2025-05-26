@@ -135,14 +135,9 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
                     
                     return (
                       <div key={lineIndex} className="mb-4">
-                        <p className="text-encourager font-bold mb-2">
-                          {number}. {skillName}{gapValue ? ` (Gap: ${gapValue})` : ''} - <span className="font-normal">Recommendations:</span>
+                        <p className="text-slate-700 mb-2 leading-relaxed">
+                          <span className="font-medium">{number}. {skillName}{gapValue ? ` (Gap: ${gapValue})` : ''}: Recommendations:</span> {skillContent}
                         </p>
-                        {skillContent && (
-                          <p className="text-slate-600 ml-4 leading-relaxed">
-                            {skillContent}
-                          </p>
-                        )}
                       </div>
                     );
                   }

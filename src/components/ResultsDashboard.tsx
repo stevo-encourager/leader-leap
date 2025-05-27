@@ -104,22 +104,28 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
         </CardHeader>
         <CardContent className="space-y-6" id="results-content">
           {/* Profile Summary */}
-          <ProfileSummary demographics={demographics} />
+          <div data-section="profile-summary">
+            <ProfileSummary demographics={demographics} />
+          </div>
 
           {/* Detailed Analysis - Competency visualization and insights */}
-          <DetailedAnalysis 
-            categories={categories}
-            demographics={demographics}
-            averageGap={averageGap}
-            assessmentId={assessmentId}
-          />
+          <div data-section="detailed-analysis">
+            <DetailedAnalysis 
+              categories={categories}
+              demographics={demographics}
+              averageGap={averageGap}
+              assessmentId={assessmentId}
+            />
+          </div>
           
           {/* Recommended Next Steps */}
-          <RecommendedSteps />
+          <div data-section="recommended-steps">
+            <RecommendedSteps />
+          </div>
           
           {/* Coaching Support and Sign Up side by side */}
           <div className="grid grid-cols-3 gap-4">
-            <div className="col-span-2">
+            <div className="col-span-2" data-section="coaching-support">
               <CoachingSupport />
             </div>
             <div className="col-span-1">

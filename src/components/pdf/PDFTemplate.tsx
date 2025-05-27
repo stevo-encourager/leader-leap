@@ -10,10 +10,30 @@ interface PDFTemplateProps {
 }
 
 const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics }) => {
+  // Debug: Log what the template is receiving
+  console.log('PDFTemplate: Received categories:', categories);
+  console.log('PDFTemplate: Received demographics:', demographics);
+  console.log('PDFTemplate: Categories count:', categories?.length || 0);
+  
+  // Ensure we have valid data
+  if (!categories || !Array.isArray(categories) || categories.length === 0) {
+    console.error('PDFTemplate: No valid categories data received');
+    return (
+      <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+        <h1>No Assessment Data Available</h1>
+        <p>No assessment data was provided to generate this PDF.</p>
+      </div>
+    );
+  }
+  
   // Calculate metrics
   const averageGap = calculateAverageGap(categories);
   const strengths = getTopStrengths(categories, 5);
   const lowestSkills = getLowestSkills(categories, 5);
+
+  console.log('PDFTemplate: Calculated averageGap:', averageGap);
+  console.log('PDFTemplate: Calculated strengths:', strengths);
+  console.log('PDFTemplate: Calculated lowestSkills:', lowestSkills);
 
   // Get current date
   const currentDate = new Date().toLocaleDateString('en-US', {
@@ -39,6 +59,8 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics }) =
     };
   }).sort((a, b) => b.averageGap - a.averageGap);
 
+  console.log('PDFTemplate: Category averages:', categoryAverages);
+
   return (
     <div style={{
       fontFamily: 'system-ui, -apple-system, sans-serif',
@@ -57,18 +79,6 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics }) =
         paddingBottom: '20px',
         borderBottom: '2px solid #2F564D'
       }}>
-        <img 
-          src="/lovable-uploads/8320d514-fba5-4e1b-a658-1563758db943.png" 
-          alt="Leadership Assessment Logo"
-          style={{
-            height: '60px',
-            width: 'auto',
-            marginBottom: '15px',
-            display: 'block',
-            marginLeft: 'auto',
-            marginRight: 'auto'
-          }}
-        />
         <h1 style={{
           color: '#2F564D',
           fontSize: '24px',
@@ -104,28 +114,31 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics }) =
           borderRadius: '8px',
           border: '1px solid #e2e8f0'
         }}>
-          {demographics.jobTitle && (
+          {demographics?.jobTitle && (
             <p style={{ margin: '0 0 8px 0' }}>
               <strong>Job Title:</strong> {demographics.jobTitle}
             </p>
           )}
-          {demographics.department && (
+          {demographics?.department && (
             <p style={{ margin: '0 0 8px 0' }}>
               <strong>Department:</strong> {demographics.department}
             </p>
           )}
-          {demographics.experienceLevel && (
+          {demographics?.experienceLevel && (
             <p style={{ margin: '0 0 8px 0' }}>
               <strong>Experience Level:</strong> {demographics.experienceLevel}
             </p>
           )}
-          {demographics.teamSize && (
+          {demographics?.teamSize && (
             <p style={{ margin: '0 0 8px 0' }}>
               <strong>Team Size:</strong> {demographics.teamSize}
             </p>
           )}
           <p style={{ margin: '0' }}>
             <strong>Overall Development Gap:</strong> {averageGap.toFixed(2)} points
+          </p>
+          <p style={{ margin: '8px 0 0 0', fontSize: '11px', color: '#64748b' }}>
+            Assessment completed across {categories.length} competency areas
           </p>
         </div>
       </div>
@@ -297,24 +310,30 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics }) =
               {category.title}
             </h3>
             <div style={{ marginLeft: '10px' }}>
-              {category.skills.map((skill, skillIndex) => (
-                <div key={skill.id} style={{
-                  marginBottom: skillIndex < category.skills.length - 1 ? '8px' : '0',
-                  paddingBottom: skillIndex < category.skills.length - 1 ? '8px' : '0',
-                  borderBottom: skillIndex < category.skills.length - 1 ? '1px solid #e2e8f0' : 'none'
-                }}>
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
+              {category.skills && category.skills.map((skill, skillIndex) => {
+                const currentRating = skill.ratings?.current || 0;
+                const desiredRating = skill.ratings?.desired || 0;
+                const gap = desiredRating - currentRating;
+                
+                return (
+                  <div key={skill.id} style={{
+                    marginBottom: skillIndex < category.skills.length - 1 ? '8px' : '0',
+                    paddingBottom: skillIndex < category.skills.length - 1 ? '8px' : '0',
+                    borderBottom: skillIndex < category.skills.length - 1 ? '1px solid #e2e8f0' : 'none'
                   }}>
-                    <span style={{ fontWeight: '500' }}>{skill.name}</span>
-                    <span style={{ fontSize: '11px', color: '#64748b' }}>
-                      Current: {skill.ratings?.current || 0}/7 | Desired: {skill.ratings?.desired || 0}/7 | Gap: {((skill.ratings?.desired || 0) - (skill.ratings?.current || 0)).toFixed(1)}
-                    </span>
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}>
+                      <span style={{ fontWeight: '500' }}>{skill.name}</span>
+                      <span style={{ fontSize: '11px', color: '#64748b' }}>
+                        Current: {currentRating}/7 | Desired: {desiredRating}/7 | Gap: {gap.toFixed(1)}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         ))}

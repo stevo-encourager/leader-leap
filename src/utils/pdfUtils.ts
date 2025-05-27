@@ -6,6 +6,47 @@ import { Category, Demographics } from './assessmentTypes';
 export const exportToPDF = async (categories: Category[], demographics: Demographics, filename: string = 'leadership-assessment-results.pdf') => {
   console.log('PDF: Starting dedicated template PDF export');
   
+  // Debug: Log the data being passed to the template
+  console.log('PDF: Categories data:', JSON.stringify(categories, null, 2));
+  console.log('PDF: Demographics data:', JSON.stringify(demographics, null, 2));
+  console.log('PDF: Categories count:', categories?.length || 0);
+  
+  // Validate that we have data to export
+  if (!categories || !Array.isArray(categories) || categories.length === 0) {
+    console.error('PDF: No categories data provided');
+    toast({
+      title: "PDF Export Failed",
+      description: "No assessment data available to export. Please complete an assessment first.",
+      variant: "destructive",
+    });
+    return;
+  }
+  
+  // Count skills with ratings for validation
+  let skillsWithData = 0;
+  categories.forEach(category => {
+    if (category && category.skills) {
+      category.skills.forEach(skill => {
+        if (skill && skill.ratings && 
+           (skill.ratings.current > 0 || skill.ratings.desired > 0)) {
+          skillsWithData++;
+        }
+      });
+    }
+  });
+  
+  console.log('PDF: Skills with rating data:', skillsWithData);
+  
+  if (skillsWithData === 0) {
+    console.error('PDF: No skills with rating data found');
+    toast({
+      title: "PDF Export Failed",
+      description: "No assessment ratings found. Please complete the assessment with actual ratings first.",
+      variant: "destructive",
+    });
+    return;
+  }
+  
   try {
     // Import React and ReactDOM
     const React = await import('react');
@@ -32,18 +73,26 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
       description: "Creating your assessment results PDF...",
     });
     
-    // Create PDF template element
-    const pdfElement = React.createElement(PDFTemplate, {
-      categories,
-      demographics
-    });
+    // Create PDF template element with explicit props
+    const templateProps = {
+      categories: categories,
+      demographics: demographics || {}
+    };
+    
+    console.log('PDF: Template props being passed:', templateProps);
+    
+    const pdfElement = React.createElement(PDFTemplate, templateProps);
     
     // Render the template
     const root = ReactDOM.createRoot(tempContainer);
     root.render(pdfElement);
     
     // Wait for rendering to complete
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 2000)); // Increased wait time
+    
+    // Log the rendered content for debugging
+    console.log('PDF: Rendered container content length:', tempContainer.innerHTML.length);
+    console.log('PDF: Container has children:', tempContainer.children.length);
     
     const opt = {
       margin: [15, 15, 15, 15],

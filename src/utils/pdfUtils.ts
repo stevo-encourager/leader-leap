@@ -13,7 +13,12 @@ export const exportToPDF = (elementId: string, filename: string, onSuccess?: () 
     return;
   }
 
-  // Create a temporary clone of the dashboard content for PDF rendering
+  toast({
+    title: "Generating PDF",
+    description: "Creating your complete assessment results...",
+  });
+
+  // Create a comprehensive PDF layout
   const createPDFContent = () => {
     const pdfContainer = document.createElement('div');
     pdfContainer.style.cssText = `
@@ -26,11 +31,12 @@ export const exportToPDF = (elementId: string, filename: string, onSuccess?: () 
       color: #1f2937;
       padding: 20mm;
       box-sizing: border-box;
+      line-height: 1.4;
     `;
 
-    // Add logo at the top
-    const logoSection = document.createElement('div');
-    logoSection.style.cssText = `
+    // Add logo and header
+    const headerSection = document.createElement('div');
+    headerSection.style.cssText = `
       text-align: center;
       margin-bottom: 30px;
       padding-bottom: 20px;
@@ -39,121 +45,207 @@ export const exportToPDF = (elementId: string, filename: string, onSuccess?: () 
     
     const logo = document.createElement('img');
     logo.src = '/lovable-uploads/8320d514-fba5-4e1b-a658-1563758db943.png';
-    logo.style.cssText = 'height: 60px; width: auto;';
-    logoSection.appendChild(logo);
+    logo.style.cssText = 'height: 60px; width: auto; margin-bottom: 15px;';
+    logo.crossOrigin = 'anonymous';
+    headerSection.appendChild(logo);
     
     const title = document.createElement('h1');
     title.textContent = 'Leadership Assessment Results';
     title.style.cssText = `
       color: #2F564D;
       font-size: 24px;
-      margin: 15px 0 0 0;
+      margin: 0;
       font-weight: 600;
     `;
-    logoSection.appendChild(title);
+    headerSection.appendChild(title);
     
-    pdfContainer.appendChild(logoSection);
+    pdfContainer.appendChild(headerSection);
 
-    // Clone and process each major section
-    const sections = [
-      { selector: '[data-section="profile-summary"]', title: 'Your Profile' },
-      { selector: '[data-section="detailed-analysis"]', title: 'Competency Analysis' },
-      { selector: '[data-section="recommended-steps"]', title: 'Recommended Next Steps' },
-      { selector: '[data-section="coaching-support"]', title: 'Expert Coaching Support' }
-    ];
+    // Extract and add profile summary
+    const profileElement = document.querySelector('[data-section="profile-summary"]') || 
+                          document.querySelector('h3:contains("Your Profile")') ||
+                          document.querySelector('.bg-slate-50');
+    if (profileElement) {
+      const profileClone = profileElement.cloneNode(true) as HTMLElement;
+      const profileSection = createPDFSection('Your Profile', profileClone);
+      pdfContainer.appendChild(profileSection);
+    }
 
-    sections.forEach(({ selector, title }) => {
-      const originalSection = document.querySelector(selector);
-      if (originalSection) {
-        const sectionClone = originalSection.cloneNode(true) as HTMLElement;
-        
-        // Add section title
-        const sectionTitle = document.createElement('h2');
-        sectionTitle.textContent = title;
-        sectionTitle.style.cssText = `
-          color: #2F564D;
-          font-size: 18px;
-          margin: 25px 0 15px 0;
-          font-weight: 600;
-          page-break-before: avoid;
-        `;
-        pdfContainer.appendChild(sectionTitle);
-        
-        // Clean up the cloned section for PDF
-        cleanElementForPDF(sectionClone);
-        pdfContainer.appendChild(sectionClone);
+    // Extract and add radar chart
+    const chartElement = document.querySelector('[data-section="detailed-analysis"]') ||
+                        document.querySelector('.recharts-wrapper') ||
+                        document.querySelector('svg');
+    if (chartElement) {
+      const chartSection = document.createElement('div');
+      chartSection.style.cssText = 'margin: 25px 0; page-break-inside: avoid;';
+      
+      const chartTitle = document.createElement('h2');
+      chartTitle.textContent = 'Competency Analysis - Radar Chart';
+      chartTitle.style.cssText = `
+        color: #2F564D;
+        font-size: 18px;
+        margin: 0 0 15px 0;
+        font-weight: 600;
+      `;
+      chartSection.appendChild(chartTitle);
+      
+      // Try to capture the chart
+      const chartClone = chartElement.cloneNode(true) as HTMLElement;
+      chartClone.style.cssText = `
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 10px 0;
+        max-width: 100%;
+        height: 400px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      `;
+      chartSection.appendChild(chartClone);
+      pdfContainer.appendChild(chartSection);
+    }
+
+    // Extract and add key insights
+    const insightsElement = document.querySelector('[role="tabpanel"]') ||
+                           document.querySelector('.bg-encourager\\/5') ||
+                           document.querySelector('h2:contains("Skills & Competencies")');
+    if (insightsElement) {
+      const insightsClone = insightsElement.cloneNode(true) as HTMLElement;
+      const insightsSection = createPDFSection('Key Insights & Development Opportunities', insightsClone);
+      pdfContainer.appendChild(insightsSection);
+    }
+
+    // Extract and add recommended steps
+    const stepsElement = document.querySelector('[data-section="recommended-steps"]') ||
+                        document.querySelector('h3:contains("Recommended Next Steps")');
+    if (stepsElement) {
+      const stepsClone = stepsElement.cloneNode(true) as HTMLElement;
+      const stepsSection = createPDFSection('Recommended Next Steps', stepsClone);
+      pdfContainer.appendChild(stepsSection);
+    }
+
+    // Extract and add coaching support
+    const coachingElement = document.querySelector('[data-section="coaching-support"]') ||
+                           document.querySelector('h3:contains("expert coaching support")');
+    if (coachingElement) {
+      const coachingClone = coachingElement.cloneNode(true) as HTMLElement;
+      const coachingSection = createPDFSection('Expert Coaching Support', coachingClone);
+      pdfContainer.appendChild(coachingSection);
+    }
+
+    // Clean up all cloned content for PDF
+    cleanElementForPDF(pdfContainer);
+
+    return pdfContainer;
+  };
+
+  const createPDFSection = (title: string, content: HTMLElement) => {
+    const section = document.createElement('div');
+    section.style.cssText = `
+      margin: 25px 0;
+      page-break-inside: avoid;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 15px;
+    `;
+    
+    const sectionTitle = document.createElement('h2');
+    sectionTitle.textContent = title;
+    sectionTitle.style.cssText = `
+      color: #2F564D;
+      font-size: 18px;
+      margin: 0 0 15px 0;
+      font-weight: 600;
+    `;
+    section.appendChild(sectionTitle);
+    section.appendChild(content);
+    
+    return section;
+  };
+
+  const cleanElementForPDF = (element: HTMLElement) => {
+    // Remove all interactive elements
+    const interactiveElements = element.querySelectorAll('button, [role="button"], .cursor-pointer');
+    interactiveElements.forEach(el => el.remove());
+
+    // Ensure all text is visible and readable
+    const allElements = element.querySelectorAll('*');
+    allElements.forEach(el => {
+      const htmlEl = el as HTMLElement;
+      
+      // Fix visibility issues
+      if (htmlEl.style.display === 'none' || htmlEl.style.visibility === 'hidden') {
+        htmlEl.style.display = 'block';
+        htmlEl.style.visibility = 'visible';
       }
+      
+      // Ensure readable colors
+      if (window.getComputedStyle(htmlEl).color === 'transparent' || 
+          htmlEl.style.color === 'transparent') {
+        htmlEl.style.color = '#1f2937';
+      }
+      
+      // Fix background colors
+      htmlEl.style.background = htmlEl.style.background || 'transparent';
+      
+      // Remove hover effects and transitions
+      htmlEl.style.transition = 'none';
+      htmlEl.style.transform = 'none';
     });
 
-    // Handle tabs content specially - expand all tabs
-    const tabPanels = pdfContainer.querySelectorAll('[role="tabpanel"]');
-    tabPanels.forEach((panel) => {
+    // Handle SVG elements (charts)
+    const svgElements = element.querySelectorAll('svg');
+    svgElements.forEach(svg => {
+      svg.style.cssText += `
+        max-width: 100% !important;
+        height: auto !important;
+        display: block !important;
+        margin: 10px auto !important;
+      `;
+    });
+
+    // Expand any collapsed content
+    const tabPanels = element.querySelectorAll('[role="tabpanel"]');
+    tabPanels.forEach(panel => {
       const htmlPanel = panel as HTMLElement;
       htmlPanel.style.display = 'block !important';
       htmlPanel.style.visibility = 'visible !important';
     });
 
-    return pdfContainer;
-  };
-
-  const cleanElementForPDF = (element: HTMLElement) => {
-    // Remove interactive elements and fix styles for PDF
-    element.style.cssText += `
-      background: white !important;
-      box-shadow: none !important;
-      border-radius: 8px !important;
-      border: 1px solid #e2e8f0 !important;
-      margin: 15px 0 !important;
-      padding: 15px !important;
-      page-break-inside: avoid;
-    `;
-
-    // Remove buttons and interactive elements
-    const buttons = element.querySelectorAll('button');
-    buttons.forEach(btn => btn.remove());
-
-    // Ensure text is readable
-    const textElements = element.querySelectorAll('*');
-    textElements.forEach(el => {
-      const htmlEl = el as HTMLElement;
-      if (htmlEl.style.color === 'transparent' || htmlEl.style.display === 'none') {
-        htmlEl.style.color = '#1f2937';
-        htmlEl.style.display = 'block';
-      }
-    });
-
-    // Handle charts specially
-    const charts = element.querySelectorAll('svg, canvas');
-    charts.forEach(chart => {
-      const htmlChart = chart as HTMLElement;
-      htmlChart.style.cssText += `
-        max-width: 100% !important;
-        height: auto !important;
-        margin: 10px auto !important;
-        display: block !important;
+    // Handle lists and structured content
+    const lists = element.querySelectorAll('ul, ol');
+    lists.forEach(list => {
+      const htmlList = list as HTMLElement;
+      htmlList.style.cssText += `
+        margin: 10px 0 !important;
+        padding-left: 20px !important;
       `;
     });
   };
 
-  // Enhanced PDF configuration
+  // Enhanced PDF configuration for better rendering
   const opt = {
     margin: [15, 15, 15, 15],
     filename,
     image: { 
       type: 'jpeg', 
-      quality: 0.95 
+      quality: 0.98
     },
     html2canvas: { 
       scale: 2,
       useCORS: true,
       allowTaint: true,
       letterRendering: true,
-      logging: false,
-      width: 794, // A4 width in pixels at 96 DPI
-      height: 1123, // A4 height in pixels at 96 DPI
+      logging: true, // Enable logging for debugging
+      width: 794,
+      height: 1123,
       scrollX: 0,
       scrollY: 0,
-      backgroundColor: '#ffffff'
+      backgroundColor: '#ffffff',
+      foreignObjectRendering: true
     },
     jsPDF: { 
       unit: 'mm', 
@@ -169,20 +261,22 @@ export const exportToPDF = (elementId: string, filename: string, onSuccess?: () 
     }
   };
   
-  toast({
-    title: "Generating PDF",
-    description: "Creating your complete assessment results...",
-  });
-  
   // Create the PDF content
   const pdfContent = createPDFContent();
   document.body.appendChild(pdfContent);
   
-  // Wait for images and charts to load
+  // Add debugging information
+  console.log('PDF Content created:', pdfContent);
+  console.log('PDF Content children:', pdfContent.children.length);
+  console.log('PDF Content HTML length:', pdfContent.innerHTML.length);
+  
+  // Wait longer for all content to load, especially images and charts
   setTimeout(() => {
     html2pdf().set(opt).from(pdfContent).save().then(() => {
       // Clean up
-      document.body.removeChild(pdfContent);
+      if (document.body.contains(pdfContent)) {
+        document.body.removeChild(pdfContent);
+      }
       
       toast({
         title: "Download complete",
@@ -203,5 +297,5 @@ export const exportToPDF = (elementId: string, filename: string, onSuccess?: () 
         variant: "destructive",
       });
     });
-  }, 2000); // Give more time for content to render
+  }, 3000); // Longer delay to ensure all content is rendered
 };

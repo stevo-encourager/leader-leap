@@ -5,62 +5,35 @@ This function generates AI-powered leadership insights using OpenAI's GPT-4o mod
 
 ## Technical Flow Diagram
 
-```
-┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
-│   HTTP Request  │───▶│  Main Handler    │───▶│  Environment    │
-│   (index.ts)    │    │    (index.ts)    │    │  Validation     │
-└─────────────────┘    └──────────────────┘    │ (validation.ts) │
-                                │               └─────────────────┘
-                                ▼                        │
-                       ┌──────────────────┐              ▼
-                       │  Check Existing  │    ┌─────────────────┐
-                       │    Insights      │───▶│   Database      │
-                       │  (database.ts)   │    │  Operations     │
-                       └──────────────────┘    │ (database.ts)   │
-                                │               └─────────────────┘
-                                ▼                        │
-                       ┌──────────────────┐              │
-                       │  Build Assessment│              │
-                       │  Data & Prompt   │              │
-                       │(promptBuilder.ts)│              │
-                       └──────────────────┘              │
-                                │                        │
-                                ▼                        │
-                       ┌──────────────────┐              │
-                       │   Call OpenAI    │              │
-                       │(openaiClient.ts) │              │
-                       └──────────────────┘              │
-                                │                        │
-                                ▼                        │
-                       ┌──────────────────┐              │
-                       │  Clean & Format  │              │
-                       │  Response        │              │
-                       │ (formatting.ts)  │              │
-                       └──────────────────┘              │
-                                │                        │
-                                ▼                        │
-                       ┌──────────────────┐              │
-                       │   Validate       │              │
-                       │   Structure      │              │
-                       │ (validation.ts)  │              │
-                       └──────────────────┘              │
-                                │                        │
-                                ▼                        │
-                       ┌──────────────────┐              │
-                       │  Save Insights   │◀─────────────┘
-                       │  (database.ts)   │
-                       └──────────────────┘
-                                │
-                                ▼
-                       ┌──────────────────┐
-                       │  Return Response │
-                       │   (index.ts)     │
-                       └──────────────────┘
+```mermaid
+flowchart TD
+    A[HTTP Request] --> B[Environment Validation]
+    B --> C[Check Existing Insights]
+    C --> D{Insights Exist?}
+    D -->|Yes| E[Return Cached Insights]
+    D -->|No| F[Build Assessment Data]
+    F --> G[Build Prompt]
+    G --> H[Call OpenAI API]
+    H --> I[Clean & Format Response]
+    I --> J[Validate Structure]
+    J --> K[Format Summary into Paragraphs]
+    K --> L[Save Insights to Database]
+    L --> M[Return Response]
 ```
 
 ## Architecture
 
 The function is organized into modular utilities for better maintainability:
+
+### Module Responsibilities
+
+| Module | File | Purpose | Dependencies | Used By |
+|--------|------|---------|--------------|---------|
+| **Validation** | `validation.ts` | Environment variables and AI response structure validation | None | Main handler for input validation and response verification |
+| **Formatting** | `formatting.ts` | Cleans OpenAI responses and formats summaries into readable paragraphs | None | Main handler after OpenAI response received |
+| **Prompt Builder** | `promptBuilder.ts` | Processes assessment data and constructs the AI prompt | None | Main handler before calling OpenAI |
+| **OpenAI Client** | `openaiClient.ts` | Handles OpenAI API calls with proper error handling | None | Main handler for AI insight generation |
+| **Database** | `database.ts` | Manages existing insight checks and saving new insights | Supabase client | Main handler for persistence operations |
 
 ### File Structure
 ```
@@ -74,47 +47,6 @@ supabase/functions/generate-insights/
     ├── openaiClient.ts     # OpenAI API interaction
     └── database.ts         # Supabase database operations
 ```
-
-### Module Responsibilities
-
-#### **validation.ts**
-- **Purpose**: Validates environment variables and AI response structure
-- **Key Functions**:
-  - `validateEnvironmentVariables()`: Ensures required env vars are present
-  - `validateInsightsStructure()`: Validates JSON structure from OpenAI
-- **Dependencies**: None
-- **Used by**: Main handler for input validation and response verification
-
-#### **formatting.ts** 
-- **Purpose**: Cleans OpenAI responses and formats summaries into readable paragraphs
-- **Key Functions**:
-  - `cleanJsonResponse()`: Removes markdown formatting from JSON responses
-  - `formatSummaryIntoParagraphs()`: Splits summaries using transition phrases
-- **Dependencies**: None
-- **Used by**: Main handler after OpenAI response received
-
-#### **promptBuilder.ts**
-- **Purpose**: Processes assessment data and constructs the AI prompt
-- **Key Functions**:
-  - `buildAssessmentData()`: Aggregates and calculates assessment metrics
-  - `buildPrompt()`: Creates the detailed prompt for OpenAI
-- **Dependencies**: None
-- **Used by**: Main handler before calling OpenAI
-
-#### **openaiClient.ts**
-- **Purpose**: Handles OpenAI API calls with proper error handling
-- **Key Functions**:
-  - `callOpenAI()`: Makes authenticated requests to OpenAI API
-- **Dependencies**: None
-- **Used by**: Main handler for AI insight generation
-
-#### **database.ts**
-- **Purpose**: Manages existing insight checks and saving new insights
-- **Key Functions**:
-  - `checkExistingInsights()`: Prevents duplicate insight generation
-  - `saveInsights()`: Persists insights to database
-- **Dependencies**: Supabase client
-- **Used by**: Main handler for persistence operations
 
 ## Function Call Flow
 
@@ -158,6 +90,56 @@ const { insights } = await response.json();
 }
 ```
 
+## Testing Strategy
+
+### Recommended Test Coverage
+
+#### **Unit Tests**
+- **`validation.test.ts`**
+  - `validateEnvironmentVariables()` - missing/present environment variables
+  - `validateInsightsStructure()` - valid/invalid insights structure, array validation
+  
+- **`formatting.test.ts`**
+  - `cleanJsonResponse()` - markdown removal, malformed responses
+  - `formatSummaryIntoParagraphs()` - transition phrase splitting, single paragraphs
+  
+- **`promptBuilder.test.ts`**
+  - `buildAssessmentData()` - category metrics calculation, missing skill data
+  - `buildPrompt()` - required sections inclusion, category formatting
+  
+- **`openaiClient.test.ts`**
+  - `callOpenAI()` - successful responses, API errors, authentication
+  
+- **`database.test.ts`**
+  - `checkExistingInsights()` - existing/missing insights, database errors
+  - `saveInsights()` - successful saves, database failures
+
+#### **Integration Tests**
+- **`handler.test.ts`**
+  - Return cached insights when they exist
+  - Generate new insights for new assessments
+  - Handle OpenAI API errors gracefully
+  - Save insights to database correctly
+
+#### **Mock Data Setup**
+```typescript
+// tests/fixtures/mockData.ts
+export const mockCategories = [
+  {
+    title: "Emotional Intelligence",
+    skills: [
+      { ratings: { current: 3, desired: 5 } }
+    ]
+  }
+];
+
+export const mockDemographics = {
+  role: "Manager",
+  yearsOfExperience: "5-10",
+  industry: "Technology"
+};
+```
+
 ## Best Practices
 
 ### Adding New Features
@@ -182,82 +164,6 @@ const { insights } = await response.json();
 1. **Caching**: Never regenerate insights if they already exist in the database
 2. **Error Recovery**: Provide meaningful error messages for different failure types
 3. **Resource Management**: Use appropriate timeouts and error handling for external API calls
-
-## Testing Strategy
-
-### Recommended Test Coverage
-
-#### **Unit Tests** (Recommended locations)
-```typescript
-// tests/validation.test.ts
-describe('validateEnvironmentVariables', () => {
-  it('should throw error when OPENAI_API_KEY is missing');
-  it('should return valid config when all vars present');
-});
-
-describe('validateInsightsStructure', () => {
-  it('should pass valid insights structure');
-  it('should fail when missing required fields');
-  it('should validate array structures correctly');
-});
-
-// tests/formatting.test.ts  
-describe('cleanJsonResponse', () => {
-  it('should remove markdown formatting');
-  it('should handle malformed responses');
-});
-
-describe('formatSummaryIntoParagraphs', () => {
-  it('should split on transition phrases');
-  it('should handle single paragraph summaries');
-});
-
-// tests/promptBuilder.test.ts
-describe('buildAssessmentData', () => {
-  it('should calculate category metrics correctly');
-  it('should handle missing skill data gracefully');
-});
-
-describe('buildPrompt', () => {
-  it('should include all required sections');
-  it('should format categories correctly');
-});
-```
-
-#### **Integration Tests**
-```typescript
-// tests/integration.test.ts
-describe('generate-insights function', () => {
-  it('should return cached insights when they exist');
-  it('should generate new insights for new assessments');
-  it('should handle OpenAI API errors gracefully');
-  it('should save insights to database correctly');
-});
-```
-
-#### **Mock Data Setup**
-```typescript
-// tests/fixtures/mockData.ts
-export const mockCategories = [
-  {
-    title: "Emotional Intelligence",
-    skills: [
-      { ratings: { current: 3, desired: 5 } }
-    ]
-  }
-];
-
-export const mockDemographics = {
-  role: "Manager",
-  yearsOfExperience: "5-10",
-  industry: "Technology"
-};
-```
-
-## Environment Variables Required
-- `OPENAI_API_KEY`: Your OpenAI API key
-- `SUPABASE_URL`: Your Supabase project URL
-- `SUPABASE_SERVICE_ROLE_KEY`: Your Supabase service role key
 
 ## Special Considerations & Gotchas
 
@@ -321,6 +227,11 @@ export const mockDemographics = {
    - Ensure backward compatibility with existing assessments
    - Update validation logic if needed
 
+## Environment Variables Required
+- `OPENAI_API_KEY`: Your OpenAI API key
+- `SUPABASE_URL`: Your Supabase project URL
+- `SUPABASE_SERVICE_ROLE_KEY`: Your Supabase service role key
+
 ## Usage
 This function is called automatically when users complete assessments. It generates insights once per assessment and stores them permanently to avoid regeneration costs.
 
@@ -337,3 +248,16 @@ This function is called automatically when users complete assessments. It genera
 3. **API Failures**: Review OpenAI API key and rate limits
 4. **Validation Errors**: Check assessment data structure
 
+## Contact & Maintenance
+
+For questions about this function or to contribute improvements:
+- Review the module documentation above before making changes
+- Follow the established patterns in each utility module
+- Add tests for any new functionality
+- Update this README when adding new modules or changing the flow
+- Consider the performance implications of any OpenAI API changes
+
+When reporting issues, include:
+- Function logs from Supabase dashboard
+- Sample assessment data that caused the issue
+- Expected vs actual behavior

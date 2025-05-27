@@ -92,12 +92,24 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
     }
   };
 
-  const renderSummary = (summary: string) => (
-    <div className="mb-8 bg-blue-50 p-6 rounded-lg border border-blue-200">
-      <h3 className="text-xl font-bold text-encourager mb-3 font-playfair">Assessment Summary</h3>
-      <p className="text-slate-700 leading-relaxed">{summary}</p>
-    </div>
-  );
+  // Helper function to render summary with proper paragraph formatting
+  const renderFormattedSummary = (summary: string) => {
+    // Split by double line breaks (our standard paragraph separator)
+    const paragraphs = summary.split(/\n\n+/).filter(p => p.trim().length > 0);
+    
+    return (
+      <div className="mb-8 bg-blue-50 p-6 rounded-lg border border-blue-200">
+        <h3 className="text-xl font-bold text-encourager mb-3 font-playfair">Assessment Summary</h3>
+        <div className="space-y-4">
+          {paragraphs.map((paragraph, index) => (
+            <p key={index} className="text-slate-700 leading-relaxed">
+              {paragraph.trim()}
+            </p>
+          ))}
+        </div>
+      </div>
+    );
+  };
 
   const renderPriorityAreas = (priorityAreas: PriorityArea[]) => (
     <div className="mb-8">
@@ -242,7 +254,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
 
               return (
                 <div className="prose prose-slate max-w-none">
-                  {parsedInsights.summary && renderSummary(parsedInsights.summary)}
+                  {parsedInsights.summary && renderFormattedSummary(parsedInsights.summary)}
                   {parsedInsights.priority_areas && renderPriorityAreas(parsedInsights.priority_areas)}
                   {parsedInsights.key_strengths && renderKeyStrengths(parsedInsights.key_strengths)}
                 </div>

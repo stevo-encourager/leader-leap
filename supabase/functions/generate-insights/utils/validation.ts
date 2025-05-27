@@ -32,15 +32,25 @@ export const validateInsightsStructure = (insights: any): void => {
     throw new Error('Invalid JSON structure - key_strengths must have at least 2 items');
   }
 
-  // Validate priority areas structure
+  // Validate priority areas structure with more flexible insights validation
   for (const area of insights.priority_areas) {
-    if (!area.competency || !area.insights || !Array.isArray(area.insights) || area.insights.length !== 3 || !area.resource) {
-      throw new Error('Invalid priority area structure - must have competency, gap, insights array with 3 strings, and resource');
+    if (!area.competency || !area.insights || !Array.isArray(area.insights) || !area.resource) {
+      throw new Error('Invalid priority area structure - must have competency, insights array, and resource');
+    }
+    
+    // Check that insights array has at least 2 items and at most 5 items
+    if (area.insights.length < 2 || area.insights.length > 5) {
+      throw new Error('Invalid priority area structure - insights array must have 2-5 items');
     }
     
     for (const insight of area.insights) {
       if (typeof insight !== 'string') {
         throw new Error('Invalid priority area structure - insights array must contain only strings');
+      }
+      
+      // Check if insight looks like a resource title (very short, no actionable content)
+      if (insight.length < 20) {
+        throw new Error('Invalid priority area structure - insights must be actionable advice, not resource titles');
       }
     }
     
@@ -49,15 +59,25 @@ export const validateInsightsStructure = (insights: any): void => {
     }
   }
 
-  // Validate key strengths structure
+  // Validate key strengths structure with more flexible advice validation  
   for (const strength of insights.key_strengths) {
-    if (!strength.competency || !strength.example || !strength.leverage_advice || !Array.isArray(strength.leverage_advice) || strength.leverage_advice.length !== 3) {
-      throw new Error('Invalid key strength structure - must have competency, example, and leverage_advice array with 3 strings');
+    if (!strength.competency || !strength.example || !strength.leverage_advice || !Array.isArray(strength.leverage_advice)) {
+      throw new Error('Invalid key strength structure - must have competency, example, and leverage_advice array');
+    }
+    
+    // Check that leverage_advice array has at least 2 items and at most 5 items
+    if (strength.leverage_advice.length < 2 || strength.leverage_advice.length > 5) {
+      throw new Error('Invalid key strength structure - leverage_advice array must have 2-5 items');
     }
     
     for (const advice of strength.leverage_advice) {
       if (typeof advice !== 'string') {
         throw new Error('Invalid key strength structure - leverage_advice array must contain only strings');
+      }
+      
+      // Check if advice looks actionable (not too short)
+      if (advice.length < 15) {
+        throw new Error('Invalid key strength structure - leverage advice must be actionable, not just titles');
       }
     }
   }

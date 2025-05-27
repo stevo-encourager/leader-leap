@@ -129,16 +129,16 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
     const { default: PDFTemplate } = await import('../components/pdf/PDFTemplate');
     console.log('PDF Export: PDF template imported successfully');
     
-    // Create temporary container - invisible but renderable for html2pdf
+    // Create temporary container - nearly invisible but still renderable for html2pdf
     console.log('PDF Export: Creating temporary container for PDF generation...');
     const tempContainer = document.createElement('div');
     
-    // Use invisible but renderable positioning - this is the key for html2pdf to work
+    // Use nearly invisible positioning - opacity 0.01 instead of 0 to avoid html2pdf ignoring it
     tempContainer.style.cssText = `
       position: absolute;
       left: 0;
       top: 0;
-      opacity: 0;
+      opacity: 0.01;
       pointer-events: none;
       z-index: -1;
       width: 210mm;
@@ -149,7 +149,7 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
     `;
     
     document.body.appendChild(tempContainer);
-    console.log('PDF Export: Temporary container created with invisible-but-renderable positioning');
+    console.log('PDF Export: Temporary container created with nearly-invisible opacity (0.01)');
     
     toast({
       title: "Generating PDF",
@@ -176,9 +176,14 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
     root.render(pdfElement);
     console.log('PDF Export: React render initiated');
     
+    // Force a reflow to ensure browser has fully rendered the content
+    console.log('PDF Export: Forcing reflow...');
+    const reflow = getComputedStyle(tempContainer).opacity;
+    console.log('PDF Export: Forced reflow complete, opacity:', reflow);
+    
     // Wait longer for rendering to complete
     console.log('PDF Export: Waiting for render completion...');
-    await new Promise(resolve => setTimeout(resolve, 5000));
+    await new Promise(resolve => setTimeout(resolve, 7000));
     
     // Clean the HTML content for PDF generation
     console.log('PDF Export: Cleaning HTML for PDF generation...');
@@ -204,7 +209,7 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
     
     // Add timestamp marker to verify new code is running
     const timestamp = new Date().toISOString();
-    console.log(`PDF Export: TIMESTAMP MARKER - PDF generation started at ${timestamp} with invisible-but-renderable positioning`);
+    console.log(`PDF Export: TIMESTAMP MARKER - PDF generation started at ${timestamp} with opacity 0.01 approach`);
     
     console.log('PDF Export: Configuring html2pdf options...');
     const opt = {
@@ -233,7 +238,7 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
       }
     };
     
-    console.log('PDF Export: Starting html2pdf conversion with invisible-but-renderable container...');
+    console.log('PDF Export: Starting html2pdf conversion with opacity 0.01 container...');
     await html2pdf().set(opt).from(tempContainer).save();
     console.log('PDF Export: PDF generation completed successfully');
     

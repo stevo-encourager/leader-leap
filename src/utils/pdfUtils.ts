@@ -60,25 +60,28 @@ export const exportToPDF = (elementId: string, filename: string, onSuccess?: () 
   setTimeout(() => {
     // Ensure all tabs and dynamic content are visible for PDF capture
     const tabElements = element.querySelectorAll('[role="tabpanel"]');
-    const originalDisplayStates = [];
+    const originalDisplayStates: string[] = [];
     
     // Temporarily show all tab content for PDF generation
     tabElements.forEach((tab, index) => {
-      originalDisplayStates[index] = tab.style.display;
-      tab.style.display = 'block';
+      const htmlTab = tab as HTMLElement;
+      originalDisplayStates[index] = htmlTab.style.display;
+      htmlTab.style.display = 'block';
     });
     
     // Force a comprehensive reflow
-    element.style.display = 'none';
+    const htmlElement = element as HTMLElement;
+    htmlElement.style.display = 'none';
     element.offsetHeight; // Trigger reflow
-    element.style.display = '';
+    htmlElement.style.display = '';
     
     // Wait a bit more for charts to render
     setTimeout(() => {
       html2pdf().set(opt).from(element).save().then(() => {
         // Restore original tab states
         tabElements.forEach((tab, index) => {
-          tab.style.display = originalDisplayStates[index] || '';
+          const htmlTab = tab as HTMLElement;
+          htmlTab.style.display = originalDisplayStates[index] || '';
         });
         
         toast({
@@ -91,7 +94,8 @@ export const exportToPDF = (elementId: string, filename: string, onSuccess?: () 
         
         // Restore original tab states on error
         tabElements.forEach((tab, index) => {
-          tab.style.display = originalDisplayStates[index] || '';
+          const htmlTab = tab as HTMLElement;
+          htmlTab.style.display = originalDisplayStates[index] || '';
         });
         
         toast({

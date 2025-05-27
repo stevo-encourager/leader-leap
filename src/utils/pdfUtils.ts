@@ -129,21 +129,26 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
     const { default: PDFTemplate } = await import('../components/pdf/PDFTemplate');
     console.log('PDF Export: PDF template imported successfully');
     
-    // Create temporary container with clean styling
-    console.log('PDF Export: Creating temporary container...');
+    // Create temporary container with renderability-friendly styling
+    console.log('PDF Export: Creating temporary container with html2pdf-friendly positioning...');
     const tempContainer = document.createElement('div');
+    
+    // Use positioning that html2pdf.js can actually render
     tempContainer.style.cssText = `
-      position: fixed;
-      top: -9999px;
-      left: -9999px;
-      width: 210mm;
-      background: white;
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      pointer-events: none;
       z-index: -1;
+      width: 210mm;
+      min-height: 297mm;
+      background: white;
       font-family: system-ui, -apple-system, sans-serif;
     `;
     
     document.body.appendChild(tempContainer);
-    console.log('PDF Export: Temporary container created and added to DOM');
+    console.log('PDF Export: Temporary container created with renderable positioning and added to DOM');
     
     toast({
       title: "Generating PDF",
@@ -182,6 +187,13 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
     console.log('PDF Export: Checking cleaned content...');
     console.log('PDF Export: Container innerHTML length:', tempContainer.innerHTML.length);
     console.log('PDF Export: Container children count:', tempContainer.children.length);
+    console.log('PDF Export: Container positioning:', {
+      position: tempContainer.style.position,
+      left: tempContainer.style.left,
+      top: tempContainer.style.top,
+      opacity: tempContainer.style.opacity,
+      zIndex: tempContainer.style.zIndex
+    });
     console.log('PDF Export: First 200 chars of cleaned content:', tempContainer.innerHTML.substring(0, 200));
     
     if (tempContainer.innerHTML.length < 1000) {
@@ -191,7 +203,7 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
     
     // Add timestamp marker to verify new code is running
     const timestamp = new Date().toISOString();
-    console.log(`PDF Export: TIMESTAMP MARKER - PDF generation started at ${timestamp}`);
+    console.log(`PDF Export: TIMESTAMP MARKER - PDF generation started at ${timestamp} with improved positioning`);
     
     console.log('PDF Export: Configuring html2pdf options...');
     const opt = {
@@ -220,7 +232,7 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
       }
     };
     
-    console.log('PDF Export: Starting html2pdf conversion with cleaned HTML...');
+    console.log('PDF Export: Starting html2pdf conversion with cleaned HTML and improved positioning...');
     await html2pdf().set(opt).from(tempContainer).save();
     console.log('PDF Export: PDF generation completed successfully');
     

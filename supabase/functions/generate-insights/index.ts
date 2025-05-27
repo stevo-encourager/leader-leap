@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -33,56 +32,55 @@ const cleanJsonResponse = (response: string): string => {
   return cleaned.trim();
 };
 
-// Helper function to format summary into proper paragraphs
+// Enhanced function to format summary into proper paragraphs
 const formatSummaryIntoParagraphs = (summary: string): string => {
+  if (!summary || summary.trim().length === 0) {
+    return "";
+  }
+
   // Remove any existing multiple line breaks and normalize whitespace
   let formatted = summary.replace(/\s+/g, ' ').trim();
   
-  // Split into sentences
-  const sentences = formatted.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
-  
-  if (sentences.length <= 3) {
-    // If very short, return as single paragraph
-    return formatted;
-  }
-  
-  // Transition phrases that typically start new paragraphs
+  // Define transition phrases that typically start new paragraphs
   const transitionPhrases = [
     'However,', 'At the same time,', 'Additionally,', 'Furthermore,', 'Moreover,',
     'Nevertheless,', 'On the other hand,', 'Meanwhile,', 'In contrast,', 'Similarly,',
     'Consequently,', 'Therefore,', 'Thus,', 'As a result,', 'In addition,',
-    'Your results also', 'Your assessment also', 'These results', 'This assessment'
+    'Your results also', 'Your assessment also', 'These results', 'This assessment',
+    'Conversely,', 'Nonetheless,', 'Likewise,', 'Subsequently,', 'Alternatively,'
   ];
   
-  // First, try to split based on transition phrases
+  // Try to split by transition phrases first
+  let splitFound = false;
   for (const phrase of transitionPhrases) {
-    if (formatted.includes(phrase)) {
-      const parts = formatted.split(phrase);
-      if (parts.length >= 2) {
-        // Join the parts with proper paragraph separation
-        const firstPart = parts[0].trim();
-        const secondPart = (phrase + parts.slice(1).join(phrase)).trim();
+    const phraseIndex = formatted.indexOf(phrase);
+    if (phraseIndex > 50) { // Ensure first paragraph has meaningful content
+      const firstPart = formatted.substring(0, phraseIndex).trim();
+      const secondPart = formatted.substring(phraseIndex).trim();
+      
+      // Ensure both parts have meaningful content
+      if (firstPart.length > 30 && secondPart.length > 30) {
+        console.log(`Split summary using transition phrase: "${phrase}"`);
         return `${firstPart}\n\n${secondPart}`;
       }
     }
   }
   
-  // If no transition phrases found, split based on sentence count
-  if (sentences.length >= 6) {
-    // Split into two paragraphs: first 3-4 sentences, rest in second paragraph
-    const midPoint = Math.ceil(sentences.length / 2);
+  // If no transition phrases found, split by sentence count
+  const sentences = formatted.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
+  
+  if (sentences.length >= 4) {
+    // For 4+ sentences, split roughly in the middle
+    const midPoint = Math.ceil(sentences.length * 0.6); // Slightly favor first paragraph
     const firstParagraph = sentences.slice(0, midPoint).join(' ').trim();
     const secondParagraph = sentences.slice(midPoint).join(' ').trim();
-    return `${firstParagraph}\n\n${secondParagraph}`;
-  } else if (sentences.length >= 4) {
-    // Split into two paragraphs: first 2-3 sentences, rest in second
-    const splitPoint = Math.ceil(sentences.length * 0.6);
-    const firstParagraph = sentences.slice(0, splitPoint).join(' ').trim();
-    const secondParagraph = sentences.slice(splitPoint).join(' ').trim();
+    
+    console.log(`Split summary by sentence count: ${sentences.length} sentences, split at ${midPoint}`);
     return `${firstParagraph}\n\n${secondParagraph}`;
   }
   
-  // Default: return as-is if too short to split meaningfully
+  // If too short to split meaningfully, return as-is
+  console.log('Summary too short to split, returning as single paragraph');
   return formatted;
 };
 
@@ -230,13 +228,13 @@ You MUST output ONLY a valid JSON object with this EXACT structure:
 
 - \`summary\`: Generate a professional, concise, and impactful assessment summary that is 6–8 sentences. Use the word "competencies" throughout (not "strengths"). Always refer to the person as "you" or "your" (never "the user" or "the user's"). 
 
-CRITICAL FORMATTING FOR SUMMARY: You MUST structure the summary as exactly TWO paragraphs separated by a double line break (\\n\\n). Follow this exact pattern:
+CRITICAL FORMATTING FOR SUMMARY: Structure the summary as TWO clear paragraphs that will be separated by post-processing. Use transition phrases like "However," "At the same time," "Additionally," or "Your results also" to start the second paragraph. Follow this pattern:
 
-First paragraph (3-4 sentences): Begin by directly identifying your most distinctive competencies and what those mean for your leadership style or capabilities. Include a brief example of a well-known leader (real or historical) who exemplifies the same top competencies. Name the leader, state what competencies they are known for, and connect this to your assessment.
+First paragraph: Begin by identifying your most distinctive competencies and what those mean for your leadership style. Include a brief example of a well-known leader who exemplifies the same top competencies, naming the leader and connecting to your assessment.
 
-Second paragraph (3-4 sentences): Start with a transition phrase like "However," "At the same time," or "Additionally," then note your key areas for development (gaps or opportunities), explaining why they matter for effective leadership. Highlight the practical impact or opportunities unlocked by focusing on these development areas. Where relevant, connect how your top competencies can support your growth in development areas.
+Second paragraph: Start with a transition phrase, then note your key areas for development, explaining why they matter and how your competencies can support growth in these areas.
 
-The summary must contain the exact text "\\n\\n" between the two paragraphs to ensure proper formatting. Avoid generic praise or congratulatory language. Keep the tone confident, clear, and professional. Use only the data provided; do not invent details about you or your organization.
+The summary should be written as continuous text but structured so it can be split at transition phrases during post-processing.
 
 - \`priority_areas\`: An array with exactly 3 objects, each for a Top 3 Priority Development Area:
   - \`competency\` (string): The name of the competency from the assessment data above
@@ -254,7 +252,7 @@ The summary must contain the exact text "\\n\\n" between the two paragraphs to e
 - The \`insights\` field must be an array of strings ONLY. Do NOT include any other keys inside this array.
 - The \`resource\` field must be at the same level as \`insights\`, NOT inside the insights array.
 - All arrays must contain only the specified data types.
-- The summary field must contain exactly "\\n\\n" between the two paragraphs for proper formatting.
+- Structure the summary for easy paragraph splitting during post-processing.
 
 Base your insights on the assessment data provided above.`;
 
@@ -269,7 +267,7 @@ Base your insights on the assessment data provided above.`;
         messages: [
           { 
             role: 'system', 
-            content: 'You are an expert leadership coach and assessment analyst. You MUST respond with valid JSON only, no additional text or formatting. Follow the exact JSON structure specified in the user prompt. The insights array must contain ONLY strings, never objects or other keys. Use the word "competencies" throughout your response instead of "strengths". Always refer to the person as "you" or "your" (never "the user" or "the user\'s"). For the summary field, you MUST include exactly two paragraphs separated by "\\n\\n" for proper formatting.'
+            content: 'You are an expert leadership coach and assessment analyst. You MUST respond with valid JSON only, no additional text or formatting. Follow the exact JSON structure specified in the user prompt. The insights array must contain ONLY strings, never objects or other keys. Use the word "competencies" throughout your response instead of "strengths". Always refer to the person as "you" or "your" (never "the user" or "the user\'s"). Structure your summary to be easily split into paragraphs using transition phrases.'
           },
           { role: 'user', content: prompt }
         ],
@@ -351,30 +349,29 @@ Base your insights on the assessment data provided above.`;
         }
       }
 
-      // POST-PROCESS THE SUMMARY: Ensure proper paragraph formatting
+      // POST-PROCESS THE SUMMARY: Apply enhanced paragraph formatting
       if (parsedInsights.summary) {
         console.log('Original summary:', parsedInsights.summary);
         
-        // Apply our formatting function to ensure proper paragraphs
         const formattedSummary = formatSummaryIntoParagraphs(parsedInsights.summary);
         parsedInsights.summary = formattedSummary;
         
-        console.log('Formatted summary:', formattedSummary);
+        console.log('Enhanced formatted summary:', formattedSummary);
       }
       
-      console.log('Successfully validated JSON structure and formatted summary');
+      console.log('Successfully validated JSON structure and applied enhanced summary formatting');
     } catch (jsonError) {
       console.error('Invalid JSON response from OpenAI after cleaning:', jsonError);
       console.error('Cleaned response was:', cleanedInsights);
       throw new Error(`OpenAI returned invalid JSON format: ${jsonError.message}`);
     }
 
-    // Convert back to JSON string with formatted summary
+    // Convert back to JSON string with enhanced formatted summary
     const finalInsights = JSON.stringify(parsedInsights);
 
     // ALWAYS save insights to database if assessmentId is provided
     if (assessmentId) {
-      console.log('Saving NEW insights with formatted summary to assessment (will NEVER be regenerated):', assessmentId);
+      console.log('Saving NEW insights with enhanced formatted summary to assessment (will NEVER be regenerated):', assessmentId);
       
       const { error: updateError } = await supabase
         .from('assessment_results')
@@ -388,11 +385,11 @@ Base your insights on the assessment data provided above.`;
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       } else {
-        console.log('Successfully saved formatted insights to database - will be reused forever');
+        console.log('Successfully saved enhanced formatted insights to database - will be reused forever');
       }
     }
 
-    console.log('Successfully generated and saved insights with automatic paragraph formatting');
+    console.log('Successfully generated and saved insights with enhanced paragraph formatting');
 
     return new Response(JSON.stringify({ insights: finalInsights }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

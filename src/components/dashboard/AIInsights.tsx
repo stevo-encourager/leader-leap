@@ -1,8 +1,8 @@
-
 import React from 'react';
 import { Bot, AlertCircle, Target, TrendingUp, ExternalLink } from 'lucide-react';
 import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
 import { Category, Demographics } from '@/utils/assessmentTypes';
+import { FormattedSummary } from '@/utils/summaryFormatter';
 
 interface AIInsightsProps {
   categories: Category[];
@@ -92,21 +92,15 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
     }
   };
 
-  // Helper function to render summary with proper paragraph formatting
+  // Enhanced helper function to render summary with automatic paragraph formatting
   const renderFormattedSummary = (summary: string) => {
-    // Split by double line breaks (our standard paragraph separator)
-    const paragraphs = summary.split(/\n\n+/).filter(p => p.trim().length > 0);
-    
     return (
       <div className="mb-8 bg-blue-50 p-6 rounded-lg border border-blue-200">
         <h3 className="text-xl font-bold text-encourager mb-3 font-playfair">Assessment Summary</h3>
-        <div className="space-y-4">
-          {paragraphs.map((paragraph, index) => (
-            <p key={index} className="text-slate-700 leading-relaxed">
-              {paragraph.trim()}
-            </p>
-          ))}
-        </div>
+        <FormattedSummary 
+          summary={summary}
+          className="space-y-4"
+        />
       </div>
     );
   };

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Bot, AlertCircle, Target, TrendingUp, ExternalLink } from 'lucide-react';
 import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
@@ -174,7 +173,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
     <div className="mb-8">
       <h3 className="text-xl font-bold text-encourager mb-4 font-montserrat border-b border-encourager/20 pb-2 flex items-center gap-2">
         <TrendingUp className="h-5 w-5" />
-        Key Strengths to Leverage
+        Key Competencies to Leverage
       </h3>
       <div className="space-y-6">
         {keyStrengths.map((strength, index) => (

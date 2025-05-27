@@ -129,32 +129,59 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
     const { default: PDFTemplate } = await import('../components/pdf/PDFTemplate');
     console.log('PDF Export: PDF template imported successfully');
     
-    // Create temporary container - using transform scale instead of opacity
-    console.log('PDF Export: Creating temporary container for PDF generation...');
+    // Create temporary container - VISIBLE at bottom of page during export
+    console.log('PDF Export: Creating visible temporary container for PDF generation...');
     const tempContainer = document.createElement('div');
     
-    // Use nearly invisible positioning - opacity 0.01 instead of 0 to avoid html2pdf ignoring it
+    // Make it visible but positioned at the bottom with minimal styling
     tempContainer.style.cssText = `
-      position: absolute;
+      position: fixed;
+      bottom: 0;
       left: 0;
-      top: 0;
-      transform: scale(0.01, 0.01);
-      transform-origin: top left;
-      pointer-events: none;
-      z-index: -1;
-      width: 210mm;
-      min-height: 297mm;
+      right: 0;
+      width: 100%;
       background: white;
+      border-top: 2px solid #e5e7eb;
       font-family: system-ui, -apple-system, sans-serif;
-      overflow: hidden;
+      font-size: 10px;
+      z-index: 9999;
+      max-height: 50vh;
+      overflow: auto;
     `;
     
+    // Add a notice header to explain what's happening
+    const noticeHeader = document.createElement('div');
+    noticeHeader.style.cssText = `
+      background: #f3f4f6;
+      padding: 8px 16px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: center;
+      font-weight: 600;
+      color: #374151;
+    `;
+    noticeHeader.textContent = '🔄 Generating PDF... (This preview will disappear automatically)';
+    tempContainer.appendChild(noticeHeader);
+    
+    // Create content wrapper for the actual PDF content
+    const contentWrapper = document.createElement('div');
+    contentWrapper.style.cssText = `
+      padding: 10px;
+      transform: scale(0.3);
+      transform-origin: top left;
+      width: 333%;
+      height: auto;
+    `;
+    tempContainer.appendChild(contentWrapper);
+    
     document.body.appendChild(tempContainer);
-    console.log('PDF Export: Temporary container created with transform scale(0.01) approach');
+    console.log('PDF Export: Visible temporary container created at bottom of page');
+    
+    // Scroll to show the container to the user
+    tempContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     
     toast({
       title: "Generating PDF",
-      description: "Creating your assessment results PDF...",
+      description: "Creating your assessment results PDF... Please wait while the content renders.",
     });
     
     // Create PDF template element with explicit props
@@ -171,46 +198,39 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
     const pdfElement = React.createElement(PDFTemplate, templateProps);
     console.log('PDF Export: React element created');
     
-    // Render the template
+    // Render the template into the content wrapper
     console.log('PDF Export: Starting React rendering...');
-    const root = ReactDOM.createRoot(tempContainer);
+    const root = ReactDOM.createRoot(contentWrapper);
     root.render(pdfElement);
     console.log('PDF Export: React render initiated');
     
     // Force a reflow to ensure browser has fully rendered the content
     console.log('PDF Export: Forcing reflow...');
-    const reflow = getComputedStyle(tempContainer).transform;
-    console.log('PDF Export: Forced reflow complete, transform:', reflow);
+    const reflow = getComputedStyle(contentWrapper).height;
+    console.log('PDF Export: Forced reflow complete, height:', reflow);
     
-    // Wait longer for rendering to complete
+    // Wait for rendering to complete
     console.log('PDF Export: Waiting for render completion...');
-    await new Promise(resolve => setTimeout(resolve, 7000));
+    await new Promise(resolve => setTimeout(resolve, 3000));
     
     // Clean the HTML content for PDF generation
     console.log('PDF Export: Cleaning HTML for PDF generation...');
-    cleanHtmlForPdf(tempContainer);
+    cleanHtmlForPdf(contentWrapper);
     
     // Log the cleaned content for debugging
     console.log('PDF Export: Checking cleaned content...');
-    console.log('PDF Export: Container innerHTML length:', tempContainer.innerHTML.length);
-    console.log('PDF Export: Container children count:', tempContainer.children.length);
-    console.log('PDF Export: Container positioning:', {
-      position: tempContainer.style.position,
-      left: tempContainer.style.left,
-      top: tempContainer.style.top,
-      transform: tempContainer.style.transform,
-      zIndex: tempContainer.style.zIndex
-    });
-    console.log('PDF Export: First 200 chars of cleaned content:', tempContainer.innerHTML.substring(0, 200));
+    console.log('PDF Export: Content wrapper innerHTML length:', contentWrapper.innerHTML.length);
+    console.log('PDF Export: Content wrapper children count:', contentWrapper.children.length);
+    console.log('PDF Export: First 200 chars of cleaned content:', contentWrapper.innerHTML.substring(0, 200));
     
-    if (tempContainer.innerHTML.length < 1000) {
+    if (contentWrapper.innerHTML.length < 1000) {
       console.error('PDF Export: Very little content rendered, potential rendering issue');
-      console.log('PDF Export: Full container content:', tempContainer.innerHTML);
+      console.log('PDF Export: Full content wrapper content:', contentWrapper.innerHTML);
     }
     
     // Add timestamp marker to verify new code is running
     const timestamp = new Date().toISOString();
-    console.log(`PDF Export: TIMESTAMP MARKER - PDF generation started at ${timestamp} with transform scale(0.01) approach`);
+    console.log(`PDF Export: TIMESTAMP MARKER - PDF generation started at ${timestamp} with visible container approach`);
     
     console.log('PDF Export: Configuring html2pdf options...');
     const opt = {
@@ -239,8 +259,8 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
       }
     };
     
-    console.log('PDF Export: Starting html2pdf conversion with transform scale container...');
-    await html2pdf().set(opt).from(tempContainer).save();
+    console.log('PDF Export: Starting html2pdf conversion with visible container...');
+    await html2pdf().set(opt).from(contentWrapper).save();
     console.log('PDF Export: PDF generation completed successfully');
     
     toast({
@@ -248,7 +268,7 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
       description: "Your leadership assessment results have been downloaded",
     });
     
-    // Clean up
+    // Clean up - remove the temporary container
     console.log('PDF Export: Cleaning up temporary container...');
     root.unmount();
     document.body.removeChild(tempContainer);

@@ -22,6 +22,10 @@ export interface Category {
 
 export interface Demographics {
   role?: string;
+  jobTitle?: string;
+  department?: string;
+  experienceLevel?: string;
+  teamSize?: string;
   yearsOfExperience?: string;
   industry?: string;
 }

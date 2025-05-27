@@ -206,16 +206,16 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics }) =
         }}>
           {strengths.length > 0 ? (
             strengths.map((strength, index) => (
-              <div key={`${strength.categoryTitle}-${strength.skill.name}`} style={{
+              <div key={`${strength.categoryTitle}-${strength.name}`} style={{
                 marginBottom: index < strengths.length - 1 ? '10px' : '0',
                 paddingBottom: index < strengths.length - 1 ? '10px' : '0',
                 borderBottom: index < strengths.length - 1 ? '1px solid #dcfce7' : 'none'
               }}>
                 <div style={{ fontWeight: '600', marginBottom: '2px' }}>
-                  {strength.skill.name}
+                  {strength.name}
                 </div>
                 <div style={{ fontSize: '11px', color: '#166534' }}>
-                  {strength.categoryTitle} • Current: {strength.skill.ratings?.current}/7 • Desired: {strength.skill.ratings?.desired}/7
+                  {strength.categoryTitle} • Current: {strength.ratings?.current}/7 • Desired: {strength.ratings?.desired}/7
                 </div>
               </div>
             ))
@@ -247,16 +247,16 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics }) =
         }}>
           {lowestSkills.length > 0 ? (
             lowestSkills.map((skill, index) => (
-              <div key={`${skill.categoryTitle}-${skill.skill.name}`} style={{
+              <div key={`${skill.categoryTitle}-${skill.name}`} style={{
                 marginBottom: index < lowestSkills.length - 1 ? '10px' : '0',
                 paddingBottom: index < lowestSkills.length - 1 ? '10px' : '0',
                 borderBottom: index < lowestSkills.length - 1 ? '1px solid #fee2e2' : 'none'
               }}>
                 <div style={{ fontWeight: '600', marginBottom: '2px' }}>
-                  {skill.skill.name}
+                  {skill.name}
                 </div>
                 <div style={{ fontSize: '11px', color: '#991b1b' }}>
-                  {skill.categoryTitle} • Current: {skill.skill.ratings?.current}/7 • Desired: {skill.skill.ratings?.desired}/7 • Gap: {skill.gap.toFixed(1)}
+                  {skill.categoryTitle} • Current: {skill.ratings?.current}/7 • Desired: {skill.ratings?.desired}/7 • Gap: {skill.gap.toFixed(1)}
                 </div>
               </div>
             ))

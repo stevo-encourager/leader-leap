@@ -42,7 +42,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
     try {
       const parsed = JSON.parse(insightsText);
       
-      // Validate new structure
+      // Validate structure
       if (!parsed.summary || !parsed.priority_areas || !parsed.key_strengths) {
         console.error('Invalid insights structure - missing required fields');
         return null;
@@ -51,6 +51,38 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
       if (!Array.isArray(parsed.priority_areas) || !Array.isArray(parsed.key_strengths)) {
         console.error('Invalid insights structure - arrays expected');
         return null;
+      }
+
+      // Validate priority areas
+      for (const area of parsed.priority_areas) {
+        if (!area.competency || !area.insights || !Array.isArray(area.insights) || !area.resource) {
+          console.error('Invalid priority area structure:', area);
+          return null;
+        }
+        
+        // Ensure insights is an array of strings only
+        for (const insight of area.insights) {
+          if (typeof insight !== 'string') {
+            console.error('Invalid insight type - must be string:', insight);
+            return null;
+          }
+        }
+      }
+
+      // Validate key strengths
+      for (const strength of parsed.key_strengths) {
+        if (!strength.competency || !strength.example || !strength.leverage_advice || !Array.isArray(strength.leverage_advice)) {
+          console.error('Invalid key strength structure:', strength);
+          return null;
+        }
+        
+        // Ensure leverage_advice is an array of strings only
+        for (const advice of strength.leverage_advice) {
+          if (typeof advice !== 'string') {
+            console.error('Invalid advice type - must be string:', advice);
+            return null;
+          }
+        }
       }
       
       return parsed;
@@ -88,7 +120,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
               <div>
                 <h5 className="font-medium text-slate-700 mb-3">Key Insights:</h5>
                 <ul className="space-y-3">
-                  {area.insights.map((insight, insightIndex) => (
+                  {area.insights && Array.isArray(area.insights) && area.insights.map((insight, insightIndex) => (
                     <li key={insightIndex} className="flex items-start gap-3">
                       <span className="flex-shrink-0 w-6 h-6 bg-encourager text-white rounded-full flex items-center justify-center text-sm font-medium">
                         {insightIndex + 1}
@@ -139,7 +171,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
               <div className="bg-blue-50 p-4 rounded border-l-4 border-blue-400">
                 <p className="text-sm text-slate-600 font-medium mb-3">How to leverage further:</p>
                 <ul className="space-y-2">
-                  {strength.leverage_advice.map((advice, adviceIndex) => (
+                  {strength.leverage_advice && Array.isArray(strength.leverage_advice) && strength.leverage_advice.map((advice, adviceIndex) => (
                     <li key={adviceIndex} className="flex items-start gap-3">
                       <span className="flex-shrink-0 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-medium">
                         {adviceIndex + 1}
@@ -203,7 +235,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
                   <div className="text-center py-8 text-slate-500">
                     <AlertCircle className="mx-auto mb-3" size={40} />
                     <p className="text-lg">Unable to parse AI insights</p>
-                    <p className="text-sm">The insights format appears to be invalid.</p>
+                    <p className="text-sm">The insights format appears to be invalid. Please try refreshing to regenerate.</p>
                   </div>
                 );
               }
@@ -211,8 +243,8 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
               return (
                 <div className="prose prose-slate max-w-none">
                   {parsedInsights.summary && renderSummary(parsedInsights.summary)}
-                  {renderPriorityAreas(parsedInsights.priority_areas)}
-                  {renderKeyStrengths(parsedInsights.key_strengths)}
+                  {parsedInsights.priority_areas && renderPriorityAreas(parsedInsights.priority_areas)}
+                  {parsedInsights.key_strengths && renderKeyStrengths(parsedInsights.key_strengths)}
                 </div>
               );
             })()}

@@ -145,35 +145,54 @@ Top Strength Areas (High Current Ratings, Low Gaps):
 ${topStrengths.map((cat, i) => `${i+1}. ${cat.title}: Current ${cat.averageCurrentRating.toFixed(1)}, Gap ${cat.gap.toFixed(1)}`).join('\n')}
 `;
 
-    // The improved prompt for ChatGPT with the new format requirements
+    // The improved prompt with CRITICAL JSON structure clarification
     const prompt = `${assessmentDataSection}
 
 You are an expert leadership coach and assessment analyst. Based on the provided assessment data (including competency names, gap scores, and strengths), generate AI insights for a user's leadership assessment.
 
-### Instructions
+### CRITICAL: JSON Structure Requirements
 
-- Output must be a single JSON object with these fields:
-  - \`summary\`: A brief, warm, and encouraging paragraph (2–4 sentences). Begin with affirming or positive language, highlight the user's potential or what they're already doing well, and then gently introduce the main growth opportunities. Always balance encouragement with honest, instructive feedback.
-  - \`priority_areas\`: An array with exactly 3 objects, each for a Top 3 Priority Development Area:
-    - \`competency\` (string): The name of the competency.
-    - \`gap\` (number): The gap score.
-    - \`insights\` (array of 3 strings): Each is an instructive, reflective, or "aha" insight about the user's leadership in this area. Each insight must be practical, specific, and non-repetitive. One of these must reference a recommended resource.
-    - \`resource\` (string): A directly relevant, practical resource (article, course, framework, etc.), referenced in one of the insights.
-  - \`key_strengths\`: An array (at least 2 objects), each for a key strength to leverage:
-    - \`competency\` (string): The name of the strength.
-    - \`example\` (string): A concrete example of this strength in action (from data or a plausible scenario).
-    - \`leverage_advice\` (array of 3 strings): Three actionable, positive suggestions for further leveraging this strength. No resource here.
+You MUST output ONLY a valid JSON object with this EXACT structure:
 
-### Formatting and Content Rules
+{
+  "summary": "string",
+  "priority_areas": [
+    {
+      "competency": "string",
+      "gap": number,
+      "insights": ["string1", "string2", "string3"],
+      "resource": "string"
+    }
+  ],
+  "key_strengths": [
+    {
+      "competency": "string", 
+      "example": "string",
+      "leverage_advice": ["string1", "string2", "string3"]
+    }
+  ]
+}
 
-- Output **must be valid JSON only**. No text or markdown before/after.
-- If any field is missing, leave it blank or use \`null\`. Do not invent or embellish data.
-- **Summary**: Must start with encouragement, then include honest, instructive feedback.
-- **Insights**: Should be instructive, reflective, and specific—not just generic recommendations. At least one must reference the provided resource.
-- **Resource**: Only one per priority area, always referenced in an insight.
-- **Strengths advice**: Actionable, positive, and tailored to the competency.
-- Avoid generic or repeated advice/resources.
-- All sections must be present.
+### Field Requirements
+
+- \`summary\`: A brief, warm, and encouraging paragraph (2–4 sentences). Begin with affirming or positive language, highlight the user's potential or what they're already doing well, and then gently introduce the main growth opportunities. Always balance encouragement with honest, instructive feedback.
+
+- \`priority_areas\`: An array with exactly 3 objects, each for a Top 3 Priority Development Area:
+  - \`competency\` (string): The name of the competency from the assessment data above
+  - \`gap\` (number): The gap score from the assessment data above
+  - \`insights\` (array of exactly 3 strings): Each is an instructive, reflective, or "aha" insight about the user's leadership in this area. Each insight must be practical, specific, and non-repetitive. One of these must reference the recommended resource.
+  - \`resource\` (string): A directly relevant, practical resource (article, course, framework, etc.), referenced in one of the insights.
+
+- \`key_strengths\`: An array with at least 2 objects, each for a key strength to leverage:
+  - \`competency\` (string): The name of the strength from the assessment data above
+  - \`example\` (string): A concrete example of this strength in action (from data or a plausible scenario)
+  - \`leverage_advice\` (array of exactly 3 strings): Three actionable, positive suggestions for further leveraging this strength. No resource here.
+
+### CRITICAL JSON Rules
+- Output MUST be valid JSON only. No text, markdown, or formatting before/after.
+- The \`insights\` field must be an array of strings ONLY. Do NOT include any other keys inside this array.
+- The \`resource\` field must be at the same level as \`insights\`, NOT inside the insights array.
+- All arrays must contain only the specified data types.
 
 Base your insights on the assessment data provided above.`;
 
@@ -188,7 +207,7 @@ Base your insights on the assessment data provided above.`;
         messages: [
           { 
             role: 'system', 
-            content: 'You are an expert leadership coach and assessment analyst. You MUST respond with valid JSON only, no additional text or formatting. Always follow the exact structure specified in the user prompt.'
+            content: 'You are an expert leadership coach and assessment analyst. You MUST respond with valid JSON only, no additional text or formatting. Follow the exact JSON structure specified in the user prompt. The insights array must contain ONLY strings, never objects or other keys.'
           },
           { role: 'user', content: prompt }
         ],
@@ -216,11 +235,11 @@ Base your insights on the assessment data provided above.`;
     const cleanedInsights = cleanJsonResponse(rawInsights);
     console.log('Cleaned insights JSON:', cleanedInsights);
 
-    // Validate that the cleaned response is valid JSON with the new structure
+    // Validate that the cleaned response is valid JSON with the correct structure
     try {
       const parsedInsights = JSON.parse(cleanedInsights);
       
-      // Basic validation of the new structure
+      // Basic validation of the structure
       if (!parsedInsights.summary || !parsedInsights.priority_areas || !parsedInsights.key_strengths) {
         throw new Error('Invalid JSON structure - missing required fields: summary, priority_areas, or key_strengths');
       }
@@ -237,18 +256,43 @@ Base your insights on the assessment data provided above.`;
         throw new Error('Invalid JSON structure - key_strengths must have at least 2 items');
       }
 
-      // Validate the new insights structure
+      // Validate the priority areas structure more thoroughly
       for (const area of parsedInsights.priority_areas) {
-        if (!area.competency || !area.insights || !Array.isArray(area.insights) || area.insights.length !== 3) {
-          throw new Error('Invalid priority area structure - must have competency, gap, insights array with 3 items, and resource');
+        if (!area.competency || !area.insights || !Array.isArray(area.insights) || area.insights.length !== 3 || !area.resource) {
+          throw new Error('Invalid priority area structure - must have competency, gap, insights array with 3 strings, and resource');
+        }
+        
+        // Check that insights array contains only strings
+        for (const insight of area.insights) {
+          if (typeof insight !== 'string') {
+            throw new Error('Invalid priority area structure - insights array must contain only strings');
+          }
+        }
+        
+        if (typeof area.gap !== 'number') {
+          throw new Error('Invalid priority area structure - gap must be a number');
+        }
+      }
+
+      // Validate key strengths structure
+      for (const strength of parsedInsights.key_strengths) {
+        if (!strength.competency || !strength.example || !strength.leverage_advice || !Array.isArray(strength.leverage_advice) || strength.leverage_advice.length !== 3) {
+          throw new Error('Invalid key strength structure - must have competency, example, and leverage_advice array with 3 strings');
+        }
+        
+        // Check that leverage_advice array contains only strings
+        for (const advice of strength.leverage_advice) {
+          if (typeof advice !== 'string') {
+            throw new Error('Invalid key strength structure - leverage_advice array must contain only strings');
+          }
         }
       }
       
-      console.log('Successfully validated JSON structure with new insights format');
+      console.log('Successfully validated JSON structure with correct format');
     } catch (jsonError) {
       console.error('Invalid JSON response from OpenAI after cleaning:', jsonError);
       console.error('Cleaned response was:', cleanedInsights);
-      throw new Error('OpenAI returned invalid JSON format even after cleaning');
+      throw new Error(`OpenAI returned invalid JSON format: ${jsonError.message}`);
     }
 
     // ALWAYS save insights to database if assessmentId is provided
@@ -271,7 +315,7 @@ Base your insights on the assessment data provided above.`;
       }
     }
 
-    console.log('Successfully generated and saved insights with new insights format');
+    console.log('Successfully generated and saved insights with correct JSON format');
 
     return new Response(JSON.stringify({ insights: cleanedInsights }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

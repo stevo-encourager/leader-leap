@@ -13,384 +13,404 @@ export const exportToPDF = (elementId: string, filename: string, onSuccess?: () 
     return;
   }
 
-  // Create debugging output container
-  const createDebugOutput = (content: string, title: string) => {
-    const debugDiv = document.createElement('div');
-    debugDiv.style.cssText = `
+  // Create visual preview popup
+  const createPreviewPopup = (content: HTMLElement, title: string) => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
       position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: white;
-      border: 2px solid #333;
-      padding: 20px;
-      max-width: 80vw;
-      max-height: 80vh;
-      overflow: auto;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.8);
       z-index: 10000;
-      font-family: monospace;
-      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     `;
     
-    const closeBtn = document.createElement('button');
-    closeBtn.textContent = 'Close Debug';
-    closeBtn.style.cssText = `
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: red;
-      color: white;
-      border: none;
-      padding: 5px 10px;
-      cursor: pointer;
+    const popup = document.createElement('div');
+    popup.style.cssText = `
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      max-width: 90vw;
+      max-height: 90vh;
+      overflow: auto;
+      position: relative;
     `;
-    closeBtn.onclick = () => document.body.removeChild(debugDiv);
+    
+    const header = document.createElement('div');
+    header.style.cssText = `
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #ccc;
+    `;
     
     const titleEl = document.createElement('h3');
     titleEl.textContent = title;
-    titleEl.style.cssText = 'margin: 0 0 10px 0; color: #333;';
+    titleEl.style.cssText = 'margin: 0; color: #333; font-size: 18px;';
     
-    const contentEl = document.createElement('pre');
-    contentEl.textContent = content;
-    contentEl.style.cssText = 'white-space: pre-wrap; margin: 0;';
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = 'Close Preview';
+    closeBtn.style.cssText = `
+      background: #dc2626;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    `;
+    closeBtn.onclick = () => document.body.removeChild(overlay);
     
-    debugDiv.appendChild(closeBtn);
-    debugDiv.appendChild(titleEl);
-    debugDiv.appendChild(contentEl);
-    document.body.appendChild(debugDiv);
+    const proceedBtn = document.createElement('button');
+    proceedBtn.textContent = 'Generate PDF with this content';
+    proceedBtn.style.cssText = `
+      background: #2F564D;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-left: 10px;
+    `;
+    
+    const contentContainer = document.createElement('div');
+    contentContainer.style.cssText = `
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 10px;
+      background: #f9f9f9;
+      font-family: monospace;
+      font-size: 10px;
+      max-height: 70vh;
+      overflow: auto;
+    `;
+    
+    const clonedContent = content.cloneNode(true) as HTMLElement;
+    contentContainer.appendChild(clonedContent);
+    
+    header.appendChild(titleEl);
+    header.appendChild(closeBtn);
+    header.appendChild(proceedBtn);
+    popup.appendChild(header);
+    popup.appendChild(contentContainer);
+    overlay.appendChild(popup);
+    document.body.appendChild(overlay);
+    
+    return new Promise<boolean>((resolve) => {
+      proceedBtn.onclick = () => {
+        document.body.removeChild(overlay);
+        resolve(true);
+      };
+      closeBtn.onclick = () => {
+        document.body.removeChild(overlay);
+        resolve(false);
+      };
+    });
   };
 
   toast({
     title: "Generating PDF",
-    description: "Creating your complete assessment results...",
+    description: "Waiting for all content to load...",
   });
 
-  // Comprehensive content detection
-  const findContent = () => {
-    console.log('=== PDF DEBUG: Starting content detection ===');
-    
-    // Try multiple selectors for different sections
-    const selectors = [
-      // Main content container
-      '#results-content',
-      '[data-section="profile-summary"]',
-      '[data-section="detailed-analysis"]', 
-      '[data-section="recommended-steps"]',
-      '[data-section="coaching-support"]',
-      
-      // Fallback selectors
-      '.space-y-6',
-      '[role="main"]',
-      'main',
-      
-      // Component-specific selectors
-      '.recharts-wrapper',
-      'svg',
-      '.bg-encourager\\/5',
-      '.grid.grid-cols-3.gap-4'
-    ];
-    
-    const foundElements: { [key: string]: Element[] } = {};
-    
-    selectors.forEach(selector => {
-      const elements = document.querySelectorAll(selector);
-      foundElements[selector] = Array.from(elements);
-      console.log(`PDF DEBUG: Selector "${selector}" found ${elements.length} elements`);
-    });
-    
-    // Show debug info
-    const debugInfo = Object.entries(foundElements)
-      .map(([selector, elements]) => `${selector}: ${elements.length} elements`)
-      .join('\n');
-    
-    createDebugOutput(debugInfo, 'Content Detection Results');
-    
-    return foundElements;
-  };
-
-  // Wait for content to be fully rendered
-  const waitForContent = () => {
+  // Enhanced content waiting that checks for specific content types
+  const waitForAllContent = () => {
     return new Promise<void>((resolve) => {
-      // Wait for charts and dynamic content
-      setTimeout(() => {
-        // Check if charts are rendered
-        const charts = document.querySelectorAll('svg, .recharts-wrapper');
-        console.log(`PDF DEBUG: Found ${charts.length} chart elements`);
+      console.log('PDF: Starting comprehensive content wait...');
+      
+      let attempts = 0;
+      const maxAttempts = 20; // 10 seconds max wait
+      
+      const checkContent = () => {
+        attempts++;
+        console.log(`PDF: Content check attempt ${attempts}/${maxAttempts}`);
         
-        // Check if images are loaded
+        // Check for charts (SVG elements)
+        const charts = document.querySelectorAll('svg, .recharts-wrapper, .recharts-container');
+        console.log(`PDF: Found ${charts.length} chart elements`);
+        
+        // Check for AI insights content
+        const aiInsights = document.querySelector('[data-section="detailed-analysis"]');
+        const insightsContent = aiInsights?.textContent?.trim() || '';
+        console.log(`PDF: AI insights content length: ${insightsContent.length}`);
+        
+        // Check for text content in key sections
+        const profileSummary = document.querySelector('[data-section="profile-summary"]')?.textContent?.trim() || '';
+        const recommendedSteps = document.querySelector('[data-section="recommended-steps"]')?.textContent?.trim() || '';
+        const coachingSupport = document.querySelector('[data-section="coaching-support"]')?.textContent?.trim() || '';
+        
+        console.log(`PDF: Content lengths - Profile: ${profileSummary.length}, Steps: ${recommendedSteps.length}, Coaching: ${coachingSupport.length}`);
+        
+        // Check if content is substantial (not just headers/loading text)
+        const hasSubstantialContent = (
+          charts.length > 0 && 
+          insightsContent.length > 100 && 
+          profileSummary.length > 20 &&
+          recommendedSteps.length > 50 &&
+          coachingSupport.length > 50
+        );
+        
+        // Check for images
         const images = document.querySelectorAll('img');
-        let loadedImages = 0;
-        
-        if (images.length === 0) {
-          resolve();
-          return;
-        }
-        
+        let allImagesLoaded = true;
         images.forEach(img => {
-          if (img.complete) {
-            loadedImages++;
-          } else {
-            img.onload = () => {
-              loadedImages++;
-              if (loadedImages === images.length) {
-                resolve();
-              }
-            };
-            img.onerror = () => {
-              loadedImages++;
-              if (loadedImages === images.length) {
-                resolve();
-              }
-            };
+          if (!img.complete || img.naturalHeight === 0) {
+            allImagesLoaded = false;
           }
         });
         
-        if (loadedImages === images.length) {
+        console.log(`PDF: All images loaded: ${allImagesLoaded}, Has substantial content: ${hasSubstantialContent}`);
+        
+        if ((hasSubstantialContent && allImagesLoaded) || attempts >= maxAttempts) {
+          if (attempts >= maxAttempts) {
+            console.log('PDF: Max attempts reached, proceeding anyway');
+          } else {
+            console.log('PDF: All content ready!');
+          }
           resolve();
+        } else {
+          setTimeout(checkContent, 500);
         }
-      }, 2000);
+      };
+      
+      checkContent();
     });
   };
 
-  const createPDFContent = async () => {
-    // First, wait for all content to load
-    await waitForContent();
+  const createComprehensivePDFContent = async () => {
+    // Wait for all content first
+    await waitForAllContent();
     
-    // Find all content
-    const foundElements = findContent();
+    console.log('PDF: Creating comprehensive PDF content');
     
-    // Create main PDF container
+    // Get the main results container
+    const resultsContent = document.getElementById('results-content');
+    if (!resultsContent) {
+      throw new Error('Results content container not found');
+    }
+    
+    // Create PDF container with proper styling
     const pdfContainer = document.createElement('div');
     pdfContainer.style.cssText = `
       position: absolute;
       top: -9999px;
       left: -9999px;
       width: 210mm;
+      min-height: 297mm;
       background: white;
       font-family: system-ui, -apple-system, sans-serif;
       color: #1f2937;
-      padding: 15mm;
+      padding: 20mm;
       box-sizing: border-box;
-      line-height: 1.4;
+      line-height: 1.5;
+      font-size: 12px;
     `;
 
     // Add header with logo
-    const headerSection = document.createElement('div');
-    headerSection.style.cssText = `
+    const header = document.createElement('div');
+    header.style.cssText = `
       text-align: center;
-      margin-bottom: 20px;
-      padding-bottom: 15px;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
       border-bottom: 2px solid #2F564D;
     `;
     
     const logo = document.createElement('img');
     logo.src = '/lovable-uploads/8320d514-fba5-4e1b-a658-1563758db943.png';
-    logo.style.cssText = 'height: 50px; width: auto; margin-bottom: 10px;';
+    logo.style.cssText = 'height: 60px; width: auto; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto;';
     logo.crossOrigin = 'anonymous';
-    headerSection.appendChild(logo);
     
     const title = document.createElement('h1');
     title.textContent = 'Leadership Assessment Results';
     title.style.cssText = `
       color: #2F564D;
-      font-size: 20px;
-      margin: 0;
+      font-size: 24px;
+      margin: 10px 0 0 0;
       font-weight: 600;
     `;
-    headerSection.appendChild(title);
     
-    pdfContainer.appendChild(headerSection);
+    header.appendChild(logo);
+    header.appendChild(title);
+    pdfContainer.appendChild(header);
 
-    // Try to get the main results content
-    const mainContent = document.getElementById('results-content');
+    // Clone and clean the main content
+    const contentClone = resultsContent.cloneNode(true) as HTMLElement;
     
-    if (mainContent) {
-      console.log('PDF DEBUG: Found main results content');
+    // Enhanced content cleaning for PDF
+    const cleanForPDF = (element: HTMLElement) => {
+      // Remove interactive elements and navigation
+      const toRemove = element.querySelectorAll('button, .cursor-pointer, nav, header:not(.card-header), footer, [role="button"]');
+      toRemove.forEach(el => el.remove());
       
-      // Clone the entire content
-      const contentClone = mainContent.cloneNode(true) as HTMLElement;
-      
-      // Clean up the clone for PDF
-      cleanElementForPDF(contentClone);
-      
-      // Add to PDF container
-      contentClone.style.cssText = `
-        background: white;
-        color: #1f2937;
-        font-size: 12px;
-        line-height: 1.4;
-      `;
-      
-      pdfContainer.appendChild(contentClone);
-      
-      // Show what we captured
-      createDebugOutput(contentClone.innerHTML.substring(0, 2000) + '...', 'Captured Content Preview');
-      
-    } else {
-      console.log('PDF DEBUG: Main content not found, trying fallback');
-      
-      // Fallback: try to find individual sections
-      const sections = [
-        'profile-summary',
-        'detailed-analysis', 
-        'recommended-steps',
-        'coaching-support'
-      ];
-      
-      let foundSections = 0;
-      
-      sections.forEach(sectionName => {
-        const section = document.querySelector(`[data-section="${sectionName}"]`);
-        if (section) {
-          console.log(`PDF DEBUG: Found section: ${sectionName}`);
-          foundSections++;
-          
-          const sectionClone = section.cloneNode(true) as HTMLElement;
-          cleanElementForPDF(sectionClone);
-          
-          sectionClone.style.cssText += `
-            margin: 15px 0;
-            page-break-inside: avoid;
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 10px;
-          `;
-          
-          pdfContainer.appendChild(sectionClone);
+      // Ensure all elements are visible and styled for PDF
+      const allElements = element.querySelectorAll('*');
+      allElements.forEach(el => {
+        const htmlEl = el as HTMLElement;
+        
+        // Force visibility
+        if (htmlEl.style.display === 'none' || htmlEl.style.visibility === 'hidden') {
+          htmlEl.style.display = 'block';
+          htmlEl.style.visibility = 'visible';
+        }
+        
+        // Remove problematic CSS
+        htmlEl.style.transform = 'none';
+        htmlEl.style.transition = 'none';
+        htmlEl.style.animation = 'none';
+        
+        // Ensure text is visible
+        const computedStyle = window.getComputedStyle(htmlEl);
+        if (computedStyle.color === 'transparent' || computedStyle.color === 'rgba(0, 0, 0, 0)') {
+          htmlEl.style.color = '#1f2937';
+        }
+        
+        // Fix backgrounds
+        if (computedStyle.backgroundColor === 'transparent') {
+          htmlEl.style.backgroundColor = 'white';
         }
       });
       
-      if (foundSections === 0) {
-        // Last resort: capture the entire body content
-        console.log('PDF DEBUG: No sections found, capturing body');
-        const bodyClone = document.body.cloneNode(true) as HTMLElement;
-        cleanElementForPDF(bodyClone);
-        pdfContainer.appendChild(bodyClone);
-      }
+      // Handle charts specifically
+      const svgElements = element.querySelectorAll('svg');
+      svgElements.forEach(svg => {
+        svg.style.cssText += `
+          max-width: 100% !important;
+          height: 400px !important;
+          display: block !important;
+          margin: 20px auto !important;
+          background: white !important;
+          border: 1px solid #e2e8f0 !important;
+        `;
+      });
       
-      createDebugOutput(`Found ${foundSections} sections out of ${sections.length}`, 'Section Detection Results');
-    }
-
+      // Expand any collapsed content
+      const hiddenElements = element.querySelectorAll('.hidden, [aria-expanded="false"]');
+      hiddenElements.forEach(el => {
+        const htmlEl = el as HTMLElement;
+        htmlEl.classList.remove('hidden');
+        htmlEl.style.display = 'block';
+        htmlEl.removeAttribute('aria-expanded');
+      });
+      
+      // Style specific sections for PDF
+      const sections = element.querySelectorAll('[data-section]');
+      sections.forEach(section => {
+        const htmlSection = section as HTMLElement;
+        htmlSection.style.cssText += `
+          margin-bottom: 25px !important;
+          page-break-inside: avoid !important;
+          background: white !important;
+          padding: 15px !important;
+          border: 1px solid #e2e8f0 !important;
+          border-radius: 8px !important;
+        `;
+      });
+    };
+    
+    cleanForPDF(contentClone);
+    
+    // Apply final styling to the cloned content
+    contentClone.style.cssText = `
+      background: white;
+      color: #1f2937;
+      font-size: 12px;
+      line-height: 1.5;
+    `;
+    
+    pdfContainer.appendChild(contentClone);
+    
     return pdfContainer;
   };
 
-  const cleanElementForPDF = (element: HTMLElement) => {
-    // Remove interactive elements
-    const interactiveElements = element.querySelectorAll('button, [role="button"], .cursor-pointer, nav, header, footer');
-    interactiveElements.forEach(el => el.remove());
-
-    // Fix all elements
-    const allElements = element.querySelectorAll('*');
-    allElements.forEach(el => {
-      const htmlEl = el as HTMLElement;
-      
-      // Ensure visibility
-      htmlEl.style.display = htmlEl.style.display === 'none' ? 'block' : htmlEl.style.display;
-      htmlEl.style.visibility = 'visible';
-      htmlEl.style.opacity = '1';
-      
-      // Fix colors
-      if (window.getComputedStyle(htmlEl).color === 'transparent') {
-        htmlEl.style.color = '#1f2937';
-      }
-      
-      // Remove problematic styles
-      htmlEl.style.transition = 'none';
-      htmlEl.style.transform = 'none';
-      htmlEl.style.animation = 'none';
-    });
-
-    // Handle SVG charts
-    const svgElements = element.querySelectorAll('svg');
-    svgElements.forEach(svg => {
-      svg.style.cssText = `
-        max-width: 100% !important;
-        height: 300px !important;
-        display: block !important;
-        margin: 10px auto !important;
-        background: white !important;
-      `;
-    });
-
-    // Expand collapsed content
-    const collapsedElements = element.querySelectorAll('[aria-expanded="false"], .collapsed, .hidden');
-    collapsedElements.forEach(collapsed => {
-      const htmlCollapsed = collapsed as HTMLElement;
-      htmlCollapsed.style.display = 'block';
-      htmlCollapsed.style.visibility = 'visible';
-      htmlCollapsed.removeAttribute('aria-expanded');
-      htmlCollapsed.classList.remove('collapsed', 'hidden');
-    });
-  };
-
-  // Enhanced PDF configuration
-  const opt = {
-    margin: [10, 10, 10, 10],
-    filename,
-    image: { 
-      type: 'jpeg', 
-      quality: 0.95
-    },
-    html2canvas: { 
-      scale: 1.5,
-      useCORS: true,
-      allowTaint: true,
-      letterRendering: true,
-      logging: true,
-      width: 794,
-      height: 1123,
-      scrollX: 0,
-      scrollY: 0,
-      backgroundColor: '#ffffff'
-    },
-    jsPDF: { 
-      unit: 'mm', 
-      format: 'a4', 
-      orientation: 'portrait'
-    }
-  };
-  
-  // Create and process PDF content
-  createPDFContent().then(pdfContent => {
+  // Main export process
+  createComprehensivePDFContent().then(async (pdfContent) => {
     document.body.appendChild(pdfContent);
     
-    console.log('PDF DEBUG: PDF content created, element count:', pdfContent.children.length);
-    console.log('PDF DEBUG: PDF content HTML length:', pdfContent.innerHTML.length);
+    console.log('PDF: Content created, showing preview...');
     
-    // Show final HTML being sent to PDF generator
-    createDebugOutput(pdfContent.outerHTML.substring(0, 3000) + '...', 'Final PDF HTML');
+    // Show preview and wait for user confirmation
+    const shouldProceed = await createPreviewPopup(pdfContent, 'PDF Content Preview - Verify this looks correct');
     
-    // Generate PDF after a longer delay to ensure everything is ready
-    setTimeout(() => {
-      html2pdf().set(opt).from(pdfContent).save().then(() => {
-        // Clean up
-        if (document.body.contains(pdfContent)) {
-          document.body.removeChild(pdfContent);
-        }
-        
-        toast({
-          title: "Download complete",
-          description: "Your leadership assessment results have been saved as PDF",
-        });
-        if (onSuccess) onSuccess();
-      }).catch((error) => {
-        console.error('PDF generation error:', error);
-        
-        // Show error details
-        createDebugOutput(error.toString(), 'PDF Generation Error');
-        
-        // Clean up on error
-        if (document.body.contains(pdfContent)) {
-          document.body.removeChild(pdfContent);
-        }
-        
-        toast({
-          title: "Export failed",
-          description: "There was an issue generating the PDF. Check the debug output for details.",
-          variant: "destructive",
-        });
+    if (!shouldProceed) {
+      document.body.removeChild(pdfContent);
+      toast({
+        title: "PDF Export Cancelled",
+        description: "PDF generation was cancelled by user",
       });
-    }, 4000);
+      return;
+    }
+    
+    toast({
+      title: "Generating PDF",
+      description: "Creating your PDF file...",
+    });
+    
+    // PDF generation options
+    const opt = {
+      margin: [15, 15, 15, 15],
+      filename,
+      image: { 
+        type: 'jpeg', 
+        quality: 0.98
+      },
+      html2canvas: { 
+        scale: 2,
+        useCORS: true,
+        allowTaint: true,
+        letterRendering: true,
+        logging: false,
+        width: 794,
+        height: 1123,
+        scrollX: 0,
+        scrollY: 0,
+        backgroundColor: '#ffffff',
+        foreignObjectRendering: true
+      },
+      jsPDF: { 
+        unit: 'mm', 
+        format: 'a4', 
+        orientation: 'portrait',
+        putOnlyUsedFonts: true,
+        floatPrecision: 16
+      }
+    };
+    
+    // Generate PDF with error handling
+    try {
+      await html2pdf().set(opt).from(pdfContent).save();
+      
+      toast({
+        title: "PDF Export Successful",
+        description: "Your leadership assessment results have been downloaded",
+      });
+      
+      if (onSuccess) onSuccess();
+    } catch (error) {
+      console.error('PDF generation error:', error);
+      toast({
+        title: "PDF Export Failed",
+        description: "There was an error generating the PDF. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      // Clean up
+      if (document.body.contains(pdfContent)) {
+        document.body.removeChild(pdfContent);
+      }
+    }
+  }).catch((error) => {
+    console.error('PDF content creation error:', error);
+    toast({
+      title: "PDF Export Failed",
+      description: "Failed to prepare content for PDF export",
+      variant: "destructive",
+    });
   });
 };

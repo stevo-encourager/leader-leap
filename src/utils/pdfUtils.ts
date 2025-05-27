@@ -24,7 +24,12 @@ const cleanHtmlForPdf = (element: HTMLElement): void => {
   console.log('PDF Export: HTML cleaning completed');
 };
 
-export const exportToPDF = async (categories: Category[], demographics: Demographics, filename: string = 'leadership-assessment-results.pdf') => {
+export const exportToPDF = async (
+  categories: Category[], 
+  demographics: Demographics, 
+  insights?: string, 
+  filename: string = 'leadership-assessment-results.pdf'
+) => {
   console.log('=== PDF EXPORT DEBUG START ===');
   console.log('PDF Export: Function called with parameters:');
   console.log('- categories type:', typeof categories);
@@ -32,6 +37,8 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
   console.log('- categories length:', categories?.length || 0);
   console.log('- demographics type:', typeof demographics);
   console.log('- demographics keys:', demographics ? Object.keys(demographics) : 'none');
+  console.log('- insights provided:', !!insights);
+  console.log('- insights length:', insights?.length || 0);
   
   // Enhanced validation with detailed logging
   if (!categories) {
@@ -115,6 +122,31 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
     });
     return;
   }
+
+  // Check if insights are provided and valid
+  if (insights) {
+    const placeholderTexts = [
+      'analysing your assessment results',
+      'analyzing your assessment results',
+      'Encourager GPT is analyzing',
+      'generating insights',
+      'please wait'
+    ];
+    
+    const hasPlaceholder = placeholderTexts.some(placeholder => 
+      insights.toLowerCase().includes(placeholder.toLowerCase())
+    );
+    
+    if (hasPlaceholder) {
+      console.error('PDF Export: Insights contain placeholder text');
+      toast({
+        title: "Please Wait",
+        description: "AI insights are still being generated. Please wait for them to complete before exporting.",
+        variant: "default",
+      });
+      return;
+    }
+  }
   
   console.log('PDF Export: Data validation passed, proceeding with PDF generation...');
   
@@ -181,7 +213,7 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
     
     toast({
       title: "Generating PDF",
-      description: "Creating your assessment results PDF... Please wait while the content renders.",
+      description: "Creating your assessment results PDF with AI insights... Please wait while the content renders.",
     });
     
     // Create PDF template element with explicit props
@@ -209,9 +241,9 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
     const reflow = getComputedStyle(contentWrapper).height;
     console.log('PDF Export: Forced reflow complete, height:', reflow);
     
-    // Wait for rendering to complete
-    console.log('PDF Export: Waiting for render completion...');
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    // Wait longer for rendering to complete, especially for AI insights
+    console.log('PDF Export: Waiting for render completion (including AI insights)...');
+    await new Promise(resolve => setTimeout(resolve, 5000)); // Increased wait time for AI insights
     
     // Clean the HTML content for PDF generation
     console.log('PDF Export: Cleaning HTML for PDF generation...');
@@ -230,7 +262,7 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
     
     // Add timestamp marker to verify new code is running
     const timestamp = new Date().toISOString();
-    console.log(`PDF Export: TIMESTAMP MARKER - PDF generation started at ${timestamp} with visible container approach`);
+    console.log(`PDF Export: TIMESTAMP MARKER - PDF generation started at ${timestamp} with insights validation`);
     
     console.log('PDF Export: Configuring html2pdf options...');
     const opt = {
@@ -259,13 +291,13 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
       }
     };
     
-    console.log('PDF Export: Starting html2pdf conversion with visible container...');
+    console.log('PDF Export: Starting html2pdf conversion with completed insights...');
     await html2pdf().set(opt).from(contentWrapper).save();
     console.log('PDF Export: PDF generation completed successfully');
     
     toast({
       title: "PDF Export Successful",
-      description: "Your leadership assessment results have been downloaded",
+      description: "Your leadership assessment results with AI insights have been downloaded",
     });
     
     // Clean up - remove the temporary container

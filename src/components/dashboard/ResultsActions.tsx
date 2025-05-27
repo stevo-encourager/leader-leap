@@ -7,6 +7,8 @@ import { toast } from '@/hooks/use-toast';
 import { exportToPDF } from '@/utils/pdfUtils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Category, Demographics } from '@/utils/assessmentTypes';
+import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
+import { calculateAverageGap } from '@/utils/assessmentCalculations/averages';
 
 interface ResultsActionsProps {
   onBack: () => void;
@@ -14,6 +16,7 @@ interface ResultsActionsProps {
   onSignup?: () => void;
   categories?: Category[];
   demographics?: Demographics;
+  assessmentId?: string;
 }
 
 const ResultsActions: React.FC<ResultsActionsProps> = ({ 
@@ -21,9 +24,21 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
   onRestart, 
   onSignup,
   categories = [],
-  demographics = {}
+  demographics = {},
+  assessmentId
 }) => {
   const { user } = useAuth();
+  
+  // Calculate average gap for insights hook
+  const averageGap = categories.length > 0 ? calculateAverageGap(categories) : 0;
+  
+  // Use the insights hook to check if insights are ready
+  const { insights, isLoading: insightsLoading, error: insightsError } = useOpenAIInsights({
+    categories,
+    demographics,
+    averageGap,
+    assessmentId
+  });
   
   // Enhanced validation to check if we actually have assessment data
   const hasValidAssessmentData = () => {
@@ -70,7 +85,46 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     return skillsWithRatings > 0 && totalRatingValues > 0;
   };
   
-  // PDF export function using the new simplified approach
+  // Check if AI insights are ready for PDF export
+  const areInsightsReadyForExport = () => {
+    if (insightsLoading) {
+      console.log('ResultsActions: Insights are still loading');
+      return false;
+    }
+    
+    if (insightsError) {
+      console.log('ResultsActions: Insights failed to load, but allowing export');
+      return true; // Allow export even if insights failed
+    }
+    
+    if (!insights || insights.trim().length === 0) {
+      console.log('ResultsActions: No insights available yet');
+      return false;
+    }
+    
+    // Check if insights contain placeholder text
+    const placeholderTexts = [
+      'analysing your assessment results',
+      'analyzing your assessment results',
+      'Encourager GPT is analyzing',
+      'generating insights',
+      'please wait'
+    ];
+    
+    const hasPlaceholder = placeholderTexts.some(placeholder => 
+      insights.toLowerCase().includes(placeholder.toLowerCase())
+    );
+    
+    if (hasPlaceholder) {
+      console.log('ResultsActions: Insights contain placeholder text');
+      return false;
+    }
+    
+    console.log('ResultsActions: Insights are ready for export');
+    return true;
+  };
+  
+  // PDF export function with insights readiness check
   const handleExportPDF = () => {
     console.log('ResultsActions: PDF export button clicked');
     console.log('ResultsActions: categories received:', categories?.length || 0);
@@ -85,10 +139,19 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
       return;
     }
     
-    console.log('ResultsActions: Data validation passed, calling exportToPDF...');
+    if (!areInsightsReadyForExport()) {
+      toast({
+        title: "Please Wait",
+        description: "AI insights are still being generated. Please wait a moment and try again.",
+        variant: "default",
+      });
+      return;
+    }
+    
+    console.log('ResultsActions: Data validation and insights check passed, calling exportToPDF...');
     
     try {
-      exportToPDF(categories, demographics, 'leadership-assessment-results.pdf');
+      exportToPDF(categories, demographics, insights, 'leadership-assessment-results.pdf');
       
       // For guest users, suggest signup after successful export
       if (!user && onSignup) {
@@ -119,6 +182,36 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     // Call the provided restart function
     onRestart();
   };
+
+  // Determine if PDF export should be disabled
+  const isPDFExportDisabled = !hasValidAssessmentData() || !areInsightsReadyForExport();
+  
+  // Generate appropriate button text and tooltip
+  const getPDFButtonText = () => {
+    if (!hasValidAssessmentData()) {
+      return user ? 'Download PDF' : 'Save as PDF';
+    }
+    if (insightsLoading) {
+      return 'Generating Insights...';
+    }
+    if (!areInsightsReadyForExport()) {
+      return 'Waiting for Insights...';
+    }
+    return user ? 'Download PDF' : 'Save as PDF';
+  };
+
+  const getPDFTooltipText = () => {
+    if (!hasValidAssessmentData()) {
+      return 'Complete the assessment first';
+    }
+    if (insightsLoading) {
+      return 'AI insights are being generated. Please wait...';
+    }
+    if (!areInsightsReadyForExport()) {
+      return 'Waiting for AI insights to complete';
+    }
+    return 'Export your complete assessment results including AI insights';
+  };
   
   return (
     <div className="flex justify-between w-full">
@@ -146,15 +239,24 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
             </Tooltip>
           </TooltipProvider>
         )}
-        <Button 
-          variant="encourager" 
-          className="flex items-center gap-2"
-          onClick={handleExportPDF}
-          disabled={!hasValidAssessmentData()}
-        >
-          <Download className="h-4 w-4" />
-          {user ? 'Download PDF' : 'Save as PDF'}
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="encourager" 
+                className="flex items-center gap-2"
+                onClick={handleExportPDF}
+                disabled={isPDFExportDisabled}
+              >
+                <Download className="h-4 w-4" />
+                {getPDFButtonText()}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              <p className="max-w-xs text-sm">{getPDFTooltipText()}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         <Button onClick={handleNewAssessment}>
           <Plus className="mr-2 h-4 w-4" />
           Start New Assessment

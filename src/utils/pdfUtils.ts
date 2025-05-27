@@ -129,7 +129,7 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
     const { default: PDFTemplate } = await import('../components/pdf/PDFTemplate');
     console.log('PDF Export: PDF template imported successfully');
     
-    // Create temporary container - nearly invisible but still renderable for html2pdf
+    // Create temporary container - using transform scale instead of opacity
     console.log('PDF Export: Creating temporary container for PDF generation...');
     const tempContainer = document.createElement('div');
     
@@ -138,7 +138,8 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
       position: absolute;
       left: 0;
       top: 0;
-      opacity: 0.01;
+      transform: scale(0.01, 0.01);
+      transform-origin: top left;
       pointer-events: none;
       z-index: -1;
       width: 210mm;
@@ -149,7 +150,7 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
     `;
     
     document.body.appendChild(tempContainer);
-    console.log('PDF Export: Temporary container created with nearly-invisible opacity (0.01)');
+    console.log('PDF Export: Temporary container created with transform scale(0.01) approach');
     
     toast({
       title: "Generating PDF",
@@ -178,8 +179,8 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
     
     // Force a reflow to ensure browser has fully rendered the content
     console.log('PDF Export: Forcing reflow...');
-    const reflow = getComputedStyle(tempContainer).opacity;
-    console.log('PDF Export: Forced reflow complete, opacity:', reflow);
+    const reflow = getComputedStyle(tempContainer).transform;
+    console.log('PDF Export: Forced reflow complete, transform:', reflow);
     
     // Wait longer for rendering to complete
     console.log('PDF Export: Waiting for render completion...');
@@ -197,7 +198,7 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
       position: tempContainer.style.position,
       left: tempContainer.style.left,
       top: tempContainer.style.top,
-      opacity: tempContainer.style.opacity,
+      transform: tempContainer.style.transform,
       zIndex: tempContainer.style.zIndex
     });
     console.log('PDF Export: First 200 chars of cleaned content:', tempContainer.innerHTML.substring(0, 200));
@@ -209,7 +210,7 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
     
     // Add timestamp marker to verify new code is running
     const timestamp = new Date().toISOString();
-    console.log(`PDF Export: TIMESTAMP MARKER - PDF generation started at ${timestamp} with opacity 0.01 approach`);
+    console.log(`PDF Export: TIMESTAMP MARKER - PDF generation started at ${timestamp} with transform scale(0.01) approach`);
     
     console.log('PDF Export: Configuring html2pdf options...');
     const opt = {
@@ -238,7 +239,7 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
       }
     };
     
-    console.log('PDF Export: Starting html2pdf conversion with opacity 0.01 container...');
+    console.log('PDF Export: Starting html2pdf conversion with transform scale container...');
     await html2pdf().set(opt).from(tempContainer).save();
     console.log('PDF Export: PDF generation completed successfully');
     

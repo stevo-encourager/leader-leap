@@ -24,6 +24,92 @@ const cleanHtmlForPdf = (element: HTMLElement): void => {
   console.log('PDF Export: HTML cleaning completed');
 };
 
+// CRITICAL: Enhanced content readiness check function
+const waitForContentToLoad = async (container: HTMLElement, maxWaitTime: number = 15000): Promise<boolean> => {
+  console.log('PDF Export: Starting content readiness check...');
+  
+  const startTime = Date.now();
+  let attempts = 0;
+  const maxAttempts = 50; // Check every 300ms for up to 15 seconds
+  
+  while (attempts < maxAttempts && (Date.now() - startTime) < maxWaitTime) {
+    attempts++;
+    console.log(`PDF Export: Content check attempt ${attempts}/${maxAttempts}`);
+    
+    // Check for required sections
+    const profileSummary = container.querySelector('[data-section="profile-summary"]');
+    const detailedAnalysis = container.querySelector('[data-section="detailed-analysis"]');
+    const recommendedSteps = container.querySelector('[data-section="recommended-steps"]');
+    const coachingSupport = container.querySelector('[data-section="coaching-support"]');
+    
+    console.log('PDF Export: Section presence check:', {
+      profileSummary: !!profileSummary,
+      detailedAnalysis: !!detailedAnalysis,
+      recommendedSteps: !!recommendedSteps,
+      coachingSupport: !!coachingSupport
+    });
+    
+    // Check for AI insights specifically
+    const aiInsightsContainer = container.querySelector('.bg-encourager\\/5');
+    const aiInsightsContent = container.querySelector('.prose.prose-slate');
+    const isLoadingIndicator = container.querySelector('.animate-pulse');
+    const hasInsightsText = container.textContent?.includes('Assessment Summary') || 
+                           container.textContent?.includes('Priority Development Areas') ||
+                           container.textContent?.includes('Key Competencies to Leverage');
+    
+    console.log('PDF Export: AI Insights check:', {
+      aiInsightsContainer: !!aiInsightsContainer,
+      aiInsightsContent: !!aiInsightsContent,
+      isLoadingIndicator: !!isLoadingIndicator,
+      hasInsightsText: hasInsightsText,
+      contentLength: container.textContent?.length || 0
+    });
+    
+    // Check for skill gap chart
+    const skillGapChart = container.querySelector('svg') || container.querySelector('canvas') || container.querySelector('.recharts-wrapper');
+    console.log('PDF Export: Chart presence:', !!skillGapChart);
+    
+    // Content is ready if:
+    // 1. All main sections are present
+    // 2. AI insights are loaded (no loading indicator and has insights text)
+    // 3. Content has substantial text (more than 3000 characters typically)
+    // 4. Chart is present
+    const sectionsReady = !!(profileSummary && detailedAnalysis && recommendedSteps && coachingSupport);
+    const insightsReady = !isLoadingIndicator && hasInsightsText && aiInsightsContent;
+    const contentSubstantial = (container.textContent?.length || 0) > 3000;
+    const chartReady = !!skillGapChart;
+    
+    const allReady = sectionsReady && insightsReady && contentSubstantial && chartReady;
+    
+    console.log('PDF Export: Readiness status:', {
+      sectionsReady,
+      insightsReady,
+      contentSubstantial,
+      chartReady,
+      allReady,
+      textLength: container.textContent?.length || 0
+    });
+    
+    if (allReady) {
+      console.log('PDF Export: All content is ready for PDF generation');
+      return true;
+    }
+    
+    // Wait before next check
+    await new Promise(resolve => setTimeout(resolve, 300));
+  }
+  
+  console.warn('PDF Export: Content readiness check timed out or max attempts reached');
+  console.log('PDF Export: Final content state:', {
+    textLength: container.textContent?.length || 0,
+    hasAnyContent: (container.textContent?.length || 0) > 1000,
+    innerHTML: container.innerHTML.substring(0, 500) + '...'
+  });
+  
+  // Return true if we have at least some substantial content, even if not perfect
+  return (container.textContent?.length || 0) > 1000;
+};
+
 export const exportToPDF = async (
   categories: Category[], 
   demographics: Demographics, 
@@ -212,25 +298,50 @@ export const exportToPDF = async (
     root.render(pdfElement);
     console.log('PDF Export: React render initiated');
     
-    // Wait for rendering to complete, including AI insights loading
-    console.log('PDF Export: Waiting for complete render (including AI insights)...');
-    await new Promise(resolve => setTimeout(resolve, 8000)); // Extended wait for full content loading
+    // CRITICAL: Wait for all content to be fully loaded and ready
+    console.log('PDF Export: Waiting for complete content loading (including AI insights)...');
+    
+    // Give initial render time to start
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Wait for content readiness with enhanced checking
+    const contentReady = await waitForContentToLoad(tempContainer, 20000); // Extended to 20 seconds
+    
+    if (!contentReady) {
+      console.error('PDF Export: Content failed to load properly within timeout');
+      
+      // Clean up
+      root.unmount();
+      document.body.removeChild(tempContainer);
+      
+      toast({
+        title: "PDF Export Failed",
+        description: "Content failed to load completely. Please ensure AI insights have finished loading and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Additional buffer to ensure everything is stable
+    console.log('PDF Export: Content is ready, adding stability buffer...');
+    await new Promise(resolve => setTimeout(resolve, 2000));
     
     // Clean the HTML content for PDF generation
     console.log('PDF Export: Cleaning HTML for PDF generation...');
     cleanHtmlForPdf(tempContainer);
     
     // Log the content for debugging
-    console.log('PDF Export: Content validation...');
+    console.log('PDF Export: Final content validation...');
     console.log('PDF Export: Content length:', tempContainer.innerHTML.length);
     console.log('PDF Export: Content elements count:', tempContainer.children.length);
+    console.log('PDF Export: Text content length:', tempContainer.textContent?.length || 0);
     
-    if (tempContainer.innerHTML.length < 2000) {
+    if (tempContainer.innerHTML.length < 5000) {
       console.error('PDF Export: Insufficient content rendered');
-      console.log('PDF Export: Content preview:', tempContainer.innerHTML.substring(0, 500));
+      console.log('PDF Export: Content preview:', tempContainer.innerHTML.substring(0, 1000));
     }
     
-    // Configure html2pdf options for multi-page support
+    // Configure html2pdf options for multi-page support with improved settings
     console.log('PDF Export: Configuring html2pdf for multi-page output...');
     const opt = {
       margin: [15, 15, 15, 15], // Proper margins in mm
@@ -250,7 +361,9 @@ export const exportToPDF = async (
         backgroundColor: '#ffffff',
         removeContainer: false,
         windowWidth: 794,
-        windowHeight: 1123
+        windowHeight: 1123,
+        scrollX: 0,
+        scrollY: 0
       },
       jsPDF: { 
         unit: 'mm', 
@@ -267,7 +380,7 @@ export const exportToPDF = async (
       }
     };
     
-    console.log('PDF Export: Starting multi-page PDF conversion...');
+    console.log('PDF Export: Starting multi-page PDF conversion with validated content...');
     await html2pdf().set(opt).from(tempContainer).save();
     console.log('PDF Export: Multi-page PDF generation completed successfully');
     

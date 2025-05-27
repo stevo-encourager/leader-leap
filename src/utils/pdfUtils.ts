@@ -129,30 +129,32 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
     const { default: PDFTemplate } = await import('../components/pdf/PDFTemplate');
     console.log('PDF Export: PDF template imported successfully');
     
-    // Create temporary container with renderability-friendly styling
-    console.log('PDF Export: Creating temporary container with html2pdf-friendly positioning...');
+    // Create temporary container - VISIBLE for debugging
+    console.log('PDF Export: Creating VISIBLE temporary container for debugging...');
     const tempContainer = document.createElement('div');
     
-    // Use positioning that html2pdf.js can actually render
+    // Make it VISIBLE for debugging to see if html2pdf can capture visible content
     tempContainer.style.cssText = `
-      position: absolute;
-      left: 0;
-      top: 0;
-      opacity: 0;
-      pointer-events: none;
-      z-index: -1;
+      position: fixed;
+      bottom: 0;
+      right: 0;
       width: 210mm;
       min-height: 297mm;
       background: white;
       font-family: system-ui, -apple-system, sans-serif;
+      border: 3px solid red;
+      z-index: 9999;
+      overflow: auto;
+      max-height: 300px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
     `;
     
     document.body.appendChild(tempContainer);
-    console.log('PDF Export: Temporary container created with renderable positioning and added to DOM');
+    console.log('PDF Export: VISIBLE temporary container created for debugging');
     
     toast({
       title: "Generating PDF",
-      description: "Creating your assessment results PDF...",
+      description: "Creating your assessment results PDF... (Debug mode - container visible)",
     });
     
     // Create PDF template element with explicit props
@@ -175,9 +177,9 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
     root.render(pdfElement);
     console.log('PDF Export: React render initiated');
     
-    // Wait for rendering to complete
-    console.log('PDF Export: Waiting for render completion...');
-    await new Promise(resolve => setTimeout(resolve, 2500));
+    // Wait LONGER for rendering to complete - 5 seconds for debugging
+    console.log('PDF Export: Waiting 5 seconds for render completion...');
+    await new Promise(resolve => setTimeout(resolve, 5000));
     
     // Clean the HTML content for PDF generation
     console.log('PDF Export: Cleaning HTML for PDF generation...');
@@ -189,12 +191,13 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
     console.log('PDF Export: Container children count:', tempContainer.children.length);
     console.log('PDF Export: Container positioning:', {
       position: tempContainer.style.position,
-      left: tempContainer.style.left,
-      top: tempContainer.style.top,
-      opacity: tempContainer.style.opacity,
+      bottom: tempContainer.style.bottom,
+      right: tempContainer.style.right,
+      width: tempContainer.style.width,
+      background: tempContainer.style.background,
       zIndex: tempContainer.style.zIndex
     });
-    console.log('PDF Export: First 200 chars of cleaned content:', tempContainer.innerHTML.substring(0, 200));
+    console.log('PDF Export: First 500 chars of cleaned content:', tempContainer.innerHTML.substring(0, 500));
     
     if (tempContainer.innerHTML.length < 1000) {
       console.error('PDF Export: Very little content rendered, potential rendering issue');
@@ -203,7 +206,11 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
     
     // Add timestamp marker to verify new code is running
     const timestamp = new Date().toISOString();
-    console.log(`PDF Export: TIMESTAMP MARKER - PDF generation started at ${timestamp} with improved positioning`);
+    console.log(`PDF Export: TIMESTAMP MARKER - PDF generation started at ${timestamp} with VISIBLE container for debugging`);
+    
+    // Wait an additional moment to let user see the visible container
+    console.log('PDF Export: Waiting 2 more seconds for visual inspection...');
+    await new Promise(resolve => setTimeout(resolve, 2000));
     
     console.log('PDF Export: Configuring html2pdf options...');
     const opt = {
@@ -214,15 +221,15 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
         quality: 0.95
       },
       html2canvas: { 
-        scale: 1.5,
+        scale: 2,
         useCORS: true,
         allowTaint: false,
         letterRendering: true,
-        logging: false,
+        logging: true,
         width: 794,
         height: 1123,
         backgroundColor: '#ffffff',
-        removeContainer: true
+        removeContainer: false
       },
       jsPDF: { 
         unit: 'mm', 
@@ -232,16 +239,19 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
       }
     };
     
-    console.log('PDF Export: Starting html2pdf conversion with cleaned HTML and improved positioning...');
+    console.log('PDF Export: Starting html2pdf conversion with VISIBLE container...');
     await html2pdf().set(opt).from(tempContainer).save();
     console.log('PDF Export: PDF generation completed successfully');
     
     toast({
       title: "PDF Export Successful",
-      description: "Your leadership assessment results have been downloaded",
+      description: "Your leadership assessment results have been downloaded (debug mode)",
     });
     
-    // Clean up
+    // Clean up - wait a bit more so user can see the container
+    console.log('PDF Export: Waiting 3 more seconds before cleanup...');
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    
     console.log('PDF Export: Cleaning up temporary container...');
     root.unmount();
     document.body.removeChild(tempContainer);

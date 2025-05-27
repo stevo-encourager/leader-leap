@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Category, Demographics } from '../utils/assessmentTypes';
 import ProfileSummary from './dashboard/ProfileSummary';
 import DetailedAnalysis from './dashboard/DetailedAnalysis';
-import KeyInsights from './dashboard/KeyInsights';
 import CoachingSupport from './dashboard/CoachingSupport';
 import ResultsActions from './dashboard/ResultsActions';
 import RecommendedSteps from './dashboard/RecommendedSteps';
@@ -112,15 +111,6 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
             demographics={demographics}
             averageGap={averageGap}
             assessmentId={assessmentId}
-          />
-
-          {/* Skills & Competencies to Work On - Renamed from Key Insights */}
-          <KeyInsights 
-            averageGap={averageGap} 
-            strengths={strengths} 
-            lowestSkills={lowestSkills}
-            categories={categories}
-            demographics={demographics}
           />
           
           {/* Recommended Next Steps */}

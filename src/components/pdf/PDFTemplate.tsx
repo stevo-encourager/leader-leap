@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { calculateAverageGap } from '@/utils/assessmentCalculations/averages';
@@ -9,8 +10,9 @@ interface PDFTemplateProps {
 }
 
 const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics }) => {
+  const timestamp = new Date().toISOString();
   console.log('=== PDF TEMPLATE DEBUG START ===');
-  console.log('PDFTemplate: Component rendering with props:');
+  console.log(`PDFTemplate: Component rendering at ${timestamp}`);
   console.log('PDFTemplate: categories type:', typeof categories);
   console.log('PDFTemplate: categories is array:', Array.isArray(categories));
   console.log('PDFTemplate: categories length:', categories?.length || 0);
@@ -25,6 +27,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics }) =
         <h1>PDF Template Error</h1>
         <p>Categories data is null or undefined</p>
         <p>Debug: categories = {String(categories)}</p>
+        <p>Timestamp: {timestamp}</p>
       </div>
     );
   }
@@ -37,6 +40,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics }) =
         <p>Categories data is not an array</p>
         <p>Debug: typeof categories = {typeof categories}</p>
         <p>Debug: categories = {String(categories)}</p>
+        <p>Timestamp: {timestamp}</p>
       </div>
     );
   }
@@ -48,6 +52,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics }) =
         <h1>PDF Template Error</h1>
         <p>Categories array is empty</p>
         <p>No assessment data was provided to generate this PDF.</p>
+        <p>Timestamp: {timestamp}</p>
       </div>
     );
   }
@@ -161,20 +166,20 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics }) =
       maxWidth: '210mm',
       minHeight: '297mm'
     }}>
-      {/* Debug Info Section - Remove this in production */}
+      {/* Visible timestamp marker to confirm new code is running */}
       <div style={{
-        backgroundColor: '#f0f9ff',
-        border: '1px solid #0ea5e9',
-        padding: '10px',
-        marginBottom: '20px',
-        fontSize: '10px'
+        backgroundColor: '#e0f2fe',
+        border: '1px solid #0277bd',
+        padding: '8px',
+        marginBottom: '15px',
+        fontSize: '10px',
+        textAlign: 'center'
       }}>
-        <strong>Debug Info:</strong>
-        <br />Categories: {categories.length}
-        <br />Total Skills: {totalSkills}
-        <br />Skills with Ratings: {skillsWithRatings}
-        <br />Average Gap: {averageGap.toFixed(2)}
-        <br />Demographics: {demographics ? Object.keys(demographics).join(', ') : 'none'}
+        <strong>PDF Generated:</strong> {timestamp}
+        <br />
+        <strong>Template Version:</strong> Updated with HTML cleaning
+        <br />
+        <strong>Data Status:</strong> {skillsWithRatings} skills with ratings from {categories.length} categories
       </div>
 
       {/* Header */}

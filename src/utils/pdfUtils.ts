@@ -3,6 +3,27 @@ import html2pdf from 'html2pdf.js';
 import { toast } from '@/hooks/use-toast';
 import { Category, Demographics } from './assessmentTypes';
 
+// Function to clean HTML content for PDF generation
+const cleanHtmlForPdf = (element: HTMLElement): void => {
+  console.log('PDF Export: Cleaning HTML content for PDF generation...');
+  
+  // Remove all data-lov-* attributes that interfere with PDF generation
+  const allElements = element.querySelectorAll('*');
+  allElements.forEach(el => {
+    const attributes = Array.from(el.attributes);
+    attributes.forEach(attr => {
+      if (attr.name.startsWith('data-lov-') || 
+          attr.name.startsWith('data-component-') ||
+          attr.name === 'data-lov-id' ||
+          attr.name === 'data-lov-name') {
+        el.removeAttribute(attr.name);
+      }
+    });
+  });
+  
+  console.log('PDF Export: HTML cleaning completed');
+};
+
 export const exportToPDF = async (categories: Category[], demographics: Demographics, filename: string = 'leadership-assessment-results.pdf') => {
   console.log('=== PDF EXPORT DEBUG START ===');
   console.log('PDF Export: Function called with parameters:');
@@ -64,14 +85,6 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
           const currentRating = skill.ratings.current;
           const desiredRating = skill.ratings.desired;
           
-          console.log(`PDF Export: Skill ${skillIndex} in ${category.title}:`, {
-            name: skill.name,
-            currentRating: currentRating,
-            desiredRating: desiredRating,
-            currentType: typeof currentRating,
-            desiredType: typeof desiredRating
-          });
-          
           if (typeof currentRating === 'number' && currentRating > 0) {
             totalRatingValues++;
           }
@@ -83,8 +96,6 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
               (typeof desiredRating === 'number' && desiredRating > 0)) {
             skillsWithRatings++;
           }
-        } else {
-          console.log(`PDF Export: Skill ${skillIndex} in ${category.title} has no ratings:`, skill);
         }
       });
     }
@@ -118,7 +129,7 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
     const { default: PDFTemplate } = await import('../components/pdf/PDFTemplate');
     console.log('PDF Export: PDF template imported successfully');
     
-    // Create temporary container
+    // Create temporary container with clean styling
     console.log('PDF Export: Creating temporary container...');
     const tempContainer = document.createElement('div');
     tempContainer.style.cssText = `
@@ -128,6 +139,7 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
       width: 210mm;
       background: white;
       z-index: -1;
+      font-family: system-ui, -apple-system, sans-serif;
     `;
     
     document.body.appendChild(tempContainer);
@@ -160,44 +172,55 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
     
     // Wait for rendering to complete
     console.log('PDF Export: Waiting for render completion...');
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(resolve, 2500));
     
-    // Log the rendered content for debugging
-    console.log('PDF Export: Checking rendered content...');
+    // Clean the HTML content for PDF generation
+    console.log('PDF Export: Cleaning HTML for PDF generation...');
+    cleanHtmlForPdf(tempContainer);
+    
+    // Log the cleaned content for debugging
+    console.log('PDF Export: Checking cleaned content...');
     console.log('PDF Export: Container innerHTML length:', tempContainer.innerHTML.length);
     console.log('PDF Export: Container children count:', tempContainer.children.length);
-    console.log('PDF Export: First 500 chars of content:', tempContainer.innerHTML.substring(0, 500));
+    console.log('PDF Export: First 200 chars of cleaned content:', tempContainer.innerHTML.substring(0, 200));
     
-    if (tempContainer.innerHTML.length < 100) {
+    if (tempContainer.innerHTML.length < 1000) {
       console.error('PDF Export: Very little content rendered, potential rendering issue');
+      console.log('PDF Export: Full container content:', tempContainer.innerHTML);
     }
+    
+    // Add timestamp marker to verify new code is running
+    const timestamp = new Date().toISOString();
+    console.log(`PDF Export: TIMESTAMP MARKER - PDF generation started at ${timestamp}`);
     
     console.log('PDF Export: Configuring html2pdf options...');
     const opt = {
-      margin: [15, 15, 15, 15],
+      margin: [10, 10, 10, 10],
       filename,
       image: { 
         type: 'jpeg', 
-        quality: 0.98
+        quality: 0.95
       },
       html2canvas: { 
-        scale: 2,
+        scale: 1.5,
         useCORS: true,
-        allowTaint: true,
+        allowTaint: false,
         letterRendering: true,
-        logging: true, // Enable html2canvas logging
+        logging: false,
         width: 794,
         height: 1123,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+        removeContainer: true
       },
       jsPDF: { 
         unit: 'mm', 
         format: 'a4', 
-        orientation: 'portrait'
+        orientation: 'portrait',
+        compress: true
       }
     };
     
-    console.log('PDF Export: Starting html2pdf conversion...');
+    console.log('PDF Export: Starting html2pdf conversion with cleaned HTML...');
     await html2pdf().set(opt).from(tempContainer).save();
     console.log('PDF Export: PDF generation completed successfully');
     
@@ -208,6 +231,7 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
     
     // Clean up
     console.log('PDF Export: Cleaning up temporary container...');
+    root.unmount();
     document.body.removeChild(tempContainer);
     console.log('=== PDF EXPORT DEBUG END ===');
     

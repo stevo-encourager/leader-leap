@@ -6,60 +6,58 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { exportToPDF } from '@/utils/pdfUtils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { allCategories } from '@/utils/assessmentCategories';
+import { Category, Demographics } from '@/utils/assessmentTypes';
 
 interface ResultsActionsProps {
   onBack: () => void;
   onRestart: () => void;
   onSignup?: () => void;
+  categories?: Category[];
+  demographics?: Demographics;
 }
 
 const ResultsActions: React.FC<ResultsActionsProps> = ({ 
   onBack, 
   onRestart, 
-  onSignup 
+  onSignup,
+  categories = [],
+  demographics = {}
 }) => {
   const { user } = useAuth();
   
-  // PDF export function
+  // PDF export function using the new simplified approach
   const handleExportPDF = () => {
-    // Don't show an error for guest users, just perform the action
-    // or prompt to sign up if that's truly required
-    if (!user) {
-      try {
-        exportToPDF(
-          'results-content',
-          'leadership-assessment-results.pdf'
-        );
-        
-        // Inform guest users that they can sign up to save permanently
-        toast({
-          title: "PDF downloaded",
-          description: "Sign up to save your results permanently in your account.",
-        });
-        
-        // Optionally show signup form if provided
-        if (onSignup) {
-          setTimeout(() => {
-            onSignup();
-          }, 2000); // Delay to allow user to see the first toast
-        }
-      } catch (error) {
-        console.error('Error exporting PDF:', error);
-        toast({
-          title: "Error exporting PDF",
-          description: "There was an issue creating your PDF.",
-          variant: "destructive",
-        });
-      }
+    console.log('ResultsActions - PDF export requested with categories:', categories?.length || 0);
+    
+    if (!categories || categories.length === 0) {
+      toast({
+        title: "Cannot Export PDF",
+        description: "No assessment data available to export. Please complete an assessment first.",
+        variant: "destructive",
+      });
       return;
     }
     
-    // For logged-in users, proceed normally
-    exportToPDF(
-      'results-content',
-      'leadership-assessment-results.pdf'
-    );
+    try {
+      exportToPDF(categories, demographics, 'leadership-assessment-results.pdf');
+      
+      // For guest users, suggest signup after successful export
+      if (!user && onSignup) {
+        setTimeout(() => {
+          toast({
+            title: "Save Your Results",
+            description: "Sign up to save your results permanently in your account.",
+          });
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      toast({
+        title: "Error exporting PDF",
+        description: "There was an issue creating your PDF. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleNewAssessment = () => {

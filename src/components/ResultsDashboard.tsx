@@ -7,9 +7,7 @@ import DetailedAnalysis from './dashboard/DetailedAnalysis';
 import CoachingSupport from './dashboard/CoachingSupport';
 import ResultsActions from './dashboard/ResultsActions';
 import RecommendedSteps from './dashboard/RecommendedSteps';
-import AIInsights from './dashboard/AIInsights';
 import { calculateAverageGap } from '../utils/assessmentCalculations/averages';
-import { getTopStrengths, getLowestSkills } from '../utils/assessmentCalculations/skillMetrics';
 
 interface ResultsDashboardProps {
   categories: Category[];
@@ -56,8 +54,6 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   
   // Calculate metrics with extra error handling
   let averageGap = 0;
-  let strengths = [];
-  let lowestSkills = [];
   
   try {
     // Ensure we have valid categories before calculations
@@ -69,13 +65,9 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
       
       console.log("ResultsDashboard - Calculating metrics with valid data");
       averageGap = calculateAverageGap(categories);
-      strengths = getTopStrengths(categories, 3);
-      lowestSkills = getLowestSkills(categories, 3);
       
       console.log("ResultsDashboard - Metrics calculated:", {
-        averageGap,
-        strengthsCount: strengths?.length || 0,
-        lowestSkillsCount: lowestSkills?.length || 0
+        averageGap
       });
     } else {
       console.log("ResultsDashboard - Skipped metrics calculation due to invalid data");
@@ -160,7 +152,9 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
               <ResultsActions 
                 onBack={onBack} 
                 onRestart={onRestart} 
-                onSignup={onSignup} 
+                onSignup={onSignup}
+                categories={categories}
+                demographics={demographics}
               />
             </div>
           </div>

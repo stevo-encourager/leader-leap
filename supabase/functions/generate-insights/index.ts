@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
@@ -196,7 +197,7 @@ Top Competency Areas (High Current Ratings, Low Gaps):
 ${topCompetencies.map((cat, i) => `${i+1}. ${cat.title}: Current ${cat.averageCurrentRating.toFixed(1)}, Gap ${cat.gap.toFixed(1)}`).join('\n')}
 `;
 
-    // Enhanced prompt with resource guidance
+    // Enhanced prompt with improved insight quality requirements
     const prompt = `${assessmentDataSection}
 
 You are an expert leadership coach and assessment analyst. Based on the provided assessment data (including competency names, gap scores, and top competencies), generate AI insights for a user's leadership assessment.
@@ -239,7 +240,34 @@ The summary should be written as continuous text but structured so it can be spl
 - \`priority_areas\`: An array with exactly 3 objects, each for a Top 3 Priority Development Area:
   - \`competency\` (string): The name of the competency from the assessment data above
   - \`gap\` (number): The gap score from the assessment data above
-  - \`insights\` (array of exactly 3 strings): Each is an instructive, reflective, or "aha" insight about the user's leadership in this area. Each insight must be practical, specific, and non-repetitive. One of these must reference the recommended resource.
+  - \`insights\` (array of exactly 3 strings): CRITICAL INSIGHT QUALITY REQUIREMENTS:
+    
+    **AVOID GENERIC STATEMENTS**: Do not write obvious, surface-level statements like "Developing emotional intelligence can enhance your ability to empathize" or "Improving communication helps build better relationships."
+    
+    **PROVIDE ACTIONABLE, RESEARCH-BACKED INSIGHTS**: Each insight must be:
+    - Actionable with specific strategies or approaches
+    - Reference research, models, frameworks, or common pitfalls when relevant
+    - Include practical workplace examples or scenarios
+    - Address lesser-known but useful aspects of the competency
+    - Provide depth beyond common knowledge
+    
+    **EXAMPLES OF GOOD vs BAD INSIGHTS**:
+    
+    BAD (generic): "Developing emotional intelligence can enhance your ability to empathize with team members, improving communication and collaboration."
+    
+    GOOD (specific & actionable): "Practice the 'emotional labeling' technique from neuroscience research: when you notice strong emotions arising in meetings, mentally name the emotion (e.g., 'I'm feeling frustrated') which activates your prefrontal cortex and reduces the emotion's intensity by up to 50%."
+    
+    BAD (obvious): "Good communication helps build trust with your team."
+    
+    GOOD (actionable): "Use the 'SBI model' (Situation-Behavior-Impact) when giving feedback: describe the specific situation, the observable behavior, and its impact, which reduces defensiveness and increases the likelihood of behavior change by 40% according to CCL research."
+    
+    **REQUIRED ELEMENTS FOR EACH INSIGHT**:
+    - Must include specific techniques, frameworks, or research-backed strategies
+    - Should reference measurable outcomes when possible
+    - Must go beyond what most people already know about the topic
+    - Should include practical implementation advice
+    - One insight per competency must reference or connect to the recommended resource
+
   - \`resource\` (string): A well-known, practical resource. When possible, use these EXACT titles for consistency:
     * For Emotional Intelligence: "Emotional Intelligence 2.0 by Travis Bradberry"
     * For Conflict Resolution: "Crucial Conversations by Kerry Patterson" or "Crucial Conversations training program"
@@ -255,7 +283,7 @@ The summary should be written as continuous text but structured so it can be spl
 - \`key_strengths\`: An array with at least 2 objects, each for a key competency to leverage:
   - \`competency\` (string): The name of the competency from the assessment data above
   - \`example\` (string): A concrete example of this competency in action (from data or a plausible scenario)
-  - \`leverage_advice\` (array of exactly 3 strings): Three actionable, positive suggestions for further leveraging this competency. No resource here.
+  - \`leverage_advice\` (array of exactly 3 strings): Three actionable, positive suggestions for further leveraging this competency. Apply the same quality standards as insights - avoid generic advice, provide specific strategies, frameworks, or research-backed approaches.
 
 ### CRITICAL JSON Rules
 - Output MUST be valid JSON only. No text, markdown, or formatting before/after.
@@ -264,8 +292,9 @@ The summary should be written as continuous text but structured so it can be spl
 - All arrays must contain only the specified data types.
 - Structure the summary for easy paragraph splitting during post-processing.
 - When possible, use the exact resource titles listed above for consistency with our resource mapping system.
+- NEVER write generic, obvious statements - every insight must provide genuine value and actionable advice.
 
-Base your insights on the assessment data provided above.`;
+Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above.`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -278,12 +307,12 @@ Base your insights on the assessment data provided above.`;
         messages: [
           { 
             role: 'system', 
-            content: 'You are an expert leadership coach and assessment analyst. You MUST respond with valid JSON only, no additional text or formatting. Follow the exact JSON structure specified in the user prompt. The insights array must contain ONLY strings, never objects or other keys. Use the word "competencies" throughout your response instead of "strengths". Always refer to the person as "you" or "your" (never "the user" or "the user\'s"). Structure your summary to be easily split into paragraphs using transition phrases. When recommending resources, use the exact titles provided in the prompt for consistency with our resource mapping system.'
+            content: 'You are an expert leadership coach and assessment analyst with deep knowledge of research-backed leadership development strategies. You MUST respond with valid JSON only, no additional text or formatting. Follow the exact JSON structure specified in the user prompt. The insights array must contain ONLY strings, never objects or other keys. Use the word "competencies" throughout your response instead of "strengths". Always refer to the person as "you" or "your" (never "the user" or "the user\'s"). Structure your summary to be easily split into paragraphs using transition phrases. When recommending resources, use the exact titles provided in the prompt for consistency with our resource mapping system. CRITICAL: Every insight must be actionable, specific, and research-backed. Avoid generic statements that most people already know. Reference specific techniques, frameworks, research findings, or measurable outcomes whenever possible.'
           },
           { role: 'user', content: prompt }
         ],
         temperature: 0.1, // Very low temperature for maximum consistency
-        max_tokens: 2500 // Increased for the enhanced summary format
+        max_tokens: 3000 // Increased for more detailed, specific insights
       }),
     });
 
@@ -400,7 +429,7 @@ Base your insights on the assessment data provided above.`;
       }
     }
 
-    console.log('Successfully generated and saved insights with enhanced paragraph formatting');
+    console.log('Successfully generated and saved insights with enhanced paragraph formatting and improved insight quality');
 
     return new Response(JSON.stringify({ insights: finalInsights }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

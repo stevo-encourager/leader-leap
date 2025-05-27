@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Bot, AlertCircle, Target, TrendingUp, ExternalLink } from 'lucide-react';
 import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
@@ -178,23 +179,25 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
       <div className="space-y-6">
         {keyStrengths.map((strength, index) => (
           <div key={index} className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
-            <h4 className="font-semibold text-lg text-slate-800 mb-4">
-              {strength.competency}
-            </h4>
+            <div className="mb-4">
+              <h4 className="font-semibold text-lg text-slate-800">
+                Competency: {strength.competency}
+              </h4>
+            </div>
             <div className="space-y-4">
-              <div className="bg-green-50 p-4 rounded border-l-4 border-green-400">
-                <p className="text-sm text-slate-600 font-medium mb-2">Example:</p>
-                <p className="text-slate-700">{strength.example}</p>
+              <div>
+                <h5 className="font-medium text-slate-700 mb-3">Existing Skill:</h5>
+                <p className="text-slate-700 leading-relaxed">{strength.example}</p>
               </div>
-              <div className="bg-blue-50 p-4 rounded border-l-4 border-blue-400">
-                <p className="text-sm text-slate-600 font-medium mb-3">How to leverage further:</p>
-                <ul className="space-y-2">
+              <div>
+                <h5 className="font-medium text-slate-700 mb-3">How to leverage further:</h5>
+                <ul className="space-y-3">
                   {strength.leverage_advice && Array.isArray(strength.leverage_advice) && strength.leverage_advice.map((advice, adviceIndex) => (
                     <li key={adviceIndex} className="flex items-start gap-3">
-                      <span className="flex-shrink-0 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-medium">
+                      <span className="flex-shrink-0 w-6 h-6 bg-encourager text-white rounded-full flex items-center justify-center text-sm font-medium">
                         {adviceIndex + 1}
                       </span>
-                      <p className="text-slate-700 text-sm leading-relaxed">{advice}</p>
+                      <p className="text-slate-700 leading-relaxed">{advice}</p>
                     </li>
                   ))}
                 </ul>

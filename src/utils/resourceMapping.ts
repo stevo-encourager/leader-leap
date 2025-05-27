@@ -89,6 +89,51 @@ export const RESOURCE_MAPPINGS: Record<string, ResourceMapping> = {
     url: 'https://www.kotterinc.com/8-steps-process-for-leading-change/',
     type: 'framework'
   },
+  'kotter\'s 8-step change model': {
+    title: "Kotter's 8-Step Change Model",
+    url: 'https://www.kotterinc.com/8-steps-process-for-leading-change/',
+    type: 'framework'
+  },
+  'kotter 8 steps': {
+    title: "Kotter's 8-Step Change Model",
+    url: 'https://www.kotterinc.com/8-steps-process-for-leading-change/',
+    type: 'framework'
+  },
+  'kotter change model': {
+    title: "Kotter's 8-Step Change Model",
+    url: 'https://www.kotterinc.com/8-steps-process-for-leading-change/',
+    type: 'framework'
+  },
+  'kotter change framework': {
+    title: "Kotter's 8-Step Change Model",
+    url: 'https://www.kotterinc.com/8-steps-process-for-leading-change/',
+    type: 'framework'
+  },
+  'bridge transition model': {
+    title: "Bridges Transition Model",
+    url: 'https://wmbridges.com/about/what-is-transition/',
+    type: 'framework'
+  },
+  'lewin change model': {
+    title: "Lewin's 3-Stage Change Model",
+    url: 'https://www.mindtools.com/pages/article/newPPM_94.htm',
+    type: 'framework'
+  },
+  'tuckman team development': {
+    title: "Tuckman's Team Development Model",
+    url: 'https://www.mindtools.com/pages/article/newLDR_86.htm',
+    type: 'framework'
+  },
+  'servant leadership': {
+    title: "Servant Leadership by Robert Greenleaf",
+    url: 'https://www.greenleaf.org/what-is-servant-leadership/',
+    type: 'framework'
+  },
+  'transformational leadership': {
+    title: "Transformational Leadership Theory",
+    url: 'https://www.mindtools.com/pages/article/transformational-leadership.htm',
+    type: 'framework'
+  },
   'situational leadership model': {
     title: 'Situational Leadership Model',
     url: 'https://www.kenblanchard.com/Products-Services/Situational-Leadership-II',

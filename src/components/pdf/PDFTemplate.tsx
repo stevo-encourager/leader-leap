@@ -50,89 +50,103 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
   return (
     <div style={{
       fontFamily: 'system-ui, -apple-system, sans-serif',
-      fontSize: '12px',
-      lineHeight: '1.4',
+      fontSize: '14px',
+      lineHeight: '1.6',
       color: '#1f2937',
       backgroundColor: 'white',
-      padding: '20px',
-      maxWidth: '210mm',
-      minHeight: '297mm'
+      margin: '0 auto',
+      maxWidth: '190mm',
+      width: '100%',
+      minHeight: '297mm',
+      padding: '15mm',
+      boxSizing: 'border-box'
     }}>
       {/* Header */}
       <div style={{
         textAlign: 'center',
-        marginBottom: '30px',
-        paddingBottom: '20px',
-        borderBottom: '2px solid #2F564D'
+        marginBottom: '25px',
+        paddingBottom: '15px',
+        borderBottom: '2px solid #2F564D',
+        pageBreakInside: 'avoid'
       }}>
         <h1 style={{
           color: '#2F564D',
-          fontSize: '24px',
-          margin: '10px 0 5px 0',
-          fontWeight: '600'
+          fontSize: '26px',
+          margin: '0 0 8px 0',
+          fontWeight: '700',
+          letterSpacing: '-0.5px'
         }}>
           Leadership Assessment Results
         </h1>
         <p style={{
           color: '#64748b',
-          fontSize: '14px',
-          margin: '0'
+          fontSize: '16px',
+          margin: '0',
+          fontWeight: '500'
         }}>
           Generated on {currentDate}
         </p>
       </div>
 
       {/* Profile Summary */}
-      <div style={{ marginBottom: '25px' }}>
+      <div style={{ 
+        marginBottom: '25px',
+        pageBreakInside: 'avoid'
+      }}>
         <h2 style={{
           color: '#2F564D',
-          fontSize: '18px',
-          marginBottom: '15px',
+          fontSize: '20px',
+          marginBottom: '12px',
           fontWeight: '600',
           borderBottom: '1px solid #e2e8f0',
-          paddingBottom: '5px'
+          paddingBottom: '8px'
         }}>
           Profile Summary
         </h2>
         <div style={{ 
           backgroundColor: '#f8fafc',
-          padding: '15px',
+          padding: '18px',
           borderRadius: '8px',
-          border: '1px solid #e2e8f0'
+          border: '1px solid #e2e8f0',
+          width: '100%',
+          boxSizing: 'border-box'
         }}>
           {demographics?.role && (
-            <p style={{ margin: '0 0 8px 0' }}>
+            <p style={{ margin: '0 0 10px 0', fontSize: '14px' }}>
               <strong>Role:</strong> {demographics.role}
             </p>
           )}
           {demographics?.yearsOfExperience && (
-            <p style={{ margin: '0 0 8px 0' }}>
+            <p style={{ margin: '0 0 10px 0', fontSize: '14px' }}>
               <strong>Years of Experience:</strong> {demographics.yearsOfExperience}
             </p>
           )}
           {demographics?.industry && (
-            <p style={{ margin: '0 0 8px 0' }}>
+            <p style={{ margin: '0 0 10px 0', fontSize: '14px' }}>
               <strong>Industry:</strong> {demographics.industry}
             </p>
           )}
-          <p style={{ margin: '0' }}>
+          <p style={{ margin: '0 0 10px 0', fontSize: '14px' }}>
             <strong>Overall Development Gap:</strong> {averageGap.toFixed(2)} points
           </p>
-          <p style={{ margin: '8px 0 0 0', fontSize: '11px', color: '#64748b' }}>
+          <p style={{ margin: '0', fontSize: '12px', color: '#64748b' }}>
             Assessment completed across {categories.length} competency areas
           </p>
         </div>
       </div>
 
-      {/* Competency Gap Chart - Fixed formatting to match dashboard */}
-      <div style={{ marginBottom: '30px' }}>
+      {/* Competency Gap Chart */}
+      <div style={{ 
+        marginBottom: '30px',
+        pageBreakInside: 'avoid'
+      }}>
         <h2 style={{
           color: '#2F564D',
-          fontSize: '18px',
-          marginBottom: '15px',
+          fontSize: '20px',
+          marginBottom: '12px',
           fontWeight: '600',
           borderBottom: '1px solid #e2e8f0',
-          paddingBottom: '5px'
+          paddingBottom: '8px'
         }}>
           Competency Analysis - Radar Chart
         </h2>
@@ -141,11 +155,12 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
           padding: '20px',
           borderRadius: '8px',
           border: '1px solid #e2e8f0',
-          height: '500px',
+          height: '450px',
           width: '100%',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'center'
+          justifyContent: 'center',
+          boxSizing: 'border-box'
         }}>
           <div style={{ width: '100%', height: '100%' }}>
             <SkillGapChart categories={categories} />
@@ -153,37 +168,132 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
         </div>
       </div>
 
-      {/* AI-Generated Key Insights - Using the same component as dashboard with assessmentId */}
-      <div style={{ marginBottom: '30px' }}>
-        <AIInsights 
-          categories={categories}
-          demographics={demographics}
-          averageGap={averageGap}
-          assessmentId={assessmentId}
-        />
+      {/* Page break before AI Insights to ensure it starts on a new page if needed */}
+      <div style={{ pageBreakBefore: 'auto', pageBreakInside: 'avoid' }}>
+        {/* AI-Generated Key Insights */}
+        <div style={{ 
+          marginBottom: '25px',
+          width: '100%'
+        }}>
+          <AIInsights 
+            categories={categories}
+            demographics={demographics}
+            averageGap={averageGap}
+            assessmentId={assessmentId}
+          />
+        </div>
       </div>
 
       {/* Recommended Next Steps */}
-      <div style={{ marginBottom: '25px' }}>
-        <RecommendedSteps />
+      <div style={{ 
+        marginBottom: '25px',
+        pageBreakInside: 'avoid',
+        width: '100%'
+      }}>
+        <h2 style={{
+          color: '#2F564D',
+          fontSize: '20px',
+          marginBottom: '12px',
+          fontWeight: '600',
+          borderBottom: '1px solid #e2e8f0',
+          paddingBottom: '8px'
+        }}>
+          Recommended Next Steps
+        </h2>
+        <div style={{
+          backgroundColor: '#f8fafc',
+          padding: '18px',
+          borderRadius: '8px',
+          border: '1px solid #e2e8f0',
+          width: '100%',
+          boxSizing: 'border-box'
+        }}>
+          <ul style={{ 
+            listStyleType: 'disc', 
+            paddingLeft: '20px', 
+            margin: '0',
+            color: '#374151'
+          }}>
+            <li style={{ marginBottom: '12px', lineHeight: '1.6' }}>
+              Consider using this report in your next 1:1 with your manager or mentor as a guide for your professional development
+            </li>
+            <li style={{ marginBottom: '12px', lineHeight: '1.6' }}>
+              Create a 6 month action plan to address your most critical competency gaps and schedule a time to re-take this assessment to track your progress
+            </li>
+            <li style={{ marginBottom: '0', lineHeight: '1.6' }}>
+              Set an actionable goal for yourself within the next week, and set a reminder to help hold yourself accountable for taking that next step
+            </li>
+          </ul>
+        </div>
       </div>
 
       {/* Coaching Support */}
-      <div style={{ marginBottom: '25px' }}>
+      <div style={{ 
+        marginBottom: '25px',
+        pageBreakInside: 'avoid',
+        width: '100%'
+      }}>
+        <h2 style={{
+          color: '#2F564D',
+          fontSize: '20px',
+          marginBottom: '12px',
+          fontWeight: '600',
+          borderBottom: '1px solid #e2e8f0',
+          paddingBottom: '8px'
+        }}>
+          Coaching Support
+        </h2>
         <div style={{
           display: 'grid',
           gridTemplateColumns: '2fr 1fr',
-          gap: '20px'
+          gap: '20px',
+          width: '100%'
         }}>
-          <div>
-            <CoachingSupport />
+          <div style={{ width: '100%' }}>
+            <div style={{
+              backgroundColor: '#f8fafc',
+              padding: '18px',
+              borderRadius: '8px',
+              border: '1px solid #e2e8f0',
+              width: '100%',
+              boxSizing: 'border-box'
+            }}>
+              <h3 style={{
+                color: '#2F564D',
+                fontSize: '18px',
+                marginBottom: '12px',
+                fontWeight: '600'
+              }}>
+                Professional Development Coaching
+              </h3>
+              <p style={{ 
+                margin: '0 0 12px 0', 
+                lineHeight: '1.6',
+                color: '#374151'
+              }}>
+                Ready to take your leadership skills to the next level? Our expert coaches can help you:
+              </p>
+              <ul style={{ 
+                listStyleType: 'disc', 
+                paddingLeft: '20px', 
+                margin: '0',
+                color: '#374151'
+              }}>
+                <li style={{ marginBottom: '8px' }}>Create personalized development plans</li>
+                <li style={{ marginBottom: '8px' }}>Practice new skills in a safe environment</li>
+                <li style={{ marginBottom: '8px' }}>Overcome specific leadership challenges</li>
+                <li style={{ marginBottom: '0' }}>Track your progress over time</li>
+              </ul>
+            </div>
           </div>
           <div style={{
             backgroundColor: 'white',
             padding: '15px',
             border: '1px solid #e2e8f0',
             borderRadius: '8px',
-            textAlign: 'center'
+            textAlign: 'center',
+            width: '100%',
+            boxSizing: 'border-box'
           }}>
             <img 
               src="/lovable-uploads/b35e005b-ec23-4976-8796-738f7c856377.png" 
@@ -192,7 +302,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
                 width: '100%',
                 height: 'auto',
                 borderRadius: '8px',
-                maxHeight: '200px',
+                maxHeight: '180px',
                 objectFit: 'cover'
               }}
             />
@@ -206,13 +316,14 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
         marginTop: '30px',
         paddingTop: '20px',
         borderTop: '1px solid #e2e8f0',
-        fontSize: '11px',
-        color: '#64748b'
+        fontSize: '12px',
+        color: '#64748b',
+        pageBreakInside: 'avoid'
       }}>
-        <p style={{ margin: '0' }}>
+        <p style={{ margin: '0 0 8px 0', fontWeight: '600' }}>
           Leadership Assessment Tool • Generated on {currentDate}
         </p>
-        <p style={{ margin: '5px 0 0 0' }}>
+        <p style={{ margin: '0', lineHeight: '1.5' }}>
           This assessment is designed to help you identify development opportunities and create targeted improvement plans.
         </p>
       </div>

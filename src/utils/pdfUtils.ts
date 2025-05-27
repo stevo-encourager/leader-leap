@@ -152,7 +152,7 @@ export const exportToPDF = async (
     console.log('PDF Export: Using stored insights for consistency - no placeholder text detected');
   }
   
-  console.log('PDF Export: Data validation passed, proceeding with PDF generation using consistent insights...');
+  console.log('PDF Export: Data validation passed, proceeding with multi-page PDF generation...');
   
   try {
     // Import React and ReactDOM
@@ -165,59 +165,29 @@ export const exportToPDF = async (
     const { default: PDFTemplate } = await import('../components/pdf/PDFTemplate');
     console.log('PDF Export: PDF template imported successfully');
     
-    // Create temporary container - VISIBLE at bottom of page during export
-    console.log('PDF Export: Creating visible temporary container for PDF generation...');
+    // Create temporary container - positioned off-screen during generation
+    console.log('PDF Export: Creating temporary container for PDF generation...');
     const tempContainer = document.createElement('div');
     
-    // Make it visible but positioned at the bottom with minimal styling
+    // Position off-screen but ensure it's properly sized for PDF generation
     tempContainer.style.cssText = `
       position: fixed;
-      bottom: 0;
+      top: -10000px;
       left: 0;
-      right: 0;
-      width: 100%;
+      width: 210mm;
       background: white;
-      border-top: 2px solid #e5e7eb;
       font-family: system-ui, -apple-system, sans-serif;
-      font-size: 10px;
-      z-index: 9999;
-      max-height: 50vh;
-      overflow: auto;
+      font-size: 14px;
+      z-index: -1;
+      visibility: hidden;
     `;
-    
-    // Add a notice header to explain what's happening
-    const noticeHeader = document.createElement('div');
-    noticeHeader.style.cssText = `
-      background: #f3f4f6;
-      padding: 8px 16px;
-      border-bottom: 1px solid #e5e7eb;
-      text-align: center;
-      font-weight: 600;
-      color: #374151;
-    `;
-    noticeHeader.textContent = '🔄 Generating PDF with stored insights... (This preview will disappear automatically)';
-    tempContainer.appendChild(noticeHeader);
-    
-    // Create content wrapper for the actual PDF content
-    const contentWrapper = document.createElement('div');
-    contentWrapper.style.cssText = `
-      padding: 10px;
-      transform: scale(0.3);
-      transform-origin: top left;
-      width: 333%;
-      height: auto;
-    `;
-    tempContainer.appendChild(contentWrapper);
     
     document.body.appendChild(tempContainer);
-    console.log('PDF Export: Visible temporary container created at bottom of page');
-    
-    // Scroll to show the container to the user
-    tempContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    console.log('PDF Export: Temporary container created off-screen');
     
     toast({
       title: "Generating PDF",
-      description: "Creating your assessment results PDF with stored AI insights... Please wait while the content renders.",
+      description: "Creating your complete assessment results PDF with AI insights across multiple pages...",
     });
     
     // Create PDF template element with explicit props INCLUDING assessmentId for consistency
@@ -236,47 +206,38 @@ export const exportToPDF = async (
     const pdfElement = React.createElement(PDFTemplate, templateProps);
     console.log('PDF Export: React element created with assessmentId for consistent insights');
     
-    // Render the template into the content wrapper
+    // Render the template into the container
     console.log('PDF Export: Starting React rendering...');
-    const root = ReactDOM.createRoot(contentWrapper);
+    const root = ReactDOM.createRoot(tempContainer);
     root.render(pdfElement);
     console.log('PDF Export: React render initiated');
     
-    // Force a reflow to ensure browser has fully rendered the content
-    console.log('PDF Export: Forcing reflow...');
-    const reflow = getComputedStyle(contentWrapper).height;
-    console.log('PDF Export: Forced reflow complete, height:', reflow);
-    
-    // Wait longer for rendering to complete, especially for stored AI insights
-    console.log('PDF Export: Waiting for render completion (including stored AI insights)...');
-    await new Promise(resolve => setTimeout(resolve, 6000)); // Increased wait time for stored insights loading
+    // Wait for rendering to complete, including AI insights loading
+    console.log('PDF Export: Waiting for complete render (including AI insights)...');
+    await new Promise(resolve => setTimeout(resolve, 8000)); // Extended wait for full content loading
     
     // Clean the HTML content for PDF generation
     console.log('PDF Export: Cleaning HTML for PDF generation...');
-    cleanHtmlForPdf(contentWrapper);
+    cleanHtmlForPdf(tempContainer);
     
-    // Log the cleaned content for debugging
-    console.log('PDF Export: Checking cleaned content...');
-    console.log('PDF Export: Content wrapper innerHTML length:', contentWrapper.innerHTML.length);
-    console.log('PDF Export: Content wrapper children count:', contentWrapper.children.length);
-    console.log('PDF Export: First 200 chars of cleaned content:', contentWrapper.innerHTML.substring(0, 200));
+    // Log the content for debugging
+    console.log('PDF Export: Content validation...');
+    console.log('PDF Export: Content length:', tempContainer.innerHTML.length);
+    console.log('PDF Export: Content elements count:', tempContainer.children.length);
     
-    if (contentWrapper.innerHTML.length < 1000) {
-      console.error('PDF Export: Very little content rendered, potential rendering issue');
-      console.log('PDF Export: Full content wrapper content:', contentWrapper.innerHTML);
+    if (tempContainer.innerHTML.length < 2000) {
+      console.error('PDF Export: Insufficient content rendered');
+      console.log('PDF Export: Content preview:', tempContainer.innerHTML.substring(0, 500));
     }
     
-    // Add timestamp marker to verify new code is running
-    const timestamp = new Date().toISOString();
-    console.log(`PDF Export: TIMESTAMP MARKER - PDF generation started at ${timestamp} with stored insights consistency`);
-    
-    console.log('PDF Export: Configuring html2pdf options...');
+    // Configure html2pdf options for multi-page support
+    console.log('PDF Export: Configuring html2pdf for multi-page output...');
     const opt = {
-      margin: [10, 10, 10, 10],
+      margin: [15, 15, 15, 15], // Proper margins in mm
       filename,
       image: { 
         type: 'jpeg', 
-        quality: 0.95
+        quality: 0.98
       },
       html2canvas: { 
         scale: 2,
@@ -284,26 +245,35 @@ export const exportToPDF = async (
         allowTaint: false,
         letterRendering: true,
         logging: false,
-        width: 794,
-        height: 1123,
+        width: 794, // A4 width in pixels at 96 DPI
+        height: 1123, // A4 height in pixels at 96 DPI
         backgroundColor: '#ffffff',
-        removeContainer: false
+        removeContainer: false,
+        windowWidth: 794,
+        windowHeight: 1123
       },
       jsPDF: { 
         unit: 'mm', 
         format: 'a4', 
         orientation: 'portrait',
-        compress: true
+        compress: true,
+        putOnlyUsedFonts: true
+      },
+      pagebreak: { 
+        mode: ['avoid-all', 'css', 'legacy'],
+        before: '.page-break-before',
+        after: '.page-break-after',
+        avoid: '.page-break-avoid'
       }
     };
     
-    console.log('PDF Export: Starting html2pdf conversion with stored insights...');
-    await html2pdf().set(opt).from(contentWrapper).save();
-    console.log('PDF Export: PDF generation completed successfully with consistent insights');
+    console.log('PDF Export: Starting multi-page PDF conversion...');
+    await html2pdf().set(opt).from(tempContainer).save();
+    console.log('PDF Export: Multi-page PDF generation completed successfully');
     
     toast({
       title: "PDF Export Successful",
-      description: "Your leadership assessment results with stored AI insights have been downloaded",
+      description: "Your complete leadership assessment results have been downloaded as a multi-page PDF",
     });
     
     // Clean up - remove the temporary container

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -24,6 +23,9 @@ const Results = () => {
   const localDataLoadedRef = useRef(false);
   const [isPageReady, setIsPageReady] = useState(false);
   const [isInitialDataChecked, setIsInitialDataChecked] = useState(false);
+  
+  // Log the assessment ID for debugging
+  console.log('Results page - URL assessmentId parameter:', assessmentId);
   
   const {
     currentStep,
@@ -270,7 +272,7 @@ const Results = () => {
   }
 
   // Render the results page with available data
-  console.log("Results page - Rendering ResultsDisplay with valid data");
+  console.log("Results page - Rendering ResultsDisplay with valid data and assessmentId:", assessmentId);
   
   return (
     <div className="min-h-screen bg-slate-50">
@@ -302,6 +304,7 @@ const Results = () => {
             }}
             onSignup={handleShowSignupForm}
             isAuthenticated={!!user}
+            assessmentId={assessmentId} // Pass the assessment ID from URL params
           />
         )}
       </main>

@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Category, Demographics } from '../utils/assessmentTypes';
@@ -29,6 +28,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   // Debug received categories with more detailed logging
   useEffect(() => {
     console.log("ResultsDashboard - Received categories count:", categories?.length || 0);
+    console.log("ResultsDashboard - Received assessmentId:", assessmentId);
     
     // Check actual rating data
     let totalRatingsFound = 0;
@@ -50,7 +50,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
     });
     
     console.log(`ResultsDashboard - Found ${totalRatingsFound} total rating values across ${totalSkillsWithRatings} skills`);
-  }, [categories]);
+  }, [categories, assessmentId]);
   
   // Calculate metrics with extra error handling
   let averageGap = 0;
@@ -155,6 +155,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
                 onSignup={onSignup}
                 categories={categories}
                 demographics={demographics}
+                assessmentId={assessmentId}
               />
             </div>
           </div>

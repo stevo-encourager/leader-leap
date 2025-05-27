@@ -14,10 +14,62 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
   const [insights, setInsights] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasCheckedExisting, setHasCheckedExisting] = useState(false);
 
-  const generateInsights = async () => {
+  // CRITICAL: Check for existing insights first and NEVER regenerate if they exist
+  useEffect(() => {
+    const checkForExistingInsights = async () => {
+      // Don't check multiple times for the same assessment
+      if (hasCheckedExisting) {
+        return;
+      }
+
+      // Only proceed if we have valid data
+      if (!categories || categories.length === 0) {
+        console.log('useOpenAIInsights: No categories available for insights');
+        return;
+      }
+
+      console.log('useOpenAIInsights: Checking for existing insights for assessment:', assessmentId);
+
+      try {
+        if (assessmentId) {
+          // For saved assessments, ALWAYS check database first
+          const { data: assessment, error } = await supabase
+            .from('assessment_results')
+            .select('ai_insights')
+            .eq('id', assessmentId)
+            .single();
+
+          if (error) {
+            console.error('useOpenAIInsights: Error checking for existing insights:', error);
+            // Continue to generate new insights if we can't check existing ones
+          } else if (assessment && assessment.ai_insights && assessment.ai_insights.trim()) {
+            console.log('useOpenAIInsights: Found existing insights, using saved version - NEVER regenerating');
+            setInsights(assessment.ai_insights);
+            setHasCheckedExisting(true);
+            return; // Exit early - don't generate new insights
+          }
+        }
+
+        // Only generate new insights if none exist
+        console.log('useOpenAIInsights: No existing insights found, generating new ones (ONLY ONCE)');
+        await generateNewInsights();
+        
+      } catch (err) {
+        console.error('useOpenAIInsights: Error in checkForExistingInsights:', err);
+        setError(err instanceof Error ? err.message : 'Failed to check for existing insights');
+      } finally {
+        setHasCheckedExisting(true);
+      }
+    };
+
+    checkForExistingInsights();
+  }, [assessmentId, categories]); // Only depend on assessmentId and categories
+
+  const generateNewInsights = async () => {
     if (!categories || categories.length === 0) {
-      console.log('No categories available for insights generation');
+      console.log('useOpenAIInsights: No categories available for insights generation');
       return;
     }
 
@@ -25,7 +77,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     setError(null);
 
     try {
-      console.log('Calling generate-insights function with assessmentId:', assessmentId);
+      console.log('useOpenAIInsights: Calling generate-insights function with assessmentId:', assessmentId);
       
       const { data, error: functionError } = await supabase.functions.invoke('generate-insights', {
         body: {
@@ -42,69 +94,23 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
 
       if (data && data.insights) {
         setInsights(data.insights);
-        console.log('Successfully received AI insights (saved permanently to database)');
+        console.log('useOpenAIInsights: Successfully received and stored AI insights permanently');
       } else {
         throw new Error('No insights received from OpenAI');
       }
     } catch (err) {
-      console.error('Error generating insights:', err);
+      console.error('useOpenAIInsights: Error generating insights:', err);
       setError(err instanceof Error ? err.message : 'Failed to generate insights');
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Check for existing insights first, then generate if needed
-  useEffect(() => {
-    const checkForExistingInsights = async () => {
-      // Only check if we have an assessmentId and valid data
-      if (!assessmentId || !categories || categories.length === 0) {
-        return;
-      }
-
-      try {
-        console.log('Checking for existing insights for assessment:', assessmentId);
-        
-        const { data: assessment, error } = await supabase
-          .from('assessment_results')
-          .select('ai_insights')
-          .eq('id', assessmentId)
-          .single();
-
-        if (error) {
-          console.error('Error checking for existing insights:', error);
-          return;
-        }
-
-        if (assessment && assessment.ai_insights && assessment.ai_insights.trim()) {
-          console.log('Found existing insights, using saved version - NEVER regenerating');
-          setInsights(assessment.ai_insights);
-          return; // Don't generate new insights
-        }
-
-        // Only generate if no existing insights found
-        console.log('No existing insights found, generating new ones (ONLY ONCE)');
-        generateInsights();
-      } catch (err) {
-        console.error('Error checking for existing insights:', err);
-        // Fallback to generating new insights
-        generateInsights();
-      }
-    };
-
-    // For assessments with IDs, check for existing insights first
-    if (assessmentId) {
-      checkForExistingInsights();
-    } 
-    // For new assessments without IDs, generate insights immediately
-    else if (categories && categories.length > 0 && averageGap !== undefined) {
-      generateInsights();
-    }
-  }, [assessmentId]); // Only depend on assessmentId to prevent regeneration
-
   return {
     insights,
     isLoading,
-    error
+    error,
+    // Provide a manual regenerate function for future use
+    regenerateInsights: generateNewInsights
   };
 };

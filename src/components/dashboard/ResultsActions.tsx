@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ArrowLeft, Download, Plus, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -32,7 +31,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
   // Calculate average gap for insights hook
   const averageGap = categories.length > 0 ? calculateAverageGap(categories) : 0;
   
-  // Use the insights hook to check if insights are ready
+  // Use the insights hook to check if insights are ready - CRITICAL: Pass assessmentId for consistency
   const { insights, isLoading: insightsLoading, error: insightsError } = useOpenAIInsights({
     categories,
     demographics,
@@ -44,6 +43,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
   const hasValidAssessmentData = () => {
     console.log('ResultsActions: Checking for valid assessment data...');
     console.log('ResultsActions: categories length:', categories?.length || 0);
+    console.log('ResultsActions: assessmentId:', assessmentId);
     
     if (!categories || !Array.isArray(categories) || categories.length === 0) {
       console.log('ResultsActions: No categories or empty array');
@@ -120,15 +120,16 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
       return false;
     }
     
-    console.log('ResultsActions: Insights are ready for export');
+    console.log('ResultsActions: Insights are ready for export with consistent data');
     return true;
   };
   
-  // PDF export function with insights readiness check
+  // PDF export function with insights readiness check and assessmentId passing
   const handleExportPDF = () => {
     console.log('ResultsActions: PDF export button clicked');
     console.log('ResultsActions: categories received:', categories?.length || 0);
     console.log('ResultsActions: demographics received:', demographics ? Object.keys(demographics) : 'none');
+    console.log('ResultsActions: assessmentId for consistent insights:', assessmentId);
     
     if (!hasValidAssessmentData()) {
       toast({
@@ -148,10 +149,11 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
       return;
     }
     
-    console.log('ResultsActions: Data validation and insights check passed, calling exportToPDF...');
+    console.log('ResultsActions: Data validation and insights check passed, calling exportToPDF with assessmentId...');
     
     try {
-      exportToPDF(categories, demographics, insights, 'leadership-assessment-results.pdf');
+      // CRITICAL: Pass assessmentId to ensure PDF uses the same stored insights
+      exportToPDF(categories, demographics, insights, assessmentId, 'leadership-assessment-results.pdf');
       
       // For guest users, suggest signup after successful export
       if (!user && onSignup) {

@@ -39,32 +39,42 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
     assessmentId
   });
 
+  // Log the assessment ID and insights status for debugging
+  React.useEffect(() => {
+    console.log('AIInsights: Rendering with assessmentId:', assessmentId);
+    console.log('AIInsights: Insights available:', !!insights);
+    console.log('AIInsights: Loading state:', isLoading);
+    if (insights) {
+      console.log('AIInsights: Using insights from database for consistent display');
+    }
+  }, [assessmentId, insights, isLoading]);
+
   const parseInsights = (insightsText: string): AIInsightsData | null => {
     try {
       const parsed = JSON.parse(insightsText);
       
       // Validate structure
       if (!parsed.summary || !parsed.priority_areas || !parsed.key_strengths) {
-        console.error('Invalid insights structure - missing required fields');
+        console.error('AIInsights: Invalid insights structure - missing required fields');
         return null;
       }
       
       if (!Array.isArray(parsed.priority_areas) || !Array.isArray(parsed.key_strengths)) {
-        console.error('Invalid insights structure - arrays expected');
+        console.error('AIInsights: Invalid insights structure - arrays expected');
         return null;
       }
 
       // Validate priority areas
       for (const area of parsed.priority_areas) {
         if (!area.competency || !area.insights || !Array.isArray(area.insights) || !area.resource) {
-          console.error('Invalid priority area structure:', area);
+          console.error('AIInsights: Invalid priority area structure:', area);
           return null;
         }
         
         // Ensure insights is an array of strings only
         for (const insight of area.insights) {
           if (typeof insight !== 'string') {
-            console.error('Invalid insight type - must be string:', insight);
+            console.error('AIInsights: Invalid insight type - must be string:', insight);
             return null;
           }
         }
@@ -73,14 +83,14 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
       // Validate key strengths
       for (const strength of parsed.key_strengths) {
         if (!strength.competency || !strength.example || !strength.leverage_advice || !Array.isArray(strength.leverage_advice)) {
-          console.error('Invalid key strength structure:', strength);
+          console.error('AIInsights: Invalid key strength structure:', strength);
           return null;
         }
         
         // Ensure leverage_advice is an array of strings only
         for (const advice of strength.leverage_advice) {
           if (typeof advice !== 'string') {
-            console.error('Invalid advice type - must be string:', advice);
+            console.error('AIInsights: Invalid advice type - must be string:', advice);
             return null;
           }
         }
@@ -88,7 +98,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
       
       return parsed;
     } catch (error) {
-      console.error('Error parsing insights JSON:', error);
+      console.error('AIInsights: Error parsing insights JSON:', error);
       return null;
     }
   };
@@ -222,6 +232,11 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
               <p className="text-sm text-slate-600 mt-1">
                 Personalized leadership development insights powered by Encourager GPT
               </p>
+              {assessmentId && (
+                <p className="text-xs text-slate-500 mt-1">
+                  Insights stored permanently for assessment: {assessmentId.slice(0, 8)}...
+                </p>
+              )}
             </div>
           </div>
         </div>

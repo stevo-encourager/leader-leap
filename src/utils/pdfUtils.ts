@@ -27,7 +27,8 @@ const cleanHtmlForPdf = (element: HTMLElement): void => {
 export const exportToPDF = async (
   categories: Category[], 
   demographics: Demographics, 
-  insights?: string, 
+  insights?: string,
+  assessmentId?: string,
   filename: string = 'leadership-assessment-results.pdf'
 ) => {
   console.log('=== PDF EXPORT DEBUG START ===');
@@ -39,6 +40,7 @@ export const exportToPDF = async (
   console.log('- demographics keys:', demographics ? Object.keys(demographics) : 'none');
   console.log('- insights provided:', !!insights);
   console.log('- insights length:', insights?.length || 0);
+  console.log('- assessmentId for consistent data:', assessmentId);
   
   // Enhanced validation with detailed logging
   if (!categories) {
@@ -123,7 +125,7 @@ export const exportToPDF = async (
     return;
   }
 
-  // Check if insights are provided and valid
+  // CRITICAL: Enhanced insights validation for consistent stored insights
   if (insights) {
     const placeholderTexts = [
       'analysing your assessment results',
@@ -138,7 +140,7 @@ export const exportToPDF = async (
     );
     
     if (hasPlaceholder) {
-      console.error('PDF Export: Insights contain placeholder text');
+      console.error('PDF Export: Insights contain placeholder text, should use stored insights');
       toast({
         title: "Please Wait",
         description: "AI insights are still being generated. Please wait for them to complete before exporting.",
@@ -146,9 +148,11 @@ export const exportToPDF = async (
       });
       return;
     }
+    
+    console.log('PDF Export: Using stored insights for consistency - no placeholder text detected');
   }
   
-  console.log('PDF Export: Data validation passed, proceeding with PDF generation...');
+  console.log('PDF Export: Data validation passed, proceeding with PDF generation using consistent insights...');
   
   try {
     // Import React and ReactDOM
@@ -191,7 +195,7 @@ export const exportToPDF = async (
       font-weight: 600;
       color: #374151;
     `;
-    noticeHeader.textContent = '🔄 Generating PDF... (This preview will disappear automatically)';
+    noticeHeader.textContent = '🔄 Generating PDF with stored insights... (This preview will disappear automatically)';
     tempContainer.appendChild(noticeHeader);
     
     // Create content wrapper for the actual PDF content
@@ -213,22 +217,24 @@ export const exportToPDF = async (
     
     toast({
       title: "Generating PDF",
-      description: "Creating your assessment results PDF with AI insights... Please wait while the content renders.",
+      description: "Creating your assessment results PDF with stored AI insights... Please wait while the content renders.",
     });
     
-    // Create PDF template element with explicit props
+    // Create PDF template element with explicit props INCLUDING assessmentId for consistency
     const templateProps = {
       categories: categories,
-      demographics: demographics || {}
+      demographics: demographics || {},
+      assessmentId: assessmentId // CRITICAL: Pass assessmentId to ensure consistent insights
     };
     
     console.log('PDF Export: Template props prepared:', {
       categoriesLength: templateProps.categories.length,
-      demographicsKeys: Object.keys(templateProps.demographics)
+      demographicsKeys: Object.keys(templateProps.demographics),
+      assessmentIdProvided: !!templateProps.assessmentId
     });
     
     const pdfElement = React.createElement(PDFTemplate, templateProps);
-    console.log('PDF Export: React element created');
+    console.log('PDF Export: React element created with assessmentId for consistent insights');
     
     // Render the template into the content wrapper
     console.log('PDF Export: Starting React rendering...');
@@ -241,9 +247,9 @@ export const exportToPDF = async (
     const reflow = getComputedStyle(contentWrapper).height;
     console.log('PDF Export: Forced reflow complete, height:', reflow);
     
-    // Wait longer for rendering to complete, especially for AI insights
-    console.log('PDF Export: Waiting for render completion (including AI insights)...');
-    await new Promise(resolve => setTimeout(resolve, 5000)); // Increased wait time for AI insights
+    // Wait longer for rendering to complete, especially for stored AI insights
+    console.log('PDF Export: Waiting for render completion (including stored AI insights)...');
+    await new Promise(resolve => setTimeout(resolve, 6000)); // Increased wait time for stored insights loading
     
     // Clean the HTML content for PDF generation
     console.log('PDF Export: Cleaning HTML for PDF generation...');
@@ -262,7 +268,7 @@ export const exportToPDF = async (
     
     // Add timestamp marker to verify new code is running
     const timestamp = new Date().toISOString();
-    console.log(`PDF Export: TIMESTAMP MARKER - PDF generation started at ${timestamp} with insights validation`);
+    console.log(`PDF Export: TIMESTAMP MARKER - PDF generation started at ${timestamp} with stored insights consistency`);
     
     console.log('PDF Export: Configuring html2pdf options...');
     const opt = {
@@ -291,13 +297,13 @@ export const exportToPDF = async (
       }
     };
     
-    console.log('PDF Export: Starting html2pdf conversion with completed insights...');
+    console.log('PDF Export: Starting html2pdf conversion with stored insights...');
     await html2pdf().set(opt).from(contentWrapper).save();
-    console.log('PDF Export: PDF generation completed successfully');
+    console.log('PDF Export: PDF generation completed successfully with consistent insights');
     
     toast({
       title: "PDF Export Successful",
-      description: "Your leadership assessment results with AI insights have been downloaded",
+      description: "Your leadership assessment results with stored AI insights have been downloaded",
     });
     
     // Clean up - remove the temporary container

@@ -10,13 +10,15 @@ import CoachingSupport from '../dashboard/CoachingSupport';
 interface PDFTemplateProps {
   categories: Category[];
   demographics: Demographics;
+  assessmentId?: string;
 }
 
-const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics }) => {
+const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, assessmentId }) => {
   const timestamp = new Date().toISOString();
   console.log('=== PDF TEMPLATE DEBUG START ===');
   console.log(`PDFTemplate: Component rendering at ${timestamp}`);
   console.log('PDFTemplate: categories length:', categories?.length || 0);
+  console.log('PDFTemplate: assessmentId:', assessmentId);
   
   // Enhanced validation with detailed logging
   if (!categories || !Array.isArray(categories) || categories.length === 0) {
@@ -151,30 +153,14 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics }) =
         </div>
       </div>
 
-      {/* AI-Generated Key Insights - Replace old KeyInsights component */}
+      {/* AI-Generated Key Insights - Using the same component as dashboard with assessmentId */}
       <div style={{ marginBottom: '30px' }}>
-        <h2 style={{
-          color: '#2F564D',
-          fontSize: '18px',
-          marginBottom: '15px',
-          fontWeight: '600',
-          borderBottom: '1px solid #e2e8f0',
-          paddingBottom: '5px'
-        }}>
-          Key Insights
-        </h2>
-        <div style={{ 
-          backgroundColor: '#ffffff',
-          padding: '15px',
-          borderRadius: '8px',
-          border: '1px solid #e2e8f0'
-        }}>
-          <AIInsights 
-            categories={categories}
-            demographics={demographics}
-            averageGap={averageGap}
-          />
-        </div>
+        <AIInsights 
+          categories={categories}
+          demographics={demographics}
+          averageGap={averageGap}
+          assessmentId={assessmentId}
+        />
       </div>
 
       {/* Recommended Next Steps */}

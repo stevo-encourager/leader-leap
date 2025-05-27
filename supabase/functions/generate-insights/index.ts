@@ -145,7 +145,7 @@ Top Competency Areas (High Current Ratings, Low Gaps):
 ${topCompetencies.map((cat, i) => `${i+1}. ${cat.title}: Current ${cat.averageCurrentRating.toFixed(1)}, Gap ${cat.gap.toFixed(1)}`).join('\n')}
 `;
 
-    // Enhanced prompt with well-known leader examples and competencies terminology
+    // Enhanced prompt with explicit multi-paragraph formatting instructions
     const prompt = `${assessmentDataSection}
 
 You are an expert leadership coach and assessment analyst. Based on the provided assessment data (including competency names, gap scores, and top competencies), generate AI insights for a user's leadership assessment.
@@ -175,7 +175,7 @@ You MUST output ONLY a valid JSON object with this EXACT structure:
 
 ### Field Requirements
 
-- \`summary\`: Generate a professional, concise, and impactful assessment summary that is 6–8 sentences total, structured as two or three short paragraphs for better readability. Use the word "competencies" throughout (not "strengths"). Always refer to the person as "you" or "your" (never "the user" or "the user's"). In the first paragraph, directly identify your most distinctive competencies and what those mean for your leadership style or capabilities. In the second (or third) paragraph, note your key areas for development (gaps or opportunities), clearly explaining why these matter for effective leadership. Include a brief example of a well-known leader (real or historical) who exemplifies your top competencies. Name the leader, state what competencies they are known for, and connect this to your assessment. Highlight the practical impact or opportunities unlocked by focusing on these development areas. Where relevant, connect how your top competencies can support your growth in development areas. Avoid generic praise or congratulatory language. Keep the tone confident, clear, and professional—make every sentence specific and purposeful. Output as two or three well-written paragraphs separated by double line breaks (\\n\\n). Use only the data provided; do not invent details about you or your organization.
+- \`summary\`: Generate a professional, concise, and impactful assessment summary that is 6–8 sentences total, structured as two or three short paragraphs for better readability. Use the word "competencies" throughout (not "strengths"). Always refer to the person as "you" or "your" (never "the user" or "the user's"). In the first paragraph, directly identify your most distinctive competencies and what those mean for your leadership style or capabilities. Include a brief example of a well-known leader (real or historical) who exemplifies your top competencies. Name the leader, state what competencies they are known for, and connect this to your assessment. In the next paragraph(s), note your key areas for development (gaps or opportunities), clearly explaining why these matter for effective leadership. Highlight the practical impact or opportunities unlocked by focusing on these development areas. Where relevant, connect how your top competencies can support your growth in development areas. Avoid generic praise or congratulatory language. Keep the tone confident, clear, and professional—make every sentence specific and purposeful. ABSOLUTELY ENSURE there is a blank line (double line break) between each paragraph for clear separation. Output as two or three well-written paragraphs separated by double line breaks (\\n\\n). Use only the data provided; do not invent details about you or your organization.
 
 - \`priority_areas\`: An array with exactly 3 objects, each for a Top 3 Priority Development Area:
   - \`competency\` (string): The name of the competency from the assessment data above
@@ -193,6 +193,7 @@ You MUST output ONLY a valid JSON object with this EXACT structure:
 - The \`insights\` field must be an array of strings ONLY. Do NOT include any other keys inside this array.
 - The \`resource\` field must be at the same level as \`insights\`, NOT inside the insights array.
 - All arrays must contain only the specified data types.
+- For the summary field, ENSURE paragraphs are separated by double line breaks (\\n\\n) for proper formatting.
 
 Base your insights on the assessment data provided above.`;
 
@@ -207,7 +208,7 @@ Base your insights on the assessment data provided above.`;
         messages: [
           { 
             role: 'system', 
-            content: 'You are an expert leadership coach and assessment analyst. You MUST respond with valid JSON only, no additional text or formatting. Follow the exact JSON structure specified in the user prompt. The insights array must contain ONLY strings, never objects or other keys. Use the word "competencies" throughout your response instead of "strengths". Always refer to the person as "you" or "your" (never "the user" or "the user\'s"). For the summary field, structure your response as multiple paragraphs separated by double line breaks (\\n\\n) for better readability.'
+            content: 'You are an expert leadership coach and assessment analyst. You MUST respond with valid JSON only, no additional text or formatting. Follow the exact JSON structure specified in the user prompt. The insights array must contain ONLY strings, never objects or other keys. Use the word "competencies" throughout your response instead of "strengths". Always refer to the person as "you" or "your" (never "the user" or "the user\'s"). For the summary field, structure your response as multiple paragraphs separated by double line breaks (\\n\\n) with ABSOLUTELY a blank line between each paragraph for clear separation and better readability.'
           },
           { role: 'user', content: prompt }
         ],
@@ -288,7 +289,7 @@ Base your insights on the assessment data provided above.`;
         }
       }
       
-      console.log('Successfully validated JSON structure with multi-paragraph competencies format');
+      console.log('Successfully validated JSON structure with explicit multi-paragraph formatting');
     } catch (jsonError) {
       console.error('Invalid JSON response from OpenAI after cleaning:', jsonError);
       console.error('Cleaned response was:', cleanedInsights);
@@ -315,7 +316,7 @@ Base your insights on the assessment data provided above.`;
       }
     }
 
-    console.log('Successfully generated and saved insights with multi-paragraph competencies format');
+    console.log('Successfully generated and saved insights with explicit multi-paragraph formatting');
 
     return new Response(JSON.stringify({ insights: cleanedInsights }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

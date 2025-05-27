@@ -14,7 +14,7 @@ export const exportToPDF = (elementId: string, filename: string, onSuccess?: () 
   }
 
   // Create visual preview popup with loading state
-  const createPreviewPopup = (content: HTMLElement, title: string, hasContent: boolean) => {
+  const createPreviewPopup = (content: HTMLElement, title: string, hasContent: boolean, debugInfo?: any) => {
     const overlay = document.createElement('div');
     overlay.style.cssText = `
       position: fixed;
@@ -81,6 +81,20 @@ export const exportToPDF = (elementId: string, filename: string, onSuccess?: () 
       margin-left: 10px;
     `;
     
+    // Add override button for testing
+    const overrideBtn = document.createElement('button');
+    overrideBtn.textContent = 'Generate PDF Anyway (Override)';
+    overrideBtn.style.cssText = `
+      background: #f59e0b;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-left: 10px;
+    `;
+    
     const contentContainer = document.createElement('div');
     contentContainer.style.cssText = `
       border: 1px solid #ddd;
@@ -94,13 +108,28 @@ export const exportToPDF = (elementId: string, filename: string, onSuccess?: () 
     `;
     
     if (!hasContent) {
-      contentContainer.innerHTML = `
-        <div style="text-align: center; padding: 40px; color: #666;">
-          <div style="font-size: 18px; margin-bottom: 10px;">⏳ Waiting for content to load...</div>
-          <div style="font-size: 12px;">Charts, insights, and dynamic content are still rendering.</div>
-          <div style="font-size: 12px; margin-top: 10px;">Please wait a moment and try again.</div>
+      // Show detailed debug information
+      const debugHTML = `
+        <div style="text-align: center; padding: 20px; color: #666;">
+          <div style="font-size: 18px; margin-bottom: 10px;">⏳ Content Detection Status</div>
+          ${debugInfo ? `
+            <div style="text-align: left; background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 4px;">
+              <strong>Detection Results:</strong><br>
+              Charts found: ${debugInfo.charts || 0}<br>
+              Text content length: ${debugInfo.totalTextContent || 0}<br>
+              AI insights length: ${debugInfo.aiInsights?.length || 0}<br>
+              Profile summary length: ${debugInfo.profileSummary?.length || 0}<br>
+              Recommended steps length: ${debugInfo.recommendedSteps?.length || 0}<br>
+              Coaching support length: ${debugInfo.coachingSupport?.length || 0}<br>
+              Images: ${debugInfo.images?.loaded || 0}/${debugInfo.images?.total || 0} loaded
+            </div>
+          ` : ''}
+          <div style="font-size: 12px; margin-top: 10px;">
+            The content might be loading. You can wait or use the override button to generate anyway.
+          </div>
         </div>
       `;
+      contentContainer.innerHTML = debugHTML;
     } else {
       const clonedContent = content.cloneNode(true) as HTMLElement;
       contentContainer.appendChild(clonedContent);
@@ -109,6 +138,7 @@ export const exportToPDF = (elementId: string, filename: string, onSuccess?: () 
     header.appendChild(titleEl);
     header.appendChild(closeBtn);
     header.appendChild(proceedBtn);
+    header.appendChild(overrideBtn);
     popup.appendChild(header);
     popup.appendChild(contentContainer);
     overlay.appendChild(popup);
@@ -121,6 +151,12 @@ export const exportToPDF = (elementId: string, filename: string, onSuccess?: () 
           resolve(true);
         }
       };
+      
+      overrideBtn.onclick = () => {
+        document.body.removeChild(overlay);
+        resolve(true);
+      };
+      
       closeBtn.onclick = () => {
         document.body.removeChild(overlay);
         resolve(false);
@@ -128,9 +164,9 @@ export const exportToPDF = (elementId: string, filename: string, onSuccess?: () 
     });
   };
 
-  // Enhanced content validation
+  // Simplified content validation with more lenient criteria
   const validateContent = (element: HTMLElement): { hasContent: boolean; details: any } => {
-    console.log('PDF: Starting comprehensive content validation...');
+    console.log('PDF: Starting content validation...');
     
     const details = {
       charts: 0,
@@ -142,49 +178,45 @@ export const exportToPDF = (elementId: string, filename: string, onSuccess?: () 
       images: { total: 0, loaded: 0 }
     };
     
-    // Check for charts (SVG elements)
-    const charts = element.querySelectorAll('svg, .recharts-wrapper, .recharts-container, canvas');
+    // Check for charts (any SVG, canvas, or chart container)
+    const charts = element.querySelectorAll('svg, canvas, .recharts-wrapper, .recharts-container, [class*="chart"]');
     details.charts = charts.length;
     console.log(`PDF: Found ${charts.length} chart elements`);
     
-    // Check for AI insights content with multiple selectors
-    const aiInsightsSelectors = [
-      '[data-section="detailed-analysis"]',
-      '.ai-insights',
-      '[class*="ai"]',
-      '[class*="insight"]'
-    ];
+    // Check for any meaningful text content in the element
+    const allText = element.textContent?.trim() || '';
+    details.totalTextContent = allText.length;
+    console.log(`PDF: Total text content length: ${allText.length}`);
     
-    let aiInsightsContent = '';
-    for (const selector of aiInsightsSelectors) {
-      const aiElement = element.querySelector(selector);
-      if (aiElement) {
-        const content = aiElement.textContent?.trim() || '';
-        if (content.length > aiInsightsContent.length) {
-          aiInsightsContent = content;
-        }
-      }
+    // Look for specific sections with more flexible selectors
+    const aiInsightsElement = element.querySelector('[data-section="detailed-analysis"], .ai-insights, [class*="insight"]') ||
+                              element.querySelector('div:has(h2:contains("AI"), h3:contains("Insight"))');
+    if (aiInsightsElement) {
+      const aiText = aiInsightsElement.textContent?.trim() || '';
+      details.aiInsights.length = aiText.length;
+      details.aiInsights.hasContent = aiText.length > 50;
     }
     
-    details.aiInsights.length = aiInsightsContent.length;
-    details.aiInsights.hasContent = aiInsightsContent.length > 200; // Substantial content
-    console.log(`PDF: AI insights content length: ${aiInsightsContent.length}`);
+    const profileElement = element.querySelector('[data-section="profile-summary"]');
+    if (profileElement) {
+      const profileText = profileElement.textContent?.trim() || '';
+      details.profileSummary.length = profileText.length;
+      details.profileSummary.hasContent = profileText.length > 20;
+    }
     
-    // Check other sections
-    const profileSummary = element.querySelector('[data-section="profile-summary"]')?.textContent?.trim() || '';
-    details.profileSummary.length = profileSummary.length;
-    details.profileSummary.hasContent = profileSummary.length > 50;
+    const stepsElement = element.querySelector('[data-section="recommended-steps"]');
+    if (stepsElement) {
+      const stepsText = stepsElement.textContent?.trim() || '';
+      details.recommendedSteps.length = stepsText.length;
+      details.recommendedSteps.hasContent = stepsText.length > 20;
+    }
     
-    const recommendedSteps = element.querySelector('[data-section="recommended-steps"]')?.textContent?.trim() || '';
-    details.recommendedSteps.length = recommendedSteps.length;
-    details.recommendedSteps.hasContent = recommendedSteps.length > 100;
-    
-    const coachingSupport = element.querySelector('[data-section="coaching-support"]')?.textContent?.trim() || '';
-    details.coachingSupport.length = coachingSupport.length;
-    details.coachingSupport.hasContent = coachingSupport.length > 50;
-    
-    // Check total text content
-    details.totalTextContent = element.textContent?.trim().length || 0;
+    const coachingElement = element.querySelector('[data-section="coaching-support"]');
+    if (coachingElement) {
+      const coachingText = coachingElement.textContent?.trim() || '';
+      details.coachingSupport.length = coachingText.length;
+      details.coachingSupport.hasContent = coachingText.length > 20;
+    }
     
     // Check images
     const images = element.querySelectorAll('img');
@@ -193,29 +225,25 @@ export const exportToPDF = (elementId: string, filename: string, onSuccess?: () 
     
     console.log('PDF: Content validation details:', details);
     
-    // Determine if we have sufficient content
-    const hasSubstantialContent = (
-      details.charts > 0 &&
-      details.aiInsights.hasContent &&
-      details.profileSummary.hasContent &&
-      details.recommendedSteps.hasContent &&
-      details.coachingSupport.hasContent &&
-      details.totalTextContent > 500 &&
-      details.images.loaded === details.images.total
+    // Much more lenient validation - just need some content
+    const hasBasicContent = (
+      details.totalTextContent > 100 || // Has some text
+      details.charts > 0 || // Has charts
+      (details.profileSummary.hasContent || details.aiInsights.hasContent || details.recommendedSteps.hasContent)
     );
     
-    console.log(`PDF: Has substantial content: ${hasSubstantialContent}`);
+    console.log(`PDF: Has basic content: ${hasBasicContent}`);
     
-    return { hasContent: hasSubstantialContent, details };
+    return { hasContent: hasBasicContent, details };
   };
 
-  // Wait for dynamic content with progressive checking
-  const waitForDynamicContent = (): Promise<boolean> => {
+  // Shorter wait time with more attempts
+  const waitForDynamicContent = (): Promise<{ hasContent: boolean; details: any }> => {
     return new Promise((resolve) => {
-      console.log('PDF: Starting progressive content wait...');
+      console.log('PDF: Starting content wait...');
       
       let attempts = 0;
-      const maxAttempts = 30; // 15 seconds max wait
+      const maxAttempts = 10; // Reduced from 30
       
       const checkContent = () => {
         attempts++;
@@ -224,23 +252,23 @@ export const exportToPDF = (elementId: string, filename: string, onSuccess?: () 
         const validation = validateContent(element);
         
         if (validation.hasContent) {
-          console.log('PDF: All content ready!');
-          resolve(true);
+          console.log('PDF: Content ready!');
+          resolve(validation);
           return;
         }
         
         if (attempts >= maxAttempts) {
           console.log('PDF: Max attempts reached, proceeding with current content');
-          resolve(false);
+          resolve(validation);
           return;
         }
         
-        // Wait longer intervals for content to load
-        setTimeout(checkContent, 500);
+        // Shorter intervals
+        setTimeout(checkContent, 300);
       };
       
-      // Start checking after a brief initial delay
-      setTimeout(checkContent, 1000);
+      // Start checking immediately
+      checkContent();
     });
   };
 
@@ -386,20 +414,17 @@ export const exportToPDF = (elementId: string, filename: string, onSuccess?: () 
     return pdfContainer;
   };
 
-  // Main export process with proper content waiting
+  // Main export process
   const startExport = async () => {
     toast({
       title: "Preparing PDF Export",
-      description: "Waiting for all content to load...",
+      description: "Checking content availability...",
     });
 
     // Wait for dynamic content to load
-    const contentReady = await waitForDynamicContent();
+    const contentCheck = await waitForDynamicContent();
     
-    // Validate content before proceeding
-    const validation = validateContent(element);
-    
-    console.log('PDF: Content validation result:', validation);
+    console.log('PDF: Content check result:', contentCheck);
     
     // Create PDF content
     const pdfContent = await createComprehensivePDFContent();
@@ -409,32 +434,15 @@ export const exportToPDF = (elementId: string, filename: string, onSuccess?: () 
     const shouldProceed = await createPreviewPopup(
       pdfContent, 
       'PDF Content Preview - Verify this looks correct', 
-      validation.hasContent
+      contentCheck.hasContent,
+      contentCheck.details
     );
     
     if (!shouldProceed) {
       document.body.removeChild(pdfContent);
-      if (!validation.hasContent) {
-        toast({
-          title: "PDF Export Delayed",
-          description: "Content is still loading. Please wait a moment and try again.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "PDF Export Cancelled",
-          description: "PDF generation was cancelled by user",
-        });
-      }
-      return;
-    }
-    
-    if (!validation.hasContent) {
-      document.body.removeChild(pdfContent);
       toast({
-        title: "PDF Export Failed",
-        description: "Content is not ready yet. Please wait for all sections to load and try again.",
-        variant: "destructive",
+        title: "PDF Export Cancelled",
+        description: "PDF generation was cancelled by user",
       });
       return;
     }

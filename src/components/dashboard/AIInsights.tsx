@@ -2,7 +2,7 @@ import React from 'react';
 import { Bot, AlertCircle, Target, TrendingUp, ExternalLink } from 'lucide-react';
 import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
 import { Category, Demographics } from '@/utils/assessmentTypes';
-import { FormattedSummary } from '@/utils/summaryFormatter';
+import { FormattedSummary } from '@/components/FormattedSummary';
 
 interface AIInsightsProps {
   categories: Category[];

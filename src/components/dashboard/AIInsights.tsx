@@ -2,6 +2,7 @@
 import React from 'react';
 import { Lightbulb, Target, TrendingUp } from 'lucide-react';
 import FormattedSummary from '../FormattedSummary';
+import { generateResourceLink } from '@/utils/resourceMapping';
 
 interface AIInsightsProps {
   insights: string;
@@ -75,7 +76,21 @@ const AIInsights: React.FC<AIInsightsProps> = ({ insights }) => {
                     <div className="mt-4 bg-blue-50 p-3 rounded-lg">
                       <p className="text-sm">
                         <span className="font-medium text-blue-800">Recommended Resource: </span>
-                        <span className="text-blue-700">{area.resource}</span>
+                        {(() => {
+                          const resourceLink = generateResourceLink(area.resource);
+                          return resourceLink.hasValidLink ? (
+                            <a 
+                              href={resourceLink.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-blue-700 hover:text-blue-900 underline"
+                            >
+                              {resourceLink.title}
+                            </a>
+                          ) : (
+                            <span className="text-blue-700">{resourceLink.title}</span>
+                          );
+                        })()}
                       </p>
                     </div>
                   )}
@@ -122,6 +137,29 @@ const AIInsights: React.FC<AIInsightsProps> = ({ insights }) => {
                       ))}
                     </ol>
                   </div>
+                  
+                  {strength.resource && (
+                    <div className="mt-4 bg-blue-50 p-3 rounded-lg">
+                      <p className="text-sm">
+                        <span className="font-medium text-blue-800">Recommended Resource: </span>
+                        {(() => {
+                          const resourceLink = generateResourceLink(strength.resource);
+                          return resourceLink.hasValidLink ? (
+                            <a 
+                              href={resourceLink.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-blue-700 hover:text-blue-900 underline"
+                            >
+                              {resourceLink.title}
+                            </a>
+                          ) : (
+                            <span className="text-blue-700">{resourceLink.title}</span>
+                          );
+                        })()}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

@@ -3,10 +3,9 @@ import React from 'react';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { calculateAverageGap } from '@/utils/assessmentCalculations/averages';
 import SkillGapChart from '../SkillGapChart';
-import KeyInsights from '../dashboard/KeyInsights';
+import AIInsights from '../dashboard/AIInsights';
 import RecommendedSteps from '../dashboard/RecommendedSteps';
 import CoachingSupport from '../dashboard/CoachingSupport';
-import { getTopStrengths, getLowestSkills } from '@/utils/assessmentCalculations/skillMetrics';
 
 interface PDFTemplateProps {
   categories: Category[];
@@ -33,8 +32,6 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics }) =
   
   // Calculate metrics
   const averageGap = calculateAverageGap(categories);
-  const strengths = getTopStrengths(categories, 5);
-  const lowestSkills = getLowestSkills(categories, 5);
   
   // Get current date
   const currentDate = new Date().toLocaleDateString('en-US', {
@@ -44,9 +41,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics }) =
   });
 
   console.log('PDFTemplate: Metrics calculated:', {
-    averageGap,
-    strengthsCount: strengths.length,
-    lowestSkillsCount: lowestSkills.length
+    averageGap
   });
   console.log('=== PDF TEMPLATE DEBUG END ===');
 
@@ -127,8 +122,8 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics }) =
         </div>
       </div>
 
-      {/* Competency Gap Chart */}
-      <div style={{ marginBottom: '25px' }}>
+      {/* Competency Gap Chart - Fixed formatting to match dashboard */}
+      <div style={{ marginBottom: '30px' }}>
         <h2 style={{
           color: '#2F564D',
           fontSize: '18px',
@@ -140,18 +135,24 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics }) =
           Competency Analysis - Radar Chart
         </h2>
         <div style={{ 
-          backgroundColor: '#f8fafc',
-          padding: '15px',
+          backgroundColor: '#ffffff',
+          padding: '20px',
           borderRadius: '8px',
           border: '1px solid #e2e8f0',
-          height: '400px'
+          height: '500px',
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
         }}>
-          <SkillGapChart categories={categories} />
+          <div style={{ width: '100%', height: '100%' }}>
+            <SkillGapChart categories={categories} />
+          </div>
         </div>
       </div>
 
-      {/* Key Insights */}
-      <div style={{ marginBottom: '25px' }}>
+      {/* AI-Generated Key Insights - Replace old KeyInsights component */}
+      <div style={{ marginBottom: '30px' }}>
         <h2 style={{
           color: '#2F564D',
           fontSize: '18px',
@@ -160,20 +161,18 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics }) =
           borderBottom: '1px solid #e2e8f0',
           paddingBottom: '5px'
         }}>
-          Key Insights & Development Areas
+          Key Insights
         </h2>
         <div style={{ 
-          backgroundColor: '#f8fafc',
+          backgroundColor: '#ffffff',
           padding: '15px',
           borderRadius: '8px',
           border: '1px solid #e2e8f0'
         }}>
-          <KeyInsights 
-            averageGap={averageGap}
-            strengths={strengths}
-            lowestSkills={lowestSkills}
+          <AIInsights 
             categories={categories}
             demographics={demographics}
+            averageGap={averageGap}
           />
         </div>
       </div>

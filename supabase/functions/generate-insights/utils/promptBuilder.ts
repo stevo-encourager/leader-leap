@@ -132,6 +132,16 @@ The summary should be written as continuous text but structured so it can be spl
     - Should include practical implementation advice
     - One insight per competency must reference or connect to the recommended resource
 
+    **OPTIONAL CLIFTON STRENGTHS / PREDICTIVE INDEX INTEGRATION**:
+    - Maximum of ONE mention per assessment across all insights and leverage advice combined
+    - Only include when naturally relevant to the competency being discussed
+    - Examples of natural integration:
+      * For team building/delegation: "Consider using Clifton Strengths assessments to understand your team's natural talents and delegate tasks that align with their top themes"
+      * For professional development: "The Predictive Index can help you understand your behavioral drives and adapt your leadership style to different team members' needs"
+      * For communication/conflict resolution: "Use insights from tools like Clifton Strengths or The Predictive Index to understand how different team members prefer to receive feedback and communicate"
+    - Should feel helpful and natural, not forced or promotional
+    - Focus on how these tools can enhance the specific competency being developed
+
   - \`resource\` (string): A well-known, practical resource. When possible, use these EXACT titles for consistency:
     * For Emotional Intelligence: "Emotional Intelligence 2.0 by Travis Bradberry"
     * For Conflict Resolution: "Crucial Conversations by Kerry Patterson" or "Crucial Conversations training program"
@@ -147,7 +157,7 @@ The summary should be written as continuous text but structured so it can be spl
 - \`key_strengths\`: An array with at least 2 objects, each for a key competency to leverage:
   - \`competency\` (string): The name of the competency from the assessment data above
   - \`example\` (string): A concrete example of this competency in action (from data or a plausible scenario)
-  - \`leverage_advice\` (array of exactly 3 strings): Three actionable, positive suggestions for further leveraging this competency. Apply the same quality standards as insights - avoid generic advice, provide specific strategies, frameworks, or research-backed approaches.
+  - \`leverage_advice\` (array of exactly 3 strings): Three actionable, positive suggestions for further leveraging this competency. Apply the same quality standards as insights - avoid generic advice, provide specific strategies, frameworks, or research-backed approaches. The optional Clifton Strengths/Predictive Index integration guideline also applies here if not already used in the insights section.
 
 ### CRITICAL JSON Rules
 - Output MUST be valid JSON only. No text, markdown, or formatting before/after.
@@ -157,6 +167,7 @@ The summary should be written as continuous text but structured so it can be spl
 - Structure the summary for easy paragraph splitting during post-processing.
 - When possible, use the exact resource titles listed above for consistency with our resource mapping system.
 - NEVER write generic, obvious statements - every insight must provide genuine value and actionable advice.
+- Remember: Maximum ONE mention of Clifton Strengths or Predictive Index per entire assessment, and only when naturally relevant.
 
 Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above.`;
 };

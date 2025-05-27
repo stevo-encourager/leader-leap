@@ -14,7 +14,7 @@ interface AIInsightsProps {
 interface PriorityArea {
   competency: string;
   gap: number;
-  recommendations: string[];
+  insights: string[];
   resource: string;
 }
 
@@ -86,14 +86,14 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
             </div>
             <div className="space-y-4">
               <div>
-                <h5 className="font-medium text-slate-700 mb-3">Recommendations:</h5>
+                <h5 className="font-medium text-slate-700 mb-3">Key Insights:</h5>
                 <ul className="space-y-3">
-                  {area.recommendations.map((rec, recIndex) => (
-                    <li key={recIndex} className="flex items-start gap-3">
+                  {area.insights.map((insight, insightIndex) => (
+                    <li key={insightIndex} className="flex items-start gap-3">
                       <span className="flex-shrink-0 w-6 h-6 bg-encourager text-white rounded-full flex items-center justify-center text-sm font-medium">
-                        {recIndex + 1}
+                        {insightIndex + 1}
                       </span>
-                      <p className="text-slate-700 leading-relaxed">{rec}</p>
+                      <p className="text-slate-700 leading-relaxed">{insight}</p>
                     </li>
                   ))}
                 </ul>
@@ -168,7 +168,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
             <div>
               <h2 className="text-2xl font-bold text-encourager font-playfair">AI-Powered Insights</h2>
               <p className="text-sm text-slate-600 mt-1">
-                Personalized leadership development recommendations powered by GPT-4o
+                Personalized leadership development insights powered by GPT-4o
               </p>
             </div>
           </div>

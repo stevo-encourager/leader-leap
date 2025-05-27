@@ -138,57 +138,42 @@ Assessment Data:
 - Experience: ${demographics.yearsOfExperience || 'Not specified'} years
 - Industry: ${demographics.industry || 'Not specified'}
 
-Top 3 Categories by Gap:
+Top 3 Categories by Gap (Priority Development Areas):
 ${topGapCategories.map((cat, i) => `${i+1}. ${cat.title}: Gap ${cat.gap.toFixed(1)} (Current: ${cat.averageCurrentRating.toFixed(1)}, Desired: ${cat.averageDesiredRating.toFixed(1)})`).join('\n')}
 
 Top Strength Areas (High Current Ratings, Low Gaps):
 ${topStrengths.map((cat, i) => `${i+1}. ${cat.title}: Current ${cat.averageCurrentRating.toFixed(1)}, Gap ${cat.gap.toFixed(1)}`).join('\n')}
 `;
 
-    // The main prompt for ChatGPT with the new format requirements
+    // The improved prompt for ChatGPT with the new format requirements
     const prompt = `${assessmentDataSection}
 
-You are an expert leadership coach and assessment analyst. Based on the provided assessment data, generate AI insights in the exact JSON format specified below.
+You are an expert leadership coach and assessment analyst. Based on the provided assessment data (including competency names, gap scores, and strengths), generate AI insights for a user's leadership assessment.
 
-Required Output Format - you MUST output a single JSON object with these exact fields:
+### Instructions
 
-{
-  "summary": "A concise 2-4 sentence summary highlighting overall results and main themes from the assessment",
-  "priority_areas": [
-    {
-      "competency": "Name of the competency (e.g., Emotional Intelligence)",
-      "gap": number (the gap score),
-      "recommendations": [
-        "First specific, actionable recommendation for this competency",
-        "Second practical suggestion tailored to this competency", 
-        "Third recommendation that references and encourages use of the resource provided"
-      ],
-      "resource": "A directly relevant and practical resource (link, methodology, or named book/course) that matches what's referenced in the third recommendation"
-    }
-    // Exactly 3 priority areas total
-  ],
-  "key_strengths": [
-    {
-      "competency": "Name of the strength competency",
-      "example": "A concrete example of this strength in action",
-      "leverage_advice": [
-        "First specific suggestion for leveraging this strength",
-        "Second practical way to use this strength more effectively",
-        "Third actionable advice for maximizing this strength"
-      ]
-    }
-    // At least 2 key strengths
-  ]
-}
+- Output must be a single JSON object with these fields:
+  - \`summary\`: A brief, warm, and encouraging paragraph (2–4 sentences). Begin with affirming or positive language, highlight the user's potential or what they're already doing well, and then gently introduce the main growth opportunities. Always balance encouragement with honest, instructive feedback.
+  - \`priority_areas\`: An array with exactly 3 objects, each for a Top 3 Priority Development Area:
+    - \`competency\` (string): The name of the competency.
+    - \`gap\` (number): The gap score.
+    - \`insights\` (array of 3 strings): Each is an instructive, reflective, or "aha" insight about the user's leadership in this area. Each insight must be practical, specific, and non-repetitive. One of these must reference a recommended resource.
+    - \`resource\` (string): A directly relevant, practical resource (article, course, framework, etc.), referenced in one of the insights.
+  - \`key_strengths\`: An array (at least 2 objects), each for a key strength to leverage:
+    - \`competency\` (string): The name of the strength.
+    - \`example\` (string): A concrete example of this strength in action (from data or a plausible scenario).
+    - \`leverage_advice\` (array of 3 strings): Three actionable, positive suggestions for further leveraging this strength. No resource here.
 
-Critical Instructions:
-- Output ONLY valid JSON with the exact structure above
-- NO text or markdown before or after the JSON
-- Use only the assessment data provided - do not invent data
-- Each recommendation and leverage advice item must be distinct and actionable
-- The resource field must match what is referenced in the third recommendation
-- Make recommendations specific to each competency, not generic advice
-- Ensure the summary captures the key themes from the actual assessment results
+### Formatting and Content Rules
+
+- Output **must be valid JSON only**. No text or markdown before/after.
+- If any field is missing, leave it blank or use \`null\`. Do not invent or embellish data.
+- **Summary**: Must start with encouragement, then include honest, instructive feedback.
+- **Insights**: Should be instructive, reflective, and specific—not just generic recommendations. At least one must reference the provided resource.
+- **Resource**: Only one per priority area, always referenced in an insight.
+- **Strengths advice**: Actionable, positive, and tailored to the competency.
+- Avoid generic or repeated advice/resources.
+- All sections must be present.
 
 Base your insights on the assessment data provided above.`;
 
@@ -251,8 +236,15 @@ Base your insights on the assessment data provided above.`;
       if (parsedInsights.key_strengths.length < 2) {
         throw new Error('Invalid JSON structure - key_strengths must have at least 2 items');
       }
+
+      // Validate the new insights structure
+      for (const area of parsedInsights.priority_areas) {
+        if (!area.competency || !area.insights || !Array.isArray(area.insights) || area.insights.length !== 3) {
+          throw new Error('Invalid priority area structure - must have competency, gap, insights array with 3 items, and resource');
+        }
+      }
       
-      console.log('Successfully validated JSON structure with new format');
+      console.log('Successfully validated JSON structure with new insights format');
     } catch (jsonError) {
       console.error('Invalid JSON response from OpenAI after cleaning:', jsonError);
       console.error('Cleaned response was:', cleanedInsights);
@@ -279,7 +271,7 @@ Base your insights on the assessment data provided above.`;
       }
     }
 
-    console.log('Successfully generated and saved insights with new format');
+    console.log('Successfully generated and saved insights with new insights format');
 
     return new Response(JSON.stringify({ insights: cleanedInsights }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

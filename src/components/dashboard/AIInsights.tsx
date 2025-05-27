@@ -98,7 +98,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
   const renderFormattedSummary = (summary: string) => {
     return (
       <div className="mb-8 bg-blue-50 p-6 rounded-lg border border-blue-200">
-        <h3 className="text-xl font-bold text-encourager mb-3 font-playfair">Assessment Summary</h3>
+        <h3 className="text-xl font-bold text-encourager mb-3 font-montserrat">Assessment Summary</h3>
         <FormattedSummary 
           summary={summary}
           className="space-y-4"
@@ -109,7 +109,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
 
   const renderPriorityAreas = (priorityAreas: PriorityArea[]) => (
     <div className="mb-8">
-      <h3 className="text-xl font-bold text-encourager mb-4 font-playfair border-b border-encourager/20 pb-2 flex items-center gap-2">
+      <h3 className="text-xl font-bold text-encourager mb-4 font-montserrat border-b border-encourager/20 pb-2 flex items-center gap-2">
         <Target className="h-5 w-5" />
         Top 3 Priority Development Areas
       </h3>
@@ -120,7 +120,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
           return (
             <div key={index} className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
               <div className="mb-4">
-                <h4 className="text-lg text-slate-800">
+                <h4 className="text-lg text-slate-800 font-montserrat">
                   {index + 1}. {area.competency}
                 </h4>
                 <span className="text-sm text-slate-600 bg-slate-100 px-2 py-1 rounded">
@@ -129,7 +129,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
               </div>
               <div className="space-y-4">
                 <div>
-                  <h5 className="text-slate-700 mb-3">Key insights:</h5>
+                  <h5 className="text-slate-700 mb-3 font-montserrat">Key insights:</h5>
                   <ul className="space-y-3">
                     {area.insights && Array.isArray(area.insights) && area.insights.map((insight, insightIndex) => (
                       <li key={insightIndex} className="flex items-start gap-3">
@@ -143,7 +143,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
                 </div>
                 {area.resource && (
                   <div className="bg-slate-50 p-4 rounded border-l-4 border-encourager">
-                    <h6 className="text-slate-700 mb-2">Recommended Resource:</h6>
+                    <h6 className="text-slate-700 mb-2 font-montserrat">Recommended Resource:</h6>
                     {resourceLink.hasValidLink ? (
                       <a 
                         href={resourceLink.url!} 
@@ -172,7 +172,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
 
   const renderKeyStrengths = (keyStrengths: KeyStrength[]) => (
     <div className="mb-8">
-      <h3 className="text-xl font-bold text-encourager mb-4 font-playfair border-b border-encourager/20 pb-2 flex items-center gap-2">
+      <h3 className="text-xl font-bold text-encourager mb-4 font-montserrat border-b border-encourager/20 pb-2 flex items-center gap-2">
         <TrendingUp className="h-5 w-5" />
         Key Strengths to Leverage
       </h3>
@@ -180,17 +180,17 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
         {keyStrengths.map((strength, index) => (
           <div key={index} className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
             <div className="mb-4">
-              <h4 className="text-lg text-slate-800">
+              <h4 className="text-lg text-slate-800 font-montserrat">
                 Competency: {strength.competency}
               </h4>
             </div>
             <div className="space-y-4">
               <div>
-                <h5 className="text-slate-700 mb-3">Existing Skill:</h5>
+                <h5 className="text-slate-700 mb-3 font-montserrat">Existing Skill:</h5>
                 <p className="text-slate-700 leading-relaxed">{strength.example}</p>
               </div>
               <div>
-                <h5 className="text-slate-700 mb-3">How to leverage further:</h5>
+                <h5 className="text-slate-700 mb-3 font-montserrat">How to leverage further:</h5>
                 <ul className="space-y-3">
                   {strength.leverage_advice && Array.isArray(strength.leverage_advice) && strength.leverage_advice.map((advice, adviceIndex) => (
                     <li key={adviceIndex} className="flex items-start gap-3">

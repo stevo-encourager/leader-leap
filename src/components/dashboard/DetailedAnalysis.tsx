@@ -3,7 +3,6 @@ import React from 'react';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import SkillGapChart from '../SkillGapChart';
 import AIInsights from './AIInsights';
-import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart2, HelpCircle, Target, TrendingUp } from 'lucide-react';
@@ -41,14 +40,6 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
   
   console.log('DetailedAnalysis - Categories:', categories);
   console.log('DetailedAnalysis - hasCategories:', hasCategories);
-
-  // Use the hook to get AI insights
-  const { insights, isLoading, error } = useOpenAIInsights({
-    categories,
-    demographics,
-    averageGap,
-    assessmentId
-  });
 
   return (
     <Card className={`overflow-hidden ${className}`}>
@@ -105,29 +96,22 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
           </TabsContent>
           
           <TabsContent value="key-insights" className="mt-0">
-            <div className="h-[600px] w-full p-6 overflow-y-auto">
-              {isLoading ? (
-                <div className="flex items-center justify-center h-full">
-                  <p className="text-slate-500">Generating AI insights...</p>
-                </div>
-              ) : error ? (
-                <div className="flex items-center justify-center h-full">
-                  <p className="text-red-500">Error generating insights: {error}</p>
-                </div>
-              ) : insights ? (
-                <AIInsights insights={insights} />
-              ) : hasCategories ? (
-                <div className="flex items-center justify-center h-full">
-                  <p className="text-slate-500">No insights available yet.</p>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center h-full bg-slate-50">
-                  <p className="text-slate-500 text-center">
-                    No assessment data available for AI insights. Please complete an assessment first.
-                  </p>
-                </div>
-              )}
-            </div>
+            {hasCategories ? (
+              <div className="h-[600px] w-full p-6 overflow-y-auto">
+                <AIInsights 
+                  categories={categories}
+                  demographics={demographics}
+                  averageGap={averageGap}
+                  assessmentId={assessmentId}
+                />
+              </div>
+            ) : (
+              <div className="h-[600px] w-full flex items-center justify-center bg-slate-50">
+                <p className="text-slate-500 text-center">
+                  No assessment data available for AI insights. Please complete an assessment first.
+                </p>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </CardContent>

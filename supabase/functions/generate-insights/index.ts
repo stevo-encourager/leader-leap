@@ -145,7 +145,7 @@ Top Strength Areas (High Current Ratings, Low Gaps):
 ${topStrengths.map((cat, i) => `${i+1}. ${cat.title}: Current ${cat.averageCurrentRating.toFixed(1)}, Gap ${cat.gap.toFixed(1)}`).join('\n')}
 `;
 
-    // Enhanced prompt with improved summary generation
+    // Refined prompt with professional assessment summary format
     const prompt = `${assessmentDataSection}
 
 You are an expert leadership coach and assessment analyst. Based on the provided assessment data (including competency names, gap scores, and strengths), generate AI insights for a user's leadership assessment.
@@ -175,7 +175,7 @@ You MUST output ONLY a valid JSON object with this EXACT structure:
 
 ### Field Requirements
 
-- \`summary\`: Generate an engaging, encouraging, and instructive assessment summary that is approximately 6–8 sentences. Begin with warm, affirming language that acknowledges the user's progress and effort. Reference the user's unique combination of strengths—describe how this particular blend creates special opportunities or advantages in their leadership journey. Paint a vivid picture of what success could look like if the user develops their identified growth areas. Use imaginative, forward-looking language to help the user envision the positive impact of their growth. Connect the development areas to real-world outcomes. Explain how focusing on these areas could help the user lead more effectively, inspire others, navigate challenges, or drive results in their organization or community. Where possible, mention how their strengths can support or accelerate progress in their development areas. The tone should be motivating, supportive, and practical. Do not repeat generic advice; tailor the summary to the specific mix of strengths and growth areas provided in the assessment data. Output as a single, well-written paragraph. Use only the data provided; do not invent details.
+- \`summary\`: Generate a professional, concise, and impactful assessment summary that is 5–7 sentences. Start by directly identifying the user's distinctive strengths and what those mean for their leadership style or capabilities. Briefly note the key areas for development, making it clear why these matter for their effectiveness as a leader. Highlight the practical impact or opportunity unlocked by focusing on these growth areas (e.g., "By strengthening your change management skills, you'll be better equipped to lead teams through uncertainty."). Where relevant, connect how their strengths can support work on these growth areas. Avoid generic encouragement or congratulatory phrases (don't say "Congratulations," "remarkable results," or "lasting impact"). Keep the tone confident, clear, and professional—make every sentence specific and purposeful. Output as a single, well-written paragraph. Use only the data provided; do not invent details.
 
 - \`priority_areas\`: An array with exactly 3 objects, each for a Top 3 Priority Development Area:
   - \`competency\` (string): The name of the competency from the assessment data above
@@ -212,7 +212,7 @@ Base your insights on the assessment data provided above.`;
           { role: 'user', content: prompt }
         ],
         temperature: 0.1, // Very low temperature for maximum consistency
-        max_tokens: 2500 // Increased for the enhanced summary format
+        max_tokens: 2500 // Increased for the refined summary format
       }),
     });
 
@@ -288,7 +288,7 @@ Base your insights on the assessment data provided above.`;
         }
       }
       
-      console.log('Successfully validated JSON structure with enhanced summary format');
+      console.log('Successfully validated JSON structure with refined summary format');
     } catch (jsonError) {
       console.error('Invalid JSON response from OpenAI after cleaning:', jsonError);
       console.error('Cleaned response was:', cleanedInsights);
@@ -315,7 +315,7 @@ Base your insights on the assessment data provided above.`;
       }
     }
 
-    console.log('Successfully generated and saved insights with enhanced summary format');
+    console.log('Successfully generated and saved insights with refined summary format');
 
     return new Response(JSON.stringify({ insights: cleanedInsights }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

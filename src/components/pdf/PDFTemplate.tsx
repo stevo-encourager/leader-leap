@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { calculateAverageGap } from '@/utils/assessmentCalculations/averages';
@@ -10,30 +9,119 @@ interface PDFTemplateProps {
 }
 
 const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics }) => {
-  // Debug: Log what the template is receiving
-  console.log('PDFTemplate: Received categories:', categories);
-  console.log('PDFTemplate: Received demographics:', demographics);
-  console.log('PDFTemplate: Categories count:', categories?.length || 0);
+  console.log('=== PDF TEMPLATE DEBUG START ===');
+  console.log('PDFTemplate: Component rendering with props:');
+  console.log('PDFTemplate: categories type:', typeof categories);
+  console.log('PDFTemplate: categories is array:', Array.isArray(categories));
+  console.log('PDFTemplate: categories length:', categories?.length || 0);
+  console.log('PDFTemplate: demographics type:', typeof demographics);
+  console.log('PDFTemplate: demographics keys:', demographics ? Object.keys(demographics) : 'none');
   
-  // Ensure we have valid data
-  if (!categories || !Array.isArray(categories) || categories.length === 0) {
-    console.error('PDFTemplate: No valid categories data received');
+  // Enhanced validation with detailed logging
+  if (!categories) {
+    console.error('PDFTemplate: Categories prop is null/undefined');
     return (
       <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-        <h1>No Assessment Data Available</h1>
+        <h1>PDF Template Error</h1>
+        <p>Categories data is null or undefined</p>
+        <p>Debug: categories = {String(categories)}</p>
+      </div>
+    );
+  }
+  
+  if (!Array.isArray(categories)) {
+    console.error('PDFTemplate: Categories prop is not an array, type:', typeof categories);
+    return (
+      <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+        <h1>PDF Template Error</h1>
+        <p>Categories data is not an array</p>
+        <p>Debug: typeof categories = {typeof categories}</p>
+        <p>Debug: categories = {String(categories)}</p>
+      </div>
+    );
+  }
+  
+  if (categories.length === 0) {
+    console.error('PDFTemplate: Categories array is empty');
+    return (
+      <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+        <h1>PDF Template Error</h1>
+        <p>Categories array is empty</p>
         <p>No assessment data was provided to generate this PDF.</p>
       </div>
     );
   }
   
-  // Calculate metrics
-  const averageGap = calculateAverageGap(categories);
-  const strengths = getTopStrengths(categories, 5);
-  const lowestSkills = getLowestSkills(categories, 5);
-
-  console.log('PDFTemplate: Calculated averageGap:', averageGap);
-  console.log('PDFTemplate: Calculated strengths:', strengths);
-  console.log('PDFTemplate: Calculated lowestSkills:', lowestSkills);
+  // Detailed analysis of the received data
+  console.log('PDFTemplate: Analyzing received data...');
+  let totalSkills = 0;
+  let skillsWithRatings = 0;
+  let sampleSkills = [];
+  
+  categories.forEach((category, catIndex) => {
+    console.log(`PDFTemplate: Category ${catIndex}:`, {
+      id: category?.id,
+      title: category?.title,
+      skillsCount: category?.skills?.length || 0
+    });
+    
+    if (category && category.skills && Array.isArray(category.skills)) {
+      totalSkills += category.skills.length;
+      
+      category.skills.forEach((skill, skillIndex) => {
+        if (skill && skill.ratings) {
+          const currentRating = skill.ratings.current;
+          const desiredRating = skill.ratings.desired;
+          
+          if (skillIndex < 2 && catIndex < 2) { // Log first few skills for debugging
+            console.log(`PDFTemplate: Sample skill - ${category.title}/${skill.name}:`, {
+              currentRating,
+              desiredRating,
+              currentType: typeof currentRating,
+              desiredType: typeof desiredRating
+            });
+            
+            sampleSkills.push({
+              category: category.title,
+              skill: skill.name,
+              current: currentRating,
+              desired: desiredRating
+            });
+          }
+          
+          if ((typeof currentRating === 'number' && currentRating > 0) || 
+              (typeof desiredRating === 'number' && desiredRating > 0)) {
+            skillsWithRatings++;
+          }
+        }
+      });
+    }
+  });
+  
+  console.log('PDFTemplate: Data analysis results:');
+  console.log('- Total categories:', categories.length);
+  console.log('- Total skills:', totalSkills);
+  console.log('- Skills with ratings:', skillsWithRatings);
+  console.log('- Sample skills:', sampleSkills);
+  
+  // Try to calculate metrics with error handling
+  let averageGap = 0;
+  let strengths = [];
+  let lowestSkills = [];
+  
+  try {
+    console.log('PDFTemplate: Calculating metrics...');
+    averageGap = calculateAverageGap(categories);
+    strengths = getTopStrengths(categories, 5);
+    lowestSkills = getLowestSkills(categories, 5);
+    
+    console.log('PDFTemplate: Metrics calculated successfully:');
+    console.log('- Average gap:', averageGap);
+    console.log('- Strengths count:', strengths.length);
+    console.log('- Lowest skills count:', lowestSkills.length);
+  } catch (error) {
+    console.error('PDFTemplate: Error calculating metrics:', error);
+  }
 
   // Get current date
   const currentDate = new Date().toLocaleDateString('en-US', {
@@ -59,7 +147,8 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics }) =
     };
   }).sort((a, b) => b.averageGap - a.averageGap);
 
-  console.log('PDFTemplate: Category averages:', categoryAverages);
+  console.log('PDFTemplate: Category averages calculated:', categoryAverages.length);
+  console.log('=== PDF TEMPLATE DEBUG END ===');
 
   return (
     <div style={{
@@ -72,6 +161,22 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics }) =
       maxWidth: '210mm',
       minHeight: '297mm'
     }}>
+      {/* Debug Info Section - Remove this in production */}
+      <div style={{
+        backgroundColor: '#f0f9ff',
+        border: '1px solid #0ea5e9',
+        padding: '10px',
+        marginBottom: '20px',
+        fontSize: '10px'
+      }}>
+        <strong>Debug Info:</strong>
+        <br />Categories: {categories.length}
+        <br />Total Skills: {totalSkills}
+        <br />Skills with Ratings: {skillsWithRatings}
+        <br />Average Gap: {averageGap.toFixed(2)}
+        <br />Demographics: {demographics ? Object.keys(demographics).join(', ') : 'none'}
+      </div>
+
       {/* Header */}
       <div style={{
         textAlign: 'center',
@@ -142,6 +247,23 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics }) =
           </p>
         </div>
       </div>
+
+      {/* Show data even if calculations fail */}
+      {skillsWithRatings === 0 && (
+        <div style={{
+          backgroundColor: '#fef2f2',
+          border: '1px solid #fecaca',
+          padding: '15px',
+          marginBottom: '25px',
+          borderRadius: '8px'
+        }}>
+          <h3 style={{ color: '#991b1b', margin: '0 0 10px 0' }}>No Rating Data Found</h3>
+          <p style={{ margin: '0', fontSize: '11px' }}>
+            This PDF was generated but no completed assessment ratings were found in the data.
+            Please complete the assessment with actual ratings to see meaningful results.
+          </p>
+        </div>
+      )}
 
       {/* Top Development Areas */}
       <div style={{ marginBottom: '25px' }}>

@@ -25,18 +25,67 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
 }) => {
   const { user } = useAuth();
   
+  // Enhanced validation to check if we actually have assessment data
+  const hasValidAssessmentData = () => {
+    console.log('ResultsActions: Checking for valid assessment data...');
+    console.log('ResultsActions: categories length:', categories?.length || 0);
+    
+    if (!categories || !Array.isArray(categories) || categories.length === 0) {
+      console.log('ResultsActions: No categories or empty array');
+      return false;
+    }
+    
+    let skillsWithRatings = 0;
+    let totalRatingValues = 0;
+    
+    categories.forEach(category => {
+      if (category && category.skills && Array.isArray(category.skills)) {
+        category.skills.forEach(skill => {
+          if (skill && skill.ratings) {
+            const currentRating = skill.ratings.current;
+            const desiredRating = skill.ratings.desired;
+            
+            if (typeof currentRating === 'number' && currentRating > 0) {
+              totalRatingValues++;
+            }
+            if (typeof desiredRating === 'number' && desiredRating > 0) {
+              totalRatingValues++;
+            }
+            
+            if ((typeof currentRating === 'number' && currentRating > 0) || 
+                (typeof desiredRating === 'number' && desiredRating > 0)) {
+              skillsWithRatings++;
+            }
+          }
+        });
+      }
+    });
+    
+    console.log('ResultsActions: Validation results:', {
+      skillsWithRatings,
+      totalRatingValues,
+      isValid: skillsWithRatings > 0 && totalRatingValues > 0
+    });
+    
+    return skillsWithRatings > 0 && totalRatingValues > 0;
+  };
+  
   // PDF export function using the new simplified approach
   const handleExportPDF = () => {
-    console.log('ResultsActions - PDF export requested with categories:', categories?.length || 0);
+    console.log('ResultsActions: PDF export button clicked');
+    console.log('ResultsActions: categories received:', categories?.length || 0);
+    console.log('ResultsActions: demographics received:', demographics ? Object.keys(demographics) : 'none');
     
-    if (!categories || categories.length === 0) {
+    if (!hasValidAssessmentData()) {
       toast({
         title: "Cannot Export PDF",
-        description: "No assessment data available to export. Please complete an assessment first.",
+        description: "No completed assessment data available. Please complete the assessment with actual ratings first.",
         variant: "destructive",
       });
       return;
     }
+    
+    console.log('ResultsActions: Data validation passed, calling exportToPDF...');
     
     try {
       exportToPDF(categories, demographics, 'leadership-assessment-results.pdf');
@@ -51,7 +100,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
         }, 2000);
       }
     } catch (error) {
-      console.error('Error exporting PDF:', error);
+      console.error('ResultsActions: Error calling exportToPDF:', error);
       toast({
         title: "Error exporting PDF",
         description: "There was an issue creating your PDF. Please try again.",
@@ -101,6 +150,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
           variant="encourager" 
           className="flex items-center gap-2"
           onClick={handleExportPDF}
+          disabled={!hasValidAssessmentData()}
         >
           <Download className="h-4 w-4" />
           {user ? 'Download PDF' : 'Save as PDF'}

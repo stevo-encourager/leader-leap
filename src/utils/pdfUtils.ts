@@ -4,58 +4,122 @@ import { toast } from '@/hooks/use-toast';
 import { Category, Demographics } from './assessmentTypes';
 
 export const exportToPDF = async (categories: Category[], demographics: Demographics, filename: string = 'leadership-assessment-results.pdf') => {
-  console.log('PDF: Starting dedicated template PDF export');
+  console.log('=== PDF EXPORT DEBUG START ===');
+  console.log('PDF Export: Function called with parameters:');
+  console.log('- categories type:', typeof categories);
+  console.log('- categories is array:', Array.isArray(categories));
+  console.log('- categories length:', categories?.length || 0);
+  console.log('- demographics type:', typeof demographics);
+  console.log('- demographics keys:', demographics ? Object.keys(demographics) : 'none');
   
-  // Debug: Log the data being passed to the template
-  console.log('PDF: Categories data:', JSON.stringify(categories, null, 2));
-  console.log('PDF: Demographics data:', JSON.stringify(demographics, null, 2));
-  console.log('PDF: Categories count:', categories?.length || 0);
-  
-  // Validate that we have data to export
-  if (!categories || !Array.isArray(categories) || categories.length === 0) {
-    console.error('PDF: No categories data provided');
+  // Enhanced validation with detailed logging
+  if (!categories) {
+    console.error('PDF Export: Categories is null/undefined');
     toast({
       title: "PDF Export Failed",
-      description: "No assessment data available to export. Please complete an assessment first.",
+      description: "No assessment data provided - categories is null/undefined",
       variant: "destructive",
     });
     return;
   }
   
-  // Count skills with ratings for validation
-  let skillsWithData = 0;
-  categories.forEach(category => {
-    if (category && category.skills) {
-      category.skills.forEach(skill => {
-        if (skill && skill.ratings && 
-           (skill.ratings.current > 0 || skill.ratings.desired > 0)) {
-          skillsWithData++;
+  if (!Array.isArray(categories)) {
+    console.error('PDF Export: Categories is not an array, type is:', typeof categories);
+    toast({
+      title: "PDF Export Failed", 
+      description: "Invalid assessment data format - categories is not an array",
+      variant: "destructive",
+    });
+    return;
+  }
+  
+  if (categories.length === 0) {
+    console.error('PDF Export: Categories array is empty');
+    toast({
+      title: "PDF Export Failed",
+      description: "No assessment categories found - please complete an assessment first",
+      variant: "destructive",
+    });
+    return;
+  }
+  
+  // Detailed analysis of categories data
+  console.log('PDF Export: Analyzing categories data in detail...');
+  let totalSkills = 0;
+  let skillsWithRatings = 0;
+  let totalRatingValues = 0;
+  
+  categories.forEach((category, catIndex) => {
+    console.log(`PDF Export: Category ${catIndex}:`, {
+      id: category?.id,
+      title: category?.title,
+      skillsCount: category?.skills?.length || 0
+    });
+    
+    if (category && category.skills && Array.isArray(category.skills)) {
+      totalSkills += category.skills.length;
+      
+      category.skills.forEach((skill, skillIndex) => {
+        if (skill && skill.ratings) {
+          const currentRating = skill.ratings.current;
+          const desiredRating = skill.ratings.desired;
+          
+          console.log(`PDF Export: Skill ${skillIndex} in ${category.title}:`, {
+            name: skill.name,
+            currentRating: currentRating,
+            desiredRating: desiredRating,
+            currentType: typeof currentRating,
+            desiredType: typeof desiredRating
+          });
+          
+          if (typeof currentRating === 'number' && currentRating > 0) {
+            totalRatingValues++;
+          }
+          if (typeof desiredRating === 'number' && desiredRating > 0) {
+            totalRatingValues++;
+          }
+          
+          if ((typeof currentRating === 'number' && currentRating > 0) || 
+              (typeof desiredRating === 'number' && desiredRating > 0)) {
+            skillsWithRatings++;
+          }
+        } else {
+          console.log(`PDF Export: Skill ${skillIndex} in ${category.title} has no ratings:`, skill);
         }
       });
     }
   });
   
-  console.log('PDF: Skills with rating data:', skillsWithData);
+  console.log('PDF Export: Data analysis complete:');
+  console.log('- Total skills found:', totalSkills);
+  console.log('- Skills with ratings:', skillsWithRatings);
+  console.log('- Total rating values:', totalRatingValues);
   
-  if (skillsWithData === 0) {
-    console.error('PDF: No skills with rating data found');
+  if (skillsWithRatings === 0 || totalRatingValues === 0) {
+    console.error('PDF Export: No skills with valid ratings found');
     toast({
       title: "PDF Export Failed",
-      description: "No assessment ratings found. Please complete the assessment with actual ratings first.",
+      description: `No completed ratings found. Found ${totalSkills} skills but ${skillsWithRatings} have ratings. Please complete the assessment with actual ratings first.`,
       variant: "destructive",
     });
     return;
   }
   
+  console.log('PDF Export: Data validation passed, proceeding with PDF generation...');
+  
   try {
     // Import React and ReactDOM
+    console.log('PDF Export: Importing React dependencies...');
     const React = await import('react');
     const ReactDOM = await import('react-dom/client');
     
     // Import PDFTemplate component
+    console.log('PDF Export: Importing PDF template...');
     const { default: PDFTemplate } = await import('../components/pdf/PDFTemplate');
+    console.log('PDF Export: PDF template imported successfully');
     
     // Create temporary container
+    console.log('PDF Export: Creating temporary container...');
     const tempContainer = document.createElement('div');
     tempContainer.style.cssText = `
       position: fixed;
@@ -67,6 +131,7 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
     `;
     
     document.body.appendChild(tempContainer);
+    console.log('PDF Export: Temporary container created and added to DOM');
     
     toast({
       title: "Generating PDF",
@@ -79,21 +144,35 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
       demographics: demographics || {}
     };
     
-    console.log('PDF: Template props being passed:', templateProps);
+    console.log('PDF Export: Template props prepared:', {
+      categoriesLength: templateProps.categories.length,
+      demographicsKeys: Object.keys(templateProps.demographics)
+    });
     
     const pdfElement = React.createElement(PDFTemplate, templateProps);
+    console.log('PDF Export: React element created');
     
     // Render the template
+    console.log('PDF Export: Starting React rendering...');
     const root = ReactDOM.createRoot(tempContainer);
     root.render(pdfElement);
+    console.log('PDF Export: React render initiated');
     
     // Wait for rendering to complete
-    await new Promise(resolve => setTimeout(resolve, 2000)); // Increased wait time
+    console.log('PDF Export: Waiting for render completion...');
+    await new Promise(resolve => setTimeout(resolve, 2000));
     
     // Log the rendered content for debugging
-    console.log('PDF: Rendered container content length:', tempContainer.innerHTML.length);
-    console.log('PDF: Container has children:', tempContainer.children.length);
+    console.log('PDF Export: Checking rendered content...');
+    console.log('PDF Export: Container innerHTML length:', tempContainer.innerHTML.length);
+    console.log('PDF Export: Container children count:', tempContainer.children.length);
+    console.log('PDF Export: First 500 chars of content:', tempContainer.innerHTML.substring(0, 500));
     
+    if (tempContainer.innerHTML.length < 100) {
+      console.error('PDF Export: Very little content rendered, potential rendering issue');
+    }
+    
+    console.log('PDF Export: Configuring html2pdf options...');
     const opt = {
       margin: [15, 15, 15, 15],
       filename,
@@ -106,7 +185,7 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
         useCORS: true,
         allowTaint: true,
         letterRendering: true,
-        logging: false,
+        logging: true, // Enable html2canvas logging
         width: 794,
         height: 1123,
         backgroundColor: '#ffffff'
@@ -118,7 +197,9 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
       }
     };
     
+    console.log('PDF Export: Starting html2pdf conversion...');
     await html2pdf().set(opt).from(tempContainer).save();
+    console.log('PDF Export: PDF generation completed successfully');
     
     toast({
       title: "PDF Export Successful",
@@ -126,13 +207,19 @@ export const exportToPDF = async (categories: Category[], demographics: Demograp
     });
     
     // Clean up
+    console.log('PDF Export: Cleaning up temporary container...');
     document.body.removeChild(tempContainer);
+    console.log('=== PDF EXPORT DEBUG END ===');
     
   } catch (error) {
+    console.error('=== PDF EXPORT ERROR ===');
     console.error('PDF generation error:', error);
+    console.error('Error stack:', error.stack);
+    console.error('=== PDF EXPORT ERROR END ===');
+    
     toast({
       title: "PDF Export Failed",
-      description: "There was an error generating the PDF. Please try again.",
+      description: `Error generating PDF: ${error.message}. Check console for details.`,
       variant: "destructive",
     });
   }

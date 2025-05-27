@@ -13,7 +13,7 @@ export const exportToPDF = (elementId: string, filename: string, onSuccess?: () 
     return;
   }
 
-  // Enhanced PDF configuration for better content capture
+  // Enhanced PDF configuration for comprehensive content capture
   const opt = {
     margin: [10, 10, 10, 10],
     filename,
@@ -25,46 +25,81 @@ export const exportToPDF = (elementId: string, filename: string, onSuccess?: () 
       scale: 2,
       useCORS: true,
       allowTaint: true,
-      height: element.scrollHeight,
+      height: element.scrollHeight + 100, // Add extra height for dynamic content
       width: element.scrollWidth,
       scrollX: 0,
-      scrollY: 0
+      scrollY: 0,
+      windowWidth: element.scrollWidth,
+      windowHeight: element.scrollHeight + 100,
+      foreignObjectRendering: true, // Better SVG/chart rendering
+      ignoreElements: (el) => {
+        // Skip elements that might cause rendering issues
+        return el.classList?.contains('no-pdf') || false;
+      }
     },
     jsPDF: { 
       unit: 'mm', 
       format: 'a4', 
-      orientation: 'portrait' 
+      orientation: 'portrait',
+      compress: true
     },
     pagebreak: { 
-      mode: ['avoid-all', 'css', 'legacy'] 
+      mode: ['avoid-all', 'css', 'legacy'],
+      before: '.page-break-before',
+      after: '.page-break-after',
+      avoid: '.no-page-break'
     }
   };
   
   toast({
     title: "Generating PDF",
-    description: "Your results are being prepared for download...",
+    description: "Your complete assessment results are being prepared for download...",
   });
   
-  // Add a longer delay to ensure all content is fully rendered, including charts and dynamic content
+  // Extended delay to ensure all dynamic content including charts and tabs are fully rendered
   setTimeout(() => {
-    // Force a reflow to ensure all content is rendered
+    // Ensure all tabs and dynamic content are visible for PDF capture
+    const tabElements = element.querySelectorAll('[role="tabpanel"]');
+    const originalDisplayStates = [];
+    
+    // Temporarily show all tab content for PDF generation
+    tabElements.forEach((tab, index) => {
+      originalDisplayStates[index] = tab.style.display;
+      tab.style.display = 'block';
+    });
+    
+    // Force a comprehensive reflow
     element.style.display = 'none';
     element.offsetHeight; // Trigger reflow
     element.style.display = '';
     
-    html2pdf().set(opt).from(element).save().then(() => {
-      toast({
-        title: "Download complete",
-        description: "Your leadership assessment results have been saved as PDF",
+    // Wait a bit more for charts to render
+    setTimeout(() => {
+      html2pdf().set(opt).from(element).save().then(() => {
+        // Restore original tab states
+        tabElements.forEach((tab, index) => {
+          tab.style.display = originalDisplayStates[index] || '';
+        });
+        
+        toast({
+          title: "Download complete",
+          description: "Your complete leadership assessment results have been saved as PDF",
+        });
+        if (onSuccess) onSuccess();
+      }).catch((error) => {
+        console.error('PDF generation error:', error);
+        
+        // Restore original tab states on error
+        tabElements.forEach((tab, index) => {
+          tab.style.display = originalDisplayStates[index] || '';
+        });
+        
+        toast({
+          title: "Export failed",
+          description: "There was an issue generating the PDF. Please try again.",
+          variant: "destructive",
+        });
       });
-      if (onSuccess) onSuccess();
-    }).catch((error) => {
-      console.error('PDF generation error:', error);
-      toast({
-        title: "Export failed",
-        description: "There was an issue generating the PDF. Please try again.",
-        variant: "destructive",
-      });
-    });
-  }, 1000); // Increased delay to ensure charts and dynamic content are rendered
+    }, 500);
+  }, 1500); // Increased delay for comprehensive content rendering
 };

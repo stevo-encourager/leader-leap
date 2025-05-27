@@ -7,7 +7,6 @@ import DetailedAnalysis from './dashboard/DetailedAnalysis';
 import CoachingSupport from './dashboard/CoachingSupport';
 import ResultsActions from './dashboard/ResultsActions';
 import RecommendedSteps from './dashboard/RecommendedSteps';
-import SkillGapChart from './SkillGapChart';
 import AIInsights from './dashboard/AIInsights';
 import { calculateAverageGap } from '../utils/assessmentCalculations/averages';
 import { getTopStrengths, getLowestSkills } from '../utils/assessmentCalculations/skillMetrics';
@@ -107,74 +106,13 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
           {/* Profile Summary */}
           <ProfileSummary demographics={demographics} />
 
-          {/* Competency Analysis - Expanded for PDF */}
-          <Card className="overflow-hidden">
-            <CardHeader className="bg-slate-50 border-b">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="bg-encourager-accent/20 p-3 rounded-full">
-                    <svg className="text-encourager w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold text-encourager">Competency Analysis</h2>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Visualize and analyze your leadership competency gaps and insights
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-6 space-y-8">
-              {/* Radar Chart Section */}
-              <div>
-                <h3 className="text-xl font-bold text-encourager mb-4 flex items-center gap-2">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <circle cx="12" cy="12" r="6"></circle>
-                    <circle cx="12" cy="12" r="2"></circle>
-                  </svg>
-                  Competency Radar Chart
-                </h3>
-                {categories && categories.length > 0 ? (
-                  <div className="h-[600px] w-full">
-                    <SkillGapChart categories={categories} />
-                  </div>
-                ) : (
-                  <div className="h-[400px] w-full flex items-center justify-center bg-slate-50 rounded-lg">
-                    <p className="text-slate-500 text-center">
-                      No category data available for visualization.
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* AI Insights Section */}
-              <div>
-                <h3 className="text-xl font-bold text-encourager mb-4 flex items-center gap-2">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                  AI-Powered Key Insights
-                </h3>
-                {categories && categories.length > 0 ? (
-                  <AIInsights 
-                    categories={categories}
-                    demographics={demographics}
-                    averageGap={averageGap}
-                    assessmentId={assessmentId}
-                  />
-                ) : (
-                  <div className="bg-slate-50 p-6 rounded-lg">
-                    <p className="text-slate-500 text-center">
-                      No assessment data available for AI insights.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+          {/* Detailed Analysis - Competency visualization and insights */}
+          <DetailedAnalysis 
+            categories={categories}
+            demographics={demographics}
+            averageGap={averageGap}
+            assessmentId={assessmentId}
+          />
           
           {/* Recommended Next Steps */}
           <RecommendedSteps />

@@ -196,7 +196,7 @@ Top Competency Areas (High Current Ratings, Low Gaps):
 ${topCompetencies.map((cat, i) => `${i+1}. ${cat.title}: Current ${cat.averageCurrentRating.toFixed(1)}, Gap ${cat.gap.toFixed(1)}`).join('\n')}
 `;
 
-    // Enhanced prompt with explicit paragraph formatting instructions
+    // Enhanced prompt with resource guidance
     const prompt = `${assessmentDataSection}
 
 You are an expert leadership coach and assessment analyst. Based on the provided assessment data (including competency names, gap scores, and top competencies), generate AI insights for a user's leadership assessment.
@@ -240,7 +240,17 @@ The summary should be written as continuous text but structured so it can be spl
   - \`competency\` (string): The name of the competency from the assessment data above
   - \`gap\` (number): The gap score from the assessment data above
   - \`insights\` (array of exactly 3 strings): Each is an instructive, reflective, or "aha" insight about the user's leadership in this area. Each insight must be practical, specific, and non-repetitive. One of these must reference the recommended resource.
-  - \`resource\` (string): A directly relevant, practical resource (article, course, framework, etc.), referenced in one of the insights.
+  - \`resource\` (string): A well-known, practical resource. When possible, use these EXACT titles for consistency:
+    * For Emotional Intelligence: "Emotional Intelligence 2.0 by Travis Bradberry"
+    * For Conflict Resolution: "Crucial Conversations by Kerry Patterson" or "Crucial Conversations training program"
+    * For Change Management: "ADKAR Model" or "Kotter 8-Step Process"
+    * For Communication: "Crucial Conversations by Kerry Patterson"
+    * For Leadership Development: "The Leadership Challenge" or "Good to Great by Jim Collins"
+    * For Team Building: "The 7 Habits of Highly Effective People"
+    * For Strategic Thinking: "Good to Great by Jim Collins"
+    * For Time Management: "The 7 Habits of Highly Effective People"
+    * For Decision Making: "Thinking, Fast and Slow by Daniel Kahneman"
+    * For Professional Development: "StrengthsFinder 2.0" or "DISC Assessment"
 
 - \`key_strengths\`: An array with at least 2 objects, each for a key competency to leverage:
   - \`competency\` (string): The name of the competency from the assessment data above
@@ -253,6 +263,7 @@ The summary should be written as continuous text but structured so it can be spl
 - The \`resource\` field must be at the same level as \`insights\`, NOT inside the insights array.
 - All arrays must contain only the specified data types.
 - Structure the summary for easy paragraph splitting during post-processing.
+- When possible, use the exact resource titles listed above for consistency with our resource mapping system.
 
 Base your insights on the assessment data provided above.`;
 
@@ -267,7 +278,7 @@ Base your insights on the assessment data provided above.`;
         messages: [
           { 
             role: 'system', 
-            content: 'You are an expert leadership coach and assessment analyst. You MUST respond with valid JSON only, no additional text or formatting. Follow the exact JSON structure specified in the user prompt. The insights array must contain ONLY strings, never objects or other keys. Use the word "competencies" throughout your response instead of "strengths". Always refer to the person as "you" or "your" (never "the user" or "the user\'s"). Structure your summary to be easily split into paragraphs using transition phrases.'
+            content: 'You are an expert leadership coach and assessment analyst. You MUST respond with valid JSON only, no additional text or formatting. Follow the exact JSON structure specified in the user prompt. The insights array must contain ONLY strings, never objects or other keys. Use the word "competencies" throughout your response instead of "strengths". Always refer to the person as "you" or "your" (never "the user" or "the user\'s"). Structure your summary to be easily split into paragraphs using transition phrases. When recommending resources, use the exact titles provided in the prompt for consistency with our resource mapping system.'
           },
           { role: 'user', content: prompt }
         ],

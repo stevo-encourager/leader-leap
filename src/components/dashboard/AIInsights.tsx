@@ -3,6 +3,7 @@ import { Bot, AlertCircle, Target, TrendingUp, ExternalLink } from 'lucide-react
 import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { FormattedSummary } from '@/components/FormattedSummary';
+import { generateResourceLink } from '@/utils/resourceMapping';
 
 interface AIInsightsProps {
   categories: Category[];
@@ -112,47 +113,58 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
         Top 3 Priority Development Areas
       </h3>
       <div className="space-y-6">
-        {priorityAreas.map((area, index) => (
-          <div key={index} className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
-            <div className="mb-4">
-              <h4 className="font-semibold text-lg text-slate-800">
-                {index + 1}. {area.competency}
-              </h4>
-              <span className="text-sm text-slate-600 bg-slate-100 px-2 py-1 rounded">
-                Gap: {area.gap.toFixed(1)}
-              </span>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <h5 className="font-medium text-slate-700 mb-3">Key Insights:</h5>
-                <ul className="space-y-3">
-                  {area.insights && Array.isArray(area.insights) && area.insights.map((insight, insightIndex) => (
-                    <li key={insightIndex} className="flex items-start gap-3">
-                      <span className="flex-shrink-0 w-6 h-6 bg-encourager text-white rounded-full flex items-center justify-center text-sm font-medium">
-                        {insightIndex + 1}
-                      </span>
-                      <p className="text-slate-700 leading-relaxed">{insight}</p>
-                    </li>
-                  ))}
-                </ul>
+        {priorityAreas.map((area, index) => {
+          const resourceLink = generateResourceLink(area.resource);
+          
+          return (
+            <div key={index} className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
+              <div className="mb-4">
+                <h4 className="font-semibold text-lg text-slate-800">
+                  {index + 1}. {area.competency}
+                </h4>
+                <span className="text-sm text-slate-600 bg-slate-100 px-2 py-1 rounded">
+                  Gap: {area.gap.toFixed(1)}
+                </span>
               </div>
-              {area.resource && (
-                <div className="bg-slate-50 p-4 rounded border-l-4 border-encourager">
-                  <h6 className="font-medium text-slate-700 mb-2">Recommended Resource:</h6>
-                  <a 
-                    href={area.resource.startsWith('http') ? area.resource : '#'} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-encourager hover:text-encourager-light text-sm flex items-center gap-1 underline"
-                  >
-                    <ExternalLink className="h-3 w-3" />
-                    {area.resource}
-                  </a>
+              <div className="space-y-4">
+                <div>
+                  <h5 className="font-medium text-slate-700 mb-3">Key Insights:</h5>
+                  <ul className="space-y-3">
+                    {area.insights && Array.isArray(area.insights) && area.insights.map((insight, insightIndex) => (
+                      <li key={insightIndex} className="flex items-start gap-3">
+                        <span className="flex-shrink-0 w-6 h-6 bg-encourager text-white rounded-full flex items-center justify-center text-sm font-medium">
+                          {insightIndex + 1}
+                        </span>
+                        <p className="text-slate-700 leading-relaxed">{insight}</p>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-              )}
+                {area.resource && (
+                  <div className="bg-slate-50 p-4 rounded border-l-4 border-encourager">
+                    <h6 className="font-medium text-slate-700 mb-2">Recommended Resource:</h6>
+                    {resourceLink.hasValidLink ? (
+                      <a 
+                        href={resourceLink.url!} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-encourager hover:text-encourager-light text-sm flex items-center gap-1 underline"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        {resourceLink.title}
+                      </a>
+                    ) : (
+                      <div className="text-slate-600 text-sm">
+                        <span className="font-medium">{resourceLink.title}</span>
+                        <p className="text-xs text-slate-500 mt-1">Resource link not currently available</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

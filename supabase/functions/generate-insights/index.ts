@@ -124,8 +124,8 @@ serve(async (req) => {
       .sort((a, b) => b.gap - a.gap)
       .slice(0, 3);
 
-    // Find the top strengths (categories with smallest gaps and high current ratings)
-    const topStrengths = assessmentSummary.categoryBreakdown
+    // Find the top competencies (categories with smallest gaps and high current ratings)
+    const topCompetencies = assessmentSummary.categoryBreakdown
       .filter(cat => cat.averageCurrentRating >= 3.5) // Only consider categories with decent current ratings
       .sort((a, b) => a.gap - b.gap) // Sort by smallest gap (closest to desired)
       .slice(0, 3);
@@ -141,14 +141,14 @@ Assessment Data:
 Top 3 Categories by Gap (Priority Development Areas):
 ${topGapCategories.map((cat, i) => `${i+1}. ${cat.title}: Gap ${cat.gap.toFixed(1)} (Current: ${cat.averageCurrentRating.toFixed(1)}, Desired: ${cat.averageDesiredRating.toFixed(1)})`).join('\n')}
 
-Top Strength Areas (High Current Ratings, Low Gaps):
-${topStrengths.map((cat, i) => `${i+1}. ${cat.title}: Current ${cat.averageCurrentRating.toFixed(1)}, Gap ${cat.gap.toFixed(1)}`).join('\n')}
+Top Competency Areas (High Current Ratings, Low Gaps):
+${topCompetencies.map((cat, i) => `${i+1}. ${cat.title}: Current ${cat.averageCurrentRating.toFixed(1)}, Gap ${cat.gap.toFixed(1)}`).join('\n')}
 `;
 
-    // Refined prompt with professional assessment summary format
+    // Enhanced prompt with well-known leader examples and competencies terminology
     const prompt = `${assessmentDataSection}
 
-You are an expert leadership coach and assessment analyst. Based on the provided assessment data (including competency names, gap scores, and strengths), generate AI insights for a user's leadership assessment.
+You are an expert leadership coach and assessment analyst. Based on the provided assessment data (including competency names, gap scores, and top competencies), generate AI insights for a user's leadership assessment.
 
 ### CRITICAL: JSON Structure Requirements
 
@@ -175,7 +175,7 @@ You MUST output ONLY a valid JSON object with this EXACT structure:
 
 ### Field Requirements
 
-- \`summary\`: Generate a professional, concise, and impactful assessment summary that is 5–7 sentences. Start by directly identifying the user's distinctive strengths and what those mean for their leadership style or capabilities. Briefly note the key areas for development, making it clear why these matter for their effectiveness as a leader. Highlight the practical impact or opportunity unlocked by focusing on these growth areas (e.g., "By strengthening your change management skills, you'll be better equipped to lead teams through uncertainty."). Where relevant, connect how their strengths can support work on these growth areas. Avoid generic encouragement or congratulatory phrases (don't say "Congratulations," "remarkable results," or "lasting impact"). Keep the tone confident, clear, and professional—make every sentence specific and purposeful. Output as a single, well-written paragraph. Use only the data provided; do not invent details.
+- \`summary\`: Generate a professional, concise, and impactful assessment summary that is 6–8 sentences. Use the word "competencies" throughout (not "strengths"). Begin by directly identifying the user's most distinctive competencies and what those mean for their leadership style or capabilities. Include a brief example of a well-known leader (real or historical) who exemplifies the same top competencies. Say their name and what competencies they are known for, and connect this to the user's assessment. Briefly note the key areas for development (gaps or opportunities), explaining why they matter for effective leadership. Highlight the practical impact or opportunities unlocked by focusing on these development areas. Where relevant, connect how the user's top competencies can support their growth in development areas. Avoid generic praise or congratulatory language. Keep the tone confident, clear, and professional—make every sentence specific and purposeful. Output as a single, well-written paragraph. Use only the data provided; do not invent details about the user or their organization.
 
 - \`priority_areas\`: An array with exactly 3 objects, each for a Top 3 Priority Development Area:
   - \`competency\` (string): The name of the competency from the assessment data above
@@ -183,10 +183,10 @@ You MUST output ONLY a valid JSON object with this EXACT structure:
   - \`insights\` (array of exactly 3 strings): Each is an instructive, reflective, or "aha" insight about the user's leadership in this area. Each insight must be practical, specific, and non-repetitive. One of these must reference the recommended resource.
   - \`resource\` (string): A directly relevant, practical resource (article, course, framework, etc.), referenced in one of the insights.
 
-- \`key_strengths\`: An array with at least 2 objects, each for a key strength to leverage:
-  - \`competency\` (string): The name of the strength from the assessment data above
-  - \`example\` (string): A concrete example of this strength in action (from data or a plausible scenario)
-  - \`leverage_advice\` (array of exactly 3 strings): Three actionable, positive suggestions for further leveraging this strength. No resource here.
+- \`key_strengths\`: An array with at least 2 objects, each for a key competency to leverage:
+  - \`competency\` (string): The name of the competency from the assessment data above
+  - \`example\` (string): A concrete example of this competency in action (from data or a plausible scenario)
+  - \`leverage_advice\` (array of exactly 3 strings): Three actionable, positive suggestions for further leveraging this competency. No resource here.
 
 ### CRITICAL JSON Rules
 - Output MUST be valid JSON only. No text, markdown, or formatting before/after.
@@ -207,12 +207,12 @@ Base your insights on the assessment data provided above.`;
         messages: [
           { 
             role: 'system', 
-            content: 'You are an expert leadership coach and assessment analyst. You MUST respond with valid JSON only, no additional text or formatting. Follow the exact JSON structure specified in the user prompt. The insights array must contain ONLY strings, never objects or other keys.'
+            content: 'You are an expert leadership coach and assessment analyst. You MUST respond with valid JSON only, no additional text or formatting. Follow the exact JSON structure specified in the user prompt. The insights array must contain ONLY strings, never objects or other keys. Use the word "competencies" throughout your response instead of "strengths".'
           },
           { role: 'user', content: prompt }
         ],
         temperature: 0.1, // Very low temperature for maximum consistency
-        max_tokens: 2500 // Increased for the refined summary format
+        max_tokens: 2500 // Increased for the enhanced summary format
       }),
     });
 
@@ -288,7 +288,7 @@ Base your insights on the assessment data provided above.`;
         }
       }
       
-      console.log('Successfully validated JSON structure with refined summary format');
+      console.log('Successfully validated JSON structure with enhanced competencies format');
     } catch (jsonError) {
       console.error('Invalid JSON response from OpenAI after cleaning:', jsonError);
       console.error('Cleaned response was:', cleanedInsights);
@@ -315,7 +315,7 @@ Base your insights on the assessment data provided above.`;
       }
     }
 
-    console.log('Successfully generated and saved insights with refined summary format');
+    console.log('Successfully generated and saved insights with enhanced competencies format');
 
     return new Response(JSON.stringify({ insights: cleanedInsights }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

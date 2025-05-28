@@ -112,29 +112,21 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
         textAlign: 'center',
         marginBottom: '20px'
       }}>
-        {/* Placeholder for company logo - user will need to provide the logo */}
-        <div style={{
-          width: '150px',
-          height: '80px',
-          backgroundColor: '#f3f4f6',
-          border: '2px dashed #d1d5db',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          margin: '0 auto',
-          fontSize: '12px',
-          color: '#6b7280'
-        }}>
-          Company Logo
-          <br />
-          (Please provide logo)
-        </div>
+        <img 
+          src="/lovable-uploads/8261b232-d447-460b-bff9-abc0444d3e0d.png"
+          alt="Encourager Logo"
+          style={{
+            height: '80px',
+            width: 'auto',
+            maxWidth: '300px'
+          }}
+        />
       </div>
 
       {/* Header */}
       <div style={{
         textAlign: 'center',
-        marginBottom: '25px'
+        marginBottom: '20px'
       }}>
         <h1 style={{
           color: '#2F564D',
@@ -154,31 +146,31 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
       </div>
 
       {/* Profile Summary */}
-      <div style={{ marginBottom: '25px' }}>
+      <div style={{ marginBottom: '20px' }}>
         <h2 style={{
           color: '#2F564D',
           fontSize: '20px',
-          marginBottom: '12px',
+          marginBottom: '10px',
           fontWeight: '600'
         }}>
           Profile Summary
         </h2>
         {demographics?.role && (
-          <p style={{ margin: '0 0 8px 0', fontSize: '14px' }}>
+          <p style={{ margin: '0 0 6px 0', fontSize: '14px' }}>
             <strong>Role:</strong> {demographics.role}
           </p>
         )}
         {demographics?.yearsOfExperience && (
-          <p style={{ margin: '0 0 8px 0', fontSize: '14px' }}>
+          <p style={{ margin: '0 0 6px 0', fontSize: '14px' }}>
             <strong>Years of Experience:</strong> {demographics.yearsOfExperience}
           </p>
         )}
         {demographics?.industry && (
-          <p style={{ margin: '0 0 8px 0', fontSize: '14px' }}>
+          <p style={{ margin: '0 0 6px 0', fontSize: '14px' }}>
             <strong>Industry:</strong> {demographics.industry}
           </p>
         )}
-        <p style={{ margin: '0 0 8px 0', fontSize: '14px' }}>
+        <p style={{ margin: '0 0 6px 0', fontSize: '14px' }}>
           <strong>Overall Development Gap:</strong> {averageGap.toFixed(2)} points
         </p>
         <p style={{ margin: '0', fontSize: '12px', color: '#64748b' }}>
@@ -187,11 +179,11 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
       </div>
 
       {/* Competency Gap Chart */}
-      <div style={{ marginBottom: '25px' }}>
+      <div style={{ marginBottom: '0', pageBreakInside: 'avoid' }}>
         <h2 style={{
           color: '#2F564D',
           fontSize: '20px',
-          marginBottom: '12px',
+          marginBottom: '10px',
           fontWeight: '600'
         }}>
           Competency Analysis - Radar Chart
@@ -207,27 +199,35 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
         </div>
       </div>
 
-      {/* Page Break Before AI Insights */}
-      <div style={{ pageBreakBefore: 'always' }}>
-        {/* AI-Powered Insights - Starting on Page 2 */}
-        <div style={{ marginBottom: '25px' }}>
+      {/* Force Page Break Before AI Insights - Ensure it starts at top of page 2 */}
+      <div style={{ 
+        pageBreakBefore: 'always',
+        marginTop: '0',
+        paddingTop: '0'
+      }}>
+        {/* AI-Powered Insights - Starting at very top of Page 2 */}
+        <div style={{ 
+          marginBottom: '16px',
+          pageBreakInside: 'avoid'
+        }}>
           <h2 style={{
             color: '#2F564D',
             fontSize: '20px',
-            marginBottom: '12px',
+            marginTop: '0',
+            marginBottom: '10px',
             fontWeight: '600'
           }}>
             AI-Powered Insights
           </h2>
           
           {isLoading && (
-            <p style={{ fontSize: '14px', color: '#64748b' }}>
+            <p style={{ fontSize: '14px', color: '#64748b', margin: '0' }}>
               Encourager GPT is analyzing your assessment results...
             </p>
           )}
 
           {error && (
-            <p style={{ fontSize: '14px', color: '#dc2626' }}>
+            <p style={{ fontSize: '14px', color: '#dc2626', margin: '0' }}>
               Unable to generate insights: {error}
             </p>
           )}
@@ -239,7 +239,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
                 
                 if (!parsedInsights) {
                   return (
-                    <p style={{ fontSize: '14px', color: '#64748b' }}>
+                    <p style={{ fontSize: '14px', color: '#64748b', margin: '0' }}>
                       Unable to parse AI insights. The insights format appears to be invalid.
                     </p>
                   );
@@ -249,11 +249,11 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
                   <div>
                     {/* Assessment Summary */}
                     {parsedInsights.summary && (
-                      <div style={{ marginBottom: '16px' }}>
+                      <div style={{ marginBottom: '12px' }}>
                         <h3 style={{
                           color: '#2F564D',
                           fontSize: '16px',
-                          marginBottom: '8px',
+                          marginBottom: '6px',
                           fontWeight: '600'
                         }}>
                           Assessment Summary
@@ -264,33 +264,36 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
                       </div>
                     )}
 
-                    {/* Top 3 Priority Development Areas - Reduced gap */}
+                    {/* Top 3 Priority Development Areas - Reduced spacing */}
                     {parsedInsights.priority_areas && parsedInsights.priority_areas.length > 0 && (
-                      <div style={{ marginBottom: '16px' }}>
+                      <div style={{ 
+                        marginBottom: '12px',
+                        pageBreakInside: 'avoid'
+                      }}>
                         <h3 style={{
                           color: '#2F564D',
                           fontSize: '16px',
-                          marginBottom: '8px',
+                          marginBottom: '6px',
                           fontWeight: '600'
                         }}>
                           Top 3 Priority Development Areas
                         </h3>
                         {parsedInsights.priority_areas.map((area, index) => (
-                          <div key={index} style={{ marginBottom: '12px' }}>
+                          <div key={index} style={{ marginBottom: '8px' }}>
                             <p style={{
                               fontSize: '14px',
                               fontWeight: '600',
-                              margin: '0 0 4px 0'
+                              margin: '0 0 3px 0'
                             }}>
                               {index + 1}. {area.competency} (Gap: {area.gap.toFixed(1)})
                             </p>
-                            <p style={{ fontSize: '14px', margin: '0 0 6px 0', fontWeight: '500' }}>
+                            <p style={{ fontSize: '14px', margin: '0 0 4px 0', fontWeight: '500' }}>
                               Key insights:
                             </p>
                             {area.insights && Array.isArray(area.insights) && area.insights.map((insight, insightIndex) => (
                               <p key={insightIndex} style={{ 
                                 fontSize: '14px', 
-                                margin: '0 0 4px 0',
+                                margin: '0 0 2px 0',
                                 paddingLeft: '16px'
                               }}>
                                 • {insight}
@@ -306,36 +309,39 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
                       </div>
                     )}
 
-                    {/* Key Competencies to Leverage - Reduced gap */}
+                    {/* Key Competencies to Leverage - Reduced spacing */}
                     {parsedInsights.key_strengths && parsedInsights.key_strengths.length > 0 && (
-                      <div style={{ marginBottom: '16px' }}>
+                      <div style={{ 
+                        marginBottom: '12px',
+                        pageBreakInside: 'avoid'
+                      }}>
                         <h3 style={{
                           color: '#2F564D',
                           fontSize: '16px',
-                          marginBottom: '8px',
+                          marginBottom: '6px',
                           fontWeight: '600'
                         }}>
                           Key Competencies to Leverage
                         </h3>
                         {parsedInsights.key_strengths.map((strength, index) => (
-                          <div key={index} style={{ marginBottom: '12px' }}>
+                          <div key={index} style={{ marginBottom: '8px' }}>
                             <p style={{
                               fontSize: '14px',
                               fontWeight: '600',
-                              margin: '0 0 4px 0'
+                              margin: '0 0 3px 0'
                             }}>
                               Competency: {strength.competency}
                             </p>
-                            <p style={{ fontSize: '14px', margin: '0 0 6px 0' }}>
+                            <p style={{ fontSize: '14px', margin: '0 0 4px 0' }}>
                               <strong>Existing Skill:</strong> {strength.example}
                             </p>
-                            <p style={{ fontSize: '14px', margin: '0 0 6px 0', fontWeight: '500' }}>
+                            <p style={{ fontSize: '14px', margin: '0 0 4px 0', fontWeight: '500' }}>
                               How to leverage further:
                             </p>
                             {strength.leverage_advice && Array.isArray(strength.leverage_advice) && strength.leverage_advice.map((advice, adviceIndex) => (
                               <p key={adviceIndex} style={{ 
                                 fontSize: '14px', 
-                                margin: '0 0 4px 0',
+                                margin: '0 0 2px 0',
                                 paddingLeft: '16px'
                               }}>
                                 • {advice}
@@ -352,27 +358,30 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
           )}
 
           {!insights && !isLoading && !error && (
-            <p style={{ fontSize: '14px', color: '#64748b' }}>
+            <p style={{ fontSize: '14px', color: '#64748b', margin: '0' }}>
               AI insights will appear here once your assessment data is analyzed.
             </p>
           )}
         </div>
       </div>
 
-      {/* Recommended Next Steps - Reduced gap from previous section */}
-      <div style={{ marginBottom: '25px' }}>
+      {/* Recommended Next Steps - Reduced spacing and prevent cut-off */}
+      <div style={{ 
+        marginBottom: '16px',
+        pageBreakInside: 'avoid'
+      }}>
         <h2 style={{
           color: '#2F564D',
           fontSize: '20px',
-          marginBottom: '12px',
+          marginBottom: '10px',
           fontWeight: '600'
         }}>
           Recommended Next Steps
         </h2>
-        <p style={{ fontSize: '14px', margin: '0 0 8px 0', paddingLeft: '16px' }}>
+        <p style={{ fontSize: '14px', margin: '0 0 6px 0', paddingLeft: '16px' }}>
           • Consider using this report in your next 1:1 with your manager or mentor as a guide for your professional development
         </p>
-        <p style={{ fontSize: '14px', margin: '0 0 8px 0', paddingLeft: '16px' }}>
+        <p style={{ fontSize: '14px', margin: '0 0 6px 0', paddingLeft: '16px' }}>
           • Create a 6 month action plan to address your most critical competency gaps and schedule a time to re-take this assessment to track your progress
         </p>
         <p style={{ fontSize: '14px', margin: '0', paddingLeft: '16px' }}>
@@ -380,19 +389,22 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
         </p>
       </div>
 
-      {/* Professional Development Coaching - Cleaned up */}
-      <div style={{ marginBottom: '25px' }}>
+      {/* Professional Development Coaching - Prevent cut-off */}
+      <div style={{ 
+        marginBottom: '20px',
+        pageBreakInside: 'avoid'
+      }}>
         <h2 style={{
           color: '#2F564D',
           fontSize: '20px',
-          marginBottom: '12px',
+          marginBottom: '10px',
           fontWeight: '600'
         }}>
           Professional Development Coaching
         </h2>
         
-        {/* User Photo (not circular logo) */}
-        <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+        {/* User Photo */}
+        <div style={{ textAlign: 'center', marginBottom: '12px' }}>
           <img 
             src="/lovable-uploads/8320d514-fba5-4e1b-a658-1563758db943.png"
             alt="Professional Coach"
@@ -407,7 +419,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
         </div>
         
         <p style={{ 
-          margin: '0 0 12px 0', 
+          margin: '0 0 8px 0', 
           lineHeight: '1.6',
           color: '#374151',
           fontSize: '14px'
@@ -415,16 +427,16 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
           Ready to take your leadership skills to the next level? Our expert coaches can help you:
         </p>
         
-        <p style={{ fontSize: '14px', margin: '0 0 8px 0', paddingLeft: '16px' }}>
+        <p style={{ fontSize: '14px', margin: '0 0 6px 0', paddingLeft: '16px' }}>
           • Create personalized development plans
         </p>
-        <p style={{ fontSize: '14px', margin: '0 0 8px 0', paddingLeft: '16px' }}>
+        <p style={{ fontSize: '14px', margin: '0 0 6px 0', paddingLeft: '16px' }}>
           • Practice new skills in a safe environment
         </p>
-        <p style={{ fontSize: '14px', margin: '0 0 8px 0', paddingLeft: '16px' }}>
+        <p style={{ fontSize: '14px', margin: '0 0 6px 0', paddingLeft: '16px' }}>
           • Overcome specific leadership challenges
         </p>
-        <p style={{ fontSize: '14px', margin: '0 0 16px 0', paddingLeft: '16px' }}>
+        <p style={{ fontSize: '14px', margin: '0 0 12px 0', paddingLeft: '16px' }}>
           • Track your progress over time
         </p>
         
@@ -438,13 +450,13 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
       {/* Footer */}
       <div style={{
         textAlign: 'center',
-        marginTop: '30px',
-        paddingTop: '20px',
+        marginTop: '20px',
+        paddingTop: '15px',
         borderTop: '1px solid #e2e8f0',
         fontSize: '12px',
         color: '#64748b'
       }}>
-        <p style={{ margin: '0 0 8px 0', fontWeight: '600' }}>
+        <p style={{ margin: '0 0 6px 0', fontWeight: '600' }}>
           Leadership Assessment Tool • Generated on {currentDate}
         </p>
         <p style={{ margin: '0', lineHeight: '1.5' }}>

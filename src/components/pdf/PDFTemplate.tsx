@@ -1,15 +1,37 @@
+
 import React from 'react';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { calculateAverageGap } from '@/utils/assessmentCalculations/averages';
 import SkillGapChart from '../SkillGapChart';
-import AIInsights from '../dashboard/AIInsights';
 import RecommendedSteps from '../dashboard/RecommendedSteps';
 import CoachingSupport from '../dashboard/CoachingSupport';
+import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
+import { FormattedSummary } from '@/components/FormattedSummary';
+import { generateResourceLink } from '@/utils/resourceMapping';
 
 interface PDFTemplateProps {
   categories: Category[];
   demographics: Demographics;
   assessmentId?: string;
+}
+
+interface PriorityArea {
+  competency: string;
+  gap: number;
+  insights: string[];
+  resource: string;
+}
+
+interface KeyStrength {
+  competency: string;
+  example: string;
+  leverage_advice: string[];
+}
+
+interface AIInsightsData {
+  summary: string;
+  priority_areas: PriorityArea[];
+  key_strengths: KeyStrength[];
 }
 
 const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, assessmentId }) => {
@@ -40,6 +62,36 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
     month: 'long',
     day: 'numeric'
   });
+
+  // Use the OpenAI insights hook
+  const { insights, isLoading, error } = useOpenAIInsights({
+    categories,
+    demographics,
+    averageGap,
+    assessmentId
+  });
+
+  const parseInsights = (insightsText: string): AIInsightsData | null => {
+    try {
+      const parsed = JSON.parse(insightsText);
+      
+      // Validate structure
+      if (!parsed.summary || !parsed.priority_areas || !parsed.key_strengths) {
+        console.error('PDFTemplate: Invalid insights structure - missing required fields');
+        return null;
+      }
+      
+      if (!Array.isArray(parsed.priority_areas) || !Array.isArray(parsed.key_strengths)) {
+        console.error('PDFTemplate: Invalid insights structure - arrays expected');
+        return null;
+      }
+
+      return parsed;
+    } catch (error) {
+      console.error('PDFTemplate: Error parsing insights JSON:', error);
+      return null;
+    }
+  };
 
   console.log('PDFTemplate: Metrics calculated:', {
     averageGap
@@ -211,12 +263,102 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
 
         {/* Page break before AI Insights to ensure it starts on page 2 */}
         <div className="ai-insights-section page-break-before" style={{ marginBottom: '20px' }}>
-          <AIInsights 
-            categories={categories}
-            demographics={demographics}
-            averageGap={averageGap}
-            assessmentId={assessmentId}
-          />
+          <h2>AI-Powered Insights</h2>
+          <p style={{ color: '#64748b', fontSize: '12px', margin: '0 0 12px 0' }}>
+            Personalized leadership development insights powered by Encourager GPT
+          </p>
+          
+          {isLoading && (
+            <p style={{ margin: '12px 0' }}>Encourager GPT is analyzing your assessment results...</p>
+          )}
+
+          {error && (
+            <div style={{ margin: '12px 0' }}>
+              <p><strong>Unable to generate insights:</strong> {error}</p>
+            </div>
+          )}
+
+          {insights && !isLoading && (() => {
+            const parsedInsights = parseInsights(insights);
+            
+            if (!parsedInsights) {
+              return (
+                <p style={{ margin: '12px 0' }}>
+                  Unable to parse AI insights. The insights format appears to be invalid.
+                </p>
+              );
+            }
+
+            return (
+              <div>
+                {/* Assessment Summary */}
+                {parsedInsights.summary && (
+                  <div style={{ marginBottom: '16px' }}>
+                    <h3>Assessment Summary</h3>
+                    <FormattedSummary 
+                      summary={parsedInsights.summary}
+                      className="insight-content"
+                    />
+                  </div>
+                )}
+
+                {/* Priority Development Areas */}
+                {parsedInsights.priority_areas && (
+                  <div style={{ marginBottom: '16px' }}>
+                    <h3>Top 3 Priority Development Areas</h3>
+                    {parsedInsights.priority_areas.map((area, index) => {
+                      const resourceLink = generateResourceLink(area.resource);
+                      
+                      return (
+                        <div key={index} className="priority-item">
+                          <p>
+                            <span className="priority-number">{index + 1}. {area.competency}</span>
+                            <span className="priority-gap">(Gap: {area.gap.toFixed(1)})</span>
+                          </p>
+                          
+                          <p><strong>Key insights:</strong></p>
+                          <ul>
+                            {area.insights && Array.isArray(area.insights) && area.insights.map((insight, insightIndex) => (
+                              <li key={insightIndex}>{insight}</li>
+                            ))}
+                          </ul>
+                          
+                          {area.resource && (
+                            <p><strong>Recommended Resource:</strong> {resourceLink.title}</p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Key Competencies to Leverage */}
+                {parsedInsights.key_strengths && (
+                  <div style={{ marginBottom: '16px' }}>
+                    <h3>Key Competencies to Leverage</h3>
+                    {parsedInsights.key_strengths.map((strength, index) => (
+                      <div key={index} className="leverage-item">
+                        <p><strong>Competency:</strong> {strength.competency}</p>
+                        <p><strong>Existing Skill:</strong> {strength.example}</p>
+                        <p><strong>How to leverage further:</strong></p>
+                        <ul>
+                          {strength.leverage_advice && Array.isArray(strength.leverage_advice) && strength.leverage_advice.map((advice, adviceIndex) => (
+                            <li key={adviceIndex}>{advice}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {!insights && !isLoading && !error && (
+            <p style={{ margin: '12px 0' }}>
+              AI insights will appear here once your assessment data is analyzed.
+            </p>
+          )}
         </div>
 
         {/* Recommended Next Steps */}

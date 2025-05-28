@@ -118,369 +118,372 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
       }}
       data-insights={insights || ''}
     >
-      {/* PDF-specific CSS - scoped to this component only */}
-      <style>
-        {`
-          .pdf-template-container {
-            font-family: system-ui, -apple-system, sans-serif;
-            margin: 0;
-            padding: 0;
-          }
-          
-          .pdf-template-container h1 {
-            font-size: 24px;
-            font-weight: 700;
-            color: #2F564D;
-            margin: 0 0 8px 0;
-            padding: 0;
-            text-align: center;
-          }
-          
-          .pdf-template-container h2 {
-            font-size: 18px;
-            font-weight: 600;
-            color: #2F564D;
-            margin: 0 0 8px 0;
-            padding: 0 0 12px 0;
-            border-bottom: 2px solid #2F564D;
-          }
-          
-          .pdf-template-container h3 {
-            font-size: 16px;
-            font-weight: 600;
-            color: #2F564D;
-            margin: 8px 0 4px 0;
-            padding: 0;
-          }
-          
-          .pdf-template-container p {
-            margin: 4px 0;
-            padding: 0;
-            line-height: 1.4;
-          }
-          
-          .pdf-template-container ul {
-            margin: 4px 0;
-            padding-left: 18px;
-            list-style-type: disc;
-          }
-          
-          .pdf-template-container li {
-            margin: 2px 0;
-            padding: 0;
-            line-height: 1.4;
-            display: list-item;
-          }
-          
-          .pdf-template-container li::marker {
-            content: "• ";
-            color: #2F564D;
-            font-weight: bold;
-          }
-          
-          .pdf-template-container .insight-content {
-            margin: 4px 0;
-            padding: 0;
-            line-height: 1.4;
-          }
-          
-          .pdf-template-container .priority-item {
-            margin: 6px 0;
-            padding: 0;
-            border: none;
-            background: none;
-          }
-          
-          .pdf-template-container .priority-number {
-            display: inline;
-            font-weight: 600;
-            color: #2F564D;
-          }
-          
-          .pdf-template-container .priority-text {
-            display: inline;
-            margin-left: 6px;
-          }
-          
-          .pdf-template-container .priority-gap {
-            display: inline;
-            font-weight: 600;
-            color: #dc2626;
-            margin-left: 6px;
-          }
-          
-          .pdf-template-container .leverage-item {
-            margin: 6px 0;
-            padding: 0;
-            border: none;
-            background: none;
-          }
+      {/* Logo at the absolute top - FIRST element with no containers */}
+      <img 
+        src={LOGO_BASE64}
+        alt="Company Logo" 
+        style={{
+          maxWidth: '200px',
+          maxHeight: '60px',
+          display: 'block',
+          margin: '0 auto'
+        }}
+      />
 
-          @page {
-            margin: 15mm;
-          }
+      {/* Header - Page 1 content */}
+      <div style={{ margin: '0', padding: '0' }}>
+        <h1 style={{ 
+          fontSize: '24px', 
+          fontWeight: '700', 
+          color: '#2F564D', 
+          margin: '0 0 8px 0', 
+          padding: '0', 
+          textAlign: 'center' 
+        }}>
+          Leadership Assessment Results
+        </h1>
+        <p style={{ textAlign: 'center', color: '#64748b', margin: '0 0 8px 0', padding: '0' }}>
+          Generated on {currentDate}
+        </p>
+      </div>
 
-          .page-break-avoid {
-            page-break-inside: avoid !important;
-            break-inside: avoid !important;
-            -webkit-break-inside: avoid !important;
-          }
-          
-          .page-break-before {
-            page-break-before: always !important;
-            break-before: page !important;
-            -webkit-break-before: page !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            height: 0 !important;
-            display: block !important;
-          }
-          
-          .section-spacing {
-            margin: 8px 0;
-            padding: 0;
-          }
-          
-          .no-spacing {
-            margin: 0;
-            padding: 0;
-          }
-        `}
-      </style>
-
-      {/* Main content container with PDF class - scoped to prevent global impact */}
-      <div className="pdf-template-container">
-        {/* Logo at the absolute top - FIRST element with no containers */}
-        <img 
-          src={LOGO_BASE64}
-          alt="Company Logo" 
-          style={{
-            maxWidth: '200px',
-            maxHeight: '60px',
-            display: 'block',
-            margin: '0 auto'
-          }}
-        />
-
-        {/* Header - Page 1 content */}
-        <div className="no-spacing">
-          <h1>Leadership Assessment Results</h1>
-          <p style={{ textAlign: 'center', color: '#64748b', margin: '0 0 8px 0', padding: '0' }}>
-            Generated on {currentDate}
+      {/* Profile Summary */}
+      <div style={{ margin: '8px 0', padding: '0' }}>
+        <h2 style={{ 
+          fontSize: '18px', 
+          fontWeight: '600', 
+          color: '#2F564D', 
+          margin: '0 0 8px 0', 
+          padding: '0 0 12px 0', 
+          borderBottom: '2px solid #2F564D' 
+        }}>
+          Profile Summary
+        </h2>
+        {demographics?.role && (
+          <p style={{ margin: '4px 0', padding: '0', lineHeight: '1.4' }}>
+            <strong>Role:</strong> {demographics.role}
           </p>
-        </div>
-
-        {/* Profile Summary */}
-        <div className="section-spacing page-break-avoid">
-          <h2>Profile Summary</h2>
-          {demographics?.role && (
-            <p><strong>Role:</strong> {demographics.role}</p>
-          )}
-          {demographics?.yearsOfExperience && (
-            <p><strong>Years of Experience:</strong> {demographics.yearsOfExperience}</p>
-          )}
-          {demographics?.industry && (
-            <p><strong>Industry:</strong> {demographics.industry}</p>
-          )}
-          <p><strong>Overall Development Gap:</strong> {averageGap.toFixed(2)} points</p>
-          <p style={{ fontSize: '12px', color: '#64748b' }}>
-            Assessment completed across {categories.length} competency areas
+        )}
+        {demographics?.yearsOfExperience && (
+          <p style={{ margin: '4px 0', padding: '0', lineHeight: '1.4' }}>
+            <strong>Years of Experience:</strong> {demographics.yearsOfExperience}
           </p>
-        </div>
+        )}
+        {demographics?.industry && (
+          <p style={{ margin: '4px 0', padding: '0', lineHeight: '1.4' }}>
+            <strong>Industry:</strong> {demographics.industry}
+          </p>
+        )}
+        <p style={{ margin: '4px 0', padding: '0', lineHeight: '1.4' }}>
+          <strong>Overall Development Gap:</strong> {averageGap.toFixed(2)} points
+        </p>
+        <p style={{ fontSize: '12px', color: '#64748b', margin: '4px 0', padding: '0', lineHeight: '1.4' }}>
+          Assessment completed across {categories.length} competency areas
+        </p>
+      </div>
 
-        {/* Competency Gap Chart */}
-        <div className="section-spacing page-break-avoid">
-          <h2>Competency Analysis - Radar Chart</h2>
-          <div style={{ 
-            height: '400px',
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxSizing: 'border-box',
-            overflow: 'visible',
-            margin: '0',
-            padding: '0'
-          }}>
-            <div style={{ width: '100%', height: '100%' }} id="pdf-radar-chart-container">
-              <SkillGapChart categories={categories} isPDF={true} />
-            </div>
+      {/* Competency Gap Chart */}
+      <div style={{ margin: '8px 0', padding: '0' }}>
+        <h2 style={{ 
+          fontSize: '18px', 
+          fontWeight: '600', 
+          color: '#2F564D', 
+          margin: '0 0 8px 0', 
+          padding: '0 0 12px 0', 
+          borderBottom: '2px solid #2F564D' 
+        }}>
+          Competency Analysis - Radar Chart
+        </h2>
+        <div style={{ 
+          height: '400px',
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxSizing: 'border-box',
+          overflow: 'visible',
+          margin: '0',
+          padding: '0'
+        }}>
+          <div style={{ width: '100%', height: '100%' }} id="pdf-radar-chart-container">
+            <SkillGapChart categories={categories} isPDF={true} />
           </div>
-          
-          {/* PAGE BREAK: Place as the ABSOLUTE LAST element of chart section with NO trailing content */}
-          <div className="page-break-before"></div>
         </div>
+        
+        {/* PAGE BREAK: Place as the ABSOLUTE LAST element of chart section with NO trailing content */}
+        <div style={{ 
+          pageBreakBefore: 'always', 
+          breakBefore: 'page', 
+          margin: '0', 
+          padding: '0', 
+          height: '0', 
+          display: 'block' 
+        }}></div>
+      </div>
 
-        {/* AI Insights section */}
-        <div className="no-spacing">
-          <h2>AI-Powered Insights</h2>
-          <p style={{ color: '#64748b', fontSize: '12px', margin: '0 0 8px 0', padding: '0' }}>
-            Personalized leadership development insights powered by Encourager GPT
-          </p>
+      {/* AI Insights section */}
+      <div style={{ margin: '0', padding: '0' }}>
+        <h2 style={{ 
+          fontSize: '18px', 
+          fontWeight: '600', 
+          color: '#2F564D', 
+          margin: '0 0 8px 0', 
+          padding: '0 0 12px 0', 
+          borderBottom: '2px solid #2F564D' 
+        }}>
+          AI-Powered Insights
+        </h2>
+        <p style={{ color: '#64748b', fontSize: '12px', margin: '0 0 8px 0', padding: '0' }}>
+          Personalized leadership development insights powered by Encourager GPT
+        </p>
+        
+        {isLoading && (
+          <p style={{ margin: '8px 0', padding: '0' }}>Encourager GPT is analyzing your assessment results...</p>
+        )}
+
+        {error && (
+          <div style={{ margin: '8px 0', padding: '0' }}>
+            <p><strong>Unable to generate insights:</strong> {error}</p>
+          </div>
+        )}
+
+        {insights && !isLoading && (() => {
+          const parsedInsights = parseInsights(insights);
           
-          {isLoading && (
-            <p style={{ margin: '8px 0', padding: '0' }}>Encourager GPT is analyzing your assessment results...</p>
-          )}
-
-          {error && (
-            <div style={{ margin: '8px 0', padding: '0' }}>
-              <p><strong>Unable to generate insights:</strong> {error}</p>
-            </div>
-          )}
-
-          {insights && !isLoading && (() => {
-            const parsedInsights = parseInsights(insights);
-            
-            if (!parsedInsights) {
-              return (
-                <p style={{ margin: '8px 0', padding: '0' }}>
-                  Unable to parse AI insights. The insights format appears to be invalid.
-                </p>
-              );
-            }
-
+          if (!parsedInsights) {
             return (
-              <div style={{ margin: '0', padding: '0' }}>
-                {/* Assessment Summary */}
-                {parsedInsights.summary && (
-                  <div className="section-spacing">
-                    <h3>Assessment Summary</h3>
-                    <FormattedSummary 
-                      summary={parsedInsights.summary}
-                      className="insight-content"
-                    />
-                  </div>
-                )}
+              <p style={{ margin: '8px 0', padding: '0' }}>
+                Unable to parse AI insights. The insights format appears to be invalid.
+              </p>
+            );
+          }
 
-                {/* Priority Development Areas */}
-                {parsedInsights.priority_areas && (
-                  <div className="section-spacing">
-                    <h3>Top 3 Priority Development Areas</h3>
-                    {parsedInsights.priority_areas.map((area, index) => {
-                      const resourceLink = generateResourceLink(area.resource);
-                      
-                      return (
-                        <div key={index} className="priority-item">
-                          <p>
-                            <span className="priority-number">{index + 1}. {area.competency}</span>
-                            <span className="priority-gap">(Gap: {area.gap.toFixed(1)})</span>
-                          </p>
-                          
-                          <p><strong>Key insights:</strong></p>
-                          <ul>
-                            {area.insights && Array.isArray(area.insights) && area.insights.map((insight, insightIndex) => (
-                              <li key={insightIndex}>{insight}</li>
-                            ))}
-                          </ul>
-                          
-                          {area.resource && (
-                            <p><strong>Recommended Resource:</strong> {resourceLink.title}</p>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+          return (
+            <div style={{ margin: '0', padding: '0' }}>
+              {/* Assessment Summary */}
+              {parsedInsights.summary && (
+                <div style={{ margin: '8px 0', padding: '0' }}>
+                  <h3 style={{ 
+                    fontSize: '16px', 
+                    fontWeight: '600', 
+                    color: '#2F564D', 
+                    margin: '8px 0 4px 0', 
+                    padding: '0' 
+                  }}>
+                    Assessment Summary
+                  </h3>
+                  <FormattedSummary 
+                    summary={parsedInsights.summary}
+                    className=""
+                  />
+                </div>
+              )}
 
-                {/* Key Competencies to Leverage */}
-                {parsedInsights.key_strengths && (
-                  <div className="section-spacing">
-                    <h3>Key Competencies to Leverage</h3>
-                    {parsedInsights.key_strengths.map((strength, index) => (
-                      <div key={index} className="leverage-item">
-                        <p><strong>Competency:</strong> {strength.competency}</p>
-                        <p><strong>Existing Skill:</strong> {strength.example}</p>
-                        <p><strong>How to leverage further:</strong></p>
-                        <ul>
-                          {strength.leverage_advice && Array.isArray(strength.leverage_advice) && strength.leverage_advice.map((advice, adviceIndex) => (
-                            <li key={adviceIndex}>{advice}</li>
+              {/* Priority Development Areas */}
+              {parsedInsights.priority_areas && (
+                <div style={{ margin: '8px 0', padding: '0' }}>
+                  <h3 style={{ 
+                    fontSize: '16px', 
+                    fontWeight: '600', 
+                    color: '#2F564D', 
+                    margin: '8px 0 4px 0', 
+                    padding: '0' 
+                  }}>
+                    Top 3 Priority Development Areas
+                  </h3>
+                  {parsedInsights.priority_areas.map((area, index) => {
+                    const resourceLink = generateResourceLink(area.resource);
+                    
+                    return (
+                      <div key={index} style={{ margin: '6px 0', padding: '0' }}>
+                        <p style={{ margin: '4px 0', padding: '0', lineHeight: '1.4' }}>
+                          <span style={{ fontWeight: '600', color: '#2F564D' }}>
+                            {index + 1}. {area.competency}
+                          </span>
+                          <span style={{ fontWeight: '600', color: '#dc2626', marginLeft: '6px' }}>
+                            (Gap: {area.gap.toFixed(1)})
+                          </span>
+                        </p>
+                        
+                        <p style={{ margin: '4px 0', padding: '0', lineHeight: '1.4' }}>
+                          <strong>Key insights:</strong>
+                        </p>
+                        <ul style={{ margin: '4px 0', paddingLeft: '18px', listStyleType: 'disc' }}>
+                          {area.insights && Array.isArray(area.insights) && area.insights.map((insight, insightIndex) => (
+                            <li key={insightIndex} style={{ margin: '2px 0', padding: '0', lineHeight: '1.4' }}>
+                              {insight}
+                            </li>
                           ))}
                         </ul>
+                        
+                        {area.resource && (
+                          <p style={{ margin: '4px 0', padding: '0', lineHeight: '1.4' }}>
+                            <strong>Recommended Resource:</strong> {resourceLink.title}
+                          </p>
+                        )}
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })()}
+                    );
+                  })}
+                </div>
+              )}
 
-          {!insights && !isLoading && !error && (
-            <p style={{ margin: '8px 0', padding: '0' }}>
-              AI insights will appear here once your assessment data is analyzed.
-            </p>
-          )}
-        </div>
-
-        {/* Recommended Next Steps */}
-        <div className="section-spacing page-break-avoid">
-          <h2>Recommended Next Steps</h2>
-          <ul>
-            <li>Consider using this report in your next 1:1 with your manager or mentor as a guide for your professional development</li>
-            <li>Create a 6 month action plan to address your most critical competency gaps and schedule a time to re-take this assessment to track your progress</li>
-            <li>Set an actionable goal for yourself within the next week, and set a reminder to help hold yourself accountable for taking that next step</li>
-          </ul>
-        </div>
-
-        {/* Coaching Support */}
-        <div className="section-spacing page-break-avoid">
-          <h2>Coaching Support</h2>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: '2fr 1fr',
-            gap: '20px',
-            width: '100%',
-            margin: '0',
-            padding: '0'
-          }}>
-            <div style={{ width: '100%' }}>
-              <h3>Professional Development Coaching</h3>
-              <p>Ready to take your leadership skills to the next level? Our expert coaches can help you:</p>
-              <ul>
-                <li>Create personalized development plans</li>
-                <li>Practice new skills in a safe environment</li>
-                <li>Overcome specific leadership challenges</li>
-                <li>Track your progress over time</li>
-              </ul>
+              {/* Key Competencies to Leverage */}
+              {parsedInsights.key_strengths && (
+                <div style={{ margin: '8px 0', padding: '0' }}>
+                  <h3 style={{ 
+                    fontSize: '16px', 
+                    fontWeight: '600', 
+                    color: '#2F564D', 
+                    margin: '8px 0 4px 0', 
+                    padding: '0' 
+                  }}>
+                    Key Competencies to Leverage
+                  </h3>
+                  {parsedInsights.key_strengths.map((strength, index) => (
+                    <div key={index} style={{ margin: '6px 0', padding: '0' }}>
+                      <p style={{ margin: '4px 0', padding: '0', lineHeight: '1.4' }}>
+                        <strong>Competency:</strong> {strength.competency}
+                      </p>
+                      <p style={{ margin: '4px 0', padding: '0', lineHeight: '1.4' }}>
+                        <strong>Existing Skill:</strong> {strength.example}
+                      </p>
+                      <p style={{ margin: '4px 0', padding: '0', lineHeight: '1.4' }}>
+                        <strong>How to leverage further:</strong>
+                      </p>
+                      <ul style={{ margin: '4px 0', paddingLeft: '18px', listStyleType: 'disc' }}>
+                        {strength.leverage_advice && Array.isArray(strength.leverage_advice) && strength.leverage_advice.map((advice, adviceIndex) => (
+                          <li key={adviceIndex} style={{ margin: '2px 0', padding: '0', lineHeight: '1.4' }}>
+                            {advice}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-            <div style={{
-              textAlign: 'center',
-              width: '100%',
-              height: '200px',
-              boxSizing: 'border-box',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
+          );
+        })()}
+
+        {!insights && !isLoading && !error && (
+          <p style={{ margin: '8px 0', padding: '0' }}>
+            AI insights will appear here once your assessment data is analyzed.
+          </p>
+        )}
+      </div>
+
+      {/* Recommended Next Steps */}
+      <div style={{ margin: '8px 0', padding: '0' }}>
+        <h2 style={{ 
+          fontSize: '18px', 
+          fontWeight: '600', 
+          color: '#2F564D', 
+          margin: '0 0 8px 0', 
+          padding: '0 0 12px 0', 
+          borderBottom: '2px solid #2F564D' 
+        }}>
+          Recommended Next Steps
+        </h2>
+        <ul style={{ margin: '4px 0', paddingLeft: '18px', listStyleType: 'disc' }}>
+          <li style={{ margin: '2px 0', padding: '0', lineHeight: '1.4' }}>
+            Consider using this report in your next 1:1 with your manager or mentor as a guide for your professional development
+          </li>
+          <li style={{ margin: '2px 0', padding: '0', lineHeight: '1.4' }}>
+            Create a 6 month action plan to address your most critical competency gaps and schedule a time to re-take this assessment to track your progress
+          </li>
+          <li style={{ margin: '2px 0', padding: '0', lineHeight: '1.4' }}>
+            Set an actionable goal for yourself within the next week, and set a reminder to help hold yourself accountable for taking that next step
+          </li>
+        </ul>
+      </div>
+
+      {/* Coaching Support */}
+      <div style={{ margin: '8px 0', padding: '0' }}>
+        <h2 style={{ 
+          fontSize: '18px', 
+          fontWeight: '600', 
+          color: '#2F564D', 
+          margin: '0 0 8px 0', 
+          padding: '0 0 12px 0', 
+          borderBottom: '2px solid #2F564D' 
+        }}>
+          Coaching Support
+        </h2>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '2fr 1fr',
+          gap: '20px',
+          width: '100%',
+          margin: '0',
+          padding: '0'
+        }}>
+          <div style={{ width: '100%' }}>
+            <h3 style={{ 
+              fontSize: '16px', 
+              fontWeight: '600', 
+              color: '#2F564D', 
+              margin: '8px 0 4px 0', 
+              padding: '0' 
             }}>
-              <img 
-                src="/lovable-uploads/b35e005b-ec23-4976-8796-738f7c856377.png" 
-                alt="Coach Portrait" 
-                style={{
-                  width: '100%',
-                  height: 'auto',
-                  borderRadius: '8px',
-                  maxHeight: '170px',
-                  objectFit: 'cover'
-                }}
-              />
-            </div>
+              Professional Development Coaching
+            </h3>
+            <p style={{ margin: '4px 0', padding: '0', lineHeight: '1.4' }}>
+              Ready to take your leadership skills to the next level? Our expert coaches can help you:
+            </p>
+            <ul style={{ margin: '4px 0', paddingLeft: '18px', listStyleType: 'disc' }}>
+              <li style={{ margin: '2px 0', padding: '0', lineHeight: '1.4' }}>
+                Create personalized development plans
+              </li>
+              <li style={{ margin: '2px 0', padding: '0', lineHeight: '1.4' }}>
+                Practice new skills in a safe environment
+              </li>
+              <li style={{ margin: '2px 0', padding: '0', lineHeight: '1.4' }}>
+                Overcome specific leadership challenges
+              </li>
+              <li style={{ margin: '2px 0', padding: '0', lineHeight: '1.4' }}>
+                Track your progress over time
+              </li>
+            </ul>
+          </div>
+          <div style={{
+            textAlign: 'center',
+            width: '100%',
+            height: '200px',
+            boxSizing: 'border-box',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <img 
+              src="/lovable-uploads/b35e005b-ec23-4976-8796-738f7c856377.png" 
+              alt="Coach Portrait" 
+              style={{
+                width: '100%',
+                height: 'auto',
+                borderRadius: '8px',
+                maxHeight: '170px',
+                objectFit: 'cover'
+              }}
+            />
           </div>
         </div>
+      </div>
 
-        {/* Footer */}
-        <div className="section-spacing" style={{
-          textAlign: 'center',
-          borderTop: '1px solid #e2e8f0',
-          fontSize: '12px',
-          color: '#64748b',
-          paddingTop: '8px'
-        }}>
-          <p style={{ margin: '0 0 4px 0', fontWeight: '600' }}>
-            Leadership Assessment Tool • Generated on {currentDate}
-          </p>
-          <p style={{ margin: '0', lineHeight: '1.4' }}>
-            This assessment is designed to help you identify development opportunities and create targeted improvement plans.
-          </p>
-        </div>
+      {/* Footer */}
+      <div style={{
+        textAlign: 'center',
+        borderTop: '1px solid #e2e8f0',
+        fontSize: '12px',
+        color: '#64748b',
+        paddingTop: '8px',
+        margin: '8px 0 0 0'
+      }}>
+        <p style={{ margin: '0 0 4px 0', fontWeight: '600' }}>
+          Leadership Assessment Tool • Generated on {currentDate}
+        </p>
+        <p style={{ margin: '0', lineHeight: '1.4' }}>
+          This assessment is designed to help you identify development opportunities and create targeted improvement plans.
+        </p>
       </div>
     </div>
   );

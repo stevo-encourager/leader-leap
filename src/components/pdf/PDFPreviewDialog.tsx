@@ -127,7 +127,19 @@ const PDFPreviewDialog: React.FC<PDFPreviewDialogProps> = ({
         throw new Error('Preview container not found');
       }
 
-      console.log('PDFPreview: Using visible preview container for PDF generation');
+      console.log('PDFPreview: Found preview container, content length:', previewContainer.textContent?.length || 0);
+      console.log('PDFPreview: Container HTML length:', previewContainer.innerHTML?.length || 0);
+      
+      // Create a properly styled clone for PDF generation
+      const containerClone = previewContainer.cloneNode(true) as HTMLElement;
+      
+      // Remove the scaling and transform styles that interfere with PDF generation
+      containerClone.style.transform = 'none';
+      containerClone.style.transformOrigin = 'initial';
+      containerClone.style.width = '210mm'; // A4 width
+      containerClone.style.minHeight = '297mm'; // A4 height
+      containerClone.style.maxWidth = 'none';
+      containerClone.style.scale = '1';
       
       // Clean any problematic attributes for PDF generation
       const cleanHtmlForPdf = (element: HTMLElement): void => {
@@ -142,12 +154,37 @@ const PDFPreviewDialog: React.FC<PDFPreviewDialogProps> = ({
               el.removeAttribute(attr.name);
             }
           });
+          
+          // Remove any transform styles from child elements
+          if (el instanceof HTMLElement) {
+            el.style.transform = 'none';
+            el.style.transformOrigin = 'initial';
+          }
         });
       };
 
-      // Clone the container to avoid modifying the original
-      const containerClone = previewContainer.cloneNode(true) as HTMLElement;
       cleanHtmlForPdf(containerClone);
+      
+      // Add the clone to a temporary container off-screen for PDF generation
+      const tempWrapper = document.createElement('div');
+      tempWrapper.style.cssText = `
+        position: fixed;
+        top: -10000px;
+        left: 0;
+        width: 210mm;
+        background: white;
+        z-index: -9999;
+        visibility: hidden;
+      `;
+      
+      tempWrapper.appendChild(containerClone);
+      document.body.appendChild(tempWrapper);
+      
+      console.log('PDFPreview: Temporary container created with cloned content');
+      console.log('PDFPreview: Cloned content length:', containerClone.textContent?.length || 0);
+
+      // Give a moment for any final rendering
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       // Configure html2pdf options for multi-page support
       const opt = {
@@ -162,11 +199,13 @@ const PDFPreviewDialog: React.FC<PDFPreviewDialogProps> = ({
           useCORS: true,
           allowTaint: false,
           letterRendering: true,
-          logging: false,
+          logging: true, // Enable logging for debugging
           width: 794,
           height: 1123,
           backgroundColor: '#ffffff',
-          removeContainer: false
+          removeContainer: false,
+          scrollX: 0,
+          scrollY: 0
         },
         jsPDF: { 
           unit: 'mm', 
@@ -182,8 +221,11 @@ const PDFPreviewDialog: React.FC<PDFPreviewDialogProps> = ({
         }
       };
 
-      console.log('PDFPreview: Starting PDF generation from visible content...');
+      console.log('PDFPreview: Starting PDF generation from properly styled clone...');
       await html2pdf().set(opt).from(containerClone).save();
+      
+      // Clean up the temporary container
+      document.body.removeChild(tempWrapper);
       
       toast({
         title: "Download Started",

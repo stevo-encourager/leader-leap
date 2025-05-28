@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import { 
   ResponsiveContainer,
@@ -230,9 +231,9 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
 
   console.log("SkillGapChart - Rendering radar chart with data:", validChartData);
 
-  // More conservative margins and positioning for PDF with reduced bottom margin
+  // Much more conservative margins and positioning for PDF to prevent clipping
   const chartMargins = isPDF 
-    ? { top: 20, right: 40, left: 40, bottom: 60 } // Reduced bottom margin from 100 to 60
+    ? { top: 20, right: 40, left: 40, bottom: 100 } // More bottom margin for legend, less overall size
     : { top: 50, right: 100, left: 100, bottom: 50 };
 
   // Radar chart implementation with PDF-optimized settings to prevent clipping
@@ -278,10 +279,10 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             verticalAlign="bottom"
             align="center"
             wrapperStyle={{
-              marginTop: isPDF ? '30px' : '60px', // Reduced margin in PDF
-              fontSize: isPDF ? '11px' : '18px',
+              marginTop: isPDF ? '50px' : '60px', // More margin in PDF to prevent overlap
+              fontSize: isPDF ? '11px' : '18px', // Smaller font in PDF
               fontWeight: 'normal',
-              paddingBottom: isPDF ? '10px' : '0px' // Reduced padding
+              paddingBottom: isPDF ? '15px' : '0px'
             }}
           />
         </RadarChart>

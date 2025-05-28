@@ -1,49 +1,54 @@
 
 import React from 'react';
-import { InsightData } from '@/utils/assessmentCalculations/types';
+import { CategoryWithMetadata } from '@/utils/assessmentCalculations';
+import InsightSection from './InsightSection';
+import InsightSummary from './InsightSummary';
 
 interface LargestGapsSectionProps {
-  insights: InsightData;
+  categoryGaps: CategoryWithMetadata[];
+  isOpen: boolean;
+  onToggle: () => void;
+  formatNumber: (num: number | string) => string;
+  averageGap: string | number;
 }
 
-const LargestGapsSection: React.FC<LargestGapsSectionProps> = ({ insights }) => {
-  if (!insights.largestGaps || insights.largestGaps.length === 0) {
-    return null;
-  }
-
+const LargestGapsSection: React.FC<LargestGapsSectionProps> = ({
+  categoryGaps,
+  isOpen,
+  onToggle,
+  formatNumber,
+  averageGap
+}) => {
   return (
-    <div className="insight-card page-break-avoid bg-white p-6 rounded-lg border border-slate-200 shadow-sm">
-      <h3 className="text-xl font-semibold text-encourager mb-4 pb-2 border-b border-slate-200">
-        Top Three Priority Development Areas
-      </h3>
-      <div className="space-y-4">
-        {insights.largestGaps.slice(0, 3).map((gap, index) => (
-          <div key={gap.id} className="flex items-center p-4 bg-slate-50 rounded-lg">
-            <div className="flex items-center space-x-4 flex-1">
-              <div className="flex-shrink-0 w-8 h-8 bg-encourager text-white rounded-full flex items-center justify-center text-sm font-semibold">
-                {index + 1}
+    <InsightSection
+      title="Your Top 3 Largest Competency Gaps"
+      isOpen={isOpen}
+      onToggle={onToggle}
+    >
+      <InsightSummary averageGap={averageGap} />
+      
+      {categoryGaps && categoryGaps.length > 0 && categoryGaps.some(category => category.gap > 0) ? (
+        categoryGaps.map((category) => (
+          <div key={`largest-gap-${category.id}`} className="bg-secondary/10 p-3 rounded-lg">
+            <div className="flex justify-between">
+              <div>
+                <p className="font-medium">{category.title}</p>
+                <p className="text-sm text-slate-500">{category.description}</p>
               </div>
-              <div className="flex-1 min-w-0 pr-4">
-                <h4 className="font-medium text-slate-900">
-                  {gap.name}
-                </h4>
+              <div className="bg-red-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
+                Gap: {formatNumber(category.gap)}
               </div>
-            </div>
-            <div className="flex-shrink-0">
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-                Gap: {gap.gap.toFixed(1)}
-              </span>
             </div>
           </div>
-        ))}
-      </div>
-      <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-        <p className="text-sm text-blue-700">
-          <strong>Focus Area:</strong> These competencies show the largest gaps between your current and desired skill levels. 
-          Prioritizing development in these areas will have the most significant impact on your leadership effectiveness.
-        </p>
-      </div>
-    </div>
+        ))
+      ) : (
+        <div className="bg-secondary/10 p-3 rounded-lg">
+          <p className="text-sm text-slate-500">
+            You need to complete an assessment with different current and desired values to identify competency gaps.
+          </p>
+        </div>
+      )}
+    </InsightSection>
   );
 };
 

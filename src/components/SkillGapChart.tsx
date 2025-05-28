@@ -227,10 +227,12 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
 
   console.log("SkillGapChart - Rendering radar chart with data:", validChartData);
 
-  // Use original chart margins and sizing
-  const chartMargins = { top: 50, right: 100, left: 100, bottom: 50 };
+  // Adjust chart margins based on whether it's for PDF or dashboard
+  const chartMargins = isPDF 
+    ? { top: 50, right: 100, left: 100, bottom: 50 }
+    : { top: 50, right: 100, left: 100, bottom: 120 }; // Increased bottom margin for dashboard
 
-  // Radar chart implementation with original settings
+  // Radar chart implementation with adjusted settings
   return (
     <div className={`radar-chart-container ${className} page-break-avoid`}>
       <ResponsiveContainer width="100%" height="100%">
@@ -239,7 +241,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
           margin={chartMargins}
           cx="50%" 
           cy="50%"
-          outerRadius="75%"
+          outerRadius={isPDF ? "75%" : "65%"} // Reduced outer radius for dashboard to make more room
         >
           <PolarGrid 
             strokeDasharray="2 2" 
@@ -273,7 +275,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             verticalAlign="bottom"
             align="center"
             wrapperStyle={{
-              marginTop: '60px',
+              marginTop: isPDF ? '60px' : '80px', // More space for dashboard
               fontSize: '18px',
               fontWeight: 'normal'
             }}

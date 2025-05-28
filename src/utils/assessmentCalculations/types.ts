@@ -23,3 +23,9 @@ export interface CategoryWithMetadata {
     desired: number;
   };
 }
+
+export interface InsightData {
+  largestGaps: SkillWithMetadata[];
+  smallestGaps: SkillWithMetadata[];
+  skillsMeetingExpectations: SkillWithMetadata[];
+}

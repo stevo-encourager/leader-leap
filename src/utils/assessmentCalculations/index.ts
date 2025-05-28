@@ -26,3 +26,12 @@ export {
   getSkillsToImprove,
   getSkillsMeetingExpectations
 } from './skillMetrics';
+
+// Add the missing calculateInsights function
+export const calculateInsights = (categories: any[]) => {
+  return {
+    largestGaps: getLargestGaps(categories, 5),
+    smallestGaps: getSmallestGaps(categories, 5),
+    skillsMeetingExpectations: getSkillsMeetingExpectations(categories, 5)
+  };
+};

@@ -6,7 +6,8 @@ import { Loader2, Lightbulb, TrendingUp, Target, Users, Sparkles } from 'lucide-
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
 import { calculateInsights } from '@/utils/assessmentCalculations';
-import InsightSection from './insights/InsightSection';
+import LargestGapsSection from './insights/LargestGapsSection';
+import SmallestGapsSection from './insights/SmallestGapsSection';
 
 interface AIInsightsProps {
   categories: Category[];
@@ -21,11 +22,12 @@ const AIInsights: React.FC<AIInsightsProps> = ({
   averageGap, 
   assessmentId 
 }) => {
-  const { insights: aiInsights, loading: aiLoading, error: aiError } = useOpenAIInsights(
+  const { insights: aiInsights, isLoading: aiLoading, error: aiError } = useOpenAIInsights({
     categories, 
     demographics, 
+    averageGap,
     assessmentId
-  );
+  });
 
   // Calculate local insights immediately
   const localInsights = calculateInsights(categories);
@@ -68,25 +70,12 @@ const AIInsights: React.FC<AIInsightsProps> = ({
 
         {/* Local Insights Sections */}
         <div className="space-y-6">
-          <InsightSection 
-            title="Priority Development Areas"
-            icon={TrendingUp}
-            insights={localInsights.largestGaps}
-            type="priority"
+          <LargestGapsSection 
+            insights={localInsights}
           />
           
-          <InsightSection 
-            title="Key Competencies to Leverage"
-            icon={Users}
-            insights={localInsights.smallestGaps}
-            type="strengths"
-          />
-          
-          <InsightSection 
-            title="Skills Meeting Expectations"
-            icon={Target}
-            insights={localInsights.skillsMeetingExpectations}
-            type="meeting"
+          <SmallestGapsSection 
+            insights={localInsights}
           />
         </div>
 
@@ -116,42 +105,12 @@ const AIInsights: React.FC<AIInsightsProps> = ({
 
           {aiInsights && !aiLoading && (
             <div className="space-y-4">
-              {aiInsights.priorityAreas && aiInsights.priorityAreas.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-slate-900 mb-2">Recommended Focus Areas</h4>
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {aiInsights.priorityAreas.map((area, index) => (
-                      <Badge key={index} variant="outline" className="bg-white">
-                        {area}
-                      </Badge>
-                    ))}
-                  </div>
+              <div>
+                <h4 className="font-medium text-slate-900 mb-2">AI Analysis</h4>
+                <div className="prose prose-sm text-slate-700">
+                  {aiInsights}
                 </div>
-              )}
-
-              {aiInsights.keyStrengths && aiInsights.keyStrengths.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-slate-900 mb-2">Key Strengths</h4>
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {aiInsights.keyStrengths.map((strength, index) => (
-                      <Badge key={index} variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                        {strength}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {aiInsights.recommendedActions && aiInsights.recommendedActions.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-slate-900 mb-2">Recommended Next Steps</h4>
-                  <ul className="list-disc list-inside space-y-1 text-sm text-slate-700">
-                    {aiInsights.recommendedActions.map((action, index) => (
-                      <li key={index}>{action}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+              </div>
             </div>
           )}
         </div>

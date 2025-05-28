@@ -2,7 +2,7 @@
 // Main entry point that re-exports all assessment calculation functions
 
 // Types
-export type { SkillWithMetadata, CategoryWithMetadata } from './types';
+export type { SkillWithMetadata, CategoryWithMetadata, InsightData } from './types';
 
 // Normalizers
 export { normalizeSkill, getAllSkillsWithMetadata } from './normalizers';

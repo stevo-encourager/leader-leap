@@ -16,12 +16,12 @@ const SmallestGapsSection: React.FC<SmallestGapsSectionProps> = ({ insights }) =
       <h3 className="text-xl font-semibold text-encourager mb-2 pb-2 border-b border-slate-200">
         Key Competencies to Leverage
       </h3>
-      <div className="space-y-3">
+      <div className="space-y-3 mt-3">
         {insights.smallestGaps.slice(0, 5).map((gap) => (
-          <div key={gap.competency} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+          <div key={gap.id} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
             <div className="flex-1">
               <h4 className="font-medium text-slate-900">
-                {gap.competency}
+                {gap.name}
               </h4>
             </div>
             <div className="ml-4">

@@ -43,7 +43,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({
           Personalized analysis of your leadership assessment results
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-6" style={{ backgroundColor: '#ffffff', width: '100%', boxSizing: 'border-box' }}>
+      <CardContent className="p-6 bg-white w-full">
         {/* Assessment Summary */}
         <div className="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
           <h3 className="text-lg font-semibold text-slate-900 mb-3 flex items-center gap-2">

@@ -18,18 +18,18 @@ const LargestGapsSection: React.FC<LargestGapsSectionProps> = ({ insights }) => 
       </h3>
       <div className="space-y-4">
         {insights.largestGaps.slice(0, 3).map((gap, index) => (
-          <div key={gap.competency} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
-            <div className="flex items-center space-x-4">
+          <div key={gap.id} className="flex items-center p-4 bg-slate-50 rounded-lg">
+            <div className="flex items-center space-x-4 flex-1">
               <div className="flex-shrink-0 w-8 h-8 bg-encourager text-white rounded-full flex items-center justify-center text-sm font-semibold">
                 {index + 1}
               </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="font-medium text-slate-900 pr-16">
-                  {gap.competency}
+              <div className="flex-1 min-w-0 pr-4">
+                <h4 className="font-medium text-slate-900">
+                  {gap.name}
                 </h4>
               </div>
             </div>
-            <div className="flex-shrink-0 ml-4">
+            <div className="flex-shrink-0">
               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
                 Gap: {gap.gap.toFixed(1)}
               </span>

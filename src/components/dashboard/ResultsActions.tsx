@@ -4,7 +4,6 @@ import { ArrowLeft, Download, Plus, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { exportToPDF } from '@/utils/pdfUtils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
@@ -156,31 +155,10 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     setShowPreview(true);
   };
 
-  // Actual PDF export function that gets called from the preview dialog
+  // This function is called when the preview dialog handles its own download
   const handleConfirmExport = () => {
-    console.log('ResultsActions: Confirmed export from preview, calling exportToPDF with assessmentId...');
-    
-    try {
-      // CRITICAL: Pass assessmentId to ensure PDF uses the same stored insights
-      exportToPDF(categories, demographics, insights, assessmentId, 'leadership-assessment-results.pdf');
-      
-      // For guest users, suggest signup after successful export
-      if (!user && onSignup) {
-        setTimeout(() => {
-          toast({
-            title: "Save Your Results",
-            description: "Sign up to save your results permanently in your account.",
-          });
-        }, 2000);
-      }
-    } catch (error) {
-      console.error('ResultsActions: Error calling exportToPDF:', error);
-      toast({
-        title: "Error exporting PDF",
-        description: "There was an issue creating your PDF. Please try again.",
-        variant: "destructive",
-      });
-    }
+    console.log('ResultsActions: Export confirmed from preview (handled by dialog)');
+    // The preview dialog handles the actual export, so this is just for compatibility
   };
 
   const handleNewAssessment = () => {
@@ -208,7 +186,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     if (!areInsightsReadyForExport()) {
       return 'Waiting for Insights...';
     }
-    return user ? 'Download PDF' : 'Save as PDF';
+    return user ? 'Preview & Download PDF' : 'Preview & Save as PDF';
   };
 
   const getPDFTooltipText = () => {
@@ -221,7 +199,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     if (!areInsightsReadyForExport()) {
       return 'Waiting for AI insights to complete';
     }
-    return 'Preview and export your complete assessment results including AI insights';
+    return 'Preview your complete assessment results and download as PDF';
   };
   
   return (

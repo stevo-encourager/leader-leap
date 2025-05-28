@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Download, X } from 'lucide-react';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import PDFTemplate from './PDFTemplate';
+import { exportToPDF } from '@/utils/pdfUtils';
 import { toast } from '@/hooks/use-toast';
 
 interface PDFPreviewDialogProps {
@@ -26,6 +27,7 @@ const PDFPreviewDialog: React.FC<PDFPreviewDialogProps> = ({
 }) => {
   const [isContentReady, setIsContentReady] = useState(false);
   const [contentCheckAttempts, setContentCheckAttempts] = useState(0);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   // Check if content is fully loaded when dialog opens
   useEffect(() => {
@@ -95,37 +97,54 @@ const PDFPreviewDialog: React.FC<PDFPreviewDialogProps> = ({
         console.log('PDFPreview: All content is ready for preview');
         setIsContentReady(true);
         clearInterval(intervalId);
-        
-        toast({
-          title: "Preview Ready",
-          description: "All content has loaded. You can now review and download the PDF.",
-        });
       } else if (contentCheckAttempts >= 30) { // 15 seconds timeout
         console.warn('PDFPreview: Content readiness check timed out');
-        setIsContentReady(true); // Allow export anyway
+        setIsContentReady(true); // Allow preview anyway
         clearInterval(intervalId);
-        
-        toast({
-          title: "Preview Timeout",
-          description: "Content may still be loading, but you can proceed with the export.",
-          variant: "default",
-        });
       }
     }, 500);
 
     return () => clearInterval(intervalId);
   }, [isOpen, contentCheckAttempts]);
 
-  const handleExport = () => {
-    console.log('PDFPreview: User confirmed export from preview');
-    onConfirmExport();
-    onClose();
+  const handleDirectDownload = async () => {
+    if (!isContentReady) {
+      toast({
+        title: "Content Not Ready",
+        description: "Please wait for all content to load before downloading.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    console.log('PDFPreview: Direct download initiated from preview');
+    setIsDownloading(true);
+    
+    try {
+      await exportToPDF(categories, demographics, undefined, assessmentId, 'leadership-assessment-results.pdf');
+      
+      toast({
+        title: "Download Started",
+        description: "Your PDF is being generated and will download shortly.",
+      });
+      
+      onClose();
+    } catch (error) {
+      console.error('PDFPreview: Error during direct download:', error);
+      toast({
+        title: "Download Failed",
+        description: "There was an error generating your PDF. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
-        <DialogHeader>
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center justify-between">
             <span>PDF Preview - Leadership Assessment Results</span>
             <Button variant="ghost" size="sm" onClick={onClose}>
@@ -134,7 +153,7 @@ const PDFPreviewDialog: React.FC<PDFPreviewDialogProps> = ({
           </DialogTitle>
         </DialogHeader>
         
-        <div className="flex-1 overflow-auto border rounded-lg bg-gray-50 p-4">
+        <div className="flex-1 overflow-auto border rounded-lg bg-gray-50 p-4 min-h-0">
           {!isContentReady && (
             <div className="flex items-center justify-center py-8">
               <div className="text-center">
@@ -147,12 +166,13 @@ const PDFPreviewDialog: React.FC<PDFPreviewDialogProps> = ({
           
           <div 
             id="pdf-preview-container"
-            className={`transition-opacity duration-300 ${isContentReady ? 'opacity-100' : 'opacity-0'}`}
+            className={`transition-opacity duration-300 ${isContentReady ? 'opacity-100' : 'opacity-30'}`}
             style={{
-              transform: 'scale(0.7)',
+              transform: 'scale(0.8)',
               transformOrigin: 'top left',
-              width: '142.86%', // Compensate for 0.7 scale
-              backgroundColor: 'white'
+              width: '125%', // Compensate for 0.8 scale
+              backgroundColor: 'white',
+              minHeight: '297mm'
             }}
           >
             <PDFTemplate 
@@ -163,17 +183,17 @@ const PDFPreviewDialog: React.FC<PDFPreviewDialogProps> = ({
           </div>
         </div>
 
-        <DialogFooter className="flex justify-between">
+        <DialogFooter className="flex-shrink-0 flex justify-between pt-4">
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
           <Button 
-            onClick={handleExport}
-            disabled={!isContentReady}
+            onClick={handleDirectDownload}
+            disabled={!isContentReady || isDownloading}
             className="flex items-center gap-2"
           >
             <Download className="h-4 w-4" />
-            Download PDF
+            {isDownloading ? 'Downloading...' : 'Download PDF'}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,49 +1,44 @@
 
 import React from 'react';
-import { CategoryWithMetadata } from '@/utils/assessmentCalculations';
-import InsightSection from './InsightSection';
+import { InsightData } from '@/utils/assessmentCalculations/types';
 
 interface SmallestGapsSectionProps {
-  categoryGaps: CategoryWithMetadata[];
-  isOpen: boolean;
-  onToggle: () => void;
-  formatNumber: (num: number | string) => string;
+  insights: InsightData;
 }
 
-const SmallestGapsSection: React.FC<SmallestGapsSectionProps> = ({
-  categoryGaps,
-  isOpen,
-  onToggle,
-  formatNumber
-}) => {
+const SmallestGapsSection: React.FC<SmallestGapsSectionProps> = ({ insights }) => {
+  if (!insights.smallestGaps || insights.smallestGaps.length === 0) {
+    return null;
+  }
+
   return (
-    <InsightSection
-      title="Your Top 3 Smallest Competency Gaps"
-      isOpen={isOpen}
-      onToggle={onToggle}
-    >
-      {categoryGaps && categoryGaps.length > 0 ? (
-        categoryGaps.map((category) => (
-          <div key={`small-gap-${category.id}`} className="bg-secondary/10 p-3 rounded-lg">
-            <div className="flex justify-between">
-              <div>
-                <p className="font-medium">{category.title}</p>
-                <p className="text-sm text-slate-500">{category.description}</p>
-              </div>
-              <div className="bg-green-500 text-white px-2 py-1 rounded-full h-fit text-xs font-medium">
-                Gap: {formatNumber(category.gap)}
-              </div>
+    <div className="insight-card page-break-avoid bg-white p-6 rounded-lg border border-slate-200 shadow-sm">
+      <h3 className="text-xl font-semibold text-encourager mb-2 pb-2 border-b border-slate-200">
+        Key Competencies to Leverage
+      </h3>
+      <div className="space-y-3">
+        {insights.smallestGaps.slice(0, 5).map((gap) => (
+          <div key={gap.competency} className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+            <div className="flex-1">
+              <h4 className="font-medium text-slate-900">
+                {gap.competency}
+              </h4>
+            </div>
+            <div className="ml-4">
+              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                Gap: {gap.gap.toFixed(1)}
+              </span>
             </div>
           </div>
-        ))
-      ) : (
-        <div className="bg-secondary/10 p-3 rounded-lg">
-          <p className="text-sm text-slate-500">
-            Complete an assessment to identify your smallest competency gaps.
-          </p>
-        </div>
-      )}
-    </InsightSection>
+        ))}
+      </div>
+      <div className="mt-4 p-4 bg-green-50 rounded-lg">
+        <p className="text-sm text-green-700">
+          <strong>Strength Areas:</strong> These competencies represent your strongest areas where you're already close to your desired skill level. 
+          Consider leveraging these strengths to mentor others or take on leadership roles in these areas.
+        </p>
+      </div>
+    </div>
   );
 };
 

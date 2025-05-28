@@ -152,7 +152,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
           padding: '15px',
           borderRadius: '8px',
           border: '1px solid #e2e8f0',
-          height: '500px', // Increased height for better legend positioning
+          height: '450px', // Reduced height from 500px to 450px
           width: '100%',
           display: 'flex',
           alignItems: 'center',
@@ -286,7 +286,10 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
             borderRadius: '8px',
             textAlign: 'center',
             width: '100%',
-            boxSizing: 'border-box'
+            boxSizing: 'border-box',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
           }}>
             <img 
               src="/lovable-uploads/b35e005b-ec23-4976-8796-738f7c856377.png" 

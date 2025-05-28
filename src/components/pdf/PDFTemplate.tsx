@@ -112,7 +112,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
       padding: '15mm',
       boxSizing: 'border-box'
     }}>
-      {/* PDF-specific CSS for plain text styling with proper page breaks and spacing */}
+      {/* Enhanced PDF-specific CSS with stronger page break controls */}
       <style>
         {`
           .pdf-template {
@@ -123,7 +123,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
             font-size: 24px;
             font-weight: 700;
             color: #2F564D;
-            margin: 0 0 6px 0;
+            margin: 0 0 8px 0;
             text-align: center;
           }
           
@@ -131,25 +131,25 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
             font-size: 18px;
             font-weight: 600;
             color: #2F564D;
-            margin: 8px 0 8px 0;
-            border-bottom: 1px solid #2F564D;
-            padding-bottom: 6px;
+            margin: 12px 0 8px 0;
+            border-bottom: 2px solid #2F564D;
+            padding-bottom: 8px;
           }
           
           .pdf-template h3 {
             font-size: 16px;
             font-weight: 600;
             color: #2F564D;
-            margin: 6px 0 3px 0;
+            margin: 8px 0 4px 0;
           }
           
           .pdf-template p {
-            margin: 3px 0;
+            margin: 4px 0;
             line-height: 1.4;
           }
           
           .pdf-template ul {
-            margin: 3px 0;
+            margin: 4px 0;
             padding-left: 18px;
             list-style-type: disc;
           }
@@ -172,7 +172,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
           }
           
           .pdf-template .priority-item {
-            margin: 4px 0;
+            margin: 6px 0;
             padding: 0;
             border: none;
             background: none;
@@ -197,7 +197,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
           }
           
           .pdf-template .leverage-item {
-            margin: 3px 0;
+            margin: 6px 0;
             padding: 0;
             border: none;
             background: none;
@@ -207,30 +207,48 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
             margin: 15mm;
           }
 
-          .force-page-break {
+          /* Stronger page break CSS for html2pdf.js */
+          .ai-insights-page-break {
             page-break-before: always !important;
             break-before: page !important;
             -webkit-break-before: page !important;
             display: block !important;
+            margin-top: 0 !important;
+            padding-top: 0 !important;
           }
 
           .page-break-avoid {
             page-break-inside: avoid !important;
             break-inside: avoid !important;
+            -webkit-break-inside: avoid !important;
           }
           
-          .section-spacing {
-            margin-bottom: 6px;
+          /* Minimal section spacing - no large gaps */
+          .section {
+            margin-bottom: 8px;
+          }
+          
+          /* Ensure logo container stays at top */
+          .logo-container {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+          
+          /* Chart container protection */
+          .chart-container {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            margin: 8px 0;
           }
         `}
       </style>
 
       {/* Main content container with PDF class */}
       <div className="pdf-template">
-        {/* Logo at the very top */}
-        <div style={{ 
+        {/* Logo at the very top - MUST stay on page 1 */}
+        <div className="logo-container" style={{ 
           textAlign: 'center', 
-          marginBottom: '12px',
+          marginBottom: '16px',
           pageBreakInside: 'avoid'
         }}>
           <img 
@@ -246,7 +264,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
         </div>
 
         {/* Header */}
-        <div className="page-break-avoid section-spacing">
+        <div className="page-break-avoid section">
           <h1>Leadership Assessment Results</h1>
           <p style={{ textAlign: 'center', color: '#64748b', margin: '0' }}>
             Generated on {currentDate}
@@ -254,7 +272,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
         </div>
 
         {/* Profile Summary */}
-        <div className="profile-summary page-break-avoid section-spacing">
+        <div className="profile-summary page-break-avoid section">
           <h2>Profile Summary</h2>
           {demographics?.role && (
             <p><strong>Role:</strong> {demographics.role}</p>
@@ -272,7 +290,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
         </div>
 
         {/* Competency Gap Chart */}
-        <div className="page-break-avoid section-spacing">
+        <div className="chart-container page-break-avoid section">
           <h2>Competency Analysis - Radar Chart</h2>
           <div style={{ 
             height: '420px',
@@ -289,19 +307,19 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
           </div>
         </div>
 
-        {/* AI Insights section - FORCED to start on new page */}
-        <div className="force-page-break">
+        {/* AI Insights section - EXPLICIT PAGE BREAK TO START ON NEW PAGE */}
+        <div className="ai-insights-page-break">
           <h2>AI-Powered Insights</h2>
-          <p style={{ color: '#64748b', fontSize: '12px', margin: '0 0 6px 0' }}>
+          <p style={{ color: '#64748b', fontSize: '12px', margin: '0 0 8px 0' }}>
             Personalized leadership development insights powered by Encourager GPT
           </p>
           
           {isLoading && (
-            <p style={{ margin: '6px 0' }}>Encourager GPT is analyzing your assessment results...</p>
+            <p style={{ margin: '8px 0' }}>Encourager GPT is analyzing your assessment results...</p>
           )}
 
           {error && (
-            <div style={{ margin: '6px 0' }}>
+            <div style={{ margin: '8px 0' }}>
               <p><strong>Unable to generate insights:</strong> {error}</p>
             </div>
           )}
@@ -311,7 +329,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
             
             if (!parsedInsights) {
               return (
-                <p style={{ margin: '6px 0' }}>
+                <p style={{ margin: '8px 0' }}>
                   Unable to parse AI insights. The insights format appears to be invalid.
                 </p>
               );
@@ -321,7 +339,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
               <div>
                 {/* Assessment Summary */}
                 {parsedInsights.summary && (
-                  <div style={{ marginBottom: '8px' }}>
+                  <div style={{ marginBottom: '12px' }}>
                     <h3>Assessment Summary</h3>
                     <FormattedSummary 
                       summary={parsedInsights.summary}
@@ -332,7 +350,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
 
                 {/* Priority Development Areas */}
                 {parsedInsights.priority_areas && (
-                  <div style={{ marginBottom: '8px' }}>
+                  <div style={{ marginBottom: '12px' }}>
                     <h3>Top 3 Priority Development Areas</h3>
                     {parsedInsights.priority_areas.map((area, index) => {
                       const resourceLink = generateResourceLink(area.resource);
@@ -362,7 +380,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
 
                 {/* Key Competencies to Leverage */}
                 {parsedInsights.key_strengths && (
-                  <div style={{ marginBottom: '8px' }}>
+                  <div style={{ marginBottom: '12px' }}>
                     <h3>Key Competencies to Leverage</h3>
                     {parsedInsights.key_strengths.map((strength, index) => (
                       <div key={index} className="leverage-item">
@@ -383,14 +401,14 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
           })()}
 
           {!insights && !isLoading && !error && (
-            <p style={{ margin: '6px 0' }}>
+            <p style={{ margin: '8px 0' }}>
               AI insights will appear here once your assessment data is analyzed.
             </p>
           )}
         </div>
 
         {/* Recommended Next Steps */}
-        <div className="page-break-avoid section-spacing">
+        <div className="page-break-avoid section">
           <h2>Recommended Next Steps</h2>
           <ul>
             <li>Consider using this report in your next 1:1 with your manager or mentor as a guide for your professional development</li>
@@ -400,7 +418,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
         </div>
 
         {/* Coaching Support */}
-        <div className="page-break-avoid section-spacing">
+        <div className="page-break-avoid section">
           <h2>Coaching Support</h2>
           <div style={{
             display: 'grid',
@@ -445,13 +463,13 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
         {/* Footer */}
         <div className="page-break-avoid" style={{
           textAlign: 'center',
-          marginTop: '8px',
+          marginTop: '12px',
           paddingTop: '8px',
           borderTop: '1px solid #e2e8f0',
           fontSize: '12px',
           color: '#64748b'
         }}>
-          <p style={{ margin: '0 0 3px 0', fontWeight: '600' }}>
+          <p style={{ margin: '0 0 4px 0', fontWeight: '600' }}>
             Leadership Assessment Tool • Generated on {currentDate}
           </p>
           <p style={{ margin: '0', lineHeight: '1.4' }}>

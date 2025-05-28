@@ -231,12 +231,12 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
 
   console.log("SkillGapChart - Rendering radar chart with data:", validChartData);
 
-  // Reduced margins and positioning for PDF to minimize bottom space
+  // Further reduced margins for PDF to minimize bottom space
   const chartMargins = isPDF 
-    ? { top: 10, right: 30, left: 30, bottom: 60 } // Reduced bottom margin from 100 to 60
+    ? { top: 5, right: 25, left: 25, bottom: 45 } // Further reduced bottom margin
     : { top: 50, right: 100, left: 100, bottom: 50 };
 
-  // Radar chart implementation with PDF-optimized settings to prevent clipping
+  // Radar chart implementation with PDF-optimized settings
   return (
     <div className={`radar-chart-container ${className} page-break-avoid`}>
       <ResponsiveContainer width="100%" height="100%">
@@ -244,8 +244,8 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
           data={validChartData} 
           margin={chartMargins}
           cx="50%" 
-          cy={isPDF ? "40%" : "45%"} // Slightly higher position in PDF to reduce bottom space
-          outerRadius={isPDF ? "50%" : "75%"} // Slightly larger radius to fill space better
+          cy={isPDF ? "38%" : "45%"} // Optimized position for tighter spacing
+          outerRadius={isPDF ? "52%" : "75%"} // Slightly larger to fill space better
         >
           <PolarGrid 
             strokeDasharray="2 2" 
@@ -279,10 +279,10 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             verticalAlign="bottom"
             align="center"
             wrapperStyle={{
-              marginTop: isPDF ? '30px' : '60px', // Reduced margin in PDF from 50px to 30px
+              marginTop: isPDF ? '20px' : '60px', // Further reduced margin
               fontSize: isPDF ? '11px' : '18px',
               fontWeight: 'normal',
-              paddingBottom: isPDF ? '10px' : '0px' // Reduced bottom padding
+              paddingBottom: isPDF ? '5px' : '0px' // Minimal bottom padding
             }}
           />
         </RadarChart>

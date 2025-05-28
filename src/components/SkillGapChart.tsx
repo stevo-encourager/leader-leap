@@ -14,7 +14,7 @@ import { Category } from '@/utils/assessmentTypes';
 interface SkillGapChartProps {
   categories: Category[];
   className?: string;
-  isPDF?: boolean; // Add prop to detect PDF rendering
+  isPDF?: boolean;
 }
 
 interface ChartData {
@@ -32,8 +32,8 @@ const CustomTick = (props: any) => {
   // Calculate angle from center to current position
   const angle = Math.atan2(y - cy, x - cx);
   
-  // Use different radius for PDF vs screen to prevent cutoff
-  const labelRadius = isPDF ? 140 : 175; // Reduced for PDF to prevent clipping
+  // Use much more conservative radius for PDF to prevent clipping
+  const labelRadius = isPDF ? 120 : 175;
   
   const labelX = cx + labelRadius * Math.cos(angle);
   const labelY = cy + labelRadius * Math.sin(angle);
@@ -43,9 +43,9 @@ const CustomTick = (props: any) => {
   if (labelX > cx + 5) anchor = 'start';
   else if (labelX < cx - 5) anchor = 'end';
   
-  // Shorter labels for PDF to prevent overlap
-  const displayText = isPDF && payload.value.length > 15 
-    ? payload.value.substring(0, 12) + '...' 
+  // Much shorter labels for PDF to prevent overlap and clipping
+  const displayText = isPDF && payload.value.length > 12 
+    ? payload.value.substring(0, 10) + '...' 
     : payload.value;
   
   return (
@@ -55,7 +55,7 @@ const CustomTick = (props: any) => {
       textAnchor={anchor}
       dominantBaseline="middle"
       fill="#2F564D"
-      fontSize={isPDF ? "11" : "14"} // Smaller font for PDF
+      fontSize={isPDF ? "10" : "14"}
       fontWeight="500"
     >
       {displayText}
@@ -179,9 +179,9 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
         const avgCurrent = parseFloat((totalCurrent / validSkillCount).toFixed(1));
         const avgDesired = parseFloat((totalDesired / validSkillCount).toFixed(1));
         
-        // Shorten category names for better PDF display
-        const displayTitle = isPDF && category.title && category.title.length > 20 
-          ? category.title.substring(0, 17) + '...' 
+        // Much shorter category names for PDF display to prevent clipping
+        const displayTitle = isPDF && category.title && category.title.length > 15 
+          ? category.title.substring(0, 12) + '...' 
           : category.title || "Unknown Category";
         
         result.push({
@@ -231,12 +231,12 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
 
   console.log("SkillGapChart - Rendering radar chart with data:", validChartData);
 
-  // Enhanced margins and positioning for PDF vs screen
+  // Much more conservative margins and positioning for PDF to prevent clipping
   const chartMargins = isPDF 
-    ? { top: 30, right: 60, left: 60, bottom: 80 } // More bottom margin for legend in PDF
+    ? { top: 20, right: 40, left: 40, bottom: 100 } // More bottom margin for legend, less overall size
     : { top: 50, right: 100, left: 100, bottom: 50 };
 
-  // Radar chart implementation with PDF-optimized settings
+  // Radar chart implementation with PDF-optimized settings to prevent clipping
   return (
     <div className={`radar-chart-container ${className} page-break-avoid`}>
       <ResponsiveContainer width="100%" height="100%">
@@ -244,8 +244,8 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
           data={validChartData} 
           margin={chartMargins}
           cx="50%" 
-          cy={isPDF ? "40%" : "45%"} // Higher position in PDF to make room for legend
-          outerRadius={isPDF ? "60%" : "75%"} // Smaller radius in PDF
+          cy={isPDF ? "35%" : "45%"} // Much higher position in PDF to leave more room for legend
+          outerRadius={isPDF ? "45%" : "75%"} // Much smaller radius in PDF to prevent clipping
         >
           <PolarGrid 
             strokeDasharray="2 2" 
@@ -279,10 +279,10 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             verticalAlign="bottom"
             align="center"
             wrapperStyle={{
-              marginTop: isPDF ? '40px' : '60px', // Less margin in PDF
-              fontSize: isPDF ? '12px' : '18px', // Smaller font in PDF
+              marginTop: isPDF ? '50px' : '60px', // More margin in PDF to prevent overlap
+              fontSize: isPDF ? '11px' : '18px', // Smaller font in PDF
               fontWeight: 'normal',
-              paddingBottom: isPDF ? '10px' : '0px'
+              paddingBottom: isPDF ? '15px' : '0px'
             }}
           />
         </RadarChart>

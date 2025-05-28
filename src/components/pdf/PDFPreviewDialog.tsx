@@ -128,19 +128,20 @@ const PDFPreviewDialog: React.FC<PDFPreviewDialogProps> = ({
       }
 
       console.log('PDFPreview: Found preview container, content length:', previewContainer.textContent?.length || 0);
-      console.log('PDFPreview: Container HTML length:', previewContainer.innerHTML?.length || 0);
       
       // Create a properly styled clone for PDF generation
       const containerClone = previewContainer.cloneNode(true) as HTMLElement;
       
-      // Remove the scaling and transform styles that interfere with PDF generation
+      // Reset all transform and scaling styles that interfere with PDF generation
       containerClone.style.transform = 'none';
       containerClone.style.transformOrigin = 'initial';
-      containerClone.style.width = '210mm'; // A4 width
-      containerClone.style.minHeight = '297mm'; // A4 height
-      containerClone.style.maxWidth = 'none';
       containerClone.style.scale = '1';
-      containerClone.style.overflow = 'visible'; // Ensure content isn't clipped
+      containerClone.style.width = '794px'; // A4 width in pixels at 96 DPI
+      containerClone.style.minHeight = 'auto';
+      containerClone.style.maxWidth = 'none';
+      containerClone.style.overflow = 'visible';
+      containerClone.style.padding = '20px';
+      containerClone.style.boxSizing = 'border-box';
       
       // Clean any problematic attributes for PDF generation
       const cleanHtmlForPdf = (element: HTMLElement): void => {
@@ -156,11 +157,19 @@ const PDFPreviewDialog: React.FC<PDFPreviewDialogProps> = ({
             }
           });
           
-          // Remove any transform styles from child elements
+          // Remove any transform styles from child elements and ensure proper PDF rendering
           if (el instanceof HTMLElement) {
             el.style.transform = 'none';
             el.style.transformOrigin = 'initial';
             el.style.overflow = 'visible';
+            
+            // Fix chart container sizing for PDF
+            if (el.classList.contains('recharts-wrapper') || el.classList.contains('radar-chart-container')) {
+              el.style.width = '100%';
+              el.style.height = '400px';
+              el.style.maxWidth = '100%';
+              el.style.overflow = 'visible';
+            }
           }
         });
       };
@@ -173,61 +182,81 @@ const PDFPreviewDialog: React.FC<PDFPreviewDialogProps> = ({
         position: fixed;
         top: -20000px;
         left: 0;
-        width: 210mm;
+        width: 794px;
         background: white;
         z-index: -9999;
         visibility: hidden;
         overflow: visible;
+        font-family: system-ui, -apple-system, sans-serif;
+        font-size: 14px;
+        line-height: 1.6;
+        color: #1f2937;
       `;
       
       tempWrapper.appendChild(containerClone);
       document.body.appendChild(tempWrapper);
       
       console.log('PDFPreview: Temporary container created with cloned content');
-      console.log('PDFPreview: Cloned content length:', containerClone.textContent?.length || 0);
 
       // Give a moment for any final rendering
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Enhanced html2pdf options for proper multi-page support
+      // Enhanced html2pdf options specifically to fix clipping and multi-page issues
       const opt = {
-        margin: [10, 10, 10, 10], // Reduced margins to fit more content
+        margin: [10, 10, 10, 10], // Small margins in mm
         filename: 'leadership-assessment-results.pdf',
         image: { 
           type: 'jpeg', 
-          quality: 0.95
+          quality: 0.9
         },
         html2canvas: { 
-          scale: 1.5, // Reduced scale for better performance and content fit
+          scale: 1, // Reduced scale to prevent oversizing
           useCORS: true,
           allowTaint: false,
           letterRendering: true,
-          logging: true,
-          width: 794,
-          height: 1123,
+          logging: false,
+          width: 794, // A4 width in pixels
+          height: null, // Let height be automatic for multi-page
           backgroundColor: '#ffffff',
           removeContainer: false,
           scrollX: 0,
           scrollY: 0,
-          foreignObjectRendering: true, // Better SVG rendering
-          imageTimeout: 15000 // Longer timeout for chart rendering
+          foreignObjectRendering: false, // Disable to prevent chart rendering issues
+          imageTimeout: 10000,
+          onclone: (clonedDoc: Document) => {
+            // Ensure all elements in the cloned document are properly sized
+            const clonedElements = clonedDoc.querySelectorAll('*');
+            clonedElements.forEach((el) => {
+              if (el instanceof HTMLElement) {
+                el.style.transform = 'none';
+                el.style.overflow = 'visible';
+                
+                // Fix chart containers specifically
+                if (el.classList.contains('recharts-wrapper') || el.classList.contains('radar-chart-container')) {
+                  el.style.width = '100%';
+                  el.style.height = '400px';
+                  el.style.maxWidth = '100%';
+                }
+              }
+            });
+          }
         },
         jsPDF: { 
           unit: 'mm', 
           format: 'a4', 
           orientation: 'portrait',
           compress: true,
-          hotfixes: ['px_scaling'] // Fix for pixel scaling issues
+          hotfixes: ['px_scaling']
         },
         pagebreak: { 
           mode: ['avoid-all', 'css'],
           before: ['.page-break-before', '.ai-insights-section'],
-          after: ['.page-break-after', '.profile-summary'],
+          after: ['.page-break-after'],
           avoid: ['.page-break-avoid', '.radar-chart-container', '.insight-card']
         }
       };
 
-      console.log('PDFPreview: Starting enhanced multi-page PDF generation...');
+      console.log('PDFPreview: Starting PDF generation with fixed scaling and multi-page support...');
       await html2pdf().set(opt).from(containerClone).save();
       
       // Clean up the temporary container
@@ -278,9 +307,9 @@ const PDFPreviewDialog: React.FC<PDFPreviewDialogProps> = ({
             id="pdf-preview-container"
             className={`transition-opacity duration-300 ${isContentReady ? 'opacity-100' : 'opacity-30'}`}
             style={{
-              transform: 'scale(0.8)',
+              transform: 'scale(0.75)',
               transformOrigin: 'top left',
-              width: '125%',
+              width: '133%',
               backgroundColor: 'white',
               minHeight: '297mm'
             }}

@@ -25,15 +25,15 @@ interface ChartData {
   skillCount?: number;
 }
 
-// Custom tick component for competency names
+// Custom tick component for competency names with enhanced PDF support
 const CustomTick = (props: any) => {
   const { payload, x, y, cx, cy, textAnchor, index, isPDF } = props;
   
   // Calculate angle from center to current position
   const angle = Math.atan2(y - cy, x - cx);
   
-  // Use original radius for better readability
-  const labelRadius = isPDF ? 150 : 175;
+  // Use much more conservative radius for PDF to prevent clipping
+  const labelRadius = isPDF ? 120 : 175;
   
   const labelX = cx + labelRadius * Math.cos(angle);
   const labelY = cy + labelRadius * Math.sin(angle);
@@ -43,8 +43,10 @@ const CustomTick = (props: any) => {
   if (labelX > cx + 5) anchor = 'start';
   else if (labelX < cx - 5) anchor = 'end';
   
-  // Use full labels for better readability
-  const displayText = payload.value;
+  // Much shorter labels for PDF to prevent overlap and clipping
+  const displayText = isPDF && payload.value.length > 12 
+    ? payload.value.substring(0, 10) + '...' 
+    : payload.value;
   
   return (
     <text
@@ -53,7 +55,7 @@ const CustomTick = (props: any) => {
       textAnchor={anchor}
       dominantBaseline="middle"
       fill="#2F564D"
-      fontSize={isPDF ? "12" : "14"}
+      fontSize={isPDF ? "10" : "14"}
       fontWeight="500"
     >
       {displayText}
@@ -177,8 +179,10 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
         const avgCurrent = parseFloat((totalCurrent / validSkillCount).toFixed(1));
         const avgDesired = parseFloat((totalDesired / validSkillCount).toFixed(1));
         
-        // Use full category title for better readability
-        const displayTitle = category.title || "Unknown Category";
+        // Much shorter category names for PDF display to prevent clipping
+        const displayTitle = isPDF && category.title && category.title.length > 15 
+          ? category.title.substring(0, 12) + '...' 
+          : category.title || "Unknown Category";
         
         result.push({
           subject: displayTitle,
@@ -227,10 +231,12 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
 
   console.log("SkillGapChart - Rendering radar chart with data:", validChartData);
 
-  // Use original chart margins and sizing
-  const chartMargins = { top: 50, right: 100, left: 100, bottom: 50 };
+  // Further reduced margins for PDF to minimize bottom space
+  const chartMargins = isPDF 
+    ? { top: 5, right: 25, left: 25, bottom: 45 } // Further reduced bottom margin
+    : { top: 50, right: 100, left: 100, bottom: 50 };
 
-  // Radar chart implementation with original settings
+  // Radar chart implementation with PDF-optimized settings
   return (
     <div className={`radar-chart-container ${className} page-break-avoid`}>
       <ResponsiveContainer width="100%" height="100%">
@@ -238,8 +244,8 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
           data={validChartData} 
           margin={chartMargins}
           cx="50%" 
-          cy="50%"
-          outerRadius="75%"
+          cy={isPDF ? "38%" : "45%"} // Optimized position for tighter spacing
+          outerRadius={isPDF ? "52%" : "75%"} // Slightly larger to fill space better
         >
           <PolarGrid 
             strokeDasharray="2 2" 
@@ -273,9 +279,10 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             verticalAlign="bottom"
             align="center"
             wrapperStyle={{
-              marginTop: '60px',
-              fontSize: '18px',
-              fontWeight: 'normal'
+              marginTop: isPDF ? '20px' : '60px', // Further reduced margin
+              fontSize: isPDF ? '11px' : '18px',
+              fontWeight: 'normal',
+              paddingBottom: isPDF ? '5px' : '0px' // Minimal bottom padding
             }}
           />
         </RadarChart>

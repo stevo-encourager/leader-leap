@@ -20,117 +20,175 @@ const mockChartData = [
   { subject: 'Emotional Intel', current: 6, desired: 9, fullMark: 10 }
 ];
 
-// Enhanced chart capture function
-const captureChartForPDF = (): Promise<string | null> => {
+// Enhanced SVG-to-canvas conversion with style inlining
+const svgToCanvas = (svgElement: SVGElement): Promise<string | null> => {
   return new Promise((resolve) => {
-    console.log('=== MINIMAL CHART CAPTURE START ===');
-    
-    // Wait for chart to render
-    setTimeout(() => {
-      // Try multiple selectors
-      const selectors = [
-        '.recharts-surface',
-        'svg.recharts-surface', 
-        '.minimal-chart-container svg',
-        '.minimal-chart-container canvas',
-        'svg',
-        'canvas'
-      ];
+    try {
+      // Clone the SVG to avoid modifying the original
+      const svgClone = svgElement.cloneNode(true) as SVGElement;
       
-      let chartElement: HTMLElement | null = null;
-      
-      for (const selector of selectors) {
-        const elements = document.querySelectorAll(selector);
-        console.log(`Selector "${selector}" found ${elements.length} elements`);
+      // Get computed styles for all elements
+      const getAllComputedStyles = (element: Element): string => {
+        const computedStyle = window.getComputedStyle(element);
+        let styleString = '';
         
-        if (elements.length > 0) {
-          chartElement = elements[0] as HTMLElement;
-          console.log('Found chart element:', {
-            tagName: chartElement.tagName,
-            id: chartElement.id,
-            className: chartElement.className
-          });
-          break;
-        }
-      }
+        // Important style properties for SVG rendering
+        const importantProps = [
+          'fill', 'stroke', 'stroke-width', 'stroke-dasharray', 'opacity',
+          'font-family', 'font-size', 'font-weight', 'color', 'text-anchor',
+          'dominant-baseline', 'transform'
+        ];
+        
+        importantProps.forEach(prop => {
+          const value = computedStyle.getPropertyValue(prop);
+          if (value && value !== 'none') {
+            styleString += `${prop}:${value};`;
+          }
+        });
+        
+        return styleString;
+      };
       
-      if (!chartElement) {
-        console.error('No chart element found');
+      // Apply computed styles inline to all elements
+      const applyInlineStyles = (element: Element) => {
+        const styles = getAllComputedStyles(element);
+        if (styles) {
+          element.setAttribute('style', styles);
+        }
+        
+        // Recursively apply to children
+        Array.from(element.children).forEach(child => {
+          applyInlineStyles(child);
+        });
+      };
+      
+      // Apply styles to cloned SVG
+      applyInlineStyles(svgClone);
+      
+      // Get dimensions
+      const rect = svgElement.getBoundingClientRect();
+      const width = rect.width || 400;
+      const height = rect.height || 400;
+      
+      // Set explicit dimensions on cloned SVG
+      svgClone.setAttribute('width', width.toString());
+      svgClone.setAttribute('height', height.toString());
+      svgClone.setAttribute('viewBox', `0 0 ${width} ${height}`);
+      
+      // Add necessary namespaces
+      svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      svgClone.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+      
+      console.log('SVG Clone dimensions:', { width, height });
+      console.log('SVG Clone HTML (first 500 chars):', svgClone.outerHTML.substring(0, 500));
+      
+      // Create canvas
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      if (!ctx) {
+        console.error('Could not get canvas context');
         resolve(null);
         return;
       }
       
-      if (chartElement.tagName.toLowerCase() === 'canvas') {
-        console.log('Processing CANVAS element');
-        const canvas = chartElement as HTMLCanvasElement;
-        
+      // Set canvas size with device pixel ratio for crisp rendering
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      canvas.style.width = width + 'px';
+      canvas.style.height = height + 'px';
+      ctx.scale(dpr, dpr);
+      
+      // Create image from styled SVG
+      const img = new Image();
+      
+      img.onload = () => {
         try {
-          const dataUrl = canvas.toDataURL('image/png');
-          console.log('Canvas dataURL length:', dataUrl.length);
-          console.log('Canvas dataURL preview:', dataUrl.substring(0, 100));
+          console.log('Image loaded successfully');
+          
+          // Clear canvas with white background
+          ctx.fillStyle = 'white';
+          ctx.fillRect(0, 0, width, height);
+          
+          // Draw the image
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          const dataUrl = canvas.toDataURL('image/png', 1.0);
+          console.log('Final PNG dataURL length:', dataUrl.length);
+          console.log('Final PNG dataURL preview:', dataUrl.substring(0, 100));
+          
+          URL.revokeObjectURL(img.src);
           resolve(dataUrl);
         } catch (error) {
-          console.error('Canvas capture error:', error);
+          console.error('Error drawing image to canvas:', error);
+          URL.revokeObjectURL(img.src);
           resolve(null);
         }
+      };
+      
+      img.onerror = (error) => {
+        console.error('Image load failed:', error);
+        URL.revokeObjectURL(img.src);
+        resolve(null);
+      };
+      
+      // Convert SVG to blob URL
+      const svgData = new XMLSerializer().serializeToString(svgClone);
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      const blobUrl = URL.createObjectURL(svgBlob);
+      
+      console.log('SVG blob created, loading image...');
+      img.src = blobUrl;
+      
+    } catch (error) {
+      console.error('Error in svgToCanvas:', error);
+      resolve(null);
+    }
+  });
+};
+
+// Enhanced chart capture function
+const captureChartForPDF = (): Promise<string | null> => {
+  return new Promise((resolve) => {
+    console.log('=== ENHANCED CHART CAPTURE START ===');
+    
+    // Wait for chart to render
+    setTimeout(async () => {
+      try {
+        // Find the recharts SVG
+        const chartSvg = document.querySelector('.recharts-surface') as SVGElement;
         
-      } else if (chartElement.tagName.toLowerCase() === 'svg') {
-        console.log('Processing SVG element');
-        const svg = chartElement as unknown as SVGElement;
-        
-        const rect = svg.getBoundingClientRect();
-        const svgWidth = rect.width || 400;
-        const svgHeight = rect.height || 400;
-        
-        console.log('SVG dimensions:', { width: svgWidth, height: svgHeight });
-        
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        if (!ctx) {
-          console.error('Could not get canvas context');
+        if (!chartSvg) {
+          console.error('No recharts SVG found');
           resolve(null);
           return;
         }
         
-        canvas.width = svgWidth;
-        canvas.height = svgHeight;
+        console.log('Found chart SVG:', {
+          tagName: chartSvg.tagName,
+          className: chartSvg.className,
+          children: chartSvg.children.length
+        });
         
-        try {
-          const svgData = new XMLSerializer().serializeToString(svg);
-          const completeSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}">${svg.innerHTML}</svg>`;
-          
-          const img = new Image();
-          
-          img.onload = () => {
-            ctx.fillStyle = 'white';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, 0, 0, svgWidth, svgHeight);
-            
-            const dataUrl = canvas.toDataURL('image/png');
-            console.log('SVG dataURL length:', dataUrl.length);
-            console.log('SVG dataURL preview:', dataUrl.substring(0, 100));
-            URL.revokeObjectURL(img.src);
-            resolve(dataUrl);
-          };
-          
-          img.onerror = () => {
-            console.error('SVG image load failed');
-            URL.revokeObjectURL(img.src);
-            resolve(null);
-          };
-          
-          const svgBlob = new Blob([completeSvg], { type: 'image/svg+xml;charset=utf-8' });
-          img.src = URL.createObjectURL(svgBlob);
-          
-        } catch (error) {
-          console.error('SVG processing error:', error);
-          resolve(null);
+        // Use enhanced SVG-to-canvas conversion
+        const dataUrl = await svgToCanvas(chartSvg);
+        
+        if (dataUrl) {
+          console.log('✅ Chart captured successfully with enhanced method');
+        } else {
+          console.error('❌ Enhanced chart capture failed');
         }
+        
+        resolve(dataUrl);
+        
+      } catch (error) {
+        console.error('Error in enhanced chart capture:', error);
+        resolve(null);
       }
       
-      console.log('=== MINIMAL CHART CAPTURE END ===');
-    }, 3000); // 3 second wait
+      console.log('=== ENHANCED CHART CAPTURE END ===');
+    }, 3000);
   });
 };
 
@@ -139,12 +197,12 @@ const MinimalRadarChartPDF: React.FC = () => {
   const [chartDataUrl, setChartDataUrl] = useState<string | null>(null);
 
   const handleCaptureTest = async () => {
-    setStatus('Capturing chart...');
+    setStatus('Capturing chart with enhanced method...');
     const dataUrl = await captureChartForPDF();
     
     if (dataUrl) {
       setChartDataUrl(dataUrl);
-      setStatus('Chart captured successfully! Check console for details.');
+      setStatus('Chart captured successfully! Check console and preview below.');
     } else {
       setStatus('Failed to capture chart. Check console for errors.');
     }
@@ -165,17 +223,17 @@ const MinimalRadarChartPDF: React.FC = () => {
       
       // Add title
       doc.setFontSize(18);
-      doc.text('Minimal Radar Chart PDF Test', 20, 20);
+      doc.text('Enhanced Radar Chart PDF Test', 20, 20);
       
       // Add chart
       doc.addImage(dataUrl, 'PNG', 20, 40, 160, 120);
       
       // Add status
       doc.setFontSize(12);
-      doc.text('Chart captured and added successfully', 20, 180);
+      doc.text('Chart captured with enhanced SVG-to-canvas conversion', 20, 180);
       doc.text(`Data URL length: ${dataUrl.length} characters`, 20, 190);
       
-      doc.save('minimal-radar-chart-test.pdf');
+      doc.save('enhanced-radar-chart-test.pdf');
       setStatus('PDF exported successfully!');
       
     } catch (error) {
@@ -184,9 +242,30 @@ const MinimalRadarChartPDF: React.FC = () => {
     }
   };
 
+  const handleTestDataUrl = () => {
+    if (chartDataUrl) {
+      // Open the data URL in a new window for testing
+      const newWindow = window.open();
+      if (newWindow) {
+        newWindow.document.write(`
+          <html>
+            <head><title>Chart PNG Test</title></head>
+            <body style="margin: 20px;">
+              <h1>Chart PNG Data URL Test</h1>
+              <p>This should show the exact chart as captured:</p>
+              <img src="${chartDataUrl}" style="border: 1px solid #ccc; max-width: 100%;" />
+              <p>Data URL length: ${chartDataUrl.length} characters</p>
+            </body>
+          </html>
+        `);
+        newWindow.document.close();
+      }
+    }
+  };
+
   return (
     <div style={{ padding: '20px', fontFamily: 'system-ui' }}>
-      <h1>Minimal Radar Chart PDF Test</h1>
+      <h1>Enhanced Radar Chart PDF Test</h1>
       <p>Status: {status}</p>
       
       <div style={{ marginBottom: '20px' }}>
@@ -202,13 +281,14 @@ const MinimalRadarChartPDF: React.FC = () => {
             cursor: 'pointer'
           }}
         >
-          Test Chart Capture
+          Test Enhanced Capture
         </button>
         
         <button 
           onClick={handlePDFExport}
           style={{ 
             padding: '10px 20px',
+            marginRight: '10px',
             backgroundColor: '#059669',
             color: 'white',
             border: 'none',
@@ -218,6 +298,22 @@ const MinimalRadarChartPDF: React.FC = () => {
         >
           Export to PDF
         </button>
+        
+        {chartDataUrl && (
+          <button 
+            onClick={handleTestDataUrl}
+            style={{ 
+              padding: '10px 20px',
+              backgroundColor: '#7c3aed',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Test PNG in New Window
+          </button>
+        )}
       </div>
       
       <div 
@@ -261,20 +357,21 @@ const MinimalRadarChartPDF: React.FC = () => {
           <img 
             src={chartDataUrl} 
             alt="Captured Chart" 
-            style={{ maxWidth: '400px', border: '1px solid #ccc' }}
+            style={{ maxWidth: '400px', border: '1px solid #ccc', display: 'block', marginBottom: '10px' }}
           />
           <p>Data URL length: {chartDataUrl.length} characters</p>
+          <p>Click "Test PNG in New Window" to verify the image renders correctly in isolation.</p>
         </div>
       )}
       
       <div style={{ marginTop: '20px', backgroundColor: '#f3f4f6', padding: '16px' }}>
-        <h4>Expected Results:</h4>
+        <h4>Enhanced Testing:</h4>
         <ul>
-          <li>Chart renders correctly in the container above</li>
-          <li>"Test Chart Capture" should capture the chart and show preview</li>
-          <li>"Export to PDF" should create a PDF with the chart image</li>
-          <li>Console should show detailed debugging information</li>
-          <li>No errors should occur during capture or export</li>
+          <li>Enhanced SVG-to-canvas conversion with style inlining</li>
+          <li>Device pixel ratio support for crisp rendering</li>
+          <li>Computed styles applied inline to all SVG elements</li>
+          <li>Test PNG button opens image in new window for verification</li>
+          <li>Console shows detailed conversion process</li>
         </ul>
       </div>
     </div>

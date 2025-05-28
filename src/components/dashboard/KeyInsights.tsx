@@ -25,10 +25,6 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
 }) => {
   const safeCategories = Array.isArray(categories) ? categories : [];
   
-  const [openSections, setOpenSections] = useState({
-    skillsToImprove: true
-  });
-  
   const [skillsToImprove, setSkillsToImprove] = useState<SkillWithMetadata[]>([]);
   
   useEffect(() => {
@@ -44,13 +40,6 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
       setSkillsToImprove([]);
     }
   }, [safeCategories]);
-
-  const toggleSection = (section: keyof typeof openSections) => {
-    setOpenSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
-  };
 
   const formatNumber = (num: number | string): string => {
     if (typeof num === 'number') {
@@ -85,8 +74,8 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
         {skillsWithRatings > 0 ? (
           <SkillsToImproveSection 
             skills={skillsToImprove}
-            isOpen={openSections.skillsToImprove}
-            onToggle={() => toggleSection('skillsToImprove')}
+            isOpen={true}
+            onToggle={() => {}}
             formatNumber={formatNumber}
             averageGap={formatNumber(averageGap)}
           />

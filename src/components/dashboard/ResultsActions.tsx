@@ -8,7 +8,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
 import { calculateAverageGap } from '@/utils/assessmentCalculations/averages';
-import PDFPreviewDialog from '../pdf/PDFPreviewDialog';
+import { pdf } from '@react-pdf/renderer';
+import ReactPDFDocument from '../pdf/ReactPDFDocument';
+import { captureRadarChartAsPNG } from '@/utils/chartCapture';
 
 interface ResultsActionsProps {
   onBack: () => void;
@@ -28,7 +30,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
   assessmentId
 }) => {
   const { user } = useAuth();
-  const [showPreview, setShowPreview] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   
   // Calculate average gap for insights hook
   const averageGap = categories.length > 0 ? calculateAverageGap(categories) : 0;
@@ -126,9 +128,9 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     return true;
   };
   
-  // Show preview dialog
-  const handleShowPreview = () => {
-    console.log('ResultsActions: PDF preview button clicked');
+  // Handle PDF download using React PDF
+  const handleDownloadPDF = async () => {
+    console.log('ResultsActions: PDF download button clicked');
     console.log('ResultsActions: categories received:', categories?.length || 0);
     console.log('ResultsActions: demographics received:', demographics ? Object.keys(demographics) : 'none');
     console.log('ResultsActions: assessmentId for consistent insights:', assessmentId);
@@ -151,14 +153,57 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
       return;
     }
     
-    console.log('ResultsActions: Data validation and insights check passed, showing preview...');
-    setShowPreview(true);
-  };
-
-  // This function is called when the preview dialog handles its own download
-  const handleConfirmExport = () => {
-    console.log('ResultsActions: Export confirmed from preview (handled by dialog)');
-    // The preview dialog handles the actual export, so this is just for compatibility
+    setIsDownloading(true);
+    
+    try {
+      console.log('ResultsActions: Starting PDF generation with React PDF');
+      
+      // Capture the radar chart as PNG
+      const chartImageDataUrl = await captureRadarChartAsPNG();
+      
+      if (chartImageDataUrl) {
+        console.log('ResultsActions: Successfully captured radar chart');
+      } else {
+        console.warn('ResultsActions: Failed to capture radar chart, proceeding without it');
+      }
+      
+      // Generate PDF using React PDF
+      const pdfDoc = (
+        <ReactPDFDocument
+          categories={categories}
+          demographics={demographics}
+          insights={insights || ''}
+          chartImageDataUrl={chartImageDataUrl || undefined}
+        />
+      );
+      
+      const pdfBlob = await pdf(pdfDoc).toBlob();
+      
+      // Create download link
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'leadership-assessment-results.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      toast({
+        title: "Download Successful",
+        description: "Your leadership assessment results have been downloaded as a PDF with proper formatting and pagination.",
+      });
+      
+    } catch (error) {
+      console.error('ResultsActions: Error during React PDF download:', error);
+      toast({
+        title: "Download Failed", 
+        description: "There was an error generating your PDF. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const handleNewAssessment = () => {
@@ -173,10 +218,13 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
   };
 
   // Determine if PDF export should be disabled
-  const isPDFExportDisabled = !hasValidAssessmentData() || !areInsightsReadyForExport();
+  const isPDFExportDisabled = !hasValidAssessmentData() || !areInsightsReadyForExport() || isDownloading;
   
   // Generate appropriate button text and tooltip
   const getPDFButtonText = () => {
+    if (isDownloading) {
+      return 'Generating PDF...';
+    }
     if (!hasValidAssessmentData()) {
       return user ? 'Download PDF' : 'Save as PDF';
     }
@@ -186,10 +234,13 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     if (!areInsightsReadyForExport()) {
       return 'Waiting for Insights...';
     }
-    return user ? 'Preview & Download PDF' : 'Preview & Save as PDF';
+    return user ? 'Download PDF' : 'Save as PDF';
   };
 
   const getPDFTooltipText = () => {
+    if (isDownloading) {
+      return 'Generating your PDF document...';
+    }
     if (!hasValidAssessmentData()) {
       return 'Complete the assessment first';
     }
@@ -199,70 +250,59 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     if (!areInsightsReadyForExport()) {
       return 'Waiting for AI insights to complete';
     }
-    return 'Preview your complete assessment results and download as PDF';
+    return 'Download your complete assessment results as a professionally formatted PDF';
   };
   
   return (
-    <>
-      <div className="flex justify-between w-full">
-        <Button variant="outline" onClick={onBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Assessment
-        </Button>
-        <div className="flex gap-2">
-          {!user && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    onClick={onSignup}
-                    className="flex items-center gap-2"
-                  >
-                    Sign Up
-                    <Info className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="top">
-                  <p className="max-w-xs text-sm">Create an account to save your results and access them anytime</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
+    <div className="flex justify-between w-full">
+      <Button variant="outline" onClick={onBack}>
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Back to Assessment
+      </Button>
+      <div className="flex gap-2">
+        {!user && (
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button 
-                  variant="encourager" 
+                  variant="outline" 
+                  onClick={onSignup}
                   className="flex items-center gap-2"
-                  onClick={handleShowPreview}
-                  disabled={isPDFExportDisabled}
                 >
-                  <Download className="h-4 w-4" />
-                  {getPDFButtonText()}
+                  Sign Up
+                  <Info className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="top">
-                <p className="max-w-xs text-sm">{getPDFTooltipText()}</p>
+                <p className="max-w-xs text-sm">Create an account to save your results and access them anytime</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          <Button onClick={handleNewAssessment}>
-            <Plus className="mr-2 h-4 w-4" />
-            Start New Assessment
-          </Button>
-        </div>
+        )}
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="encourager" 
+                className="flex items-center gap-2"
+                onClick={handleDownloadPDF}
+                disabled={isPDFExportDisabled}
+              >
+                <Download className="h-4 w-4" />
+                {getPDFButtonText()}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              <p className="max-w-xs text-sm">{getPDFTooltipText()}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <Button onClick={handleNewAssessment}>
+          <Plus className="mr-2 h-4 w-4" />
+          Start New Assessment
+        </Button>
       </div>
-
-      <PDFPreviewDialog
-        isOpen={showPreview}
-        onClose={() => setShowPreview(false)}
-        onConfirmExport={handleConfirmExport}
-        categories={categories}
-        demographics={demographics}
-        assessmentId={assessmentId}
-      />
-    </>
+    </div>
   );
 };
 

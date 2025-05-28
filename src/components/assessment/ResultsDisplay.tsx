@@ -10,7 +10,7 @@ interface ResultsDisplayProps {
   onBack: () => void;
   onSignup?: () => void;
   isAuthenticated: boolean;
-  assessmentId?: string; // Add this prop to receive the assessment ID
+  assessmentId?: string;
 }
 
 const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
@@ -20,7 +20,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   onBack,
   onSignup,
   isAuthenticated,
-  assessmentId // Receive the assessment ID
+  assessmentId
 }) => {
   return (
     <ResultsDashboard
@@ -29,7 +29,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
       onRestart={onRestart}
       onBack={onBack}
       onSignup={!isAuthenticated ? onSignup : undefined}
-      assessmentId={assessmentId} // Pass it to ResultsDashboard
+      assessmentId={assessmentId}
     />
   );
 };

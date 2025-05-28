@@ -9,7 +9,6 @@ import {
 } from '@/utils/assessmentCalculations';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import InsightSummary from './insights/InsightSummary';
-import LargestGapsSection from './insights/LargestGapsSection';
 import SkillsToImproveSection from './insights/SkillsToImproveSection';
 
 interface KeyInsightsProps {
@@ -32,7 +31,6 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
   
   // Open all sections by default
   const [openSections, setOpenSections] = useState({
-    largestGaps: true,
     skillsToImprove: true
   });
   
@@ -163,15 +161,6 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
       <div className="space-y-6">
         {skillsWithRatings > 0 ? (
           <>
-            {/* Largest Competency Gaps */}
-            <LargestGapsSection 
-              insights={{ 
-                largestGaps: insightData.skillsToImprove, 
-                smallestGaps: [], 
-                skillsMeetingExpectations: [] 
-              }}
-            />
-            
             {/* Individual Skills You Want to Improve */}
             <SkillsToImproveSection 
               skills={insightData.skillsToImprove}

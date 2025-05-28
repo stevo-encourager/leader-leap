@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { ArrowLeft, Download, Plus, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,6 +9,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
 import { calculateAverageGap } from '@/utils/assessmentCalculations/averages';
+import PDFPreviewDialog from '../pdf/PDFPreviewDialog';
 
 interface ResultsActionsProps {
   onBack: () => void;
@@ -27,6 +29,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
   assessmentId
 }) => {
   const { user } = useAuth();
+  const [showPreview, setShowPreview] = useState(false);
   
   // Calculate average gap for insights hook
   const averageGap = categories.length > 0 ? calculateAverageGap(categories) : 0;
@@ -124,9 +127,9 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     return true;
   };
   
-  // PDF export function with insights readiness check and assessmentId passing
-  const handleExportPDF = () => {
-    console.log('ResultsActions: PDF export button clicked');
+  // Show preview dialog instead of direct export
+  const handleShowPreview = () => {
+    console.log('ResultsActions: PDF preview button clicked');
     console.log('ResultsActions: categories received:', categories?.length || 0);
     console.log('ResultsActions: demographics received:', demographics ? Object.keys(demographics) : 'none');
     console.log('ResultsActions: assessmentId for consistent insights:', assessmentId);
@@ -149,7 +152,13 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
       return;
     }
     
-    console.log('ResultsActions: Data validation and insights check passed, calling exportToPDF with assessmentId...');
+    console.log('ResultsActions: Data validation and insights check passed, showing preview...');
+    setShowPreview(true);
+  };
+
+  // Actual PDF export function that gets called from the preview dialog
+  const handleConfirmExport = () => {
+    console.log('ResultsActions: Confirmed export from preview, calling exportToPDF with assessmentId...');
     
     try {
       // CRITICAL: Pass assessmentId to ensure PDF uses the same stored insights
@@ -212,59 +221,70 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     if (!areInsightsReadyForExport()) {
       return 'Waiting for AI insights to complete';
     }
-    return 'Export your complete assessment results including AI insights';
+    return 'Preview and export your complete assessment results including AI insights';
   };
   
   return (
-    <div className="flex justify-between w-full">
-      <Button variant="outline" onClick={onBack}>
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Assessment
-      </Button>
-      <div className="flex gap-2">
-        {!user && (
+    <>
+      <div className="flex justify-between w-full">
+        <Button variant="outline" onClick={onBack}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Assessment
+        </Button>
+        <div className="flex gap-2">
+          {!user && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    onClick={onSignup}
+                    className="flex items-center gap-2"
+                  >
+                    Sign Up
+                    <Info className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p className="max-w-xs text-sm">Create an account to save your results and access them anytime</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button 
-                  variant="outline" 
-                  onClick={onSignup}
+                  variant="encourager" 
                   className="flex items-center gap-2"
+                  onClick={handleShowPreview}
+                  disabled={isPDFExportDisabled}
                 >
-                  Sign Up
-                  <Info className="h-4 w-4" />
+                  <Download className="h-4 w-4" />
+                  {getPDFButtonText()}
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="top">
-                <p className="max-w-xs text-sm">Create an account to save your results and access them anytime</p>
+                <p className="max-w-xs text-sm">{getPDFTooltipText()}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-        )}
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="encourager" 
-                className="flex items-center gap-2"
-                onClick={handleExportPDF}
-                disabled={isPDFExportDisabled}
-              >
-                <Download className="h-4 w-4" />
-                {getPDFButtonText()}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="top">
-              <p className="max-w-xs text-sm">{getPDFTooltipText()}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        <Button onClick={handleNewAssessment}>
-          <Plus className="mr-2 h-4 w-4" />
-          Start New Assessment
-        </Button>
+          <Button onClick={handleNewAssessment}>
+            <Plus className="mr-2 h-4 w-4" />
+            Start New Assessment
+          </Button>
+        </div>
       </div>
-    </div>
+
+      <PDFPreviewDialog
+        isOpen={showPreview}
+        onClose={() => setShowPreview(false)}
+        onConfirmExport={handleConfirmExport}
+        categories={categories}
+        demographics={demographics}
+        assessmentId={assessmentId}
+      />
+    </>
   );
 };
 

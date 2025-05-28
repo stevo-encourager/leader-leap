@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { calculateAverageGap } from '@/utils/assessmentCalculations/averages';
@@ -102,19 +101,22 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
   console.log('=== PDF TEMPLATE DEBUG END ===');
 
   return (
-    <div style={{
-      fontFamily: 'system-ui, -apple-system, sans-serif',
-      fontSize: '14px',
-      lineHeight: '1.4',
-      color: '#1f2937',
-      backgroundColor: 'white',
-      margin: '0',
-      padding: '0',
-      maxWidth: '190mm',
-      width: '100%',
-      minHeight: '297mm',
-      boxSizing: 'border-box'
-    }}>
+    <div 
+      style={{
+        fontFamily: 'system-ui, -apple-system, sans-serif',
+        fontSize: '14px',
+        lineHeight: '1.4',
+        color: '#1f2937',
+        backgroundColor: 'white',
+        margin: '0',
+        padding: '0',
+        maxWidth: '190mm',
+        width: '100%',
+        minHeight: '297mm',
+        boxSizing: 'border-box'
+      }}
+      data-insights={insights || ''}
+    >
       {/* Enhanced PDF-specific CSS */}
       <style>
         {`

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -5,7 +6,7 @@ import { Download, X } from 'lucide-react';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import PDFTemplate from './PDFTemplate';
 import { toast } from '@/hooks/use-toast';
-import html2pdf from 'html2pdf.js';
+import { generatePDFWithJsPDF } from '@/utils/jsPDFGenerator';
 
 interface PDFPreviewDialogProps {
   isOpen: boolean;
@@ -116,160 +117,41 @@ const PDFPreviewDialog: React.FC<PDFPreviewDialogProps> = ({
       return;
     }
 
-    console.log('PDFPreview: Direct download initiated from preview container');
+    console.log('PDFPreview: Direct download initiated using jsPDF');
     setIsDownloading(true);
     
     try {
-      // Get the actual preview container that's visible
+      // Get insights from the preview container
       const previewContainer = document.getElementById('pdf-preview-container');
-      if (!previewContainer) {
-        throw new Error('Preview container not found');
+      let insights = '';
+      
+      if (previewContainer) {
+        // Try to extract insights from the rendered content
+        const insightsSection = previewContainer.querySelector('[data-insights]');
+        if (insightsSection) {
+          insights = insightsSection.getAttribute('data-insights') || '';
+        }
       }
 
-      console.log('PDFPreview: Found preview container, content length:', previewContainer.textContent?.length || 0);
+      console.log('PDFPreview: Generating PDF with jsPDF...');
       
-      // Create a properly styled clone for PDF generation
-      const containerClone = previewContainer.cloneNode(true) as HTMLElement;
-      
-      // Reset all transform and scaling styles that interfere with PDF generation
-      containerClone.style.transform = 'none';
-      containerClone.style.transformOrigin = 'initial';
-      containerClone.style.scale = '1';
-      containerClone.style.width = '794px'; // A4 width in pixels at 96 DPI
-      containerClone.style.minHeight = 'auto';
-      containerClone.style.maxWidth = 'none';
-      containerClone.style.overflow = 'visible';
-      containerClone.style.padding = '20px';
-      containerClone.style.boxSizing = 'border-box';
-      
-      // Clean any problematic attributes for PDF generation
-      const cleanHtmlForPdf = (element: HTMLElement): void => {
-        const allElements = element.querySelectorAll('*');
-        allElements.forEach(el => {
-          const attributes = Array.from(el.attributes);
-          attributes.forEach(attr => {
-            if (attr.name.startsWith('data-lov-') || 
-                attr.name.startsWith('data-component-') ||
-                attr.name === 'data-lov-id' ||
-                attr.name === 'data-lov-name') {
-              el.removeAttribute(attr.name);
-            }
-          });
-          
-          // Remove any transform styles from child elements and ensure proper PDF rendering
-          if (el instanceof HTMLElement) {
-            el.style.transform = 'none';
-            el.style.transformOrigin = 'initial';
-            el.style.overflow = 'visible';
-            
-            // Fix chart container sizing for PDF
-            if (el.classList.contains('recharts-wrapper') || el.classList.contains('radar-chart-container')) {
-              el.style.width = '100%';
-              el.style.height = '400px';
-              el.style.maxWidth = '100%';
-              el.style.overflow = 'visible';
-            }
-          }
-        });
-      };
-
-      cleanHtmlForPdf(containerClone);
-      
-      // Add the clone to a temporary container off-screen for PDF generation
-      const tempWrapper = document.createElement('div');
-      tempWrapper.style.cssText = `
-        position: fixed;
-        top: -20000px;
-        left: 0;
-        width: 794px;
-        background: white;
-        z-index: -9999;
-        visibility: hidden;
-        overflow: visible;
-        font-family: system-ui, -apple-system, sans-serif;
-        font-size: 14px;
-        line-height: 1.6;
-        color: #1f2937;
-      `;
-      
-      tempWrapper.appendChild(containerClone);
-      document.body.appendChild(tempWrapper);
-      
-      console.log('PDFPreview: Temporary container created with cloned content');
-
-      // Give a moment for any final rendering
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Enhanced html2pdf options with reduced margins for debugging
-      const opt = {
-        margin: [5, 5, 5, 5], // Reduced margins to 5mm for debugging
-        filename: 'leadership-assessment-results.pdf',
-        image: { 
-          type: 'jpeg', 
-          quality: 0.9
-        },
-        html2canvas: { 
-          scale: 1, // Reduced scale to prevent oversizing
-          useCORS: true,
-          allowTaint: false,
-          letterRendering: true,
-          logging: false,
-          width: 794, // A4 width in pixels
-          height: null, // Let height be automatic for multi-page
-          backgroundColor: '#ffffff',
-          removeContainer: false,
-          scrollX: 0,
-          scrollY: 0,
-          foreignObjectRendering: false, // Disable to prevent chart rendering issues
-          imageTimeout: 10000,
-          onclone: (clonedDoc: Document) => {
-            // Ensure all elements in the cloned document are properly sized
-            const clonedElements = clonedDoc.querySelectorAll('*');
-            clonedElements.forEach((el) => {
-              if (el instanceof HTMLElement) {
-                el.style.transform = 'none';
-                el.style.overflow = 'visible';
-                
-                // Fix chart containers specifically
-                if (el.classList.contains('recharts-wrapper') || el.classList.contains('radar-chart-container')) {
-                  el.style.width = '100%';
-                  el.style.height = '400px';
-                  el.style.maxWidth = '100%';
-                }
-              }
-            });
-          }
-        },
-        jsPDF: { 
-          unit: 'mm', 
-          format: 'a4', 
-          orientation: 'portrait',
-          compress: true,
-          hotfixes: ['px_scaling']
-        },
-        pagebreak: { 
-          mode: ['css', 'legacy'], // Removed 'avoid-all' and updated as requested
-          before: ['.page-break-before'],
-          avoid: ['.page-break-avoid', '.radar-chart-container', '.insight-card']
-        }
-      };
-
-      console.log('PDFPreview: Starting PDF generation with updated configuration...');
-      await html2pdf().set(opt).from(containerClone).save();
-      
-      // Clean up the temporary container
-      document.body.removeChild(tempWrapper);
+      await generatePDFWithJsPDF(
+        categories,
+        demographics,
+        insights,
+        'leadership-assessment-results.pdf'
+      );
       
       toast({
-        title: "Download Started",
-        description: "Your complete multi-page PDF has been generated and downloaded successfully.",
+        title: "Download Successful",
+        description: "Your leadership assessment results have been downloaded as a PDF with proper page breaks.",
       });
       
       onClose();
     } catch (error) {
-      console.error('PDFPreview: Error during direct download:', error);
+      console.error('PDFPreview: Error during jsPDF download:', error);
       toast({
-        title: "Download Failed",
+        title: "Download Failed", 
         description: "There was an error generating your PDF. Please try again.",
         variant: "destructive",
       });
@@ -330,7 +212,7 @@ const PDFPreviewDialog: React.FC<PDFPreviewDialogProps> = ({
             className="flex items-center gap-2"
           >
             <Download className="h-4 w-4" />
-            {isDownloading ? 'Downloading...' : 'Download Multi-Page PDF'}
+            {isDownloading ? 'Generating PDF...' : 'Download PDF (jsPDF)'}
           </Button>
         </DialogFooter>
       </DialogContent>

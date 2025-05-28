@@ -1,0 +1,368 @@
+
+import jsPDF from 'jspdf';
+import { Category, Demographics } from './assessmentTypes';
+import { calculateAverageGap } from './assessmentCalculations/averages';
+
+interface AIInsightsData {
+  summary: string;
+  priority_areas: Array<{
+    competency: string;
+    gap: number;
+    insights: string[];
+    resource: string;
+  }>;
+  key_strengths: Array<{
+    competency: string;
+    example: string;
+    leverage_advice: string[];
+  }>;
+}
+
+const parseInsights = (insightsText: string): AIInsightsData | null => {
+  try {
+    const parsed = JSON.parse(insightsText);
+    if (!parsed.summary || !parsed.priority_areas || !parsed.key_strengths) {
+      return null;
+    }
+    return parsed;
+  } catch (error) {
+    console.error('Error parsing insights JSON:', error);
+    return null;
+  }
+};
+
+export const generatePDFWithJsPDF = async (
+  categories: Category[],
+  demographics: Demographics,
+  insights?: string,
+  filename: string = 'leadership-assessment-results.pdf'
+) => {
+  console.log('jsPDF: Starting PDF generation...');
+  
+  // Create new PDF document
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: 'a4'
+  });
+
+  const pageWidth = doc.internal.pageSize.width;
+  const pageHeight = doc.internal.pageSize.height;
+  const margin = 15;
+  const contentWidth = pageWidth - (2 * margin);
+  let currentY = margin;
+
+  // Colors
+  const primaryColor = '#2F564D';
+  const textColor = '#1f2937';
+  const grayColor = '#64748b';
+
+  // Helper function to add text with word wrapping
+  const addWrappedText = (text: string, x: number, y: number, maxWidth: number, fontSize: number = 11): number => {
+    doc.setFontSize(fontSize);
+    const lines = doc.splitTextToSize(text, maxWidth);
+    doc.text(lines, x, y);
+    return y + (lines.length * (fontSize * 0.35)); // Line height approximation
+  };
+
+  // Helper function to check if we need a new page
+  const checkPageBreak = (neededHeight: number): number => {
+    if (currentY + neededHeight > pageHeight - margin) {
+      doc.addPage();
+      return margin;
+    }
+    return currentY;
+  };
+
+  // PAGE 1 CONTENT
+  console.log('jsPDF: Creating page 1...');
+
+  // Logo placeholder at very top
+  doc.setFillColor(200, 200, 200);
+  doc.rect(pageWidth/2 - 50, currentY, 100, 20, 'F');
+  doc.setFontSize(12);
+  doc.setTextColor(100, 100, 100);
+  doc.text('Company Logo', pageWidth/2, currentY + 12, { align: 'center' });
+  currentY += 30;
+
+  // Title
+  doc.setFontSize(24);
+  doc.setTextColor(primaryColor);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Leadership Assessment Results', pageWidth/2, currentY, { align: 'center' });
+  currentY += 15;
+
+  // Date
+  const currentDate = new Date().toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+  doc.setFontSize(11);
+  doc.setTextColor(grayColor);
+  doc.setFont('helvetica', 'normal');
+  doc.text(`Generated on ${currentDate}`, pageWidth/2, currentY, { align: 'center' });
+  currentY += 20;
+
+  // Profile Summary
+  doc.setFontSize(18);
+  doc.setTextColor(primaryColor);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Profile Summary', margin, currentY);
+  currentY += 10;
+
+  doc.setFontSize(11);
+  doc.setTextColor(textColor);
+  doc.setFont('helvetica', 'normal');
+
+  if (demographics?.role) {
+    currentY = addWrappedText(`Role: ${demographics.role}`, margin, currentY, contentWidth);
+    currentY += 2;
+  }
+  if (demographics?.yearsOfExperience) {
+    currentY = addWrappedText(`Years of Experience: ${demographics.yearsOfExperience}`, margin, currentY, contentWidth);
+    currentY += 2;
+  }
+  if (demographics?.industry) {
+    currentY = addWrappedText(`Industry: ${demographics.industry}`, margin, currentY, contentWidth);
+    currentY += 2;
+  }
+
+  const averageGap = calculateAverageGap(categories);
+  currentY = addWrappedText(`Overall Development Gap: ${averageGap.toFixed(2)} points`, margin, currentY, contentWidth);
+  currentY += 2;
+  currentY = addWrappedText(`Assessment completed across ${categories.length} competency areas`, margin, currentY, contentWidth, 10);
+  currentY += 15;
+
+  // Competency Analysis
+  doc.setFontSize(18);
+  doc.setTextColor(primaryColor);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Competency Analysis - Radar Chart', margin, currentY);
+  currentY += 10;
+
+  // Chart placeholder
+  doc.setFillColor(240, 248, 255);
+  doc.rect(margin, currentY, contentWidth, 80, 'F');
+  doc.setFontSize(11);
+  doc.setTextColor(grayColor);
+  doc.text('Radar Chart', pageWidth/2, currentY + 40, { align: 'center' });
+  doc.text('(Visual representation of competency gaps)', pageWidth/2, currentY + 50, { align: 'center' });
+  currentY += 90;
+
+  // Competency breakdown
+  doc.setFontSize(14);
+  doc.setTextColor(primaryColor);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Competency Breakdown:', margin, currentY);
+  currentY += 8;
+
+  doc.setFontSize(10);
+  doc.setTextColor(textColor);
+  doc.setFont('helvetica', 'normal');
+
+  categories.forEach((category, index) => {
+    if (category && category.skills) {
+      currentY = checkPageBreak(15);
+      
+      const categoryGap = category.skills.reduce((sum, skill) => {
+        if (skill?.ratings) {
+          return sum + (skill.ratings.desired - skill.ratings.current);
+        }
+        return sum;
+      }, 0) / category.skills.length;
+
+      currentY = addWrappedText(`${index + 1}. ${category.title}: ${categoryGap.toFixed(1)} gap`, margin + 5, currentY, contentWidth - 5, 10);
+      currentY += 3;
+    }
+  });
+
+  // START PAGE 2 - AI INSIGHTS
+  console.log('jsPDF: Creating page 2 for AI insights...');
+  doc.addPage();
+  currentY = margin; // Reset to top of new page
+
+  // AI-Powered Insights title at very top of page 2
+  doc.setFontSize(18);
+  doc.setTextColor(primaryColor);
+  doc.setFont('helvetica', 'bold');
+  doc.text('AI-Powered Insights', margin, currentY);
+  currentY += 8;
+
+  doc.setFontSize(10);
+  doc.setTextColor(grayColor);
+  doc.setFont('helvetica', 'normal');
+  currentY = addWrappedText('Personalized leadership development insights powered by Encourager GPT', margin, currentY, contentWidth, 10);
+  currentY += 10;
+
+  // Parse and display insights
+  if (insights) {
+    const parsedInsights = parseInsights(insights);
+    
+    if (parsedInsights) {
+      // Assessment Summary
+      if (parsedInsights.summary) {
+        doc.setFontSize(14);
+        doc.setTextColor(primaryColor);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Assessment Summary', margin, currentY);
+        currentY += 8;
+
+        doc.setFontSize(11);
+        doc.setTextColor(textColor);
+        doc.setFont('helvetica', 'normal');
+        currentY = addWrappedText(parsedInsights.summary, margin, currentY, contentWidth);
+        currentY += 10;
+      }
+
+      // Priority Development Areas
+      if (parsedInsights.priority_areas && parsedInsights.priority_areas.length > 0) {
+        currentY = checkPageBreak(30);
+        
+        doc.setFontSize(14);
+        doc.setTextColor(primaryColor);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Top 3 Priority Development Areas', margin, currentY);
+        currentY += 8;
+
+        parsedInsights.priority_areas.forEach((area, index) => {
+          currentY = checkPageBreak(20);
+          
+          doc.setFontSize(11);
+          doc.setTextColor(textColor);
+          doc.setFont('helvetica', 'bold');
+          currentY = addWrappedText(`${index + 1}. ${area.competency} (Gap: ${area.gap.toFixed(1)})`, margin, currentY, contentWidth);
+          currentY += 3;
+
+          doc.setFont('helvetica', 'normal');
+          currentY = addWrappedText('Key insights:', margin, currentY, contentWidth);
+          currentY += 2;
+
+          if (area.insights && Array.isArray(area.insights)) {
+            area.insights.forEach(insight => {
+              currentY = checkPageBreak(8);
+              currentY = addWrappedText(`• ${insight}`, margin + 5, currentY, contentWidth - 5);
+              currentY += 2;
+            });
+          }
+          currentY += 5;
+        });
+      }
+
+      // Key Competencies to Leverage
+      if (parsedInsights.key_strengths && parsedInsights.key_strengths.length > 0) {
+        currentY = checkPageBreak(30);
+        
+        doc.setFontSize(14);
+        doc.setTextColor(primaryColor);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Key Competencies to Leverage', margin, currentY);
+        currentY += 8;
+
+        parsedInsights.key_strengths.forEach((strength) => {
+          currentY = checkPageBreak(25);
+          
+          doc.setFontSize(11);
+          doc.setTextColor(textColor);
+          doc.setFont('helvetica', 'bold');
+          currentY = addWrappedText(`Competency: ${strength.competency}`, margin, currentY, contentWidth);
+          currentY += 3;
+
+          doc.setFont('helvetica', 'normal');
+          currentY = addWrappedText(`Existing Skill: ${strength.example}`, margin, currentY, contentWidth);
+          currentY += 3;
+
+          currentY = addWrappedText('How to leverage further:', margin, currentY, contentWidth);
+          currentY += 2;
+
+          if (strength.leverage_advice && Array.isArray(strength.leverage_advice)) {
+            strength.leverage_advice.forEach(advice => {
+              currentY = checkPageBreak(8);
+              currentY = addWrappedText(`• ${advice}`, margin + 5, currentY, contentWidth - 5);
+              currentY += 2;
+            });
+          }
+          currentY += 5;
+        });
+      }
+    }
+  } else {
+    doc.setFontSize(11);
+    doc.setTextColor(textColor);
+    doc.setFont('helvetica', 'normal');
+    currentY = addWrappedText('AI insights will appear here once your assessment data is analyzed.', margin, currentY, contentWidth);
+    currentY += 15;
+  }
+
+  // Recommended Next Steps
+  currentY = checkPageBreak(40);
+  
+  doc.setFontSize(14);
+  doc.setTextColor(primaryColor);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Recommended Next Steps', margin, currentY);
+  currentY += 8;
+
+  doc.setFontSize(11);
+  doc.setTextColor(textColor);
+  doc.setFont('helvetica', 'normal');
+
+  const steps = [
+    'Consider using this report in your next 1:1 with your manager or mentor as a guide for your professional development',
+    'Create a 6 month action plan to address your most critical competency gaps and schedule a time to re-take this assessment to track your progress',
+    'Set an actionable goal for yourself within the next week, and set a reminder to help hold yourself accountable for taking that next step'
+  ];
+
+  steps.forEach(step => {
+    currentY = checkPageBreak(15);
+    currentY = addWrappedText(`• ${step}`, margin, currentY, contentWidth - 5);
+    currentY += 5;
+  });
+
+  // Coaching Support
+  currentY = checkPageBreak(30);
+  
+  doc.setFontSize(14);
+  doc.setTextColor(primaryColor);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Professional Development Coaching', margin, currentY);
+  currentY += 8;
+
+  doc.setFontSize(11);
+  doc.setTextColor(textColor);
+  doc.setFont('helvetica', 'normal');
+  currentY = addWrappedText('Ready to take your leadership skills to the next level? Our expert coaches can help you:', margin, currentY, contentWidth);
+  currentY += 5;
+
+  const coachingPoints = [
+    'Create personalized development plans',
+    'Practice new skills in a safe environment',
+    'Overcome specific leadership challenges',
+    'Track your progress over time'
+  ];
+
+  coachingPoints.forEach(point => {
+    currentY = checkPageBreak(8);
+    currentY = addWrappedText(`• ${point}`, margin, currentY, contentWidth - 5);
+    currentY += 3;
+  });
+
+  // Footer
+  currentY = checkPageBreak(20);
+  currentY = Math.max(currentY, pageHeight - 30); // Position near bottom
+
+  doc.setFontSize(10);
+  doc.setTextColor(grayColor);
+  doc.setFont('helvetica', 'bold');
+  doc.text(`Leadership Assessment Tool • Generated on ${currentDate}`, pageWidth/2, currentY, { align: 'center' });
+  currentY += 4;
+
+  doc.setFont('helvetica', 'normal');
+  doc.text('This assessment is designed to help you identify development opportunities and create targeted improvement plans.', pageWidth/2, currentY, { align: 'center' });
+
+  // Save the PDF
+  console.log('jsPDF: Saving PDF...');
+  doc.save(filename);
+  
+  console.log('jsPDF: PDF generation completed successfully');
+};

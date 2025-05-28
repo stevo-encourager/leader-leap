@@ -30,7 +30,7 @@ interface AIInsightsData {
 const imageToBase64 = (url: string): Promise<string> => {
   return new Promise((resolve, reject) => {
     try {
-      console.log('Converting logo to Base64:', url);
+      console.log('PDF Export: Converting logo to Base64:', url);
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
@@ -38,6 +38,7 @@ const imageToBase64 = (url: string): Promise<string> => {
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
           if (!ctx) {
+            console.error('PDF Export: Could not get canvas context');
             reject(new Error('Could not get canvas context'));
             return;
           }
@@ -45,30 +46,32 @@ const imageToBase64 = (url: string): Promise<string> => {
           canvas.height = img.height;
           ctx.drawImage(img, 0, 0);
           const base64 = canvas.toDataURL('image/png');
-          console.log('Logo converted to Base64 successfully, length:', base64.length);
+          console.log('PDF Export: Logo converted to Base64 successfully');
           resolve(base64);
         } catch (error) {
-          console.error('Error converting logo to canvas:', error);
+          console.error('PDF Export: Error converting logo to canvas:', error);
           reject(error);
         }
       };
       img.onerror = (error) => {
-        console.error('Error loading logo image:', error);
+        console.error('PDF Export: Error loading logo image:', error);
         reject(new Error('Failed to load logo image'));
       };
       img.src = url;
     } catch (error) {
-      console.error('Error in imageToBase64:', error);
+      console.error('PDF Export: Error in imageToBase64:', error);
       reject(error);
     }
   });
 };
 
-// Helper function to capture radar chart as image
+// Helper function to capture radar chart as image with improved error handling
 const captureRadarChart = (): Promise<string | null> => {
   return new Promise((resolve) => {
     try {
-      // Wait a bit for chart to fully render
+      console.log('PDF Export: Starting radar chart capture');
+      
+      // Wait for chart to fully render
       setTimeout(() => {
         // Try multiple possible selectors for the radar chart
         const selectors = [
@@ -76,7 +79,8 @@ const captureRadarChart = (): Promise<string | null> => {
           '.recharts-surface',
           '[data-testid="radar-chart"] canvas',
           'svg.recharts-surface',
-          '.recharts-wrapper svg'
+          '.recharts-wrapper svg',
+          '.recharts-container svg'
         ];
         
         let chartElement: HTMLElement | null = null;
@@ -84,13 +88,13 @@ const captureRadarChart = (): Promise<string | null> => {
         for (const selector of selectors) {
           chartElement = document.querySelector(selector);
           if (chartElement) {
-            console.log('Found chart element with selector:', selector);
+            console.log('PDF Export: Found chart element with selector:', selector);
             break;
           }
         }
         
         if (!chartElement) {
-          console.warn('No radar chart element found');
+          console.warn('PDF Export: No radar chart element found');
           resolve(null);
           return;
         }
@@ -100,17 +104,17 @@ const captureRadarChart = (): Promise<string | null> => {
             // Direct canvas element
             const canvas = chartElement as HTMLCanvasElement;
             const dataUrl = canvas.toDataURL('image/png');
-            console.log('Canvas chart captured successfully');
+            console.log('PDF Export: Canvas chart captured successfully');
             resolve(dataUrl);
           } else if (chartElement.tagName.toLowerCase() === 'svg') {
-            // SVG element - convert to canvas with proper type checking
+            // SVG element - convert to canvas
             const svg = chartElement as unknown as SVGElement;
             const svgData = new XMLSerializer().serializeToString(svg);
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             
             if (!ctx) {
-              console.warn('Could not get canvas context for SVG conversion');
+              console.warn('PDF Export: Could not get canvas context for SVG conversion');
               resolve(null);
               return;
             }
@@ -126,16 +130,16 @@ const captureRadarChart = (): Promise<string | null> => {
               try {
                 ctx.drawImage(img, 0, 0);
                 const dataUrl = canvas.toDataURL('image/png');
-                console.log('SVG chart converted to image successfully');
+                console.log('PDF Export: SVG chart converted to image successfully');
                 resolve(dataUrl);
               } catch (error) {
-                console.error('Error drawing SVG to canvas:', error);
+                console.error('PDF Export: Error drawing SVG to canvas:', error);
                 resolve(null);
               }
             };
             
             img.onerror = () => {
-              console.warn('Failed to convert SVG to image');
+              console.warn('PDF Export: Failed to convert SVG to image');
               resolve(null);
             };
             
@@ -143,19 +147,49 @@ const captureRadarChart = (): Promise<string | null> => {
             const url = URL.createObjectURL(svgBlob);
             img.src = url;
           } else {
-            console.warn('Chart element is neither canvas nor SVG, type:', chartElement.tagName);
+            console.warn('PDF Export: Chart element is neither canvas nor SVG, type:', chartElement.tagName);
             resolve(null);
           }
         } catch (error) {
-          console.error('Error capturing chart:', error);
+          console.error('PDF Export: Error capturing chart:', error);
           resolve(null);
         }
-      }, 1000); // Wait 1 second for chart to render
+      }, 1500); // Increased wait time for chart to render
     } catch (error) {
-      console.error('Error in captureRadarChart:', error);
+      console.error('PDF Export: Error in captureRadarChart:', error);
       resolve(null);
     }
   });
+};
+
+// Helper function to check if text will exceed page bounds
+const checkPageBreak = (doc: jsPDF, yPosition: number, additionalHeight: number = 20): boolean => {
+  const pageHeight = doc.internal.pageSize.getHeight();
+  return yPosition + additionalHeight > pageHeight - 20;
+};
+
+// Helper function to add text with page break handling
+const addTextWithPageBreak = (
+  doc: jsPDF, 
+  text: string, 
+  x: number, 
+  yPosition: number, 
+  maxWidth: number,
+  fontSize: number = 12
+): number => {
+  doc.setFontSize(fontSize);
+  const lines = doc.splitTextToSize(text, maxWidth);
+  
+  for (let i = 0; i < lines.length; i++) {
+    if (checkPageBreak(doc, yPosition)) {
+      doc.addPage();
+      yPosition = 15; // Reset to top margin
+    }
+    doc.text(lines[i], x, yPosition);
+    yPosition += 6;
+  }
+  
+  return yPosition;
 };
 
 export const generatePDFWithJsPDF = async (
@@ -164,7 +198,7 @@ export const generatePDFWithJsPDF = async (
   insights: string,
   filename: string
 ): Promise<void> => {
-  console.log('Starting jsPDF generation...');
+  console.log('PDF Export: Starting jsPDF generation...');
   
   try {
     const doc = new jsPDF('p', 'mm', 'a4');
@@ -178,17 +212,17 @@ export const generatePDFWithJsPDF = async (
     let logoBase64: string | null = null;
     try {
       logoBase64 = await imageToBase64(COMPANY_LOGO_URL);
-      console.log('Logo converted to Base64 successfully');
+      console.log('PDF Export: Logo converted to Base64 successfully');
     } catch (error) {
-      console.error('Failed to load logo image:', error);
+      console.error('PDF Export: Failed to load logo image:', error);
     }
 
     // Capture radar chart
     const chartDataUrl = await captureRadarChart();
     if (chartDataUrl) {
-      console.log('Radar chart captured successfully');
+      console.log('PDF Export: Radar chart captured successfully');
     } else {
-      console.warn('Failed to capture radar chart');
+      console.warn('PDF Export: Failed to capture radar chart');
     }
 
     // PAGE 1 - Header and Profile
@@ -197,9 +231,9 @@ export const generatePDFWithJsPDF = async (
     if (logoBase64) {
       try {
         doc.addImage(logoBase64, 'PNG', margin, yPosition, 60, 20);
-        console.log('Logo added to PDF');
+        console.log('PDF Export: Logo added to PDF');
       } catch (error) {
-        console.error('Error adding logo to PDF:', error);
+        console.error('PDF Export: Error adding logo to PDF:', error);
       }
     }
     yPosition += 30;
@@ -259,10 +293,10 @@ export const generatePDFWithJsPDF = async (
     if (chartDataUrl) {
       try {
         doc.addImage(chartDataUrl, 'PNG', margin, yPosition, contentWidth, 100);
-        console.log('Radar chart added to PDF');
+        console.log('PDF Export: Radar chart added to PDF');
         yPosition += 110;
       } catch (error) {
-        console.error('Error adding radar chart to PDF:', error);
+        console.error('PDF Export: Error adding radar chart to PDF:', error);
         doc.setFontSize(12);
         doc.text('Radar chart could not be captured', margin, yPosition);
         yPosition += 15;
@@ -301,21 +335,26 @@ export const generatePDFWithJsPDF = async (
 
           doc.setFontSize(12);
           doc.setFont('helvetica', 'normal');
-          const summaryLines = doc.splitTextToSize(parsedInsights.summary, contentWidth);
-          doc.text(summaryLines, margin, yPosition);
-          yPosition += summaryLines.length * 6 + 10;
+          yPosition = addTextWithPageBreak(doc, parsedInsights.summary, margin, yPosition, contentWidth);
+          yPosition += 10;
         }
 
         // Priority Development Areas
         if (parsedInsights.priority_areas && parsedInsights.priority_areas.length > 0) {
+          // Check if we need a new page
+          if (checkPageBreak(doc, yPosition, 40)) {
+            doc.addPage();
+            yPosition = margin;
+          }
+
           doc.setFontSize(16);
           doc.setFont('helvetica', 'bold');
           doc.text('Top 3 Priority Development Areas', margin, yPosition);
           yPosition += 10;
 
           parsedInsights.priority_areas.forEach((area, index) => {
-            // Check if we need a new page
-            if (yPosition > pageHeight - 40) {
+            // Check if we need a new page for this section
+            if (checkPageBreak(doc, yPosition, 30)) {
               doc.addPage();
               yPosition = margin;
             }
@@ -331,9 +370,7 @@ export const generatePDFWithJsPDF = async (
 
             if (area.insights && Array.isArray(area.insights)) {
               area.insights.forEach((insight) => {
-                const insightLines = doc.splitTextToSize(`• ${insight}`, contentWidth - 10);
-                doc.text(insightLines, margin + 5, yPosition);
-                yPosition += insightLines.length * 6;
+                yPosition = addTextWithPageBreak(doc, `• ${insight}`, margin + 5, yPosition, contentWidth - 10);
               });
             }
 
@@ -341,10 +378,9 @@ export const generatePDFWithJsPDF = async (
             if (area.resource) {
               const resourceLink = generateResourceLink(area.resource);
               doc.setFont('helvetica', 'bold');
-              doc.text('Recommended Resource:', margin, yPosition);
-              yPosition += 6;
+              yPosition = addTextWithPageBreak(doc, 'Recommended Resource:', margin, yPosition, contentWidth);
               doc.setFont('helvetica', 'normal');
-              doc.text(resourceLink.title, margin + 5, yPosition);
+              yPosition = addTextWithPageBreak(doc, resourceLink.title, margin + 5, yPosition, contentWidth - 10);
               yPosition += 12;
             }
           });
@@ -353,7 +389,7 @@ export const generatePDFWithJsPDF = async (
         // Key Competencies to Leverage
         if (parsedInsights.key_strengths && parsedInsights.key_strengths.length > 0) {
           // Check if we need a new page
-          if (yPosition > pageHeight - 50) {
+          if (checkPageBreak(doc, yPosition, 50)) {
             doc.addPage();
             yPosition = margin;
           }
@@ -364,29 +400,24 @@ export const generatePDFWithJsPDF = async (
           yPosition += 10;
 
           parsedInsights.key_strengths.forEach((strength) => {
-            // Check if we need a new page
-            if (yPosition > pageHeight - 30) {
+            // Check if we need a new page for this section
+            if (checkPageBreak(doc, yPosition, 25)) {
               doc.addPage();
               yPosition = margin;
             }
 
             doc.setFontSize(12);
             doc.setFont('helvetica', 'bold');
-            doc.text(`Competency: ${strength.competency}`, margin, yPosition);
-            yPosition += 6;
+            yPosition = addTextWithPageBreak(doc, `Competency: ${strength.competency}`, margin, yPosition, contentWidth);
 
             doc.setFont('helvetica', 'normal');
-            doc.text(`Existing Skill: ${strength.example}`, margin, yPosition);
-            yPosition += 6;
+            yPosition = addTextWithPageBreak(doc, `Existing Skill: ${strength.example}`, margin, yPosition, contentWidth);
 
-            doc.text('How to leverage further:', margin, yPosition);
-            yPosition += 6;
+            yPosition = addTextWithPageBreak(doc, 'How to leverage further:', margin, yPosition, contentWidth);
 
             if (strength.leverage_advice && Array.isArray(strength.leverage_advice)) {
               strength.leverage_advice.forEach((advice) => {
-                const adviceLines = doc.splitTextToSize(`• ${advice}`, contentWidth - 10);
-                doc.text(adviceLines, margin + 5, yPosition);
-                yPosition += adviceLines.length * 6;
+                yPosition = addTextWithPageBreak(doc, `• ${advice}`, margin + 5, yPosition, contentWidth - 10);
               });
             }
             yPosition += 8;
@@ -394,7 +425,7 @@ export const generatePDFWithJsPDF = async (
         }
 
       } catch (error) {
-        console.error('Error parsing insights:', error);
+        console.error('PDF Export: Error parsing insights:', error);
         doc.setFontSize(12);
         doc.setFont('helvetica', 'normal');
         doc.text('AI insights could not be parsed', margin, yPosition);
@@ -406,7 +437,7 @@ export const generatePDFWithJsPDF = async (
     }
 
     // Add remaining sections on new page if needed
-    if (yPosition > pageHeight - 60) {
+    if (checkPageBreak(doc, yPosition, 60)) {
       doc.addPage();
       yPosition = margin;
     } else {
@@ -428,14 +459,18 @@ export const generatePDFWithJsPDF = async (
     ];
 
     nextSteps.forEach((step) => {
-      const stepLines = doc.splitTextToSize(`• ${step}`, contentWidth - 10);
-      doc.text(stepLines, margin + 5, yPosition);
-      yPosition += stepLines.length * 6 + 4;
+      yPosition = addTextWithPageBreak(doc, `• ${step}`, margin + 5, yPosition, contentWidth - 10);
+      yPosition += 4;
     });
 
     yPosition += 10;
 
     // Coaching Support
+    if (checkPageBreak(doc, yPosition, 40)) {
+      doc.addPage();
+      yPosition = margin;
+    }
+
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
     doc.text('Professional Development Coaching', margin, yPosition);
@@ -467,10 +502,10 @@ export const generatePDFWithJsPDF = async (
 
     // Save the PDF
     doc.save(filename);
-    console.log('PDF generated and downloaded successfully');
+    console.log('PDF Export: PDF generated and downloaded successfully');
 
   } catch (error) {
-    console.error('Error generating PDF:', error);
+    console.error('PDF Export: Error generating PDF:', error);
     throw new Error('Failed to generate PDF');
   }
 };

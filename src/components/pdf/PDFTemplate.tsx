@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { calculateAverageGap } from '@/utils/assessmentCalculations/averages';
@@ -244,18 +245,6 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
             margin: 0;
             padding: 0;
           }
-          
-          .chart-section {
-            background-color: #f0f8ff;
-            margin: 0;
-            padding: 0;
-          }
-          
-          .ai-insights-section {
-            background-color: #fff5f5;
-            margin: 0;
-            padding: 0;
-          }
         `}
       </style>
 
@@ -299,8 +288,8 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
           </p>
         </div>
 
-        {/* Competency Gap Chart - with debug background */}
-        <div className="chart-section section-spacing page-break-avoid">
+        {/* Competency Gap Chart */}
+        <div className="section-spacing page-break-avoid">
           <h2>Competency Analysis - Radar Chart</h2>
           <div style={{ 
             height: '400px',
@@ -322,8 +311,8 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
           <div className="page-break-before"></div>
         </div>
 
-        {/* AI Insights section - debug background to verify placement */}
-        <div className="ai-insights-section no-spacing">
+        {/* AI Insights section */}
+        <div className="no-spacing">
           <h2>AI-Powered Insights</h2>
           <p style={{ color: '#64748b', fontSize: '12px', margin: '0 0 8px 0', padding: '0' }}>
             Personalized leadership development insights powered by Encourager GPT

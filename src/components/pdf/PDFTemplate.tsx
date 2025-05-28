@@ -62,12 +62,11 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
       boxSizing: 'border-box'
     }}>
       {/* Header */}
-      <div style={{
+      <div className="page-break-avoid" style={{
         textAlign: 'center',
         marginBottom: '25px',
         paddingBottom: '15px',
-        borderBottom: '2px solid #2F564D',
-        pageBreakInside: 'avoid'
+        borderBottom: '2px solid #2F564D'
       }}>
         <h1 style={{
           color: '#2F564D',
@@ -89,9 +88,8 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
       </div>
 
       {/* Profile Summary */}
-      <div style={{ 
-        marginBottom: '25px',
-        pageBreakInside: 'avoid'
+      <div className="profile-summary page-break-avoid" style={{ 
+        marginBottom: '25px'
       }}>
         <h2 style={{
           color: '#2F564D',
@@ -135,10 +133,9 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
         </div>
       </div>
 
-      {/* Competency Gap Chart */}
-      <div style={{ 
-        marginBottom: '30px',
-        pageBreakInside: 'avoid'
+      {/* Competency Gap Chart with enhanced PDF styling */}
+      <div className="page-break-avoid" style={{ 
+        marginBottom: '30px'
       }}>
         <h2 style={{
           color: '#2F564D',
@@ -152,42 +149,39 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
         </h2>
         <div style={{ 
           backgroundColor: '#ffffff',
-          padding: '20px',
+          padding: '15px',
           borderRadius: '8px',
           border: '1px solid #e2e8f0',
-          height: '450px',
+          height: '500px', // Increased height for better legend positioning
           width: '100%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxSizing: 'border-box'
+          boxSizing: 'border-box',
+          overflow: 'visible'
         }}>
           <div style={{ width: '100%', height: '100%' }}>
-            <SkillGapChart categories={categories} />
+            <SkillGapChart categories={categories} isPDF={true} />
           </div>
         </div>
       </div>
 
-      {/* Page break before AI Insights to ensure it starts on a new page if needed */}
-      <div style={{ pageBreakBefore: 'auto', pageBreakInside: 'avoid' }}>
-        {/* AI-Generated Key Insights */}
-        <div style={{ 
-          marginBottom: '25px',
-          width: '100%'
-        }}>
-          <AIInsights 
-            categories={categories}
-            demographics={demographics}
-            averageGap={averageGap}
-            assessmentId={assessmentId}
-          />
-        </div>
+      {/* Page break before AI Insights to ensure it starts properly */}
+      <div className="ai-insights-section page-break-before" style={{ 
+        marginBottom: '25px',
+        width: '100%'
+      }}>
+        <AIInsights 
+          categories={categories}
+          demographics={demographics}
+          averageGap={averageGap}
+          assessmentId={assessmentId}
+        />
       </div>
 
       {/* Recommended Next Steps */}
-      <div style={{ 
+      <div className="page-break-avoid" style={{ 
         marginBottom: '25px',
-        pageBreakInside: 'avoid',
         width: '100%'
       }}>
         <h2 style={{
@@ -228,9 +222,8 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
       </div>
 
       {/* Coaching Support */}
-      <div style={{ 
+      <div className="page-break-avoid" style={{ 
         marginBottom: '25px',
-        pageBreakInside: 'avoid',
         width: '100%'
       }}>
         <h2 style={{
@@ -311,14 +304,13 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
       </div>
 
       {/* Footer */}
-      <div style={{
+      <div className="page-break-avoid" style={{
         textAlign: 'center',
         marginTop: '30px',
         paddingTop: '20px',
         borderTop: '1px solid #e2e8f0',
         fontSize: '12px',
-        color: '#64748b',
-        pageBreakInside: 'avoid'
+        color: '#64748b'
       }}>
         <p style={{ margin: '0 0 8px 0', fontWeight: '600' }}>
           Leadership Assessment Tool • Generated on {currentDate}

@@ -140,6 +140,7 @@ const PDFPreviewDialog: React.FC<PDFPreviewDialogProps> = ({
       containerClone.style.minHeight = '297mm'; // A4 height
       containerClone.style.maxWidth = 'none';
       containerClone.style.scale = '1';
+      containerClone.style.overflow = 'visible'; // Ensure content isn't clipped
       
       // Clean any problematic attributes for PDF generation
       const cleanHtmlForPdf = (element: HTMLElement): void => {
@@ -159,6 +160,7 @@ const PDFPreviewDialog: React.FC<PDFPreviewDialogProps> = ({
           if (el instanceof HTMLElement) {
             el.style.transform = 'none';
             el.style.transformOrigin = 'initial';
+            el.style.overflow = 'visible';
           }
         });
       };
@@ -169,12 +171,13 @@ const PDFPreviewDialog: React.FC<PDFPreviewDialogProps> = ({
       const tempWrapper = document.createElement('div');
       tempWrapper.style.cssText = `
         position: fixed;
-        top: -10000px;
+        top: -20000px;
         left: 0;
         width: 210mm;
         background: white;
         z-index: -9999;
         visibility: hidden;
+        overflow: visible;
       `;
       
       tempWrapper.appendChild(containerClone);
@@ -184,44 +187,47 @@ const PDFPreviewDialog: React.FC<PDFPreviewDialogProps> = ({
       console.log('PDFPreview: Cloned content length:', containerClone.textContent?.length || 0);
 
       // Give a moment for any final rendering
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Configure html2pdf options for multi-page support
+      // Enhanced html2pdf options for proper multi-page support
       const opt = {
-        margin: [15, 15, 15, 15],
+        margin: [10, 10, 10, 10], // Reduced margins to fit more content
         filename: 'leadership-assessment-results.pdf',
         image: { 
           type: 'jpeg', 
-          quality: 0.98
+          quality: 0.95
         },
         html2canvas: { 
-          scale: 2,
+          scale: 1.5, // Reduced scale for better performance and content fit
           useCORS: true,
           allowTaint: false,
           letterRendering: true,
-          logging: true, // Enable logging for debugging
+          logging: true,
           width: 794,
           height: 1123,
           backgroundColor: '#ffffff',
           removeContainer: false,
           scrollX: 0,
-          scrollY: 0
+          scrollY: 0,
+          foreignObjectRendering: true, // Better SVG rendering
+          imageTimeout: 15000 // Longer timeout for chart rendering
         },
         jsPDF: { 
           unit: 'mm', 
           format: 'a4', 
           orientation: 'portrait',
-          compress: true
+          compress: true,
+          hotfixes: ['px_scaling'] // Fix for pixel scaling issues
         },
         pagebreak: { 
-          mode: ['avoid-all', 'css', 'legacy'],
-          before: '.page-break-before',
-          after: '.page-break-after',
-          avoid: '.page-break-avoid'
+          mode: ['avoid-all', 'css'],
+          before: ['.page-break-before', '.ai-insights-section'],
+          after: ['.page-break-after', '.profile-summary'],
+          avoid: ['.page-break-avoid', '.radar-chart-container', '.insight-card']
         }
       };
 
-      console.log('PDFPreview: Starting PDF generation from properly styled clone...');
+      console.log('PDFPreview: Starting enhanced multi-page PDF generation...');
       await html2pdf().set(opt).from(containerClone).save();
       
       // Clean up the temporary container
@@ -229,7 +235,7 @@ const PDFPreviewDialog: React.FC<PDFPreviewDialogProps> = ({
       
       toast({
         title: "Download Started",
-        description: "Your PDF has been generated and downloaded successfully.",
+        description: "Your complete multi-page PDF has been generated and downloaded successfully.",
       });
       
       onClose();
@@ -297,7 +303,7 @@ const PDFPreviewDialog: React.FC<PDFPreviewDialogProps> = ({
             className="flex items-center gap-2"
           >
             <Download className="h-4 w-4" />
-            {isDownloading ? 'Downloading...' : 'Download PDF'}
+            {isDownloading ? 'Downloading...' : 'Download Multi-Page PDF'}
           </Button>
         </DialogFooter>
       </DialogContent>

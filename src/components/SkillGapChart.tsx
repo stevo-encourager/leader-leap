@@ -1,5 +1,4 @@
 
-
 import React, { useMemo } from 'react';
 import { 
   ResponsiveContainer,
@@ -14,6 +13,8 @@ import { Category } from '@/utils/assessmentTypes';
 
 interface SkillGapChartProps {
   categories: Category[];
+  className?: string;
+  isPDF?: boolean; // Add prop to detect PDF rendering
 }
 
 interface ChartData {
@@ -24,16 +25,15 @@ interface ChartData {
   skillCount?: number;
 }
 
-// Custom tick component for competency names with balanced positioning
+// Custom tick component for competency names with enhanced PDF support
 const CustomTick = (props: any) => {
-  const { payload, x, y, cx, cy, textAnchor, index } = props;
+  const { payload, x, y, cx, cy, textAnchor, index, isPDF } = props;
   
   // Calculate angle from center to current position
   const angle = Math.atan2(y - cy, x - cx);
   
-  // Use a moderate radius from center for balanced positioning
-  // 175px provides optimal separation - not too close, not too far
-  const labelRadius = 175; // Increased from 160 for slightly more spacing
+  // Use different radius for PDF vs screen to prevent cutoff
+  const labelRadius = isPDF ? 140 : 175; // Reduced for PDF to prevent clipping
   
   const labelX = cx + labelRadius * Math.cos(angle);
   const labelY = cy + labelRadius * Math.sin(angle);
@@ -43,6 +43,11 @@ const CustomTick = (props: any) => {
   if (labelX > cx + 5) anchor = 'start';
   else if (labelX < cx - 5) anchor = 'end';
   
+  // Shorter labels for PDF to prevent overlap
+  const displayText = isPDF && payload.value.length > 15 
+    ? payload.value.substring(0, 12) + '...' 
+    : payload.value;
+  
   return (
     <text
       x={labelX}
@@ -50,15 +55,15 @@ const CustomTick = (props: any) => {
       textAnchor={anchor}
       dominantBaseline="middle"
       fill="#2F564D"
-      fontSize="14"
+      fontSize={isPDF ? "11" : "14"} // Smaller font for PDF
       fontWeight="500"
     >
-      {payload.value}
+      {displayText}
     </text>
   );
 };
 
-const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
+const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "", isPDF = false }) => {
   // Ensure categories is always an array
   const safeCategories = Array.isArray(categories) ? categories : [];
   
@@ -174,8 +179,13 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
         const avgCurrent = parseFloat((totalCurrent / validSkillCount).toFixed(1));
         const avgDesired = parseFloat((totalDesired / validSkillCount).toFixed(1));
         
+        // Shorten category names for better PDF display
+        const displayTitle = isPDF && category.title && category.title.length > 20 
+          ? category.title.substring(0, 17) + '...' 
+          : category.title || "Unknown Category";
+        
         result.push({
-          subject: category.title || "Unknown Category",
+          subject: displayTitle,
           current: avgCurrent,
           desired: avgDesired,
           fullMark: 10,
@@ -194,7 +204,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
     }
     
     return result;
-  }, [safeCategories]);
+  }, [safeCategories, isPDF]);
 
   // Filter to only show categories with actual data
   const validChartData = chartData.filter(
@@ -208,7 +218,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
   if (validChartData.length === 0) {
     console.warn("SkillGapChart - No valid chart data to display");
     return (
-      <div className="flex flex-col items-center justify-center h-full bg-slate-50 rounded-lg p-6">
+      <div className={`flex flex-col items-center justify-center h-full bg-slate-50 rounded-lg p-6 ${className}`}>
         <p className="text-gray-500 text-center mb-3">
           No valid assessment data available to display in the radar chart.
         </p>
@@ -221,57 +231,64 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories }) => {
 
   console.log("SkillGapChart - Rendering radar chart with data:", validChartData);
 
-  // Radar chart implementation with maximum size and custom tick component
+  // Enhanced margins and positioning for PDF vs screen
+  const chartMargins = isPDF 
+    ? { top: 30, right: 60, left: 60, bottom: 80 } // More bottom margin for legend in PDF
+    : { top: 50, right: 100, left: 100, bottom: 50 };
+
+  // Radar chart implementation with PDF-optimized settings
   return (
-    <ResponsiveContainer width="100%" height="100%">
-      <RadarChart 
-        data={validChartData} 
-        margin={{ top: 50, right: 100, left: 100, bottom: 50 }}
-        cx="50%" 
-        cy="45%"
-        outerRadius="75%"
-      >
-        <PolarGrid 
-          strokeDasharray="2 2" 
-          stroke="#94a3b8"
-          strokeWidth={1.2}
-          gridType="polygon"
-        />
-        <PolarAngleAxis 
-          dataKey="subject"
-          tick={CustomTick}
-        />
-        <Radar
-          name="Current Level"
-          dataKey="current"
-          stroke="#2F564D"
-          fill="#2F564D"
-          fillOpacity={0.6}
-          strokeWidth={2}
-        />
-        <Radar
-          name="Desired Level"
-          dataKey="desired"
-          stroke="#8baca5"
-          fill="#8baca5"
-          fillOpacity={0.6}
-          strokeWidth={2}
-        />
-        <Tooltip />
-        <Legend 
-          layout="horizontal"
-          verticalAlign="bottom"
-          align="center"
-          wrapperStyle={{
-            marginTop: '60px',
-            fontSize: '18px',
-            fontWeight: 'normal'
-          }}
-        />
-      </RadarChart>
-    </ResponsiveContainer>
+    <div className={`radar-chart-container ${className} page-break-avoid`}>
+      <ResponsiveContainer width="100%" height="100%">
+        <RadarChart 
+          data={validChartData} 
+          margin={chartMargins}
+          cx="50%" 
+          cy={isPDF ? "40%" : "45%"} // Higher position in PDF to make room for legend
+          outerRadius={isPDF ? "60%" : "75%"} // Smaller radius in PDF
+        >
+          <PolarGrid 
+            strokeDasharray="2 2" 
+            stroke="#94a3b8"
+            strokeWidth={1.2}
+            gridType="polygon"
+          />
+          <PolarAngleAxis 
+            dataKey="subject"
+            tick={(props) => <CustomTick {...props} isPDF={isPDF} />}
+          />
+          <Radar
+            name="Current Level"
+            dataKey="current"
+            stroke="#2F564D"
+            fill="#2F564D"
+            fillOpacity={0.6}
+            strokeWidth={2}
+          />
+          <Radar
+            name="Desired Level"
+            dataKey="desired"
+            stroke="#8baca5"
+            fill="#8baca5"
+            fillOpacity={0.6}
+            strokeWidth={2}
+          />
+          <Tooltip />
+          <Legend 
+            layout="horizontal"
+            verticalAlign="bottom"
+            align="center"
+            wrapperStyle={{
+              marginTop: isPDF ? '40px' : '60px', // Less margin in PDF
+              fontSize: isPDF ? '12px' : '18px', // Smaller font in PDF
+              fontWeight: 'normal',
+              paddingBottom: isPDF ? '10px' : '0px'
+            }}
+          />
+        </RadarChart>
+      </ResponsiveContainer>
+    </div>
   );
 };
 
 export default React.memo(SkillGapChart);
-

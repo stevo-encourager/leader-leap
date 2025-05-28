@@ -80,8 +80,8 @@ const captureRadarChart = (): Promise<string | null> => {
           const canvas = chartElement as HTMLCanvasElement;
           resolve(canvas.toDataURL('image/png'));
         } else if (chartElement.tagName.toLowerCase() === 'svg') {
-          // SVG element - convert to canvas
-          const svg = chartElement as SVGElement;
+          // SVG element - convert to canvas with proper type checking
+          const svg = chartElement as unknown as SVGElement;
           const svgData = new XMLSerializer().serializeToString(svg);
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');

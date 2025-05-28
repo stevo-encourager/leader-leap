@@ -33,7 +33,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
   // Calculate average gap for insights hook
   const averageGap = categories.length > 0 ? calculateAverageGap(categories) : 0;
   
-  // Use the insights hook to check if insights are ready - CRITICAL: Pass assessmentId for consistency
+  // Use the insights hook to check if insights are ready
   const { insights, isLoading: insightsLoading, error: insightsError } = useOpenAIInsights({
     categories,
     demographics,
@@ -126,7 +126,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     return true;
   };
   
-  // Show preview dialog instead of direct export
+  // Show preview dialog
   const handleShowPreview = () => {
     console.log('ResultsActions: PDF preview button clicked');
     console.log('ResultsActions: categories received:', categories?.length || 0);

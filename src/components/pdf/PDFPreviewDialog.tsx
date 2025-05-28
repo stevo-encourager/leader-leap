@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Download, X } from 'lucide-react';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import PDFTemplate from './PDFTemplate';
-import { exportToPDF } from '@/utils/pdfUtils';
 import { toast } from '@/hooks/use-toast';
+import html2pdf from 'html2pdf.js';
 
 interface PDFPreviewDialogProps {
   isOpen: boolean;
@@ -117,15 +117,77 @@ const PDFPreviewDialog: React.FC<PDFPreviewDialogProps> = ({
       return;
     }
 
-    console.log('PDFPreview: Direct download initiated from preview');
+    console.log('PDFPreview: Direct download initiated from preview container');
     setIsDownloading(true);
     
     try {
-      await exportToPDF(categories, demographics, undefined, assessmentId, 'leadership-assessment-results.pdf');
+      // Get the actual preview container that's visible
+      const previewContainer = document.getElementById('pdf-preview-container');
+      if (!previewContainer) {
+        throw new Error('Preview container not found');
+      }
+
+      console.log('PDFPreview: Using visible preview container for PDF generation');
+      
+      // Clean any problematic attributes for PDF generation
+      const cleanHtmlForPdf = (element: HTMLElement): void => {
+        const allElements = element.querySelectorAll('*');
+        allElements.forEach(el => {
+          const attributes = Array.from(el.attributes);
+          attributes.forEach(attr => {
+            if (attr.name.startsWith('data-lov-') || 
+                attr.name.startsWith('data-component-') ||
+                attr.name === 'data-lov-id' ||
+                attr.name === 'data-lov-name') {
+              el.removeAttribute(attr.name);
+            }
+          });
+        });
+      };
+
+      // Clone the container to avoid modifying the original
+      const containerClone = previewContainer.cloneNode(true) as HTMLElement;
+      cleanHtmlForPdf(containerClone);
+
+      // Configure html2pdf options for multi-page support
+      const opt = {
+        margin: [15, 15, 15, 15],
+        filename: 'leadership-assessment-results.pdf',
+        image: { 
+          type: 'jpeg', 
+          quality: 0.98
+        },
+        html2canvas: { 
+          scale: 2,
+          useCORS: true,
+          allowTaint: false,
+          letterRendering: true,
+          logging: false,
+          width: 794,
+          height: 1123,
+          backgroundColor: '#ffffff',
+          removeContainer: false
+        },
+        jsPDF: { 
+          unit: 'mm', 
+          format: 'a4', 
+          orientation: 'portrait',
+          compress: true
+        },
+        pagebreak: { 
+          mode: ['avoid-all', 'css', 'legacy'],
+          before: '.page-break-before',
+          after: '.page-break-after',
+          avoid: '.page-break-avoid'
+        }
+      };
+
+      console.log('PDFPreview: Starting PDF generation from visible content...');
+      await html2pdf().set(opt).from(containerClone).save();
       
       toast({
         title: "Download Started",
-        description: "Your PDF is being generated and will download shortly.",
+        description: "Your PDF has been generated and downloaded successfully.",
       });
       
       onClose();
@@ -170,7 +232,7 @@ const PDFPreviewDialog: React.FC<PDFPreviewDialogProps> = ({
             style={{
               transform: 'scale(0.8)',
               transformOrigin: 'top left',
-              width: '125%', // Compensate for 0.8 scale
+              width: '125%',
               backgroundColor: 'white',
               minHeight: '297mm'
             }}

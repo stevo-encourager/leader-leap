@@ -118,16 +118,16 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
       }}
       data-insights={insights || ''}
     >
-      {/* Enhanced PDF-specific CSS */}
+      {/* PDF-specific CSS - scoped to this component only */}
       <style>
         {`
-          .pdf-template {
+          .pdf-template-container {
             font-family: system-ui, -apple-system, sans-serif;
             margin: 0;
             padding: 0;
           }
           
-          .pdf-template h1 {
+          .pdf-template-container h1 {
             font-size: 24px;
             font-weight: 700;
             color: #2F564D;
@@ -136,7 +136,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
             text-align: center;
           }
           
-          .pdf-template h2 {
+          .pdf-template-container h2 {
             font-size: 18px;
             font-weight: 600;
             color: #2F564D;
@@ -145,7 +145,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
             border-bottom: 2px solid #2F564D;
           }
           
-          .pdf-template h3 {
+          .pdf-template-container h3 {
             font-size: 16px;
             font-weight: 600;
             color: #2F564D;
@@ -153,63 +153,63 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
             padding: 0;
           }
           
-          .pdf-template p {
+          .pdf-template-container p {
             margin: 4px 0;
             padding: 0;
             line-height: 1.4;
           }
           
-          .pdf-template ul {
+          .pdf-template-container ul {
             margin: 4px 0;
             padding-left: 18px;
             list-style-type: disc;
           }
           
-          .pdf-template li {
+          .pdf-template-container li {
             margin: 2px 0;
             padding: 0;
             line-height: 1.4;
             display: list-item;
           }
           
-          .pdf-template li::marker {
+          .pdf-template-container li::marker {
             content: "• ";
             color: #2F564D;
             font-weight: bold;
           }
           
-          .pdf-template .insight-content {
+          .pdf-template-container .insight-content {
             margin: 4px 0;
             padding: 0;
             line-height: 1.4;
           }
           
-          .pdf-template .priority-item {
+          .pdf-template-container .priority-item {
             margin: 6px 0;
             padding: 0;
             border: none;
             background: none;
           }
           
-          .pdf-template .priority-number {
+          .pdf-template-container .priority-number {
             display: inline;
             font-weight: 600;
             color: #2F564D;
           }
           
-          .pdf-template .priority-text {
+          .pdf-template-container .priority-text {
             display: inline;
             margin-left: 6px;
           }
           
-          .pdf-template .priority-gap {
+          .pdf-template-container .priority-gap {
             display: inline;
             font-weight: 600;
             color: #dc2626;
             margin-left: 6px;
           }
           
-          .pdf-template .leverage-item {
+          .pdf-template-container .leverage-item {
             margin: 6px 0;
             padding: 0;
             border: none;
@@ -248,8 +248,8 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
         `}
       </style>
 
-      {/* Main content container with PDF class */}
-      <div className="pdf-template">
+      {/* Main content container with PDF class - scoped to prevent global impact */}
+      <div className="pdf-template-container">
         {/* Logo at the absolute top - FIRST element with no containers */}
         <img 
           src={LOGO_BASE64}
@@ -302,7 +302,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
             margin: '0',
             padding: '0'
           }}>
-            <div style={{ width: '100%', height: '100%' }}>
+            <div style={{ width: '100%', height: '100%' }} id="pdf-radar-chart-container">
               <SkillGapChart categories={categories} isPDF={true} />
             </div>
           </div>

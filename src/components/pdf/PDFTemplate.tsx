@@ -133,7 +133,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
         </div>
       </div>
 
-      {/* Competency Gap Chart with enhanced PDF styling */}
+      {/* Competency Gap Chart with reduced height for less bottom space */}
       <div className="page-break-avoid" style={{ 
         marginBottom: '30px'
       }}>
@@ -152,7 +152,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
           padding: '15px',
           borderRadius: '8px',
           border: '1px solid #e2e8f0',
-          height: '500px', // Increased height for better legend positioning
+          height: '450px', // Reduced height from 500px to 450px
           width: '100%',
           display: 'flex',
           alignItems: 'center',
@@ -171,12 +171,23 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
         marginBottom: '25px',
         width: '100%'
       }}>
-        <AIInsights 
-          categories={categories}
-          demographics={demographics}
-          averageGap={averageGap}
-          assessmentId={assessmentId}
-        />
+        {/* Custom AI Insights styling for PDF to fix background issues */}
+        <div style={{
+          backgroundColor: '#ffffff', // Ensure full white background
+          width: '100%',
+          borderRadius: '8px',
+          border: '1px solid #e2e8f0',
+          padding: '0', // Remove padding from outer container
+          boxSizing: 'border-box',
+          overflow: 'hidden' // Ensure background fills completely
+        }}>
+          <AIInsights 
+            categories={categories}
+            demographics={demographics}
+            averageGap={averageGap}
+            assessmentId={assessmentId}
+          />
+        </div>
       </div>
 
       {/* Recommended Next Steps */}
@@ -221,7 +232,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
         </div>
       </div>
 
-      {/* Coaching Support */}
+      {/* Coaching Support with vertically centered photo */}
       <div className="page-break-avoid" style={{ 
         marginBottom: '25px',
         width: '100%'
@@ -286,7 +297,10 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
             borderRadius: '8px',
             textAlign: 'center',
             width: '100%',
-            boxSizing: 'border-box'
+            boxSizing: 'border-box',
+            display: 'flex', // Use flexbox for centering
+            alignItems: 'center', // Vertical centering
+            justifyContent: 'center' // Horizontal centering
           }}>
             <img 
               src="/lovable-uploads/b35e005b-ec23-4976-8796-738f7c856377.png" 

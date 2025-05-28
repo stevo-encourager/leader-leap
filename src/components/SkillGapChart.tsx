@@ -231,9 +231,9 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
 
   console.log("SkillGapChart - Rendering radar chart with data:", validChartData);
 
-  // Much more conservative margins and positioning for PDF to prevent clipping
+  // Reduced margins and positioning for PDF to minimize bottom space
   const chartMargins = isPDF 
-    ? { top: 20, right: 40, left: 40, bottom: 100 } // More bottom margin for legend, less overall size
+    ? { top: 10, right: 30, left: 30, bottom: 60 } // Reduced bottom margin from 100 to 60
     : { top: 50, right: 100, left: 100, bottom: 50 };
 
   // Radar chart implementation with PDF-optimized settings to prevent clipping
@@ -244,8 +244,8 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
           data={validChartData} 
           margin={chartMargins}
           cx="50%" 
-          cy={isPDF ? "35%" : "45%"} // Much higher position in PDF to leave more room for legend
-          outerRadius={isPDF ? "45%" : "75%"} // Much smaller radius in PDF to prevent clipping
+          cy={isPDF ? "40%" : "45%"} // Slightly higher position in PDF to reduce bottom space
+          outerRadius={isPDF ? "50%" : "75%"} // Slightly larger radius to fill space better
         >
           <PolarGrid 
             strokeDasharray="2 2" 
@@ -279,10 +279,10 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             verticalAlign="bottom"
             align="center"
             wrapperStyle={{
-              marginTop: isPDF ? '50px' : '60px', // More margin in PDF to prevent overlap
-              fontSize: isPDF ? '11px' : '18px', // Smaller font in PDF
+              marginTop: isPDF ? '30px' : '60px', // Reduced margin in PDF from 50px to 30px
+              fontSize: isPDF ? '11px' : '18px',
               fontWeight: 'normal',
-              paddingBottom: isPDF ? '15px' : '0px'
+              paddingBottom: isPDF ? '10px' : '0px' // Reduced bottom padding
             }}
           />
         </RadarChart>

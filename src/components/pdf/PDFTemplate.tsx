@@ -112,7 +112,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
       padding: '15mm',
       boxSizing: 'border-box'
     }}>
-      {/* PDF-specific CSS for plain text styling with reduced spacing */}
+      {/* PDF-specific CSS for plain text styling with proper page breaks and spacing */}
       <style>
         {`
           .pdf-template {
@@ -131,9 +131,9 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
             font-size: 18px;
             font-weight: 600;
             color: #2F564D;
-            margin: 8px 0 4px 0;
+            margin: 8px 0 8px 0;
             border-bottom: 1px solid #2F564D;
-            padding-bottom: 2px;
+            padding-bottom: 6px;
           }
           
           .pdf-template h3 {
@@ -207,14 +207,20 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
             margin: 15mm;
           }
 
-          .page-break-before {
+          .force-page-break {
             page-break-before: always !important;
             break-before: page !important;
+            -webkit-break-before: page !important;
+            display: block !important;
           }
 
           .page-break-avoid {
             page-break-inside: avoid !important;
             break-inside: avoid !important;
+          }
+          
+          .section-spacing {
+            margin-bottom: 6px;
           }
         `}
       </style>
@@ -240,7 +246,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
         </div>
 
         {/* Header */}
-        <div className="page-break-avoid" style={{ marginBottom: '10px' }}>
+        <div className="page-break-avoid section-spacing">
           <h1>Leadership Assessment Results</h1>
           <p style={{ textAlign: 'center', color: '#64748b', margin: '0' }}>
             Generated on {currentDate}
@@ -248,7 +254,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
         </div>
 
         {/* Profile Summary */}
-        <div className="profile-summary page-break-avoid" style={{ marginBottom: '10px' }}>
+        <div className="profile-summary page-break-avoid section-spacing">
           <h2>Profile Summary</h2>
           {demographics?.role && (
             <p><strong>Role:</strong> {demographics.role}</p>
@@ -266,7 +272,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
         </div>
 
         {/* Competency Gap Chart */}
-        <div className="page-break-avoid" style={{ marginBottom: '10px' }}>
+        <div className="page-break-avoid section-spacing">
           <h2>Competency Analysis - Radar Chart</h2>
           <div style={{ 
             height: '420px',
@@ -283,8 +289,8 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
           </div>
         </div>
 
-        {/* AI Insights section - FORCED to start on page 2 */}
-        <div className="ai-insights-section page-break-before">
+        {/* AI Insights section - FORCED to start on new page */}
+        <div className="force-page-break">
           <h2>AI-Powered Insights</h2>
           <p style={{ color: '#64748b', fontSize: '12px', margin: '0 0 6px 0' }}>
             Personalized leadership development insights powered by Encourager GPT
@@ -384,7 +390,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
         </div>
 
         {/* Recommended Next Steps */}
-        <div className="page-break-avoid" style={{ marginBottom: '8px' }}>
+        <div className="page-break-avoid section-spacing">
           <h2>Recommended Next Steps</h2>
           <ul>
             <li>Consider using this report in your next 1:1 with your manager or mentor as a guide for your professional development</li>
@@ -394,7 +400,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
         </div>
 
         {/* Coaching Support */}
-        <div className="page-break-avoid" style={{ marginBottom: '8px' }}>
+        <div className="page-break-avoid section-spacing">
           <h2>Coaching Support</h2>
           <div style={{
             display: 'grid',

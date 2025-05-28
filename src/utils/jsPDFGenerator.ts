@@ -1,3 +1,4 @@
+
 import jsPDF from 'jspdf';
 import { Category, Demographics } from './assessmentTypes';
 import { calculateAverageGap } from './assessmentCalculations/averages';
@@ -25,13 +26,12 @@ interface AIInsightsData {
   key_strengths: KeyStrength[];
 }
 
-// Enhanced helper function to convert image URL to Base64 with better error handling
+// Enhanced helper function to convert image URL to Base64
 const imageToBase64 = (url: string): Promise<string> => {
   return new Promise((resolve, reject) => {
     try {
       console.log('PDF Export: Converting logo to Base64:', url);
       
-      // Use fetch to get the image
       fetch(url)
         .then(response => {
           if (!response.ok) {
@@ -63,123 +63,94 @@ const imageToBase64 = (url: string): Promise<string> => {
   });
 };
 
-// ENHANCED radar chart capture with comprehensive debugging
-const captureRadarChart = (): Promise<string | null> => {
+// ISOLATED radar chart capture specifically for PDF export
+const captureRadarChartForPDF = (): Promise<string | null> => {
   return new Promise((resolve) => {
     try {
-      console.log('PDF Export: === RADAR CHART CAPTURE DEBUG START ===');
+      console.log('PDF Export: === ISOLATED RADAR CHART CAPTURE START ===');
       
-      // Wait longer for chart to fully render
+      // Wait for chart to render completely
       setTimeout(() => {
-        // Log all possible chart containers first
-        const allContainers = document.querySelectorAll('[id*="chart"], [class*="chart"], [class*="radar"]');
-        console.log('PDF Export: Found potential chart containers:', allContainers.length);
-        allContainers.forEach((container, index) => {
-          console.log(`PDF Export: Container ${index}:`, {
-            id: container.id,
-            className: container.className,
-            tagName: container.tagName,
-            children: container.children.length
-          });
-        });
-        
-        // Log all canvas elements
-        const allCanvases = document.querySelectorAll('canvas');
-        console.log('PDF Export: Found canvas elements:', allCanvases.length);
-        allCanvases.forEach((canvas, index) => {
-          const rect = canvas.getBoundingClientRect();
-          console.log(`PDF Export: Canvas ${index}:`, {
-            id: canvas.id,
-            className: canvas.className,
-            width: canvas.width,
-            height: canvas.height,
-            clientWidth: canvas.clientWidth,
-            clientHeight: canvas.clientHeight,
-            boundingRect: { width: rect.width, height: rect.height }
-          });
-        });
-        
-        // Log all SVG elements
-        const allSvgs = document.querySelectorAll('svg');
-        console.log('PDF Export: Found SVG elements:', allSvgs.length);
-        allSvgs.forEach((svg, index) => {
-          const rect = svg.getBoundingClientRect();
-          console.log(`PDF Export: SVG ${index}:`, {
-            id: svg.id,
-            className: svg.className,
-            width: svg.getAttribute('width'),
-            height: svg.getAttribute('height'),
-            viewBox: svg.getAttribute('viewBox'),
-            boundingRect: { width: rect.width, height: rect.height }
-          });
-        });
-        
-        // Try multiple selectors in order of preference
-        const selectors = [
-          '.recharts-surface',
-          'svg.recharts-surface',
-          '.recharts-wrapper svg',
-          '.recharts-container svg',
+        // Target only PDF-specific chart containers
+        const pdfSelectors = [
+          '.pdf-radar-chart svg',
+          '.pdf-radar-chart canvas',
           '#pdf-radar-chart-container svg',
-          '#pdf-radar-chart-container canvas',
-          '.radar-chart-container svg',
-          '.radar-chart-container canvas',
-          'canvas',
-          'svg'
+          '#pdf-radar-chart-container canvas'
         ];
         
         let chartElement: HTMLElement | null = null;
         let usedSelector = '';
         
-        // Try each selector
-        for (const selector of selectors) {
+        // Try PDF-specific selectors first
+        for (const selector of pdfSelectors) {
           const elements = document.querySelectorAll(selector);
-          console.log(`PDF Export: Selector "${selector}" found ${elements.length} elements`);
+          console.log(`PDF Export: PDF selector "${selector}" found ${elements.length} elements`);
           
           if (elements.length > 0) {
-            // Find the largest element (likely the main chart)
-            let largestElement = elements[0] as HTMLElement;
-            let largestArea = 0;
-            
-            elements.forEach((el, index) => {
-              const element = el as HTMLElement;
-              const rect = element.getBoundingClientRect();
-              const area = rect.width * rect.height;
-              console.log(`PDF Export: Element ${index} area: ${area} (${rect.width}x${rect.height})`);
-              
-              if (area > largestArea) {
-                largestArea = area;
-                largestElement = element;
-              }
+            chartElement = elements[0] as HTMLElement;
+            usedSelector = selector;
+            console.log('PDF Export: Found PDF chart element:', {
+              selector: usedSelector,
+              tagName: chartElement.tagName,
+              id: chartElement.id,
+              className: chartElement.className
             });
+            break;
+          }
+        }
+        
+        // Fallback to general selectors but be more selective
+        if (!chartElement) {
+          const fallbackSelectors = [
+            '.recharts-surface',
+            'svg.recharts-surface'
+          ];
+          
+          for (const selector of fallbackSelectors) {
+            const elements = document.querySelectorAll(selector);
+            console.log(`PDF Export: Fallback selector "${selector}" found ${elements.length} elements`);
             
-            if (largestArea > 1000) { // Reasonable chart size
-              chartElement = largestElement;
-              usedSelector = selector;
-              console.log('PDF Export: Selected chart element:', {
-                selector: usedSelector,
-                tagName: chartElement.tagName,
-                area: largestArea,
-                id: chartElement.id,
-                className: chartElement.className
+            if (elements.length > 0) {
+              // Find the largest element (likely the main chart)
+              let largestElement = elements[0] as HTMLElement;
+              let largestArea = 0;
+              
+              elements.forEach((el) => {
+                const element = el as HTMLElement;
+                const rect = element.getBoundingClientRect();
+                const area = rect.width * rect.height;
+                
+                if (area > largestArea) {
+                  largestArea = area;
+                  largestElement = element;
+                }
               });
-              break;
+              
+              if (largestArea > 1000) {
+                chartElement = largestElement;
+                usedSelector = selector;
+                console.log('PDF Export: Selected fallback chart element:', {
+                  selector: usedSelector,
+                  area: largestArea
+                });
+                break;
+              }
             }
           }
         }
         
         if (!chartElement) {
-          console.error('PDF Export: No suitable chart element found');
+          console.error('PDF Export: No chart element found for PDF export');
           resolve(null);
           return;
         }
         
-        // Process the found element
+        // Process the chart element
         if (chartElement.tagName.toLowerCase() === 'canvas') {
           console.log('PDF Export: Processing CANVAS element');
           const canvas = chartElement as HTMLCanvasElement;
           
-          // Validate canvas
           if (canvas.width === 0 || canvas.height === 0) {
             console.error('PDF Export: Canvas has zero dimensions');
             resolve(null);
@@ -188,17 +159,14 @@ const captureRadarChart = (): Promise<string | null> => {
           
           try {
             const dataUrl = canvas.toDataURL('image/png');
-            console.log('PDF Export: Canvas dataURL first 100 chars:', dataUrl.substring(0, 100));
-            console.log('PDF Export: Canvas dataURL length:', dataUrl.length);
+            console.log('PDF Export: Canvas captured, length:', dataUrl.length);
             
-            // Validate the data URL
             if (!dataUrl || dataUrl === 'data:,' || dataUrl.length < 100) {
               console.error('PDF Export: Canvas produced invalid data URL');
               resolve(null);
               return;
             }
             
-            console.log('PDF Export: Canvas chart captured successfully');
             resolve(dataUrl);
           } catch (error) {
             console.error('PDF Export: Error capturing canvas:', error);
@@ -206,10 +174,9 @@ const captureRadarChart = (): Promise<string | null> => {
           }
           
         } else if (chartElement.tagName.toLowerCase() === 'svg') {
-          console.log('PDF Export: Processing SVG element');
+          console.log('PDF Export: Processing SVG element for PDF');
           const svg = chartElement as unknown as SVGElement;
           
-          // Get SVG dimensions
           const rect = svg.getBoundingClientRect();
           const svgWidth = rect.width || 400;
           const svgHeight = rect.height || 400;
@@ -222,7 +189,6 @@ const captureRadarChart = (): Promise<string | null> => {
             return;
           }
           
-          // Create canvas for conversion
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
           
@@ -232,46 +198,65 @@ const captureRadarChart = (): Promise<string | null> => {
             return;
           }
           
-          // Set canvas size
           canvas.width = svgWidth;
           canvas.height = svgHeight;
           
           try {
-            // Get SVG content
-            const svgData = new XMLSerializer().serializeToString(svg);
-            console.log('PDF Export: SVG serialized, length:', svgData.length);
-            console.log('PDF Export: SVG content preview:', svgData.substring(0, 200));
+            // Enhanced SVG processing with style inlining
+            const svgClone = svg.cloneNode(true) as SVGElement;
             
-            // Create a proper SVG with namespace
-            const completeSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}">${svg.innerHTML}</svg>`;
+            // Get all computed styles and inline them
+            const allElements = svgClone.querySelectorAll('*');
+            allElements.forEach((element) => {
+              const computedStyle = window.getComputedStyle(element as Element);
+              let styleString = '';
+              
+              // Key style properties for charts
+              const importantStyles = [
+                'fill', 'stroke', 'stroke-width', 'stroke-dasharray',
+                'font-family', 'font-size', 'font-weight', 'text-anchor',
+                'dominant-baseline', 'opacity', 'fill-opacity'
+              ];
+              
+              importantStyles.forEach(prop => {
+                const value = computedStyle.getPropertyValue(prop);
+                if (value && value !== 'initial' && value !== 'normal') {
+                  styleString += `${prop}: ${value}; `;
+                }
+              });
+              
+              if (styleString) {
+                (element as HTMLElement).style.cssText = styleString;
+              }
+            });
             
-            // Create image from SVG
+            // Create proper SVG with inlined styles
+            const serializedSvg = new XMLSerializer().serializeToString(svgClone);
+            const completeSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${svgWidth}" height="${svgHeight}" viewBox="0 0 ${svgWidth} ${svgHeight}">${svgClone.innerHTML}</svg>`;
+            
             const img = new Image();
             
             img.onload = () => {
               try {
-                console.log('PDF Export: SVG image loaded, drawing to canvas');
+                console.log('PDF Export: SVG image loaded for PDF, drawing to canvas');
                 
-                // Clear canvas and set white background
+                // Clear canvas with white background
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.fillStyle = 'white';
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 
-                // Draw the SVG image
+                // Draw the chart
                 ctx.drawImage(img, 0, 0, svgWidth, svgHeight);
                 
                 const dataUrl = canvas.toDataURL('image/png');
-                console.log('PDF Export: SVG dataURL first 100 chars:', dataUrl.substring(0, 100));
-                console.log('PDF Export: SVG dataURL length:', dataUrl.length);
+                console.log('PDF Export: SVG conversion complete, length:', dataUrl.length);
                 
-                // Validate the result
                 if (!dataUrl || dataUrl === 'data:,' || dataUrl.length < 100) {
                   console.error('PDF Export: SVG conversion produced invalid data URL');
                   resolve(null);
                   return;
                 }
                 
-                console.log('PDF Export: SVG chart converted successfully');
                 URL.revokeObjectURL(img.src);
                 resolve(dataUrl);
               } catch (error) {
@@ -287,26 +272,23 @@ const captureRadarChart = (): Promise<string | null> => {
               resolve(null);
             };
             
-            // Create blob URL for the SVG
             const svgBlob = new Blob([completeSvg], { type: 'image/svg+xml;charset=utf-8' });
             const blobUrl = URL.createObjectURL(svgBlob);
-            console.log('PDF Export: Created SVG blob URL');
             img.src = blobUrl;
             
           } catch (error) {
             console.error('PDF Export: Error processing SVG:', error);
             resolve(null);
           }
-          
         } else {
           console.error('PDF Export: Chart element is neither canvas nor SVG:', chartElement.tagName);
           resolve(null);
         }
         
-        console.log('PDF Export: === RADAR CHART CAPTURE DEBUG END ===');
-      }, 5000); // Increased wait time to 5 seconds
+        console.log('PDF Export: === ISOLATED RADAR CHART CAPTURE END ===');
+      }, 5000); // 5 second wait for chart rendering
     } catch (error) {
-      console.error('PDF Export: Fatal error in captureRadarChart:', error);
+      console.error('PDF Export: Fatal error in captureRadarChartForPDF:', error);
       resolve(null);
     }
   });
@@ -333,7 +315,7 @@ const addTextWithPageBreak = (
   for (let i = 0; i < lines.length; i++) {
     if (checkPageBreak(doc, yPosition)) {
       doc.addPage();
-      yPosition = 15; // Reset to top margin
+      yPosition = 15;
     }
     doc.text(lines[i], x, yPosition);
     yPosition += 6;
@@ -348,7 +330,7 @@ export const generatePDFWithJsPDF = async (
   insights: string,
   filename: string
 ): Promise<void> => {
-  console.log('PDF Export: === STARTING PDF GENERATION ===');
+  console.log('PDF Export: === STARTING ISOLATED PDF GENERATION ===');
   
   try {
     const doc = new jsPDF('p', 'mm', 'a4');
@@ -367,15 +349,14 @@ export const generatePDFWithJsPDF = async (
       console.error('PDF Export: Failed to load logo:', error);
     }
 
-    // Capture radar chart with enhanced debugging
-    console.log('PDF Export: Starting radar chart capture...');
-    const chartDataUrl = await captureRadarChart();
+    // Capture radar chart using isolated method
+    console.log('PDF Export: Starting isolated radar chart capture...');
+    const chartDataUrl = await captureRadarChartForPDF();
     
     if (chartDataUrl) {
-      console.log('PDF Export: ✅ Radar chart captured successfully');
-      console.log('PDF Export: Chart data preview:', chartDataUrl.substring(0, 100));
+      console.log('PDF Export: ✅ Radar chart captured successfully for PDF');
     } else {
-      console.error('PDF Export: ❌ Failed to capture radar chart');
+      console.error('PDF Export: ❌ Failed to capture radar chart for PDF');
     }
 
     // PAGE 1 - Header and Profile
@@ -445,40 +426,34 @@ export const generatePDFWithJsPDF = async (
     // Add radar chart with comprehensive error handling
     if (chartDataUrl) {
       try {
-        console.log('PDF Export: Adding chart to PDF...');
+        console.log('PDF Export: Adding isolated chart to PDF...');
         
-        // Test the data URL first
         if (!chartDataUrl.startsWith('data:image/')) {
           throw new Error('Invalid chart data URL format');
         }
         
-        // Add the chart image
         doc.addImage(chartDataUrl, 'PNG', margin, yPosition, contentWidth, 100);
-        console.log('PDF Export: ✅ Radar chart added to PDF successfully');
+        console.log('PDF Export: ✅ Isolated radar chart added to PDF successfully');
         yPosition += 110;
         
       } catch (error) {
         console.error('PDF Export: ❌ Error adding radar chart to PDF:', error);
         
-        // Add error message in PDF
         doc.setFontSize(12);
         doc.setFont('helvetica', 'normal');
         doc.text('❌ Radar Chart Rendering Error', margin, yPosition);
         doc.text('The radar chart could not be captured for PDF export.', margin, yPosition + 6);
         doc.text('Please view the interactive chart in the web application.', margin, yPosition + 12);
-        doc.text(`Error: ${error.message}`, margin, yPosition + 18);
         yPosition += 30;
       }
     } else {
       console.log('PDF Export: No chart data available, adding placeholder');
       
-      // Add placeholder message in PDF
       doc.setFontSize(12);
       doc.setFont('helvetica', 'normal');
       doc.text('❌ Radar Chart Not Available', margin, yPosition);
       doc.text('The radar chart could not be captured for PDF export.', margin, yPosition + 6);
-      doc.text('This may be due to timing or rendering issues.', margin, yPosition + 12);
-      doc.text('Please view the interactive chart in the web application.', margin, yPosition + 18);
+      doc.text('Please view the interactive chart in the web application.', margin, yPosition + 12);
       yPosition += 30;
     }
 
@@ -652,7 +627,7 @@ export const generatePDFWithJsPDF = async (
 
     const coachingBenefits = [
       'Create personalized development plans',
-      'Practice new skills in a safe environment',
+      'Practice new skills in a safe environment', 
       'Overcome specific leadership challenges',
       'Track your progress over time'
     ];
@@ -671,7 +646,7 @@ export const generatePDFWithJsPDF = async (
 
     // Save the PDF
     doc.save(filename);
-    console.log('PDF Export: === PDF GENERATION COMPLETE ===');
+    console.log('PDF Export: === ISOLATED PDF GENERATION COMPLETE ===');
 
   } catch (error) {
     console.error('PDF Export: Fatal error generating PDF:', error);

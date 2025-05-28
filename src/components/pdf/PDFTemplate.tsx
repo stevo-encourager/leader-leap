@@ -2,9 +2,7 @@
 import React from 'react';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { calculateAverageGap } from '@/utils/assessmentCalculations/averages';
-import SkillGapChart from '../SkillGapChart';
-import RecommendedSteps from '../dashboard/RecommendedSteps';
-import CoachingSupport from '../dashboard/CoachingSupport';
+import PDFRadarChart from './PDFRadarChart';
 import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
 import { FormattedSummary } from '@/components/FormattedSummary';
 import { generateResourceLink } from '@/utils/resourceMapping';
@@ -254,12 +252,12 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
         <p style={pdfStyles.smallText}>Assessment completed across {categories.length} competency areas</p>
       </div>
 
-      {/* Competency Gap Chart */}
+      {/* Competency Gap Chart - ISOLATED PDF CHART */}
       <div style={pdfStyles.sectionContainer}>
         <h2 style={pdfStyles.sectionHeader}>Competency Analysis - Radar Chart</h2>
         <div style={pdfStyles.chartContainer} id="pdf-radar-chart-container">
           <div style={{ width: '100%', height: '100%' }}>
-            <SkillGapChart categories={categories} isPDF={true} />
+            <PDFRadarChart categories={categories} className="pdf-radar-chart" />
           </div>
         </div>
         

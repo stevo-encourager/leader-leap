@@ -27,6 +27,13 @@ export {
   getSkillsMeetingExpectations
 } from './skillMetrics';
 
+// Import the functions we need for calculateInsights
+import { 
+  getLargestGaps, 
+  getSmallestGaps, 
+  getSkillsMeetingExpectations 
+} from './skillMetrics';
+
 // Add the missing calculateInsights function with proper imports
 export const calculateInsights = (categories: any[]) => {
   return {

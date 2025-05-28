@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { calculateAverageGap } from '@/utils/assessmentCalculations/averages';
@@ -148,6 +147,24 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
 
       {/* Main content container with PDF class */}
       <div className="pdf-template">
+        {/* Logo at the very top */}
+        <div style={{ 
+          textAlign: 'center', 
+          marginBottom: '20px',
+          pageBreakInside: 'avoid'
+        }}>
+          <img 
+            src="/lovable-uploads/15f96168-94ad-4c49-8974-8923e4f45c4d.png" 
+            alt="Encourager Logo" 
+            style={{
+              maxWidth: '300px',
+              height: 'auto',
+              maxHeight: '80px',
+              objectFit: 'contain'
+            }}
+          />
+        </div>
+
         {/* Header */}
         <div className="page-break-avoid" style={{ marginBottom: '20px' }}>
           <h1>Leadership Assessment Results</h1>

@@ -11,10 +11,9 @@ import {
 } from 'recharts';
 import { Category } from '@/utils/assessmentTypes';
 
-interface SkillGapChartProps {
+interface PDFRadarChartProps {
   categories: Category[];
   className?: string;
-  isPDF?: boolean;
 }
 
 interface ChartData {
@@ -25,15 +24,15 @@ interface ChartData {
   skillCount?: number;
 }
 
-// Custom tick component for competency names
-const CustomTick = (props: any) => {
-  const { payload, x, y, cx, cy, textAnchor, index } = props;
+// PDF-specific custom tick component with optimized sizing
+const PDFCustomTick = (props: any) => {
+  const { payload, x, y, cx, cy } = props;
   
   // Calculate angle from center to current position
   const angle = Math.atan2(y - cy, x - cx);
   
-  // Use standard radius for labels
-  const labelRadius = 175;
+  // Conservative radius for PDF to prevent clipping
+  const labelRadius = 120;
   
   const labelX = cx + labelRadius * Math.cos(angle);
   const labelY = cy + labelRadius * Math.sin(angle);
@@ -43,6 +42,11 @@ const CustomTick = (props: any) => {
   if (labelX > cx + 5) anchor = 'start';
   else if (labelX < cx - 5) anchor = 'end';
   
+  // Shorter labels for PDF to prevent overlap and clipping
+  const displayText = payload.value.length > 12 
+    ? payload.value.substring(0, 10) + '...' 
+    : payload.value;
+  
   return (
     <text
       x={labelX}
@@ -50,147 +54,90 @@ const CustomTick = (props: any) => {
       textAnchor={anchor}
       dominantBaseline="middle"
       fill="#2F564D"
-      fontSize="14"
+      fontSize="10"
       fontWeight="500"
     >
-      {payload.value}
+      {displayText}
     </text>
   );
 };
 
-const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "", isPDF = false }) => {
+const PDFRadarChart: React.FC<PDFRadarChartProps> = ({ categories, className = "" }) => {
   // Ensure categories is always an array
   const safeCategories = Array.isArray(categories) ? categories : [];
   
-  // Log detailed info about categories
-  console.log("SkillGapChart - Categories count:", safeCategories.length);
-  if (safeCategories.length > 0) {
-    // Safely stringify categories to avoid circular references
-    const safeCategoriesString = JSON.stringify(
-      safeCategories.map(cat => ({
-        title: cat.title,
-        skillsCount: cat.skills?.length || 0,
-        skills: cat.skills?.map(s => ({
-          name: s.name,
-          current: s.ratings?.current,
-          desired: s.ratings?.desired,
-        }))
-      }))
-    );
-    console.log("SkillGapChart - Categories data:", safeCategoriesString.substring(0, 1000) + (safeCategoriesString.length > 1000 ? '...' : ''));
-    
-    const totalSkills = safeCategories.reduce((total, cat) => total + (cat.skills?.length || 0), 0);
-    console.log("SkillGapChart - Total skills:", totalSkills);
-    
-    // Log first category as sample
-    if (safeCategories[0]) {
-      const firstCat = safeCategories[0];
-      console.log("SkillGapChart - First category:", {
-        title: firstCat.title,
-        skillsCount: firstCat.skills?.length || 0,
-        hasSkills: Array.isArray(firstCat.skills) && firstCat.skills.length > 0,
-        firstSkillName: firstCat.skills?.[0]?.name,
-        firstSkillRatings: firstCat.skills?.[0]?.ratings
-      });
-    }
-  }
-  
-  // Process chart data with detailed logging
+  // Process chart data
   const chartData = useMemo(() => {
-    console.log("SkillGapChart - Processing chart data from categories");
-    
     if (!safeCategories || safeCategories.length === 0) {
-      console.warn("SkillGapChart - No categories provided");
       return [];
     }
     
-    // Process all categories to chart data
     const result: ChartData[] = [];
     
     for (const category of safeCategories) {
-      // Skip invalid categories
       if (!category || !category.skills || !Array.isArray(category.skills)) {
-        console.log(`SkillGapChart - Skipping invalid category: ${category?.title || 'unknown'}`);
         continue;
       }
       
-      // Default values
       let totalCurrent = 0;
       let totalDesired = 0;
       let validSkillCount = 0;
       
-      // Process each skill in the category
       for (const skill of category.skills) {
-        // Skip invalid skills
         if (!skill || !skill.ratings) {
-          console.log(`SkillGapChart - Skipping invalid skill (no ratings): ${skill?.name || 'unknown'}`);
           continue;
         }
         
-        // Get ratings with detailed validation
         let current = 0;
         let desired = 0;
         
-        // Handle current rating
         if (typeof skill.ratings.current === 'number') {
           current = skill.ratings.current;
         } else if (skill.ratings.current !== undefined && skill.ratings.current !== null) {
           try {
             current = parseFloat(String(skill.ratings.current));
           } catch (e) {
-            console.warn(`SkillGapChart - Error parsing current rating for ${skill.name}:`, e);
+            // Silent fallback
           }
         }
         
-        // Handle desired rating
         if (typeof skill.ratings.desired === 'number') {
           desired = skill.ratings.desired;
         } else if (skill.ratings.desired !== undefined && skill.ratings.desired !== null) {
           try {
             desired = parseFloat(String(skill.ratings.desired));
           } catch (e) {
-            console.warn(`SkillGapChart - Error parsing desired rating for ${skill.name}:`, e);
+            // Silent fallback
           }
         }
         
-        // Ensure valid numbers
         current = isNaN(current) ? 0 : current;
         desired = isNaN(desired) ? 0 : desired;
         
-        // Only include valid, non-zero ratings
         if (current > 0 || desired > 0) {
           totalCurrent += current;
           totalDesired += desired;
           validSkillCount++;
-          console.log(`SkillGapChart - Valid skill: ${skill.name}, current=${current}, desired=${desired}`);
-        } else {
-          console.log(`SkillGapChart - Skill with zero ratings: ${skill.name}`);
         }
       }
       
-      // Only include categories with valid skills
       if (validSkillCount > 0) {
-        // Calculate averages
         const avgCurrent = parseFloat((totalCurrent / validSkillCount).toFixed(1));
         const avgDesired = parseFloat((totalDesired / validSkillCount).toFixed(1));
         
+        // Shorter category names for PDF display
+        const displayTitle = category.title && category.title.length > 15 
+          ? category.title.substring(0, 12) + '...' 
+          : category.title || "Unknown Category";
+        
         result.push({
-          subject: category.title || "Unknown Category",
+          subject: displayTitle,
           current: avgCurrent,
           desired: avgDesired,
           fullMark: 10,
           skillCount: validSkillCount
         });
-        
-        console.log(`SkillGapChart - Category ${category.title}: avgCurrent=${avgCurrent}, avgDesired=${avgDesired} from ${validSkillCount} valid skills`);
-      } else {
-        console.log(`SkillGapChart - Category ${category.title || 'Unknown'} has no valid skills with ratings`);
       }
-    }
-    
-    console.log("SkillGapChart - Final chart data items:", result.length);
-    if (result.length > 0) {
-      console.log("SkillGapChart - Chart data sample:", result);
     }
     
     return result;
@@ -203,37 +150,28 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
            (!isNaN(item.current) && !isNaN(item.desired)))
   );
   
-  console.log("SkillGapChart - Valid chart data items:", validChartData.length);
-  
   if (validChartData.length === 0) {
-    console.warn("SkillGapChart - No valid chart data to display");
     return (
       <div className={`flex flex-col items-center justify-center h-full bg-slate-50 rounded-lg p-6 ${className}`}>
         <p className="text-gray-500 text-center mb-3">
           No valid assessment data available to display in the radar chart.
         </p>
-        <p className="text-xs text-gray-400 text-center">
-          Complete the assessment with valid current and desired skill ratings to see your competency radar chart.
-        </p>
       </div>
     );
   }
 
-  console.log("SkillGapChart - Rendering radar chart with data:", validChartData);
+  // PDF-optimized margins
+  const chartMargins = { top: 5, right: 25, left: 25, bottom: 45 };
 
-  // Standard margins for all displays
-  const chartMargins = { top: 50, right: 100, left: 100, bottom: 50 };
-
-  // Radar chart implementation
   return (
-    <div className={`radar-chart-container ${className}`}>
+    <div className={`radar-chart-container ${className} page-break-avoid`}>
       <ResponsiveContainer width="100%" height="100%">
         <RadarChart 
           data={validChartData} 
           margin={chartMargins}
           cx="50%" 
-          cy="45%"
-          outerRadius="75%"
+          cy="38%"
+          outerRadius="52%"
         >
           <PolarGrid 
             strokeDasharray="2 2" 
@@ -243,7 +181,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
           />
           <PolarAngleAxis 
             dataKey="subject"
-            tick={CustomTick}
+            tick={PDFCustomTick}
           />
           <Radar
             name="Current Level"
@@ -267,9 +205,10 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             verticalAlign="bottom"
             align="center"
             wrapperStyle={{
-              marginTop: '60px',
-              fontSize: '18px',
-              fontWeight: 'normal'
+              marginTop: '20px',
+              fontSize: '11px',
+              fontWeight: 'normal',
+              paddingBottom: '5px'
             }}
           />
         </RadarChart>
@@ -278,4 +217,4 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
   );
 };
 
-export default React.memo(SkillGapChart);
+export default React.memo(PDFRadarChart);

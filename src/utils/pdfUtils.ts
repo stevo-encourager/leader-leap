@@ -369,8 +369,8 @@ export const exportToPDF = async (
       return;
     }
     
-    // Configure html2pdf options for multi-page support
-    console.log('PDF Export: Configuring html2pdf for multi-page output...');
+    // Configure html2pdf options for multi-page support with improved page break handling
+    console.log('PDF Export: Configuring html2pdf for multi-page output with better page breaks...');
     const opt = {
       margin: [15, 15, 15, 15], // Margins in mm
       filename,
@@ -401,14 +401,13 @@ export const exportToPDF = async (
         putOnlyUsedFonts: true
       },
       pagebreak: { 
-        mode: ['avoid-all', 'css', 'legacy'],
+        mode: ['css', 'legacy'], // Removed 'avoid-all' as requested
         before: '.page-break-before',
-        after: '.page-break-after',
         avoid: '.page-break-avoid'
       }
     };
     
-    console.log('PDF Export: Starting multi-page PDF conversion with validated content...');
+    console.log('PDF Export: Starting multi-page PDF conversion with improved page break handling...');
     await html2pdf().set(opt).from(tempContainer).save();
     console.log('PDF Export: Multi-page PDF generation completed successfully');
     

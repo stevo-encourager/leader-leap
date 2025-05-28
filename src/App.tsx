@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Index from '@/pages/Index';
@@ -20,21 +21,23 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <div className="min-h-screen bg-background">
-          <Navigation />
-          <Toaster />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/assessment" element={<Assessment />} />
-            <Route path="/results/:id" element={<Results />} />
-            <Route path="/previous-assessments" element={<PreviousAssessments />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/test-components" element={<TestComponents />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-          <Footer />
-        </div>
+        <Router>
+          <div className="min-h-screen bg-background">
+            <Navigation />
+            <Toaster />
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/assessment" element={<Assessment />} />
+              <Route path="/results/:id" element={<Results />} />
+              <Route path="/previous-assessments" element={<PreviousAssessments />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/test-components" element={<TestComponents />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <Footer />
+          </div>
+        </Router>
       </AuthProvider>
     </QueryClientProvider>
   );

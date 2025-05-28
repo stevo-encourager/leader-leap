@@ -34,8 +34,8 @@ interface AIInsightsData {
   key_strengths: KeyStrength[];
 }
 
-// Base64 encoded logo - replace with actual logo data
-const LOGO_BASE64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==";
+// Actual Base64 encoded logo - using a simple black rectangle as a test logo
+const LOGO_BASE64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAABkCAYAAAA8AQ3AAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5QwYCgcVHwJY1AAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAApSURBVHja7cExAQAAAMKg9U9tBn+gAAAAAAAAAAAAAAAAAAAAAAAA4GYNcAABjPgkBwAAAABJRU5ErkJggg==";
 
 const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, assessmentId }) => {
   const timestamp = new Date().toISOString();
@@ -242,23 +242,32 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
             margin: 0;
             padding: 0;
           }
+          
+          .chart-section {
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 0;
+          }
+          
+          .ai-insights-section {
+            background-color: #fff5f5;
+            margin: 0;
+            padding: 0;
+          }
         `}
       </style>
 
       {/* Main content container with PDF class */}
       <div className="pdf-template">
-        {/* Logo at the absolute top - NO containers */}
+        {/* Logo at the absolute top - FIRST element with no containers */}
         <img 
           src={LOGO_BASE64}
           alt="Company Logo" 
           style={{
+            maxWidth: '200px',
+            maxHeight: '60px',
             display: 'block',
-            margin: '0 auto 16px auto',
-            maxWidth: '300px',
-            height: 'auto',
-            maxHeight: '80px',
-            objectFit: 'contain',
-            padding: '0'
+            margin: '0 auto'
           }}
         />
 
@@ -288,8 +297,8 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
           </p>
         </div>
 
-        {/* Competency Gap Chart */}
-        <div className="section-spacing page-break-avoid">
+        {/* Competency Gap Chart - with debug background */}
+        <div className="chart-section section-spacing page-break-avoid">
           <h2>Competency Analysis - Radar Chart</h2>
           <div style={{ 
             height: '400px',
@@ -307,12 +316,12 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
             </div>
           </div>
           
-          {/* PAGE BREAK: Place as the LAST element of this section */}
+          {/* PAGE BREAK: Place as the ABSOLUTE LAST element of chart section with NO trailing content */}
           <div className="page-break-before"></div>
         </div>
 
-        {/* AI Insights section - should start at TOP of page 2 */}
-        <div className="no-spacing">
+        {/* AI Insights section - debug background to verify placement */}
+        <div className="ai-insights-section no-spacing">
           <h2>AI-Powered Insights</h2>
           <p style={{ color: '#64748b', fontSize: '12px', margin: '0 0 8px 0', padding: '0' }}>
             Personalized leadership development insights powered by Encourager GPT

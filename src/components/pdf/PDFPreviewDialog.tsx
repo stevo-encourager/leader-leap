@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -201,9 +200,9 @@ const PDFPreviewDialog: React.FC<PDFPreviewDialogProps> = ({
       // Give a moment for any final rendering
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Enhanced html2pdf options specifically to fix clipping and multi-page issues
+      // Enhanced html2pdf options with reduced margins for debugging
       const opt = {
-        margin: [10, 10, 10, 10], // Small margins in mm
+        margin: [5, 5, 5, 5], // Reduced margins to 5mm for debugging
         filename: 'leadership-assessment-results.pdf',
         image: { 
           type: 'jpeg', 
@@ -249,14 +248,13 @@ const PDFPreviewDialog: React.FC<PDFPreviewDialogProps> = ({
           hotfixes: ['px_scaling']
         },
         pagebreak: { 
-          mode: ['avoid-all', 'css'],
-          before: ['.page-break-before', '.ai-insights-section'],
-          after: ['.page-break-after'],
+          mode: ['css', 'legacy'], // Removed 'avoid-all' and updated as requested
+          before: ['.page-break-before'],
           avoid: ['.page-break-avoid', '.radar-chart-container', '.insight-card']
         }
       };
 
-      console.log('PDFPreview: Starting PDF generation with fixed scaling and multi-page support...');
+      console.log('PDFPreview: Starting PDF generation with updated configuration...');
       await html2pdf().set(opt).from(containerClone).save();
       
       // Clean up the temporary container

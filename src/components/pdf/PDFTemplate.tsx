@@ -34,8 +34,137 @@ interface AIInsightsData {
   key_strengths: KeyStrength[];
 }
 
-// Actual Base64 encoded logo - using a simple black rectangle as a test logo
+// Base64 encoded logo for PDF
 const LOGO_BASE64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAABkCAYAAAA8AQ3AAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5QwYCgcVHwJY1AAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAApSURBVHja7cExAQAAAMKg9U9tBn+gAAAAAAAAAAAAAAAAAAAAAAAA4GYNcAABjPgkBwAAAABJRU5ErkJggg==";
+
+// PDF-specific styles - COMPLETELY ISOLATED from dashboard
+const pdfStyles = {
+  container: {
+    fontFamily: 'system-ui, -apple-system, sans-serif',
+    fontSize: '14px',
+    lineHeight: '1.4',
+    color: '#1f2937',
+    backgroundColor: 'white',
+    margin: '0',
+    padding: '0',
+    maxWidth: '190mm',
+    width: '100%',
+    minHeight: '297mm',
+    boxSizing: 'border-box' as const
+  },
+  logo: {
+    maxWidth: '200px',
+    maxHeight: '60px',
+    display: 'block',
+    margin: '0 auto'
+  },
+  title: {
+    fontSize: '24px',
+    fontWeight: '700' as const,
+    color: '#2F564D',
+    margin: '0 0 8px 0',
+    padding: '0',
+    textAlign: 'center' as const
+  },
+  subtitle: {
+    textAlign: 'center' as const,
+    color: '#64748b',
+    margin: '0 0 8px 0',
+    padding: '0'
+  },
+  sectionHeader: {
+    fontSize: '18px',
+    fontWeight: '600' as const,
+    color: '#2F564D',
+    margin: '0 0 8px 0',
+    padding: '0 0 12px 0',
+    borderBottom: '2px solid #2F564D'
+  },
+  subsectionHeader: {
+    fontSize: '16px',
+    fontWeight: '600' as const,
+    color: '#2F564D',
+    margin: '8px 0 4px 0',
+    padding: '0'
+  },
+  text: {
+    margin: '4px 0',
+    padding: '0',
+    lineHeight: '1.4'
+  },
+  smallText: {
+    fontSize: '12px',
+    color: '#64748b',
+    margin: '4px 0',
+    padding: '0',
+    lineHeight: '1.4'
+  },
+  chartContainer: {
+    height: '400px',
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxSizing: 'border-box' as const,
+    overflow: 'visible',
+    margin: '0',
+    padding: '0'
+  },
+  pageBreak: {
+    pageBreakBefore: 'always' as const,
+    breakBefore: 'page' as const,
+    margin: '0',
+    padding: '0',
+    height: '0',
+    display: 'block'
+  },
+  list: {
+    margin: '4px 0',
+    paddingLeft: '18px',
+    listStyleType: 'disc' as const
+  },
+  listItem: {
+    margin: '2px 0',
+    padding: '0',
+    lineHeight: '1.4'
+  },
+  footer: {
+    textAlign: 'center' as const,
+    borderTop: '1px solid #e2e8f0',
+    fontSize: '12px',
+    color: '#64748b',
+    paddingTop: '8px',
+    margin: '8px 0 0 0'
+  },
+  sectionContainer: {
+    margin: '8px 0',
+    padding: '0'
+  },
+  gridContainer: {
+    display: 'grid',
+    gridTemplateColumns: '2fr 1fr',
+    gap: '20px',
+    width: '100%',
+    margin: '0',
+    padding: '0'
+  },
+  imageContainer: {
+    textAlign: 'center' as const,
+    width: '100%',
+    height: '200px',
+    boxSizing: 'border-box' as const,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  coachImage: {
+    width: '100%',
+    height: 'auto',
+    borderRadius: '8px',
+    maxHeight: '170px',
+    objectFit: 'cover' as const
+  }
+};
 
 const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, assessmentId }) => {
   const timestamp = new Date().toISOString();
@@ -48,7 +177,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
   if (!categories || !Array.isArray(categories) || categories.length === 0) {
     console.error('PDFTemplate: Invalid categories data');
     return (
-      <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+      <div style={pdfStyles.container}>
         <h1>PDF Template Error</h1>
         <p>No valid assessment data provided</p>
         <p>Timestamp: {timestamp}</p>
@@ -78,7 +207,6 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
     try {
       const parsed = JSON.parse(insightsText);
       
-      // Validate structure
       if (!parsed.summary || !parsed.priority_areas || !parsed.key_strengths) {
         console.error('PDFTemplate: Invalid insights structure - missing required fields');
         return null;
@@ -96,154 +224,61 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
     }
   };
 
-  console.log('PDFTemplate: Metrics calculated:', {
-    averageGap
-  });
+  console.log('PDFTemplate: Metrics calculated:', { averageGap });
   console.log('=== PDF TEMPLATE DEBUG END ===');
 
   return (
-    <div 
-      style={{
-        fontFamily: 'system-ui, -apple-system, sans-serif',
-        fontSize: '14px',
-        lineHeight: '1.4',
-        color: '#1f2937',
-        backgroundColor: 'white',
-        margin: '0',
-        padding: '0',
-        maxWidth: '190mm',
-        width: '100%',
-        minHeight: '297mm',
-        boxSizing: 'border-box'
-      }}
-      data-insights={insights || ''}
-    >
-      {/* Logo at the absolute top - FIRST element with no containers */}
-      <img 
-        src={LOGO_BASE64}
-        alt="Company Logo" 
-        style={{
-          maxWidth: '200px',
-          maxHeight: '60px',
-          display: 'block',
-          margin: '0 auto'
-        }}
-      />
+    <div style={pdfStyles.container} data-insights={insights || ''}>
+      {/* Logo - FIRST element */}
+      <img src={LOGO_BASE64} alt="Company Logo" style={pdfStyles.logo} />
 
-      {/* Header - Page 1 content */}
-      <div style={{ margin: '0', padding: '0' }}>
-        <h1 style={{ 
-          fontSize: '24px', 
-          fontWeight: '700', 
-          color: '#2F564D', 
-          margin: '0 0 8px 0', 
-          padding: '0', 
-          textAlign: 'center' 
-        }}>
-          Leadership Assessment Results
-        </h1>
-        <p style={{ textAlign: 'center', color: '#64748b', margin: '0 0 8px 0', padding: '0' }}>
-          Generated on {currentDate}
-        </p>
+      {/* Header */}
+      <div style={pdfStyles.sectionContainer}>
+        <h1 style={pdfStyles.title}>Leadership Assessment Results</h1>
+        <p style={pdfStyles.subtitle}>Generated on {currentDate}</p>
       </div>
 
       {/* Profile Summary */}
-      <div style={{ margin: '8px 0', padding: '0' }}>
-        <h2 style={{ 
-          fontSize: '18px', 
-          fontWeight: '600', 
-          color: '#2F564D', 
-          margin: '0 0 8px 0', 
-          padding: '0 0 12px 0', 
-          borderBottom: '2px solid #2F564D' 
-        }}>
-          Profile Summary
-        </h2>
+      <div style={pdfStyles.sectionContainer}>
+        <h2 style={pdfStyles.sectionHeader}>Profile Summary</h2>
         {demographics?.role && (
-          <p style={{ margin: '4px 0', padding: '0', lineHeight: '1.4' }}>
-            <strong>Role:</strong> {demographics.role}
-          </p>
+          <p style={pdfStyles.text}><strong>Role:</strong> {demographics.role}</p>
         )}
         {demographics?.yearsOfExperience && (
-          <p style={{ margin: '4px 0', padding: '0', lineHeight: '1.4' }}>
-            <strong>Years of Experience:</strong> {demographics.yearsOfExperience}
-          </p>
+          <p style={pdfStyles.text}><strong>Years of Experience:</strong> {demographics.yearsOfExperience}</p>
         )}
         {demographics?.industry && (
-          <p style={{ margin: '4px 0', padding: '0', lineHeight: '1.4' }}>
-            <strong>Industry:</strong> {demographics.industry}
-          </p>
+          <p style={pdfStyles.text}><strong>Industry:</strong> {demographics.industry}</p>
         )}
-        <p style={{ margin: '4px 0', padding: '0', lineHeight: '1.4' }}>
-          <strong>Overall Development Gap:</strong> {averageGap.toFixed(2)} points
-        </p>
-        <p style={{ fontSize: '12px', color: '#64748b', margin: '4px 0', padding: '0', lineHeight: '1.4' }}>
-          Assessment completed across {categories.length} competency areas
-        </p>
+        <p style={pdfStyles.text}><strong>Overall Development Gap:</strong> {averageGap.toFixed(2)} points</p>
+        <p style={pdfStyles.smallText}>Assessment completed across {categories.length} competency areas</p>
       </div>
 
       {/* Competency Gap Chart */}
-      <div style={{ margin: '8px 0', padding: '0' }}>
-        <h2 style={{ 
-          fontSize: '18px', 
-          fontWeight: '600', 
-          color: '#2F564D', 
-          margin: '0 0 8px 0', 
-          padding: '0 0 12px 0', 
-          borderBottom: '2px solid #2F564D' 
-        }}>
-          Competency Analysis - Radar Chart
-        </h2>
-        <div style={{ 
-          height: '400px',
-          width: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxSizing: 'border-box',
-          overflow: 'visible',
-          margin: '0',
-          padding: '0'
-        }}>
-          <div style={{ width: '100%', height: '100%' }} id="pdf-radar-chart-container">
+      <div style={pdfStyles.sectionContainer}>
+        <h2 style={pdfStyles.sectionHeader}>Competency Analysis - Radar Chart</h2>
+        <div style={pdfStyles.chartContainer} id="pdf-radar-chart-container">
+          <div style={{ width: '100%', height: '100%' }}>
             <SkillGapChart categories={categories} isPDF={true} />
           </div>
         </div>
         
-        {/* PAGE BREAK: Place as the ABSOLUTE LAST element of chart section with NO trailing content */}
-        <div style={{ 
-          pageBreakBefore: 'always', 
-          breakBefore: 'page', 
-          margin: '0', 
-          padding: '0', 
-          height: '0', 
-          display: 'block' 
-        }}></div>
+        {/* PAGE BREAK */}
+        <div style={pdfStyles.pageBreak}></div>
       </div>
 
       {/* AI Insights section */}
-      <div style={{ margin: '0', padding: '0' }}>
-        <h2 style={{ 
-          fontSize: '18px', 
-          fontWeight: '600', 
-          color: '#2F564D', 
-          margin: '0 0 8px 0', 
-          padding: '0 0 12px 0', 
-          borderBottom: '2px solid #2F564D' 
-        }}>
-          AI-Powered Insights
-        </h2>
-        <p style={{ color: '#64748b', fontSize: '12px', margin: '0 0 8px 0', padding: '0' }}>
-          Personalized leadership development insights powered by Encourager GPT
-        </p>
+      <div style={pdfStyles.sectionContainer}>
+        <h2 style={pdfStyles.sectionHeader}>AI-Powered Insights</h2>
+        <p style={pdfStyles.smallText}>Personalized leadership development insights powered by Encourager GPT</p>
         
         {isLoading && (
-          <p style={{ margin: '8px 0', padding: '0' }}>Encourager GPT is analyzing your assessment results...</p>
+          <p style={pdfStyles.text}>Encourager GPT is analyzing your assessment results...</p>
         )}
 
         {error && (
-          <div style={{ margin: '8px 0', padding: '0' }}>
-            <p><strong>Unable to generate insights:</strong> {error}</p>
+          <div style={pdfStyles.sectionContainer}>
+            <p style={pdfStyles.text}><strong>Unable to generate insights:</strong> {error}</p>
           </div>
         )}
 
@@ -252,51 +287,30 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
           
           if (!parsedInsights) {
             return (
-              <p style={{ margin: '8px 0', padding: '0' }}>
-                Unable to parse AI insights. The insights format appears to be invalid.
-              </p>
+              <p style={pdfStyles.text}>Unable to parse AI insights. The insights format appears to be invalid.</p>
             );
           }
 
           return (
-            <div style={{ margin: '0', padding: '0' }}>
+            <div style={pdfStyles.sectionContainer}>
               {/* Assessment Summary */}
               {parsedInsights.summary && (
-                <div style={{ margin: '8px 0', padding: '0' }}>
-                  <h3 style={{ 
-                    fontSize: '16px', 
-                    fontWeight: '600', 
-                    color: '#2F564D', 
-                    margin: '8px 0 4px 0', 
-                    padding: '0' 
-                  }}>
-                    Assessment Summary
-                  </h3>
-                  <FormattedSummary 
-                    summary={parsedInsights.summary}
-                    className=""
-                  />
+                <div style={pdfStyles.sectionContainer}>
+                  <h3 style={pdfStyles.subsectionHeader}>Assessment Summary</h3>
+                  <FormattedSummary summary={parsedInsights.summary} className="" />
                 </div>
               )}
 
               {/* Priority Development Areas */}
               {parsedInsights.priority_areas && (
-                <div style={{ margin: '8px 0', padding: '0' }}>
-                  <h3 style={{ 
-                    fontSize: '16px', 
-                    fontWeight: '600', 
-                    color: '#2F564D', 
-                    margin: '8px 0 4px 0', 
-                    padding: '0' 
-                  }}>
-                    Top 3 Priority Development Areas
-                  </h3>
+                <div style={pdfStyles.sectionContainer}>
+                  <h3 style={pdfStyles.subsectionHeader}>Top 3 Priority Development Areas</h3>
                   {parsedInsights.priority_areas.map((area, index) => {
                     const resourceLink = generateResourceLink(area.resource);
                     
                     return (
-                      <div key={index} style={{ margin: '6px 0', padding: '0' }}>
-                        <p style={{ margin: '4px 0', padding: '0', lineHeight: '1.4' }}>
+                      <div key={index} style={pdfStyles.sectionContainer}>
+                        <p style={pdfStyles.text}>
                           <span style={{ fontWeight: '600', color: '#2F564D' }}>
                             {index + 1}. {area.competency}
                           </span>
@@ -305,21 +319,15 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
                           </span>
                         </p>
                         
-                        <p style={{ margin: '4px 0', padding: '0', lineHeight: '1.4' }}>
-                          <strong>Key insights:</strong>
-                        </p>
-                        <ul style={{ margin: '4px 0', paddingLeft: '18px', listStyleType: 'disc' }}>
+                        <p style={pdfStyles.text}><strong>Key insights:</strong></p>
+                        <ul style={pdfStyles.list}>
                           {area.insights && Array.isArray(area.insights) && area.insights.map((insight, insightIndex) => (
-                            <li key={insightIndex} style={{ margin: '2px 0', padding: '0', lineHeight: '1.4' }}>
-                              {insight}
-                            </li>
+                            <li key={insightIndex} style={pdfStyles.listItem}>{insight}</li>
                           ))}
                         </ul>
                         
                         {area.resource && (
-                          <p style={{ margin: '4px 0', padding: '0', lineHeight: '1.4' }}>
-                            <strong>Recommended Resource:</strong> {resourceLink.title}
-                          </p>
+                          <p style={pdfStyles.text}><strong>Recommended Resource:</strong> {resourceLink.title}</p>
                         )}
                       </div>
                     );
@@ -329,32 +337,16 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
 
               {/* Key Competencies to Leverage */}
               {parsedInsights.key_strengths && (
-                <div style={{ margin: '8px 0', padding: '0' }}>
-                  <h3 style={{ 
-                    fontSize: '16px', 
-                    fontWeight: '600', 
-                    color: '#2F564D', 
-                    margin: '8px 0 4px 0', 
-                    padding: '0' 
-                  }}>
-                    Key Competencies to Leverage
-                  </h3>
+                <div style={pdfStyles.sectionContainer}>
+                  <h3 style={pdfStyles.subsectionHeader}>Key Competencies to Leverage</h3>
                   {parsedInsights.key_strengths.map((strength, index) => (
-                    <div key={index} style={{ margin: '6px 0', padding: '0' }}>
-                      <p style={{ margin: '4px 0', padding: '0', lineHeight: '1.4' }}>
-                        <strong>Competency:</strong> {strength.competency}
-                      </p>
-                      <p style={{ margin: '4px 0', padding: '0', lineHeight: '1.4' }}>
-                        <strong>Existing Skill:</strong> {strength.example}
-                      </p>
-                      <p style={{ margin: '4px 0', padding: '0', lineHeight: '1.4' }}>
-                        <strong>How to leverage further:</strong>
-                      </p>
-                      <ul style={{ margin: '4px 0', paddingLeft: '18px', listStyleType: 'disc' }}>
+                    <div key={index} style={pdfStyles.sectionContainer}>
+                      <p style={pdfStyles.text}><strong>Competency:</strong> {strength.competency}</p>
+                      <p style={pdfStyles.text}><strong>Existing Skill:</strong> {strength.example}</p>
+                      <p style={pdfStyles.text}><strong>How to leverage further:</strong></p>
+                      <ul style={pdfStyles.list}>
                         {strength.leverage_advice && Array.isArray(strength.leverage_advice) && strength.leverage_advice.map((advice, adviceIndex) => (
-                          <li key={adviceIndex} style={{ margin: '2px 0', padding: '0', lineHeight: '1.4' }}>
-                            {advice}
-                          </li>
+                          <li key={adviceIndex} style={pdfStyles.listItem}>{advice}</li>
                         ))}
                       </ul>
                     </div>
@@ -366,118 +358,52 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
         })()}
 
         {!insights && !isLoading && !error && (
-          <p style={{ margin: '8px 0', padding: '0' }}>
-            AI insights will appear here once your assessment data is analyzed.
-          </p>
+          <p style={pdfStyles.text}>AI insights will appear here once your assessment data is analyzed.</p>
         )}
       </div>
 
       {/* Recommended Next Steps */}
-      <div style={{ margin: '8px 0', padding: '0' }}>
-        <h2 style={{ 
-          fontSize: '18px', 
-          fontWeight: '600', 
-          color: '#2F564D', 
-          margin: '0 0 8px 0', 
-          padding: '0 0 12px 0', 
-          borderBottom: '2px solid #2F564D' 
-        }}>
-          Recommended Next Steps
-        </h2>
-        <ul style={{ margin: '4px 0', paddingLeft: '18px', listStyleType: 'disc' }}>
-          <li style={{ margin: '2px 0', padding: '0', lineHeight: '1.4' }}>
+      <div style={pdfStyles.sectionContainer}>
+        <h2 style={pdfStyles.sectionHeader}>Recommended Next Steps</h2>
+        <ul style={pdfStyles.list}>
+          <li style={pdfStyles.listItem}>
             Consider using this report in your next 1:1 with your manager or mentor as a guide for your professional development
           </li>
-          <li style={{ margin: '2px 0', padding: '0', lineHeight: '1.4' }}>
+          <li style={pdfStyles.listItem}>
             Create a 6 month action plan to address your most critical competency gaps and schedule a time to re-take this assessment to track your progress
           </li>
-          <li style={{ margin: '2px 0', padding: '0', lineHeight: '1.4' }}>
+          <li style={pdfStyles.listItem}>
             Set an actionable goal for yourself within the next week, and set a reminder to help hold yourself accountable for taking that next step
           </li>
         </ul>
       </div>
 
       {/* Coaching Support */}
-      <div style={{ margin: '8px 0', padding: '0' }}>
-        <h2 style={{ 
-          fontSize: '18px', 
-          fontWeight: '600', 
-          color: '#2F564D', 
-          margin: '0 0 8px 0', 
-          padding: '0 0 12px 0', 
-          borderBottom: '2px solid #2F564D' 
-        }}>
-          Coaching Support
-        </h2>
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '2fr 1fr',
-          gap: '20px',
-          width: '100%',
-          margin: '0',
-          padding: '0'
-        }}>
+      <div style={pdfStyles.sectionContainer}>
+        <h2 style={pdfStyles.sectionHeader}>Coaching Support</h2>
+        <div style={pdfStyles.gridContainer}>
           <div style={{ width: '100%' }}>
-            <h3 style={{ 
-              fontSize: '16px', 
-              fontWeight: '600', 
-              color: '#2F564D', 
-              margin: '8px 0 4px 0', 
-              padding: '0' 
-            }}>
-              Professional Development Coaching
-            </h3>
-            <p style={{ margin: '4px 0', padding: '0', lineHeight: '1.4' }}>
-              Ready to take your leadership skills to the next level? Our expert coaches can help you:
-            </p>
-            <ul style={{ margin: '4px 0', paddingLeft: '18px', listStyleType: 'disc' }}>
-              <li style={{ margin: '2px 0', padding: '0', lineHeight: '1.4' }}>
-                Create personalized development plans
-              </li>
-              <li style={{ margin: '2px 0', padding: '0', lineHeight: '1.4' }}>
-                Practice new skills in a safe environment
-              </li>
-              <li style={{ margin: '2px 0', padding: '0', lineHeight: '1.4' }}>
-                Overcome specific leadership challenges
-              </li>
-              <li style={{ margin: '2px 0', padding: '0', lineHeight: '1.4' }}>
-                Track your progress over time
-              </li>
+            <h3 style={pdfStyles.subsectionHeader}>Professional Development Coaching</h3>
+            <p style={pdfStyles.text}>Ready to take your leadership skills to the next level? Our expert coaches can help you:</p>
+            <ul style={pdfStyles.list}>
+              <li style={pdfStyles.listItem}>Create personalized development plans</li>
+              <li style={pdfStyles.listItem}>Practice new skills in a safe environment</li>
+              <li style={pdfStyles.listItem}>Overcome specific leadership challenges</li>
+              <li style={pdfStyles.listItem}>Track your progress over time</li>
             </ul>
           </div>
-          <div style={{
-            textAlign: 'center',
-            width: '100%',
-            height: '200px',
-            boxSizing: 'border-box',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
+          <div style={pdfStyles.imageContainer}>
             <img 
               src="/lovable-uploads/b35e005b-ec23-4976-8796-738f7c856377.png" 
               alt="Coach Portrait" 
-              style={{
-                width: '100%',
-                height: 'auto',
-                borderRadius: '8px',
-                maxHeight: '170px',
-                objectFit: 'cover'
-              }}
+              style={pdfStyles.coachImage}
             />
           </div>
         </div>
       </div>
 
       {/* Footer */}
-      <div style={{
-        textAlign: 'center',
-        borderTop: '1px solid #e2e8f0',
-        fontSize: '12px',
-        color: '#64748b',
-        paddingTop: '8px',
-        margin: '8px 0 0 0'
-      }}>
+      <div style={pdfStyles.footer}>
         <p style={{ margin: '0 0 4px 0', fontWeight: '600' }}>
           Leadership Assessment Tool • Generated on {currentDate}
         </p>

@@ -29,91 +29,132 @@ interface AIInsightsData {
 // Helper function to convert image URL to Base64
 const imageToBase64 = (url: string): Promise<string> => {
   return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx?.drawImage(img, 0, 0);
-      resolve(canvas.toDataURL('image/png'));
-    };
-    img.onerror = reject;
-    img.src = url;
+    try {
+      console.log('Converting logo to Base64:', url);
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('Could not get canvas context'));
+            return;
+          }
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+          const base64 = canvas.toDataURL('image/png');
+          console.log('Logo converted to Base64 successfully, length:', base64.length);
+          resolve(base64);
+        } catch (error) {
+          console.error('Error converting logo to canvas:', error);
+          reject(error);
+        }
+      };
+      img.onerror = (error) => {
+        console.error('Error loading logo image:', error);
+        reject(new Error('Failed to load logo image'));
+      };
+      img.src = url;
+    } catch (error) {
+      console.error('Error in imageToBase64:', error);
+      reject(error);
+    }
   });
 };
 
 // Helper function to capture radar chart as image
 const captureRadarChart = (): Promise<string | null> => {
   return new Promise((resolve) => {
-    // Wait a bit for chart to fully render
-    setTimeout(() => {
-      // Try multiple possible selectors for the radar chart
-      const selectors = [
-        '.radar-chart-container canvas',
-        '.recharts-surface',
-        '[data-testid="radar-chart"] canvas',
-        'svg.recharts-surface',
-        '.recharts-wrapper svg'
-      ];
-      
-      let chartElement: HTMLElement | null = null;
-      
-      for (const selector of selectors) {
-        chartElement = document.querySelector(selector);
-        if (chartElement) {
-          console.log('Found chart element with selector:', selector);
-          break;
+    try {
+      // Wait a bit for chart to fully render
+      setTimeout(() => {
+        // Try multiple possible selectors for the radar chart
+        const selectors = [
+          '.radar-chart-container canvas',
+          '.recharts-surface',
+          '[data-testid="radar-chart"] canvas',
+          'svg.recharts-surface',
+          '.recharts-wrapper svg'
+        ];
+        
+        let chartElement: HTMLElement | null = null;
+        
+        for (const selector of selectors) {
+          chartElement = document.querySelector(selector);
+          if (chartElement) {
+            console.log('Found chart element with selector:', selector);
+            break;
+          }
         }
-      }
-      
-      if (!chartElement) {
-        console.warn('No radar chart element found');
-        resolve(null);
-        return;
-      }
-      
-      try {
-        if (chartElement.tagName.toLowerCase() === 'canvas') {
-          // Direct canvas element
-          const canvas = chartElement as HTMLCanvasElement;
-          resolve(canvas.toDataURL('image/png'));
-        } else if (chartElement.tagName.toLowerCase() === 'svg') {
-          // SVG element - convert to canvas
-          const svg = chartElement as SVGElement;
-          const svgData = new XMLSerializer().serializeToString(svg);
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          const img = new Image();
-          
-          // Set canvas size to match SVG
-          const rect = svg.getBoundingClientRect();
-          canvas.width = rect.width || 400;
-          canvas.height = rect.height || 400;
-          
-          img.onload = () => {
-            ctx?.drawImage(img, 0, 0);
-            resolve(canvas.toDataURL('image/png'));
-          };
-          
-          img.onerror = () => {
-            console.warn('Failed to convert SVG to image');
+        
+        if (!chartElement) {
+          console.warn('No radar chart element found');
+          resolve(null);
+          return;
+        }
+        
+        try {
+          if (chartElement.tagName.toLowerCase() === 'canvas') {
+            // Direct canvas element
+            const canvas = chartElement as HTMLCanvasElement;
+            const dataUrl = canvas.toDataURL('image/png');
+            console.log('Canvas chart captured successfully');
+            resolve(dataUrl);
+          } else if (chartElement.tagName.toLowerCase() === 'svg') {
+            // SVG element - convert to canvas with proper type checking
+            const svg = chartElement as unknown as SVGElement;
+            const svgData = new XMLSerializer().serializeToString(svg);
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            if (!ctx) {
+              console.warn('Could not get canvas context for SVG conversion');
+              resolve(null);
+              return;
+            }
+            
+            const img = new Image();
+            
+            // Set canvas size to match SVG
+            const rect = svg.getBoundingClientRect();
+            canvas.width = rect.width || 400;
+            canvas.height = rect.height || 400;
+            
+            img.onload = () => {
+              try {
+                ctx.drawImage(img, 0, 0);
+                const dataUrl = canvas.toDataURL('image/png');
+                console.log('SVG chart converted to image successfully');
+                resolve(dataUrl);
+              } catch (error) {
+                console.error('Error drawing SVG to canvas:', error);
+                resolve(null);
+              }
+            };
+            
+            img.onerror = () => {
+              console.warn('Failed to convert SVG to image');
+              resolve(null);
+            };
+            
+            const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(svgBlob);
+            img.src = url;
+          } else {
+            console.warn('Chart element is neither canvas nor SVG, type:', chartElement.tagName);
             resolve(null);
-          };
-          
-          const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
-          const url = URL.createObjectURL(svgBlob);
-          img.src = url;
-        } else {
-          console.warn('Chart element is neither canvas nor SVG');
+          }
+        } catch (error) {
+          console.error('Error capturing chart:', error);
           resolve(null);
         }
-      } catch (error) {
-        console.error('Error capturing chart:', error);
-        resolve(null);
-      }
-    }, 1000); // Wait 1 second for chart to render
+      }, 1000); // Wait 1 second for chart to render
+    } catch (error) {
+      console.error('Error in captureRadarChart:', error);
+      resolve(null);
+    }
   });
 };
 

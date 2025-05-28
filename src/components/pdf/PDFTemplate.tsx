@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { calculateAverageGap } from '@/utils/assessmentCalculations/averages';
-import PDFRadarChart from './PDFRadarChart';
+import SkillGapChart from '../SkillGapChart';
 import RecommendedSteps from '../dashboard/RecommendedSteps';
 import CoachingSupport from '../dashboard/CoachingSupport';
 import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
@@ -36,7 +37,7 @@ interface AIInsightsData {
 // Base64 encoded logo for PDF
 const LOGO_BASE64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAABkCAYAAAA8AQ3AAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH5QwYCgcVHwJY1AAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAApSURBVHja7cExAQAAAMKg9U9tBn+gAAAAAAAAAAAAAAAAAAAAAAAA4GYNcAABjPgkBwAAAABJRU5ErkJggg==";
 
-// PDF-specific styles - COMPLETELY ISOLATED from dashboard to prevent UI regressions
+// PDF-specific styles - COMPLETELY ISOLATED from dashboard
 const pdfStyles = {
   container: {
     fontFamily: 'system-ui, -apple-system, sans-serif',
@@ -253,12 +254,12 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
         <p style={pdfStyles.smallText}>Assessment completed across {categories.length} competency areas</p>
       </div>
 
-      {/* Competency Gap Chart - Using PDF-specific component */}
+      {/* Competency Gap Chart */}
       <div style={pdfStyles.sectionContainer}>
         <h2 style={pdfStyles.sectionHeader}>Competency Analysis - Radar Chart</h2>
-        <div style={pdfStyles.chartContainer} id="pdf-radar-chart-container" className="pdf-chart-container">
+        <div style={pdfStyles.chartContainer} id="pdf-radar-chart-container">
           <div style={{ width: '100%', height: '100%' }}>
-            <PDFRadarChart categories={categories} />
+            <SkillGapChart categories={categories} isPDF={true} />
           </div>
         </div>
         

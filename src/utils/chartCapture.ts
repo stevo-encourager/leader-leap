@@ -1,10 +1,10 @@
 
 import html2canvas from 'html2canvas';
 
-// Enhanced radar chart capture with better timing and error handling
+// Enhanced radar chart capture with comprehensive debugging and error handling
 export const captureRadarChartAsPNG = async (): Promise<string | null> => {
   return new Promise((resolve) => {
-    console.log('ChartCapture: Starting enhanced radar chart capture...');
+    console.log('ChartCapture: Starting enhanced radar chart capture with comprehensive debugging...');
     
     // First, wait for any pending renders
     setTimeout(async () => {
@@ -36,7 +36,9 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
           console.log(`ChartCapture: Element ${i} dimensions:`, {
             boundingWidth: rect.width,
             boundingHeight: rect.height,
-            hasBoundingRect
+            hasBoundingRect,
+            isVisible: element.style.display !== 'none',
+            hasChildren: element.children.length > 0
           });
           
           // Element is valid if it has positive dimensions
@@ -53,14 +55,29 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
               console.log(`ChartCapture: SVG dimensions:`, {
                 boundingWidth: svgRect.width,
                 boundingHeight: svgRect.height,
-                svgHasBounding
+                svgHasBounding,
+                svgChildren: svg.children.length,
+                svgViewBox: svg.getAttribute('viewBox'),
+                svgWidth: svg.getAttribute('width'),
+                svgHeight: svg.getAttribute('height')
               });
               
-              // Accept SVG if it has positive dimensions or if parent container is valid
+              // Accept SVG if it has positive dimensions OR if parent container is valid
               if (svgHasBounding || hasBoundingRect) {
                 chartContainer = element;
                 console.log(`ChartCapture: Found valid chart container using selector: ${selector}`);
+                console.log('ChartCapture: Container details:', {
+                  tagName: element.tagName,
+                  className: element.className,
+                  id: element.id,
+                  testId: element.getAttribute('data-testid'),
+                  boundingRect: rect,
+                  svgPresent: true,
+                  svgRect: svgRect
+                });
                 break;
+              } else {
+                console.log('ChartCapture: SVG found but has no valid dimensions');
               }
             } else if (hasBoundingRect) {
               // Even without SVG, if container has dimensions, it might be valid
@@ -68,6 +85,8 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
               chartContainer = element;
               break;
             }
+          } else {
+            console.log(`ChartCapture: Element ${i} has no valid dimensions`);
           }
         }
         if (chartContainer) break;
@@ -76,20 +95,30 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
       if (!chartContainer) {
         console.error('ChartCapture: No valid radar chart container found');
         
-        // Debug: Log what elements we can find
-        const allContainers = document.querySelectorAll('[class*="radar"], [data-testid*="radar"], [class*="recharts"]');
+        // Enhanced debugging: Log what elements we can find
+        const allContainers = document.querySelectorAll('[class*="radar"], [data-testid*="radar"], [class*="recharts"], .recharts-wrapper');
         console.log('ChartCapture: Available chart-related elements:', allContainers.length);
         allContainers.forEach((el, index) => {
           const htmlEl = el as HTMLElement;
           const svg = htmlEl.querySelector('svg');
           const rect = htmlEl.getBoundingClientRect();
           console.log(`Element ${index}:`, {
+            selector: el.tagName + (el.className ? '.' + el.className.split(' ').join('.') : ''),
             className: htmlEl.className,
             testId: htmlEl.getAttribute('data-testid'),
             boundingDimensions: `${rect.width}x${rect.height}`,
             hasSVG: !!svg,
-            svgContent: svg ? 'SVG present' : 'No SVG'
+            svgContent: svg ? `SVG with ${svg.children.length} children` : 'No SVG',
+            isVisible: htmlEl.style.display !== 'none' && rect.width > 0 && rect.height > 0
           });
+        });
+        
+        // Additional debugging: Check for any ResponsiveContainer or RadarChart elements
+        const responsiveContainers = document.querySelectorAll('.recharts-responsive-container');
+        const radarCharts = document.querySelectorAll('.recharts-radar-chart');
+        console.log('ChartCapture: Additional debugging:', {
+          responsiveContainers: responsiveContainers.length,
+          radarCharts: radarCharts.length
         });
         
         resolve(null);
@@ -103,13 +132,19 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         element: chartContainer.tagName,
         className: chartContainer.className,
         boundingDimensions: `${containerRect.width}x${containerRect.height}`,
-        hasSVG: !!svg
+        hasSVG: !!svg,
+        containerPosition: {
+          top: containerRect.top,
+          left: containerRect.left,
+          bottom: containerRect.bottom,
+          right: containerRect.right
+        }
       });
       
       try {
         // Wait for any animations or transitions to complete
         console.log('ChartCapture: Waiting for chart rendering to complete...');
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 1500));
         
         // Double-check that the container is still valid before capture
         const finalRect = chartContainer.getBoundingClientRect();
@@ -117,11 +152,17 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         
         if (!stillValid) {
           console.error('ChartCapture: Chart container became invalid during wait period');
+          console.log('ChartCapture: Final rect:', finalRect);
           resolve(null);
           return;
         }
         
-        console.log('ChartCapture: Starting html2canvas capture...');
+        console.log('ChartCapture: Starting html2canvas capture with dimensions:', {
+          width: Math.round(containerRect.width),
+          height: Math.round(containerRect.height),
+          finalWidth: Math.round(finalRect.width),
+          finalHeight: Math.round(finalRect.height)
+        });
         
         // Capture with optimized settings for SVG content
         const canvas = await html2canvas(chartContainer, {
@@ -129,9 +170,9 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
           scale: 2,
           useCORS: true,
           allowTaint: false,
-          logging: false,
-          width: Math.round(containerRect.width),
-          height: Math.round(containerRect.height),
+          logging: true, // Enable logging temporarily for debugging
+          width: Math.round(finalRect.width),
+          height: Math.round(finalRect.height),
           scrollX: 0,
           scrollY: 0,
           windowWidth: window.innerWidth,
@@ -139,6 +180,13 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
           // Enhanced SVG handling
           foreignObjectRendering: true,
           removeContainer: false
+        });
+        
+        console.log('ChartCapture: html2canvas completed, checking canvas:', {
+          canvasExists: !!canvas,
+          canvasWidth: canvas?.width || 0,
+          canvasHeight: canvas?.height || 0,
+          canvasArea: (canvas?.width || 0) * (canvas?.height || 0)
         });
         
         if (!canvas || canvas.width === 0 || canvas.height === 0) {
@@ -156,9 +204,19 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         // Convert to high-quality PNG
         const dataUrl = canvas.toDataURL('image/png', 1.0);
         
+        console.log('ChartCapture: Data URL generated:', {
+          length: dataUrl.length,
+          startsWithPNG: dataUrl.startsWith('data:image/png'),
+          preview: dataUrl.substring(0, 100) + '...'
+        });
+        
         // Validate the data URL
         if (!dataUrl || !dataUrl.startsWith('data:image/png') || dataUrl.length < 1000) {
-          console.error('ChartCapture: Invalid or empty data URL generated');
+          console.error('ChartCapture: Invalid or empty data URL generated', {
+            hasDataUrl: !!dataUrl,
+            startsCorrectly: dataUrl?.startsWith('data:image/png'),
+            length: dataUrl?.length || 0
+          });
           resolve(null);
           return;
         }
@@ -168,8 +226,13 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         
       } catch (error) {
         console.error('ChartCapture: Error during html2canvas capture:', error);
+        console.error('ChartCapture: Error details:', {
+          message: error.message,
+          stack: error.stack,
+          containerStillExists: !!document.contains(chartContainer)
+        });
         resolve(null);
       }
-    }, 1500); // Increased initial delay to ensure chart is fully rendered
+    }, 2000); // Increased initial delay to ensure chart is fully rendered
   });
 };

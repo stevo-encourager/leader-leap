@@ -1,4 +1,3 @@
-
 import React, { useMemo, useRef, useEffect } from 'react';
 import { 
   ResponsiveContainer,
@@ -392,7 +391,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             tick={(props) => <CustomTick {...props} isPDF={isPDF} />}
           />
           <Radar
-            name="Current Level"
+            name={isPDF ? "Current State" : "Current Level"}
             dataKey="current"
             stroke="#2F564D"
             fill="#2F564D"
@@ -400,7 +399,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             strokeWidth={2}
           />
           <Radar
-            name="Desired Level"
+            name={isPDF ? "Desired State" : "Desired Level"}
             dataKey="desired"
             stroke="#8baca5"
             fill="#8baca5"

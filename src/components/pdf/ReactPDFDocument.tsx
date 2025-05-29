@@ -248,22 +248,10 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
         
         <View style={styles.chartContainer}>
           {chartImageDataUrl ? (
-            <>
-              <Image 
-                style={styles.chartImage}
-                src={chartImageDataUrl}
-              />
-              <View style={styles.chartLegend}>
-                <View style={styles.legendItem}>
-                  <View style={[styles.legendColor, { backgroundColor: '#2F564D' }]} />
-                  <Text style={styles.legendText}>Current State</Text>
-                </View>
-                <View style={styles.legendItem}>
-                  <View style={[styles.legendColor, { backgroundColor: '#8baca5' }]} />
-                  <Text style={styles.legendText}>Desired State</Text>
-                </View>
-              </View>
-            </>
+            <Image 
+              style={styles.chartImage}
+              src={chartImageDataUrl}
+            />
           ) : (
             <View style={styles.chartPlaceholder}>
               <Text style={styles.text}>Radar chart visualization shows your current vs desired competency levels</Text>

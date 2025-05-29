@@ -225,14 +225,26 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
         <Text style={styles.text}><Text style={styles.boldText}>Overall Development Gap:</Text> {averageGap.toFixed(2)} points</Text>
         <Text style={styles.text}>Assessment completed across {categories.length} competency areas</Text>
 
-        {/* Chart section with improved centering */}
+        {/* Chart section with proper centering and sizing */}
         <Text style={[styles.sectionTitle, { marginTop: 15 }]}>Competency Analysis - Radar Chart</Text>
         
-        <View style={styles.chartContainer}>
+        <View style={{
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginVertical: 15,
+          backgroundColor: '#ffffff',
+          width: '100%',
+          paddingHorizontal: 20,
+        }}>
           {chartImageDataUrl ? (
             <>
               <Image 
-                style={styles.chartImage} 
+                style={{
+                  width: 350, // Match the capture size
+                  height: 350, // Match the capture size
+                  marginBottom: 8,
+                  alignSelf: 'center',
+                }} 
                 src={chartImageDataUrl}
               />
               <View style={styles.chartLegend}>
@@ -247,7 +259,16 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
               </View>
             </>
           ) : (
-            <View style={styles.chartPlaceholder}>
+            <View style={{
+              width: 350,
+              height: 350,
+              backgroundColor: '#f3f4f6',
+              border: '2px dashed #d1d5db',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: 8,
+              alignSelf: 'center',
+            }}>
               <Text style={styles.text}>Radar chart visualization shows your current vs desired competency levels</Text>
               <Text style={[styles.text, { fontSize: 10, color: '#64748b', marginTop: 10 }]}>
                 Chart image could not be captured - this may indicate a technical issue with chart rendering

@@ -116,24 +116,27 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
       console.log('ChartCapture: Selected SVG for capture:', selectedSvg);
       
       try {
-        // Get the SVG's computed styles and dimensions
-        const svgRect = selectedSvg.getBoundingClientRect();
+        // Use consistent sizing for better PDF fit
+        const finalImageSize = 350; // Final image size for PDF
+        const chartPadding = 60; // Padding around chart for labels
+        const svgSize = finalImageSize - (chartPadding * 2); // Actual chart area
         
-        // Use smaller square dimensions to fit PDF page with labels - reduced further for better centering
-        const chartSize = 320; // Reduced from 350 to 320 for better PDF fit and centering
-        
-        console.log('ChartCapture: Using compact square radar chart SVG with dimensions:', { width: chartSize, height: chartSize });
+        console.log('ChartCapture: Using dimensions:', { 
+          finalImageSize, 
+          chartPadding, 
+          svgSize 
+        });
         
         // Clone the SVG to avoid modifying the original
         const clonedSvg = selectedSvg.cloneNode(true) as SVGElement;
         
-        // Set compact square dimensions for better PDF fit with proper centering
-        clonedSvg.setAttribute('width', chartSize.toString());
-        clonedSvg.setAttribute('height', chartSize.toString());
+        // Set proper SVG dimensions - use the actual chart size, not final image size
+        clonedSvg.setAttribute('width', svgSize.toString());
+        clonedSvg.setAttribute('height', svgSize.toString());
         clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
         
-        // Set compact square viewBox for perfect proportions and centering
-        clonedSvg.setAttribute('viewBox', `0 0 ${chartSize} ${chartSize}`);
+        // Set viewBox to match the SVG size for proper scaling
+        clonedSvg.setAttribute('viewBox', `0 0 ${svgSize} ${svgSize}`);
         
         // Inline all styles to ensure they're preserved
         const inlineStyles = (element: Element) => {
@@ -186,7 +189,7 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
         const svgUrl = URL.createObjectURL(svgBlob);
         
-        // Create canvas with compact square dimensions and extra padding to prevent clipping
+        // Create canvas with final image size and high resolution
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         
@@ -196,23 +199,26 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
           return;
         }
         
-        // Set high resolution compact square canvas with padding for labels
+        // Set high resolution canvas with final image size
         const scale = 2;
-        const canvasSize = chartSize + 40; // Add padding to prevent label clipping
-        canvas.width = canvasSize * scale;
-        canvas.height = canvasSize * scale;
+        canvas.width = finalImageSize * scale;
+        canvas.height = finalImageSize * scale;
         ctx.scale(scale, scale);
         
         // Set white background
         ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, canvasSize, canvasSize);
+        ctx.fillRect(0, 0, finalImageSize, finalImageSize);
         
         const img = new Image();
         img.onload = () => {
           console.log('ChartCapture: Radar chart image loaded successfully');
-          // Center the chart in the canvas with padding
-          const offset = 20; // 20px padding on all sides
-          ctx.drawImage(img, offset, offset, chartSize, chartSize);
+          
+          // Center the SVG in the canvas with padding for labels
+          const xOffset = chartPadding;
+          const yOffset = chartPadding;
+          
+          // Draw the SVG centered in the canvas
+          ctx.drawImage(img, xOffset, yOffset, svgSize, svgSize);
           URL.revokeObjectURL(svgUrl);
           
           // Convert to high-quality PNG
@@ -221,7 +227,7 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
           
           // Validate that we actually have image data
           if (pngDataUrl.length > 1000) {
-            console.log('ChartCapture: Successfully captured radar chart as PNG with centered layout');
+            console.log('ChartCapture: Successfully captured radar chart as PNG with proper centering and sizing');
             resolve(pngDataUrl);
           } else {
             console.error('ChartCapture: Generated PNG seems too small, might be empty');

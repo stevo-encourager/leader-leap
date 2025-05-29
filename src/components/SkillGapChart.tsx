@@ -1,4 +1,3 @@
-
 import React, { useMemo, useRef, useEffect } from 'react';
 import { 
   ResponsiveContainer,
@@ -26,15 +25,15 @@ interface ChartData {
   skillCount?: number;
 }
 
-// Custom tick component for competency names with enhanced PDF support
+// Custom tick component for competency names with enhanced PDF support and improved spacing
 const CustomTick = (props: any) => {
   const { payload, x, y, cx, cy, textAnchor, index, isPDF } = props;
   
   // Calculate angle from center to current position
   const angle = Math.atan2(y - cy, x - cx);
   
-  // PDF-specific label positioning for perfect circle
-  const labelRadius = isPDF ? 100 : 175; // Reduced radius for PDF to keep labels closer
+  // Increased label radius for better spacing - further from the chart
+  const labelRadius = isPDF ? 120 : 200; // Increased from 100/175 to 120/200
   
   const labelX = cx + labelRadius * Math.cos(angle);
   const labelY = cy + labelRadius * Math.sin(angle);
@@ -304,15 +303,15 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
 
   console.log("SkillGapChart - Rendering radar chart with data:", validChartData);
 
-  // PDF-specific configuration for perfect circle
+  // Adjusted margins to accommodate increased label spacing
   const chartMargins = isPDF 
-    ? { top: 20, right: 50, left: 50, bottom: 60 } // Symmetric margins for PDF
-    : { top: 50, right: 100, left: 100, bottom: 50 }; // Keep original for dashboard
+    ? { top: 30, right: 70, left: 70, bottom: 70 } // Increased margins for PDF
+    : { top: 60, right: 120, left: 120, bottom: 60 }; // Increased margins for dashboard
 
-  // PDF-specific centering and sizing for perfect circle
+  // PDF-specific centering and sizing - adjusted for new spacing
   const centerX = isPDF ? "50%" : "50%";
-  const centerY = isPDF ? "50%" : "45%"; // Perfect center for PDF
-  const outerRadius = isPDF ? "70%" : "85%"; // Slightly smaller for PDF to ensure perfect circle
+  const centerY = isPDF ? "50%" : "45%";
+  const outerRadius = isPDF ? "65%" : "80%"; // Slightly reduced to accommodate larger margins
 
   // Enhanced radar chart with proper capture attributes - this is critical for the capture to work
   return (

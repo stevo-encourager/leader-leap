@@ -119,21 +119,21 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         // Get the SVG's computed styles and dimensions
         const svgRect = selectedSvg.getBoundingClientRect();
         
-        // Use smaller square dimensions to fit PDF page with labels
-        const squareSize = 350; // Reduced from 500 to 350 for better PDF fit
+        // Use smaller square dimensions to fit PDF page with labels - reduced further for better centering
+        const chartSize = 320; // Reduced from 350 to 320 for better PDF fit and centering
         
-        console.log('ChartCapture: Using compact square radar chart SVG with dimensions:', { width: squareSize, height: squareSize });
+        console.log('ChartCapture: Using compact square radar chart SVG with dimensions:', { width: chartSize, height: chartSize });
         
         // Clone the SVG to avoid modifying the original
         const clonedSvg = selectedSvg.cloneNode(true) as SVGElement;
         
-        // Set compact square dimensions for better PDF fit
-        clonedSvg.setAttribute('width', squareSize.toString());
-        clonedSvg.setAttribute('height', squareSize.toString());
+        // Set compact square dimensions for better PDF fit with proper centering
+        clonedSvg.setAttribute('width', chartSize.toString());
+        clonedSvg.setAttribute('height', chartSize.toString());
         clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
         
-        // Set compact square viewBox for perfect proportions
-        clonedSvg.setAttribute('viewBox', `0 0 ${squareSize} ${squareSize}`);
+        // Set compact square viewBox for perfect proportions and centering
+        clonedSvg.setAttribute('viewBox', `0 0 ${chartSize} ${chartSize}`);
         
         // Inline all styles to ensure they're preserved
         const inlineStyles = (element: Element) => {
@@ -186,7 +186,7 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
         const svgUrl = URL.createObjectURL(svgBlob);
         
-        // Create canvas with compact square dimensions
+        // Create canvas with compact square dimensions and extra padding to prevent clipping
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         
@@ -196,20 +196,23 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
           return;
         }
         
-        // Set high resolution compact square canvas for better quality
+        // Set high resolution compact square canvas with padding for labels
         const scale = 2;
-        canvas.width = squareSize * scale;
-        canvas.height = squareSize * scale;
+        const canvasSize = chartSize + 40; // Add padding to prevent label clipping
+        canvas.width = canvasSize * scale;
+        canvas.height = canvasSize * scale;
         ctx.scale(scale, scale);
         
         // Set white background
         ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, squareSize, squareSize);
+        ctx.fillRect(0, 0, canvasSize, canvasSize);
         
         const img = new Image();
         img.onload = () => {
           console.log('ChartCapture: Radar chart image loaded successfully');
-          ctx.drawImage(img, 0, 0, squareSize, squareSize);
+          // Center the chart in the canvas with padding
+          const offset = 20; // 20px padding on all sides
+          ctx.drawImage(img, offset, offset, chartSize, chartSize);
           URL.revokeObjectURL(svgUrl);
           
           // Convert to high-quality PNG
@@ -218,7 +221,7 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
           
           // Validate that we actually have image data
           if (pngDataUrl.length > 1000) {
-            console.log('ChartCapture: Successfully captured radar chart as PNG with compact square dimensions');
+            console.log('ChartCapture: Successfully captured radar chart as PNG with centered layout');
             resolve(pngDataUrl);
           } else {
             console.error('ChartCapture: Generated PNG seems too small, might be empty');

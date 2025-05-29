@@ -69,29 +69,34 @@ const styles = StyleSheet.create({
   },
   chartContainer: {
     alignItems: 'center',
-    marginVertical: 10,
+    justifyContent: 'center',
+    marginVertical: 15,
     backgroundColor: '#ffffff',
-    paddingHorizontal: 20, // Add horizontal padding to prevent clipping
+    paddingHorizontal: 30, // Increased horizontal padding for better centering
+    width: '100%',
   },
   chartImage: {
-    width: 350, // Reduced from 500 to 350 for better PDF fit
-    height: 350, // Reduced from 500 to 350 for better PDF fit
+    width: 320, // Reduced from 350 to match chart capture size
+    height: 320, // Reduced from 350 to match chart capture size
     marginBottom: 8,
+    alignSelf: 'center', // Ensure image is centered
   },
   chartPlaceholder: {
-    width: 350, // Reduced to match chart
-    height: 350, // Reduced to match chart
+    width: 320, // Reduced to match chart
+    height: 320, // Reduced to match chart
     backgroundColor: '#f3f4f6',
     border: '2px dashed #d1d5db',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
+    alignSelf: 'center', // Ensure placeholder is centered
   },
   chartLegend: {
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 20,
     marginTop: 8,
+    width: '100%',
   },
   legendItem: {
     flexDirection: 'row',
@@ -220,7 +225,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
         <Text style={styles.text}><Text style={styles.boldText}>Overall Development Gap:</Text> {averageGap.toFixed(2)} points</Text>
         <Text style={styles.text}>Assessment completed across {categories.length} competency areas</Text>
 
-        {/* Chart section stays with header on same page with reduced size */}
+        {/* Chart section with improved centering */}
         <Text style={[styles.sectionTitle, { marginTop: 15 }]}>Competency Analysis - Radar Chart</Text>
         
         <View style={styles.chartContainer}>

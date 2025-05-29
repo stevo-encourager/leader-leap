@@ -19,45 +19,28 @@ const inspectChartDOM = () => {
       outerHTML: container.outerHTML.substring(0, 400) + '...'
     });
     
-    const svgInContainer = container.querySelector('svg');
-    if (svgInContainer) {
-      console.log(`SVG in container ${index}:`, {
-        className: svgInContainer.className.baseVal || svgInContainer.className,
-        width: svgInContainer.getAttribute('width'),
-        height: svgInContainer.getAttribute('height'),
-        viewBox: svgInContainer.getAttribute('viewBox')
+    const svgsInContainer = container.querySelectorAll('svg');
+    console.log(`SVGs in container ${index}:`, svgsInContainer.length);
+    
+    svgsInContainer.forEach((svg, svgIndex) => {
+      const rect = svg.getBoundingClientRect();
+      console.log(`  SVG ${svgIndex}:`, {
+        className: svg.className.baseVal || svg.className,
+        width: rect.width,
+        height: rect.height,
+        area: rect.width * rect.height,
+        attributes: {
+          width: svg.getAttribute('width'),
+          height: svg.getAttribute('height'),
+          viewBox: svg.getAttribute('viewBox')
+        }
       });
-    }
+    });
   });
   
   // Check all SVGs
   const allSvgs = document.querySelectorAll('svg');
   console.log('Total SVGs in document:', allSvgs.length);
-  
-  allSvgs.forEach((svg, index) => {
-    const rect = svg.getBoundingClientRect();
-    const parent = svg.parentElement;
-    
-    console.log(`SVG ${index}:`, {
-      className: svg.className.baseVal || svg.className,
-      id: svg.id,
-      parentTagName: parent?.tagName,
-      parentClassName: parent?.className,
-      parentTestId: parent?.getAttribute('data-testid'),
-      dimensions: { width: rect.width, height: rect.height },
-      hasRadarElements: !!(
-        svg.querySelector('g[class*="recharts-radar"]') || 
-        svg.querySelector('g[class*="recharts-polar"]') ||
-        svg.querySelector('polygon') ||
-        svg.querySelector('path[d*="M"]')
-      ),
-      isInRadarContainer: !!(
-        svg.closest('[data-testid="radar-chart-container"]') || 
-        svg.closest('[data-chart-type="radar"]') ||
-        svg.closest('.radar-chart-container')
-      )
-    });
-  });
   
   console.log('=== END ENHANCED INSPECTION ===');
 };
@@ -72,134 +55,79 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
     
     // Wait for chart to fully render
     setTimeout(() => {
-      // Updated selectors based on actual DOM structure - more specific order
-      const selectors = [
-        '[data-testid="radar-chart-container"] svg',
-        '[data-chart-type="radar"] svg', 
-        '.radar-chart-container svg',
-        '[data-testid="radar-chart-container"] .recharts-wrapper svg',
-        '.recharts-radar-chart svg', // Added svg suffix
-        'svg.recharts-surface',
-        '.recharts-surface',
-        'svg[class*="recharts"]' // Any SVG with recharts in class
-      ];
+      console.log('ChartCapture: Looking for radar chart container...');
       
-      let chartElement: SVGElement | null = null;
+      // Use the confirmed working selector
+      const radarContainer = document.querySelector('[data-testid="radar-chart-container"]');
       
-      console.log('ChartCapture: Testing selectors in order...');
-      
-      // Try to find the radar chart SVG with enhanced validation
-      for (const selector of selectors) {
-        const elements = document.querySelectorAll(selector);
-        console.log(`ChartCapture: Selector "${selector}" found ${elements.length} elements`);
-        
-        for (const element of elements) {
-          if (element && element.tagName.toLowerCase() === 'svg') {
-            const svgElement = element as SVGElement;
-            
-            // Enhanced validation to ensure this is the radar chart
-            const hasRadarElements = svgElement.querySelector('g[class*="recharts-radar"]') || 
-                                     svgElement.querySelector('g[class*="recharts-polar"]') ||
-                                     svgElement.querySelector('polygon') ||
-                                     svgElement.querySelector('path[d*="M"]');
-            
-            // Check if it's inside a radar chart container
-            const isInRadarContainer = svgElement.closest('[data-testid="radar-chart-container"]') || 
-                                       svgElement.closest('[data-chart-type="radar"]') ||
-                                       svgElement.closest('.radar-chart-container');
-            
-            // Size validation - radar chart should be reasonably sized
-            const rect = svgElement.getBoundingClientRect();
-            const hasReasonableSize = rect.width > 200 && rect.height > 200;
-            
-            // Check if this is likely a recharts SVG
-            const isRechartsElement = svgElement.className.baseVal?.includes('recharts') ||
-                                      svgElement.querySelector('.recharts-surface') ||
-                                      svgElement.closest('.recharts-wrapper');
-            
-            console.log(`ChartCapture: Validating SVG with selector "${selector}":`, {
-              hasRadarElements: !!hasRadarElements,
-              isInRadarContainer: !!isInRadarContainer,
-              hasReasonableSize,
-              isRechartsElement: !!isRechartsElement,
-              dimensions: { width: rect.width, height: rect.height },
-              className: svgElement.className.baseVal || 'none'
-            });
-            
-            // Prefer SVGs that are definitely in radar containers
-            if (isInRadarContainer && hasReasonableSize && (hasRadarElements || isRechartsElement)) {
-              chartElement = svgElement;
-              console.log('ChartCapture: Found valid radar chart SVG with selector:', selector);
-              break;
-            }
-          }
-        }
-        
-        if (chartElement) break;
-      }
-      
-      // If no specific radar chart found, try the most likely candidates with relaxed criteria
-      if (!chartElement) {
-        console.log('ChartCapture: No radar chart found with strict criteria, trying relaxed approach...');
-        
-        // Look for any reasonably sized SVG within radar containers
-        const radarContainers = document.querySelectorAll('[data-testid="radar-chart-container"], [data-chart-type="radar"], .radar-chart-container');
-        
-        for (const container of radarContainers) {
-          const svgInContainer = container.querySelector('svg');
-          if (svgInContainer) {
-            const rect = svgInContainer.getBoundingClientRect();
-            if (rect.width > 200 && rect.height > 200) {
-              chartElement = svgInContainer as SVGElement;
-              console.log('ChartCapture: Using SVG from radar container with relaxed criteria');
-              break;
-            }
-          }
-        }
-      }
-      
-      // Last resort: look for any large recharts SVG
-      if (!chartElement) {
-        console.log('ChartCapture: Last resort - looking for any large recharts SVG...');
-        const allSvgs = document.querySelectorAll('svg');
-        
-        for (const svg of allSvgs) {
-          const rect = svg.getBoundingClientRect();
-          const hasRechartsClass = svg.className.baseVal?.includes('recharts');
-          const hasRechartsContent = svg.querySelector('.recharts-surface') || 
-                                    svg.querySelector('g[class*="recharts"]');
-          
-          if ((hasRechartsClass || hasRechartsContent) && rect.width > 200 && rect.height > 200) {
-            chartElement = svg as SVGElement;
-            console.log('ChartCapture: Using recharts SVG as last resort');
-            break;
-          }
-        }
-      }
-      
-      if (!chartElement) {
-        console.warn('ChartCapture: No valid radar chart SVG element found after all attempts');
-        console.log('ChartCapture: Final DOM state:');
-        inspectChartDOM();
+      if (!radarContainer) {
+        console.warn('ChartCapture: No radar chart container found with data-testid="radar-chart-container"');
         resolve(null);
         return;
       }
       
+      console.log('ChartCapture: Found radar chart container:', radarContainer);
+      
+      // Get all SVGs inside the radar chart container
+      const svgsInContainer = radarContainer.querySelectorAll('svg');
+      console.log(`ChartCapture: Found ${svgsInContainer.length} SVGs in radar chart container`);
+      
+      if (svgsInContainer.length === 0) {
+        console.warn('ChartCapture: No SVGs found inside radar chart container');
+        resolve(null);
+        return;
+      }
+      
+      // Find the largest SVG by area (likely the main chart)
+      let selectedSvg: SVGElement | null = null;
+      let largestArea = 0;
+      
+      svgsInContainer.forEach((svg, index) => {
+        const rect = svg.getBoundingClientRect();
+        const area = rect.width * rect.height;
+        
+        console.log(`ChartCapture: SVG ${index} dimensions:`, {
+          width: rect.width,
+          height: rect.height,
+          area: area,
+          className: svg.className.baseVal || svg.className
+        });
+        
+        // Select SVG with largest area and reasonable size
+        if (area > largestArea && rect.width > 200 && rect.height > 200) {
+          largestArea = area;
+          selectedSvg = svg as SVGElement;
+          console.log(`ChartCapture: Selected SVG ${index} as largest (area: ${area})`);
+        }
+      });
+      
+      // Fallback to first SVG if no large SVG found
+      if (!selectedSvg && svgsInContainer.length > 0) {
+        selectedSvg = svgsInContainer[0] as SVGElement;
+        console.log('ChartCapture: Using first SVG as fallback');
+      }
+      
+      if (!selectedSvg) {
+        console.warn('ChartCapture: No suitable SVG found in radar chart container');
+        resolve(null);
+        return;
+      }
+      
+      console.log('ChartCapture: Selected SVG for capture:', selectedSvg);
+      
       try {
         // Get the SVG's computed styles and dimensions
-        const svgRect = chartElement.getBoundingClientRect();
-        const svgWidth = svgRect.width || parseInt(chartElement.getAttribute('width') || '480');
-        const svgHeight = svgRect.height || parseInt(chartElement.getAttribute('height') || '350');
+        const svgRect = selectedSvg.getBoundingClientRect();
+        const svgWidth = svgRect.width || parseInt(selectedSvg.getAttribute('width') || '480');
+        const svgHeight = svgRect.height || parseInt(selectedSvg.getAttribute('height') || '350');
         
         console.log('ChartCapture: Using radar chart SVG with dimensions:', { svgWidth, svgHeight });
-        console.log('ChartCapture: SVG element:', chartElement);
-        console.log('ChartCapture: SVG className:', chartElement.className.baseVal || chartElement.className);
         
         // Clone the SVG to avoid modifying the original
-        const clonedSvg = chartElement.cloneNode(true) as SVGElement;
+        const clonedSvg = selectedSvg.cloneNode(true) as SVGElement;
         
-        // Set explicit dimensions and viewBox - wider chart for better balance
-        const finalWidth = Math.max(svgWidth, 480); // Increased width for better aspect ratio
+        // Set explicit dimensions and viewBox
+        const finalWidth = Math.max(svgWidth, 480);
         const finalHeight = Math.max(svgHeight, 350);
         
         clonedSvg.setAttribute('width', finalWidth.toString());
@@ -247,7 +175,7 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         console.log('ChartCapture: SVG data length:', svgData.length);
         console.log('ChartCapture: SVG data preview:', svgData.substring(0, 300) + '...');
         
-        // Enhanced validation of SVG content for radar chart
+        // Validate SVG content for radar chart
         const hasRadarContent = svgData.includes('polygon') || 
                                 svgData.includes('recharts-radar') || 
                                 svgData.includes('recharts-polar') ||
@@ -262,7 +190,7 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
         const svgUrl = URL.createObjectURL(svgBlob);
         
-        // Create canvas for high-quality rendering with wider aspect ratio
+        // Create canvas for high-quality rendering
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         
@@ -272,13 +200,13 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
           return;
         }
         
-        // Set high resolution for better quality with wider dimensions
+        // Set high resolution for better quality
         const scale = 2;
         canvas.width = finalWidth * scale;
         canvas.height = finalHeight * scale;
         ctx.scale(scale, scale);
         
-        // Set white background (clean, no borders)
+        // Set white background
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, finalWidth, finalHeight);
         
@@ -288,13 +216,12 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
           ctx.drawImage(img, 0, 0, finalWidth, finalHeight);
           URL.revokeObjectURL(svgUrl);
           
-          // Convert to high-quality PNG (clean output, no overlays)
+          // Convert to high-quality PNG
           const pngDataUrl = canvas.toDataURL('image/png', 1.0);
           console.log('ChartCapture: PNG data URL length:', pngDataUrl.length);
-          console.log('ChartCapture: PNG data URL preview:', pngDataUrl.substring(0, 100) + '...');
           
           // Validate that we actually have image data
-          if (pngDataUrl.length > 1000) { // Basic validation
+          if (pngDataUrl.length > 1000) {
             console.log('ChartCapture: Successfully captured radar chart as PNG');
             resolve(pngDataUrl);
           } else {

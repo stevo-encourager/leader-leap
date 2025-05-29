@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import { Category, Demographics } from '@/utils/assessmentTypes';
@@ -73,13 +72,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
   },
   chartImage: {
-    width: 550, // Increased from 480 for wider chart
-    height: 400, // Increased from 350 for better proportions
+    width: 500, // Square dimensions for perfect circle
+    height: 500, // Square dimensions for perfect circle
     marginBottom: 10,
   },
   chartPlaceholder: {
-    width: 550,
-    height: 400,
+    width: 500, // Square dimensions to match chart
+    height: 500, // Square dimensions to match chart
     backgroundColor: '#f3f4f6',
     border: '2px dashed #d1d5db',
     alignItems: 'center',

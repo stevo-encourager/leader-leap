@@ -1,4 +1,3 @@
-
 import { Category } from './assessmentTypes';
 
 // Enhanced DOM inspection function
@@ -118,26 +117,22 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
       try {
         // Get the SVG's computed styles and dimensions
         const svgRect = selectedSvg.getBoundingClientRect();
-        const svgWidth = svgRect.width || parseInt(selectedSvg.getAttribute('width') || '600');
-        const svgHeight = svgRect.height || parseInt(selectedSvg.getAttribute('height') || '400');
         
-        console.log('ChartCapture: Using radar chart SVG with dimensions:', { svgWidth, svgHeight });
+        // Force square dimensions for perfect circle in PDF
+        const squareSize = 500; // Use fixed square size for perfect symmetry
+        
+        console.log('ChartCapture: Using square radar chart SVG with dimensions:', { width: squareSize, height: squareSize });
         
         // Clone the SVG to avoid modifying the original
         const clonedSvg = selectedSvg.cloneNode(true) as SVGElement;
         
-        // Set wider dimensions for better proportions in PDF
-        const finalWidth = Math.max(svgWidth, 600); // Increased from 480
-        const finalHeight = Math.max(svgHeight, 400); // Increased from 350
-        
-        clonedSvg.setAttribute('width', finalWidth.toString());
-        clonedSvg.setAttribute('height', finalHeight.toString());
+        // Set square dimensions for perfect circle
+        clonedSvg.setAttribute('width', squareSize.toString());
+        clonedSvg.setAttribute('height', squareSize.toString());
         clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
         
-        // Ensure viewBox is set correctly
-        if (!clonedSvg.getAttribute('viewBox')) {
-          clonedSvg.setAttribute('viewBox', `0 0 ${finalWidth} ${finalHeight}`);
-        }
+        // Set square viewBox for perfect proportions
+        clonedSvg.setAttribute('viewBox', `0 0 ${squareSize} ${squareSize}`);
         
         // Inline all styles to ensure they're preserved
         const inlineStyles = (element: Element) => {
@@ -190,7 +185,7 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
         const svgUrl = URL.createObjectURL(svgBlob);
         
-        // Create canvas for high-quality rendering
+        // Create canvas with square dimensions for perfect circle
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         
@@ -200,20 +195,20 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
           return;
         }
         
-        // Set high resolution for better quality
+        // Set high resolution square canvas for better quality
         const scale = 2;
-        canvas.width = finalWidth * scale;
-        canvas.height = finalHeight * scale;
+        canvas.width = squareSize * scale;
+        canvas.height = squareSize * scale;
         ctx.scale(scale, scale);
         
         // Set white background
         ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, finalWidth, finalHeight);
+        ctx.fillRect(0, 0, squareSize, squareSize);
         
         const img = new Image();
         img.onload = () => {
           console.log('ChartCapture: Radar chart image loaded successfully');
-          ctx.drawImage(img, 0, 0, finalWidth, finalHeight);
+          ctx.drawImage(img, 0, 0, squareSize, squareSize);
           URL.revokeObjectURL(svgUrl);
           
           // Convert to high-quality PNG
@@ -222,7 +217,7 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
           
           // Validate that we actually have image data
           if (pngDataUrl.length > 1000) {
-            console.log('ChartCapture: Successfully captured radar chart as PNG');
+            console.log('ChartCapture: Successfully captured radar chart as PNG with square dimensions');
             resolve(pngDataUrl);
           } else {
             console.error('ChartCapture: Generated PNG seems too small, might be empty');

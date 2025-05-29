@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import { Category, Demographics } from '@/utils/assessmentTypes';
@@ -80,8 +81,8 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   chartImage: {
-    maxWidth: 500, // Increased from 400 to make chart larger
-    maxHeight: 500, // Increased from 400 to make chart larger
+    maxWidth: 500,
+    maxHeight: 500,
     marginBottom: 8,
     alignSelf: 'center',
   },
@@ -161,7 +162,7 @@ const styles = StyleSheet.create({
   bottomLogo: {
     maxWidth: 200, // Match the top logo size exactly
     marginTop: 8,
-    alignSelf: 'flex-start', // Left-align instead of center
+    alignSelf: 'flex-start', // Left-align the bottom logo
   },
 });
 

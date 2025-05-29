@@ -1,12 +1,12 @@
 
 import html2canvas from 'html2canvas';
 
-// Enhanced function to capture radar chart as PNG with better error handling and timing
+// Restore the working radar chart capture logic from 11:11 version
 export const captureRadarChartAsPNG = async (): Promise<string | null> => {
   return new Promise((resolve) => {
     console.log('ChartCapture: Starting radar chart capture process...');
     
-    // Wait longer for chart to fully render, especially for PDF generation
+    // Wait for chart to fully render
     setTimeout(async () => {
       console.log('ChartCapture: Looking for radar chart container...');
       
@@ -58,10 +58,10 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         // Wait a bit more for any animations to complete
         await new Promise(resolve => setTimeout(resolve, 500));
         
-        // Use html2canvas with optimized settings for PDF generation
+        // Use html2canvas with settings that worked in 11:11 version
         const canvas = await html2canvas(radarContainer, {
           backgroundColor: '#ffffff',
-          scale: 2, // High quality but not too large for PDF
+          scale: 2,
           useCORS: true,
           allowTaint: false,
           logging: false,
@@ -84,7 +84,7 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         console.log('ChartCapture: PNG data URL generated, length:', pngDataUrl.length);
         
         // Validate that we have substantial image data
-        if (pngDataUrl.length > 2000) { // Increased threshold for more reliable validation
+        if (pngDataUrl.length > 2000) {
           console.log('ChartCapture: Successfully captured radar chart for PDF');
           resolve(pngDataUrl);
         } else {
@@ -96,7 +96,7 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         console.error('ChartCapture: Error capturing with html2canvas:', error);
         resolve(null);
       }
-    }, 3000); // Increased wait time for better reliability
+    }, 2000); // Use 2000ms as in working version
   });
 };
 

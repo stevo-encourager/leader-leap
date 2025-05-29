@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import { Category, Demographics } from '@/utils/assessmentTypes';
@@ -68,28 +69,29 @@ const styles = StyleSheet.create({
   },
   chartContainer: {
     alignItems: 'center',
-    marginVertical: 15,
+    marginVertical: 10,
     backgroundColor: '#ffffff',
+    paddingHorizontal: 20, // Add horizontal padding to prevent clipping
   },
   chartImage: {
-    width: 500, // Square dimensions for perfect circle
-    height: 500, // Square dimensions for perfect circle
-    marginBottom: 10,
+    width: 350, // Reduced from 500 to 350 for better PDF fit
+    height: 350, // Reduced from 500 to 350 for better PDF fit
+    marginBottom: 8,
   },
   chartPlaceholder: {
-    width: 500, // Square dimensions to match chart
-    height: 500, // Square dimensions to match chart
+    width: 350, // Reduced to match chart
+    height: 350, // Reduced to match chart
     backgroundColor: '#f3f4f6',
     border: '2px dashed #d1d5db',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   chartLegend: {
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 20,
-    marginTop: 10,
+    marginTop: 8,
   },
   legendItem: {
     flexDirection: 'row',
@@ -194,7 +196,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
 
   return (
     <Document>
-      {/* Page 1 - Header, Profile, and Chart */}
+      {/* Page 1 - Header, Profile, and Chart (all content fits on one page) */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
           <Image 
@@ -218,7 +220,8 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
         <Text style={styles.text}><Text style={styles.boldText}>Overall Development Gap:</Text> {averageGap.toFixed(2)} points</Text>
         <Text style={styles.text}>Assessment completed across {categories.length} competency areas</Text>
 
-        <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Competency Analysis - Radar Chart</Text>
+        {/* Chart section stays with header on same page with reduced size */}
+        <Text style={[styles.sectionTitle, { marginTop: 15 }]}>Competency Analysis - Radar Chart</Text>
         
         <View style={styles.chartContainer}>
           {chartImageDataUrl ? (

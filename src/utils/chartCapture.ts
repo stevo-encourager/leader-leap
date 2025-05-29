@@ -1,3 +1,4 @@
+
 import { Category } from './assessmentTypes';
 
 // Enhanced DOM inspection function
@@ -118,20 +119,20 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         // Get the SVG's computed styles and dimensions
         const svgRect = selectedSvg.getBoundingClientRect();
         
-        // Force square dimensions for perfect circle in PDF
-        const squareSize = 500; // Use fixed square size for perfect symmetry
+        // Use smaller square dimensions to fit PDF page with labels
+        const squareSize = 350; // Reduced from 500 to 350 for better PDF fit
         
-        console.log('ChartCapture: Using square radar chart SVG with dimensions:', { width: squareSize, height: squareSize });
+        console.log('ChartCapture: Using compact square radar chart SVG with dimensions:', { width: squareSize, height: squareSize });
         
         // Clone the SVG to avoid modifying the original
         const clonedSvg = selectedSvg.cloneNode(true) as SVGElement;
         
-        // Set square dimensions for perfect circle
+        // Set compact square dimensions for better PDF fit
         clonedSvg.setAttribute('width', squareSize.toString());
         clonedSvg.setAttribute('height', squareSize.toString());
         clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
         
-        // Set square viewBox for perfect proportions
+        // Set compact square viewBox for perfect proportions
         clonedSvg.setAttribute('viewBox', `0 0 ${squareSize} ${squareSize}`);
         
         // Inline all styles to ensure they're preserved
@@ -185,7 +186,7 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
         const svgUrl = URL.createObjectURL(svgBlob);
         
-        // Create canvas with square dimensions for perfect circle
+        // Create canvas with compact square dimensions
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         
@@ -195,7 +196,7 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
           return;
         }
         
-        // Set high resolution square canvas for better quality
+        // Set high resolution compact square canvas for better quality
         const scale = 2;
         canvas.width = squareSize * scale;
         canvas.height = squareSize * scale;
@@ -217,7 +218,7 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
           
           // Validate that we actually have image data
           if (pngDataUrl.length > 1000) {
-            console.log('ChartCapture: Successfully captured radar chart as PNG with square dimensions');
+            console.log('ChartCapture: Successfully captured radar chart as PNG with compact square dimensions');
             resolve(pngDataUrl);
           } else {
             console.error('ChartCapture: Generated PNG seems too small, might be empty');

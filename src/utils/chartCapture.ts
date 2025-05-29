@@ -1,7 +1,7 @@
 
 import html2canvas from 'html2canvas';
 
-// Restore the exact working radar chart capture logic from 11:11 version
+// Capture radar chart as PNG for PDF export
 export const captureRadarChartAsPNG = async (): Promise<string | null> => {
   return new Promise((resolve) => {
     console.log('ChartCapture: Starting radar chart capture process...');
@@ -58,7 +58,7 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         // Wait a bit more for any animations to complete
         await new Promise(resolve => setTimeout(resolve, 500));
         
-        // Use html2canvas with settings that worked in 11:11 version
+        // Use html2canvas with settings that worked in previous version
         const canvas = await html2canvas(radarContainer, {
           backgroundColor: '#ffffff',
           scale: 2,
@@ -96,29 +96,6 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         console.error('ChartCapture: Error capturing with html2canvas:', error);
         resolve(null);
       }
-    }, 2000); // Use 2000ms as in working version
+    }, 2000);
   });
-};
-
-// Test function to validate chart capture and download for verification
-export const testChartCapture = async (): Promise<void> => {
-  console.log('ChartCapture: Starting test capture...');
-  
-  const dataUrl = await captureRadarChartAsPNG();
-  
-  if (dataUrl) {
-    console.log('ChartCapture: Test successful - radar chart captured');
-    
-    // Create a temporary download link to verify the image
-    const link = document.createElement('a');
-    link.download = 'test-radar-chart.png';
-    link.href = dataUrl;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    console.log('ChartCapture: Test radar chart image downloaded for verification');
-  } else {
-    console.error('ChartCapture: Test failed - no radar chart captured');
-  }
 };

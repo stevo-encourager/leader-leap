@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ArrowLeft, Download, Plus, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -128,12 +127,9 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     return true;
   };
   
-  // Handle PDF download using React PDF
+  // Enhanced PDF download with better chart capture handling
   const handleDownloadPDF = async () => {
-    console.log('ResultsActions: PDF download button clicked');
-    console.log('ResultsActions: categories received:', categories?.length || 0);
-    console.log('ResultsActions: demographics received:', demographics ? Object.keys(demographics) : 'none');
-    console.log('ResultsActions: assessmentId for consistent insights:', assessmentId);
+    console.log('ResultsActions: Enhanced PDF download starting...');
     
     if (!hasValidAssessmentData()) {
       toast({
@@ -156,24 +152,50 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     setIsDownloading(true);
     
     try {
-      console.log('ResultsActions: Starting PDF generation with React PDF');
+      console.log('ResultsActions: Starting enhanced chart capture process...');
       
-      // Capture the radar chart as PNG with detailed logging
-      console.log('ResultsActions: Attempting to capture radar chart...');
-      const chartImageDataUrl = await captureRadarChartAsPNG();
+      // Show user that we're capturing the chart
+      toast({
+        title: "Preparing PDF",
+        description: "Capturing radar chart visualization...",
+        variant: "default",
+      });
       
-      if (chartImageDataUrl) {
-        console.log('ResultsActions: Successfully captured radar chart, data length:', chartImageDataUrl.length);
-      } else {
-        console.warn('ResultsActions: Failed to capture radar chart, proceeding without it');
-        toast({
-          title: "Chart Capture Warning",
-          description: "Could not capture the radar chart. PDF will be generated without the chart visualization.",
-          variant: "default",
-        });
+      // Enhanced chart capture with multiple attempts
+      let chartImageDataUrl: string | null = null;
+      const maxAttempts = 3;
+      
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        console.log(`ResultsActions: Chart capture attempt ${attempt}/${maxAttempts}`);
+        
+        chartImageDataUrl = await captureRadarChartAsPNG();
+        
+        if (chartImageDataUrl) {
+          console.log(`ResultsActions: Chart captured successfully on attempt ${attempt}`);
+          break;
+        }
+        
+        if (attempt < maxAttempts) {
+          console.log(`ResultsActions: Attempt ${attempt} failed, retrying...`);
+          // Wait before retry
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
       }
       
-      // Generate PDF using React PDF
+      if (!chartImageDataUrl) {
+        console.warn('ResultsActions: All chart capture attempts failed');
+        toast({
+          title: "Chart Capture Warning",
+          description: "Unable to capture the radar chart. PDF will be generated without chart visualization.",
+          variant: "default",
+        });
+      } else {
+        console.log('ResultsActions: Chart successfully captured for PDF inclusion');
+      }
+      
+      // Generate PDF with enhanced error handling
+      console.log('ResultsActions: Generating PDF document...');
+      
       const pdfDoc = (
         <ReactPDFDocument
           categories={categories}
@@ -183,10 +205,9 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
         />
       );
       
-      console.log('ResultsActions: Generating PDF blob...');
       const pdfBlob = await pdf(pdfDoc).toBlob();
       
-      // Create download link
+      // Create and trigger download
       const url = URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
       link.href = url;
@@ -196,13 +217,17 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
       
+      console.log('ResultsActions: PDF download completed successfully');
+      
       toast({
         title: "Download Successful",
-        description: "Your leadership assessment results have been downloaded as a PDF with proper formatting and pagination.",
+        description: chartImageDataUrl 
+          ? "Your leadership assessment results have been downloaded with the radar chart included."
+          : "Your leadership assessment results have been downloaded (chart capture failed but content is complete).",
       });
       
     } catch (error) {
-      console.error('ResultsActions: Error during React PDF download:', error);
+      console.error('ResultsActions: Error during enhanced PDF download:', error);
       toast({
         title: "Download Failed", 
         description: "There was an error generating your PDF. Please try again.",

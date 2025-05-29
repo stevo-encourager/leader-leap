@@ -70,10 +70,20 @@ const styles = StyleSheet.create({
   chartContainer: {
     alignItems: 'center',
     marginVertical: 15,
+    backgroundColor: '#ffffff',
   },
   chartImage: {
-    width: 400,
-    height: 400,
+    width: 350,
+    height: 350,
+    marginBottom: 10,
+  },
+  chartPlaceholder: {
+    width: 350,
+    height: 350,
+    backgroundColor: '#f3f4f6',
+    border: '2px dashed #d1d5db',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 10,
   },
   chartLegend: {
@@ -158,6 +168,13 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
     day: 'numeric'
   });
 
+  // Log chart image data for debugging
+  console.log('ReactPDFDocument: Chart image data received:', {
+    hasChartData: !!chartImageDataUrl,
+    dataUrlLength: chartImageDataUrl?.length || 0,
+    dataUrlPreview: chartImageDataUrl?.substring(0, 100) || 'No data'
+  });
+
   const parseInsights = (insightsText: string): AIInsightsData | null => {
     try {
       const parsed = JSON.parse(insightsText);
@@ -204,23 +221,34 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
 
         <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Competency Analysis - Radar Chart</Text>
         
-        {chartImageDataUrl ? (
-          <View style={styles.chartContainer}>
-            <Image style={styles.chartImage} src={chartImageDataUrl} />
-            <View style={styles.chartLegend}>
-              <View style={styles.legendItem}>
-                <View style={[styles.legendColor, { backgroundColor: '#3b82f6' }]} />
-                <Text style={styles.legendText}>Current State</Text>
+        <View style={styles.chartContainer}>
+          {chartImageDataUrl ? (
+            <>
+              <Image 
+                style={styles.chartImage} 
+                src={chartImageDataUrl}
+                debug={true}
+              />
+              <View style={styles.chartLegend}>
+                <View style={styles.legendItem}>
+                  <View style={[styles.legendColor, { backgroundColor: '#3b82f6' }]} />
+                  <Text style={styles.legendText}>Current State</Text>
+                </View>
+                <View style={styles.legendItem}>
+                  <View style={[styles.legendColor, { backgroundColor: '#ef4444' }]} />
+                  <Text style={styles.legendText}>Desired State</Text>
+                </View>
               </View>
-              <View style={styles.legendItem}>
-                <View style={[styles.legendColor, { backgroundColor: '#ef4444' }]} />
-                <Text style={styles.legendText}>Desired State</Text>
-              </View>
+            </>
+          ) : (
+            <View style={styles.chartPlaceholder}>
+              <Text style={styles.text}>Radar chart visualization shows your current vs desired competency levels</Text>
+              <Text style={[styles.text, { fontSize: 10, color: '#64748b', marginTop: 10 }]}>
+                Chart image could not be captured - this may indicate a technical issue with chart rendering
+              </Text>
             </View>
-          </View>
-        ) : (
-          <Text style={styles.text}>Radar chart visualization shows your current vs desired competency levels</Text>
-        )}
+          )}
+        </View>
       </Page>
 
       {/* Page 2 - AI Insights */}

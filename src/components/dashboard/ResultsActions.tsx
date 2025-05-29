@@ -128,6 +128,44 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     return true;
   };
   
+  // Test function for chart capture
+  const handleTestChartCapture = async () => {
+    console.log('ResultsActions: Testing chart capture...');
+    try {
+      const chartImageDataUrl = await captureRadarChartAsPNG();
+      
+      if (chartImageDataUrl) {
+        console.log('ResultsActions: Chart capture test successful');
+        toast({
+          title: "Chart Capture Test Successful",
+          description: "The radar chart was captured successfully. Check console for details.",
+        });
+        
+        // Create a temporary download to verify the image
+        const link = document.createElement('a');
+        link.download = 'test-radar-chart.png';
+        link.href = chartImageDataUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        console.error('ResultsActions: Chart capture test failed');
+        toast({
+          title: "Chart Capture Test Failed",
+          description: "Could not capture the radar chart. Check console for details.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('ResultsActions: Chart capture test error:', error);
+      toast({
+        title: "Chart Capture Error",
+        description: "An error occurred during chart capture testing.",
+        variant: "destructive",
+      });
+    }
+  };
+  
   // Handle PDF download using React PDF
   const handleDownloadPDF = async () => {
     console.log('ResultsActions: PDF download button clicked');
@@ -158,13 +196,19 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     try {
       console.log('ResultsActions: Starting PDF generation with React PDF');
       
-      // Capture the radar chart as PNG
+      // Capture the radar chart as PNG with detailed logging
+      console.log('ResultsActions: Attempting to capture radar chart...');
       const chartImageDataUrl = await captureRadarChartAsPNG();
       
       if (chartImageDataUrl) {
-        console.log('ResultsActions: Successfully captured radar chart');
+        console.log('ResultsActions: Successfully captured radar chart, data length:', chartImageDataUrl.length);
       } else {
         console.warn('ResultsActions: Failed to capture radar chart, proceeding without it');
+        toast({
+          title: "Chart Capture Warning",
+          description: "Could not capture the radar chart. PDF will be generated without the chart visualization.",
+          variant: "default",
+        });
       }
       
       // Generate PDF using React PDF
@@ -177,6 +221,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
         />
       );
       
+      console.log('ResultsActions: Generating PDF blob...');
       const pdfBlob = await pdf(pdfDoc).toBlob();
       
       // Create download link
@@ -260,6 +305,16 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
         Back to Assessment
       </Button>
       <div className="flex gap-2">
+        {/* Add debug button in development */}
+        {process.env.NODE_ENV === 'development' && (
+          <Button 
+            variant="outline" 
+            onClick={handleTestChartCapture}
+            size="sm"
+          >
+            Test Chart
+          </Button>
+        )}
         {!user && (
           <TooltipProvider>
             <Tooltip>

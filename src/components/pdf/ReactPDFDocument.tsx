@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import { Category, Demographics } from '@/utils/assessmentTypes';
@@ -17,9 +18,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   logo: {
-    width: 200,
-    height: 60,
+    maxWidth: 200,
+    maxHeight: 60,
     marginBottom: 10,
+    alignSelf: 'center',
   },
   title: {
     fontSize: 24,
@@ -74,8 +76,8 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   chartImage: {
-    maxWidth: 400, // Set maximum width, let aspect ratio scale naturally
-    maxHeight: 400, // Set maximum height to prevent oversizing
+    maxWidth: 500, // Increased from 400 to make chart larger
+    maxHeight: 500, // Increased from 400 to make chart larger
     marginBottom: 8,
     alignSelf: 'center',
   },
@@ -118,6 +120,26 @@ const styles = StyleSheet.create({
   },
   strengthItem: {
     marginBottom: 10,
+  },
+  coachingContainer: {
+    flexDirection: 'row',
+    gap: 20,
+    marginTop: 10,
+  },
+  coachingText: {
+    flex: 2,
+  },
+  coachingImage: {
+    flex: 1,
+    maxWidth: 150,
+    maxHeight: 200,
+    alignSelf: 'flex-start',
+  },
+  linkText: {
+    fontSize: 12,
+    color: '#2F564D',
+    textDecoration: 'underline',
+    marginBottom: 4,
   },
   footer: {
     position: 'absolute',
@@ -223,7 +245,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
         <Text style={styles.text}><Text style={styles.boldText}>Overall Development Gap:</Text> {averageGap.toFixed(2)} points</Text>
         <Text style={styles.text}>Assessment completed across {categories.length} competency areas</Text>
 
-        {/* Chart section with flexible sizing */}
+        {/* Chart section with larger sizing */}
         <Text style={[styles.sectionTitle, { marginTop: 15 }]}>Competency Analysis - Radar Chart</Text>
         
         <View style={styles.chartContainer}>
@@ -325,11 +347,24 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
         <Text style={styles.listItem}>• Set an actionable goal for yourself within the next week, and set a reminder to help hold yourself accountable for taking that next step</Text>
 
         <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Professional Development Coaching</Text>
-        <Text style={styles.text}>Ready to take your leadership skills to the next level? Our expert coaches can help you:</Text>
-        <Text style={styles.listItem}>• Create personalized development plans</Text>
-        <Text style={styles.listItem}>• Practice new skills in a safe environment</Text>
-        <Text style={styles.listItem}>• Overcome specific leadership challenges</Text>
-        <Text style={styles.listItem}>• Track your progress over time</Text>
+        
+        <View style={styles.coachingContainer}>
+          <View style={styles.coachingText}>
+            <Text style={styles.text}>Ready to take your leadership skills to the next level? Our expert coaches can help you:</Text>
+            <Text style={styles.listItem}>• Create personalized development plans</Text>
+            <Text style={styles.listItem}>• Practice new skills in a safe environment</Text>
+            <Text style={styles.listItem}>• Overcome specific leadership challenges</Text>
+            <Text style={styles.listItem}>• Track your progress over time</Text>
+            
+            <Text style={[styles.boldText, { marginTop: 10 }]}>Book a free 30-minute discovery call now</Text>
+            <Text style={styles.linkText}>www.encouragercoaching.com</Text>
+          </View>
+          
+          <Image 
+            style={styles.coachingImage}
+            src="/lovable-uploads/b35e005b-ec23-4976-8796-738f7c856377.png"
+          />
+        </View>
 
         <Text style={styles.footer}>
           Leadership Assessment Tool • Generated on {currentDate}{'\n'}

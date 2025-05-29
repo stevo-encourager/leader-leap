@@ -1,7 +1,7 @@
 
 import html2canvas from 'html2canvas';
 
-// Simple function to capture radar chart as PNG using html2canvas
+// Enhanced function to capture radar chart as PNG using html2canvas with larger size
 export const captureRadarChartAsPNG = async (): Promise<string | null> => {
   return new Promise((resolve) => {
     console.log('ChartCapture: Starting direct DOM capture with html2canvas...');
@@ -21,10 +21,10 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
       console.log('ChartCapture: Found radar chart container:', radarContainer);
       
       try {
-        // Use html2canvas to capture the entire container as-is
+        // Use html2canvas to capture the entire container as-is with larger output
         const canvas = await html2canvas(radarContainer, {
           backgroundColor: '#ffffff',
-          scale: 2, // High resolution
+          scale: 3, // Increased scale for higher resolution and larger size
           useCORS: true,
           allowTaint: false,
           logging: false,

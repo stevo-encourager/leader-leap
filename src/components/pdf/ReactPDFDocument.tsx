@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import { Category, Demographics } from '@/utils/assessmentTypes';
@@ -72,24 +71,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginVertical: 15,
     backgroundColor: '#ffffff',
-    paddingHorizontal: 30, // Increased horizontal padding for better centering
     width: '100%',
   },
   chartImage: {
-    width: 320, // Reduced from 350 to match chart capture size
-    height: 320, // Reduced from 350 to match chart capture size
+    maxWidth: 400, // Set maximum width, let aspect ratio scale naturally
+    maxHeight: 400, // Set maximum height to prevent oversizing
     marginBottom: 8,
-    alignSelf: 'center', // Ensure image is centered
+    alignSelf: 'center',
   },
   chartPlaceholder: {
-    width: 320, // Reduced to match chart
-    height: 320, // Reduced to match chart
+    width: 400,
+    height: 300,
     backgroundColor: '#f3f4f6',
     border: '2px dashed #d1d5db',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
-    alignSelf: 'center', // Ensure placeholder is centered
+    alignSelf: 'center',
   },
   chartLegend: {
     flexDirection: 'row',
@@ -201,7 +199,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
 
   return (
     <Document>
-      {/* Page 1 - Header, Profile, and Chart (all content fits on one page) */}
+      {/* Page 1 - Header, Profile, and Chart */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
           <Image 
@@ -225,26 +223,14 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
         <Text style={styles.text}><Text style={styles.boldText}>Overall Development Gap:</Text> {averageGap.toFixed(2)} points</Text>
         <Text style={styles.text}>Assessment completed across {categories.length} competency areas</Text>
 
-        {/* Chart section with proper centering and sizing */}
+        {/* Chart section with flexible sizing */}
         <Text style={[styles.sectionTitle, { marginTop: 15 }]}>Competency Analysis - Radar Chart</Text>
         
-        <View style={{
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginVertical: 15,
-          backgroundColor: '#ffffff',
-          width: '100%',
-          paddingHorizontal: 20,
-        }}>
+        <View style={styles.chartContainer}>
           {chartImageDataUrl ? (
             <>
               <Image 
-                style={{
-                  width: 350, // Match the capture size
-                  height: 350, // Match the capture size
-                  marginBottom: 8,
-                  alignSelf: 'center',
-                }} 
+                style={styles.chartImage}
                 src={chartImageDataUrl}
               />
               <View style={styles.chartLegend}>
@@ -259,16 +245,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
               </View>
             </>
           ) : (
-            <View style={{
-              width: 350,
-              height: 350,
-              backgroundColor: '#f3f4f6',
-              border: '2px dashed #d1d5db',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: 8,
-              alignSelf: 'center',
-            }}>
+            <View style={styles.chartPlaceholder}>
               <Text style={styles.text}>Radar chart visualization shows your current vs desired competency levels</Text>
               <Text style={[styles.text, { fontSize: 10, color: '#64748b', marginTop: 10 }]}>
                 Chart image could not be captured - this may indicate a technical issue with chart rendering

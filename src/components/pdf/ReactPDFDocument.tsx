@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import { Category, Demographics } from '@/utils/assessmentTypes';
@@ -160,9 +159,9 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   bottomLogo: {
-    maxWidth: 120,
+    maxWidth: 200, // Match the top logo size exactly
     marginTop: 8,
-    alignSelf: 'center',
+    alignSelf: 'flex-start', // Left-align instead of center
   },
 });
 
@@ -205,11 +204,12 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
     day: 'numeric'
   });
 
-  // Log chart image data for debugging
+  // Enhanced chart image logging for debugging
   console.log('ReactPDFDocument: Chart image data received:', {
     hasChartData: !!chartImageDataUrl,
     dataUrlLength: chartImageDataUrl?.length || 0,
-    dataUrlPreview: chartImageDataUrl?.substring(0, 100) || 'No data'
+    dataUrlPreview: chartImageDataUrl?.substring(0, 100) || 'No data',
+    isValidDataUrl: chartImageDataUrl?.startsWith('data:image/') || false
   });
 
   const parseInsights = (insightsText: string): AIInsightsData | null => {
@@ -256,11 +256,11 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
         <Text style={styles.text}><Text style={styles.boldText}>Overall Development Gap:</Text> {averageGap.toFixed(2)} points</Text>
         <Text style={styles.text}>Assessment completed across {categories.length} competency areas</Text>
 
-        {/* Chart section with larger sizing */}
+        {/* Enhanced Chart section with better error handling */}
         <Text style={[styles.sectionTitle, { marginTop: 15 }]}>Competency Analysis - Radar Chart</Text>
         
         <View style={styles.chartContainer}>
-          {chartImageDataUrl ? (
+          {chartImageDataUrl && chartImageDataUrl.startsWith('data:image/') ? (
             <Image 
               style={styles.chartImage}
               src={chartImageDataUrl}
@@ -269,7 +269,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
             <View style={styles.chartPlaceholder}>
               <Text style={styles.text}>Radar chart visualization shows your current vs desired competency levels</Text>
               <Text style={[styles.text, { fontSize: 10, color: '#64748b', marginTop: 10 }]}>
-                Chart image could not be captured - this may indicate a technical issue with chart rendering
+                {chartImageDataUrl ? 'Chart image format invalid' : 'Chart image could not be captured'} - this may indicate a technical issue with chart rendering
               </Text>
             </View>
           )}
@@ -357,7 +357,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
             <Text style={[styles.boldText, { marginTop: 10 }]}>Book a free 30-minute discovery call now</Text>
             <Text style={styles.linkText}>www.encouragercoaching.com</Text>
             
-            {/* Logo added underneath the web link */}
+            {/* Bottom logo - left-aligned and matching top logo size */}
             <Image 
               style={styles.bottomLogo}
               src="/lovable-uploads/db40277e-6ff0-437e-acf2-faaa2d92671e.png"

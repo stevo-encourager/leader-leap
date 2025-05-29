@@ -1,5 +1,5 @@
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useEffect } from 'react';
 import { 
   ResponsiveContainer,
   RadarChart, 
@@ -10,6 +10,7 @@ import {
   Legend
 } from 'recharts';
 import { Category } from '@/utils/assessmentTypes';
+import { Button } from '@/components/ui/button';
 
 interface SkillGapChartProps {
   categories: Category[];
@@ -64,6 +65,8 @@ const CustomTick = (props: any) => {
 };
 
 const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "", isPDF = false }) => {
+  const chartContainerRef = useRef<HTMLDivElement>(null);
+  
   // Ensure categories is always an array
   const safeCategories = Array.isArray(categories) ? categories : [];
   
@@ -215,6 +218,109 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
   
   console.log("SkillGapChart - Valid chart data items:", validChartData.length);
   
+  // DEBUG: Add effect to log DOM structure when component mounts
+  useEffect(() => {
+    if (chartContainerRef.current && validChartData.length > 0) {
+      setTimeout(() => {
+        console.log('=== SkillGapChart DOM INSPECTION ===');
+        const container = chartContainerRef.current;
+        if (container) {
+          console.log('Chart container element:', container);
+          console.log('Container outerHTML:', container.outerHTML.substring(0, 500) + '...');
+          console.log('Container data-testid:', container.getAttribute('data-testid'));
+          console.log('Container data-chart-type:', container.getAttribute('data-chart-type'));
+          console.log('Container className:', container.className);
+          
+          const svg = container.querySelector('svg');
+          if (svg) {
+            console.log('Found SVG inside container:', svg);
+            console.log('SVG className:', svg.className.baseVal || svg.className);
+            console.log('SVG outerHTML preview:', svg.outerHTML.substring(0, 300) + '...');
+          } else {
+            console.log('No SVG found inside container');
+          }
+          
+          // Check all SVGs in document
+          const allSvgs = document.querySelectorAll('svg');
+          console.log('Total SVGs in document:', allSvgs.length);
+          allSvgs.forEach((svg, index) => {
+            const rect = svg.getBoundingClientRect();
+            console.log(`SVG ${index}:`, {
+              className: svg.className.baseVal || svg.className,
+              parent: svg.parentElement?.tagName,
+              parentClass: svg.parentElement?.className,
+              size: { width: rect.width, height: rect.height },
+              isInRadarContainer: !!svg.closest('[data-testid="radar-chart-container"]')
+            });
+          });
+        }
+        console.log('=== END DOM INSPECTION ===');
+      }, 1000);
+    }
+  }, [validChartData]);
+  
+  // DEBUG: Function to inspect DOM from inside the component
+  const inspectDOM = () => {
+    console.log('=== MANUAL DOM INSPECTION FROM CHART COMPONENT ===');
+    const container = chartContainerRef.current;
+    
+    if (container) {
+      console.log('Container found:', container);
+      console.log('Container HTML:', container.outerHTML);
+      
+      const svg = container.querySelector('svg');
+      if (svg) {
+        console.log('SVG found:', svg);
+        console.log('SVG HTML:', svg.outerHTML.substring(0, 500) + '...');
+        
+        // Try to capture this specific SVG
+        try {
+          const svgData = new XMLSerializer().serializeToString(svg);
+          console.log('SVG serialized successfully, length:', svgData.length);
+          
+          // Create a test download
+          const blob = new Blob([svgData], { type: 'image/svg+xml' });
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'radar-chart-direct.svg';
+          link.click();
+          URL.revokeObjectURL(url);
+          
+          console.log('Direct SVG download triggered');
+        } catch (error) {
+          console.error('Error serializing SVG:', error);
+        }
+      } else {
+        console.log('No SVG found in container');
+      }
+    } else {
+      console.log('Container ref not found');
+    }
+    
+    // Also test all the selectors we use in chartCapture
+    const selectors = [
+      '[data-testid="radar-chart-container"] svg',
+      '[data-chart-type="radar"] svg', 
+      '.radar-chart-container svg',
+      '[data-testid="radar-chart-container"] .recharts-wrapper svg',
+      '.recharts-radar-chart',
+      'svg.recharts-surface',
+      '.recharts-surface'
+    ];
+    
+    console.log('Testing selectors:');
+    selectors.forEach(selector => {
+      const found = document.querySelectorAll(selector);
+      console.log(`"${selector}": found ${found.length} elements`);
+      if (found.length > 0) {
+        console.log('First match:', found[0]);
+      }
+    });
+    
+    console.log('=== END MANUAL INSPECTION ===');
+  };
+  
   if (validChartData.length === 0) {
     console.warn("SkillGapChart - No valid chart data to display");
     return (
@@ -242,10 +348,25 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
   // Radar chart implementation with PDF-optimized settings and explicit data-testid
   return (
     <div 
+      ref={chartContainerRef}
       className={`radar-chart-container ${className} page-break-avoid`} 
       data-testid="radar-chart-container"
       data-chart-type="radar"
     >
+      {/* DEBUG: Only show inspect button in development */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="mb-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={inspectDOM}
+            className="text-xs"
+          >
+            🔍 Inspect Chart DOM
+          </Button>
+        </div>
+      )}
+      
       <ResponsiveContainer width="100%" height="100%">
         <RadarChart 
           data={validChartData} 

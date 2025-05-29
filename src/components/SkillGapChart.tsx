@@ -32,8 +32,8 @@ const CustomTick = (props: any) => {
   // Calculate angle from center to current position
   const angle = Math.atan2(y - cy, x - cx);
   
-  // Keep label radius consistent for both web and PDF to maintain distance
-  const labelRadius = isPDF ? 120 : 175;
+  // Keep label radius consistent and proportional for perfect circle
+  const labelRadius = isPDF ? 140 : 190;
   
   const labelX = cx + labelRadius * Math.cos(angle);
   const labelY = cy + labelRadius * Math.sin(angle);
@@ -336,15 +336,15 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
 
   console.log("SkillGapChart - Rendering radar chart with data:", validChartData);
 
-  // Optimized margins to accommodate wider radar plot while keeping labels close
+  // Ensure equal margins for perfect symmetry
   const chartMargins = isPDF 
-    ? { top: 5, right: 25, left: 25, bottom: 45 } 
-    : { top: 50, right: 100, left: 100, bottom: 50 };
+    ? { top: 60, right: 60, left: 60, bottom: 60 } 
+    : { top: 80, right: 80, left: 80, bottom: 80 };
 
   // Log DOM structure for debugging chart capture
   console.log("SkillGapChart - About to render with testid 'radar-chart-container'");
 
-  // Radar chart implementation with wider radar plot area but consistent label positioning
+  // Radar chart implementation with perfect circular symmetry
   return (
     <div 
       ref={chartContainerRef}
@@ -371,8 +371,8 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
           data={validChartData} 
           margin={chartMargins}
           cx="50%" 
-          cy={isPDF ? "38%" : "45%"} 
-          outerRadius={isPDF ? "65%" : "85%"} // Increased radius for wider radar plot area
+          cy="50%" 
+          outerRadius="70%"
           className="recharts-radar-chart"
         >
           <PolarGrid 

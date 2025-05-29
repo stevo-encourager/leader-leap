@@ -1,3 +1,4 @@
+
 import React, { useMemo, useRef, useEffect } from 'react';
 import { 
   ResponsiveContainer,
@@ -32,8 +33,8 @@ const CustomTick = (props: any) => {
   // Calculate angle from center to current position
   const angle = Math.atan2(y - cy, x - cx);
   
-  // Keep label radius consistent for both web and PDF to maintain distance
-  const labelRadius = isPDF ? 120 : 175;
+  // PDF-specific label positioning for perfect circle
+  const labelRadius = isPDF ? 100 : 175; // Reduced radius for PDF to keep labels closer
   
   const labelX = cx + labelRadius * Math.cos(angle);
   const labelY = cy + labelRadius * Math.sin(angle);
@@ -43,7 +44,7 @@ const CustomTick = (props: any) => {
   if (labelX > cx + 5) anchor = 'start';
   else if (labelX < cx - 5) anchor = 'end';
   
-  // Much shorter labels for PDF to prevent overlap and clipping
+  // Shorter labels for PDF to prevent overlap
   const displayText = isPDF && payload.value.length > 12 
     ? payload.value.substring(0, 10) + '...' 
     : payload.value;
@@ -181,7 +182,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
         const avgCurrent = parseFloat((totalCurrent / validSkillCount).toFixed(1));
         const avgDesired = parseFloat((totalDesired / validSkillCount).toFixed(1));
         
-        // Much shorter category names for PDF display to prevent clipping
+        // Shorter category names for PDF display to prevent clipping
         const displayTitle = isPDF && category.title && category.title.length > 15 
           ? category.title.substring(0, 12) + '...' 
           : category.title || "Unknown Category";
@@ -336,15 +337,20 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
 
   console.log("SkillGapChart - Rendering radar chart with data:", validChartData);
 
-  // Optimized margins to accommodate wider radar plot while keeping labels close
+  // PDF-specific configuration for perfect circle
   const chartMargins = isPDF 
-    ? { top: 5, right: 25, left: 25, bottom: 45 } 
-    : { top: 50, right: 100, left: 100, bottom: 50 };
+    ? { top: 20, right: 50, left: 50, bottom: 60 } // Symmetric margins for PDF
+    : { top: 50, right: 100, left: 100, bottom: 50 }; // Keep original for dashboard
+
+  // PDF-specific centering and sizing for perfect circle
+  const centerX = isPDF ? "50%" : "50%";
+  const centerY = isPDF ? "50%" : "45%"; // Perfect center for PDF
+  const outerRadius = isPDF ? "70%" : "85%"; // Slightly smaller for PDF to ensure perfect circle
 
   // Log DOM structure for debugging chart capture
   console.log("SkillGapChart - About to render with testid 'radar-chart-container'");
 
-  // Radar chart implementation with wider radar plot area but consistent label positioning
+  // Radar chart implementation with PDF-specific perfect circle configuration
   return (
     <div 
       ref={chartContainerRef}
@@ -370,9 +376,9 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
         <RadarChart 
           data={validChartData} 
           margin={chartMargins}
-          cx="50%" 
-          cy={isPDF ? "38%" : "45%"} 
-          outerRadius={isPDF ? "65%" : "85%"} // Increased radius for wider radar plot area
+          cx={centerX}
+          cy={centerY}
+          outerRadius={outerRadius}
           className="recharts-radar-chart"
         >
           <PolarGrid 
@@ -407,7 +413,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             verticalAlign="bottom"
             align="center"
             wrapperStyle={{
-              marginTop: isPDF ? '20px' : '60px',
+              marginTop: isPDF ? '15px' : '60px',
               fontSize: isPDF ? '11px' : '18px',
               fontWeight: 'normal',
               paddingBottom: isPDF ? '5px' : '0px'

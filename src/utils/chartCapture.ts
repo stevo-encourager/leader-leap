@@ -8,30 +8,68 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
     
     // Wait for chart to fully render
     setTimeout(() => {
-      // Try multiple selectors for the radar chart
+      // Updated selectors to match actual Recharts DOM structure
       const selectors = [
-        '.recharts-surface',
-        'svg.recharts-surface',
+        '[data-testid="radar-chart-container"] .recharts-wrapper svg',
+        '[data-testid="radar-chart-container"] svg',
+        '.radar-chart-container .recharts-wrapper svg',
+        '.radar-chart-container svg',
         '.recharts-wrapper svg',
-        '[data-testid="radar-chart"] svg',
-        '.recharts-radar-chart svg',
-        '.recharts-container svg'
+        'svg.recharts-surface',
+        '.recharts-surface',
+        '.recharts-responsive-container svg',
+        '.recharts-container .recharts-surface',
+        'div[style*="position: relative"] svg',
+        'svg[class*="recharts"]',
+        'svg'
       ];
       
       let chartElement: SVGElement | null = null;
       
+      // Debug: Log all SVG elements found
+      const allSvgs = document.querySelectorAll('svg');
+      console.log('ChartCapture: Found', allSvgs.length, 'SVG elements in DOM');
+      allSvgs.forEach((svg, index) => {
+        console.log(`ChartCapture: SVG ${index}:`, {
+          className: svg.className.baseVal || svg.className,
+          id: svg.id,
+          parentClass: svg.parentElement?.className,
+          width: svg.getAttribute('width'),
+          height: svg.getAttribute('height'),
+          viewBox: svg.getAttribute('viewBox')
+        });
+      });
+      
+      // Try to find the radar chart SVG
       for (const selector of selectors) {
         const element = document.querySelector(selector) as SVGElement;
         if (element && element.tagName.toLowerCase() === 'svg') {
-          chartElement = element;
-          console.log('ChartCapture: Found chart SVG element with selector:', selector);
-          console.log('ChartCapture: SVG dimensions:', {
-            width: element.getAttribute('width'),
-            height: element.getAttribute('height'),
-            viewBox: element.getAttribute('viewBox'),
-            boundingRect: element.getBoundingClientRect()
-          });
-          break;
+          // Additional validation to ensure this is likely the radar chart
+          const hasRadarElements = element.querySelector('g[class*="recharts-radar"]') || 
+                                   element.querySelector('g[class*="recharts-polar"]') ||
+                                   element.querySelector('polygon') ||
+                                   element.querySelector('path[d*="M"]');
+          
+          if (hasRadarElements) {
+            chartElement = element;
+            console.log('ChartCapture: Found radar chart SVG element with selector:', selector);
+            console.log('ChartCapture: SVG has radar elements:', !!hasRadarElements);
+            break;
+          } else {
+            console.log('ChartCapture: SVG found but no radar elements detected with selector:', selector);
+          }
+        }
+      }
+      
+      // If no specific radar chart found, try the first SVG with reasonable dimensions
+      if (!chartElement && allSvgs.length > 0) {
+        for (const svg of allSvgs) {
+          const rect = svg.getBoundingClientRect();
+          if (rect.width > 200 && rect.height > 200) { // Reasonable chart size
+            chartElement = svg as SVGElement;
+            console.log('ChartCapture: Using first large SVG as fallback');
+            break;
+          }
         }
       }
       
@@ -41,6 +79,15 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
           const found = document.querySelectorAll(selector);
           console.log(`ChartCapture: ${selector} found ${found.length} elements`);
         });
+        
+        // Debug: Show current page structure
+        const radarContainer = document.querySelector('[data-testid="radar-chart-container"]');
+        if (radarContainer) {
+          console.log('ChartCapture: Radar container found:', radarContainer.innerHTML.substring(0, 500));
+        } else {
+          console.log('ChartCapture: No radar container found');
+        }
+        
         resolve(null);
         return;
       }
@@ -52,6 +99,7 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         const svgHeight = svgRect.height || parseInt(chartElement.getAttribute('height') || '400');
         
         console.log('ChartCapture: Using dimensions:', { svgWidth, svgHeight });
+        console.log('ChartCapture: SVG bounding rect:', svgRect);
         
         // Clone the SVG to avoid modifying the original
         const clonedSvg = chartElement.cloneNode(true) as SVGElement;
@@ -74,7 +122,7 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
           // Copy important style properties
           const importantProps = [
             'fill', 'stroke', 'stroke-width', 'font-family', 'font-size', 
-            'font-weight', 'color', 'opacity', 'transform'
+            'font-weight', 'color', 'opacity', 'transform', 'stroke-dasharray'
           ];
           
           importantProps.forEach(prop => {
@@ -100,7 +148,15 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         // Convert SVG to data URL
         const svgData = new XMLSerializer().serializeToString(clonedSvg);
         console.log('ChartCapture: SVG data length:', svgData.length);
-        console.log('ChartCapture: SVG data preview:', svgData.substring(0, 200) + '...');
+        console.log('ChartCapture: SVG data preview:', svgData.substring(0, 300) + '...');
+        
+        // Validate SVG content
+        const hasContent = svgData.includes('polygon') || svgData.includes('path') || svgData.includes('circle');
+        if (!hasContent) {
+          console.warn('ChartCapture: SVG appears to be empty or invalid');
+          resolve(null);
+          return;
+        }
         
         const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
         const svgUrl = URL.createObjectURL(svgBlob);
@@ -158,7 +214,7 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         console.error('ChartCapture: Error capturing radar chart:', error);
         resolve(null);
       }
-    }, 2000); // Increased wait time for chart to fully render
+    }, 2000); // Wait for chart to fully render
   });
 };
 
@@ -177,6 +233,8 @@ export const testChartCapture = async (): Promise<void> => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    
+    console.log('ChartCapture: Test image downloaded for verification');
   } else {
     console.error('ChartCapture: Test failed - no chart captured');
   }

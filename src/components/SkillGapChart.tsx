@@ -236,9 +236,9 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
     ? { top: 5, right: 25, left: 25, bottom: 45 } // Further reduced bottom margin
     : { top: 50, right: 100, left: 100, bottom: 50 };
 
-  // Radar chart implementation with PDF-optimized settings
+  // Radar chart implementation with PDF-optimized settings and unique identifier
   return (
-    <div className={`radar-chart-container ${className} page-break-avoid`}>
+    <div className={`radar-chart-container ${className} page-break-avoid`} data-testid="radar-chart-container">
       <ResponsiveContainer width="100%" height="100%">
         <RadarChart 
           data={validChartData} 

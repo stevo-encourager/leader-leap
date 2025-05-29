@@ -363,14 +363,14 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             strokeWidth={2}
           />
           <Tooltip />
-          {/* Only show Legend for dashboard (not PDF) */}
+          {/* Only show Legend for dashboard (not PDF) with increased spacing from chart */}
           {!isPDF && (
             <Legend 
               layout="horizontal"
               verticalAlign="bottom"
               align="center"
               wrapperStyle={{
-                marginTop: '60px',
+                marginTop: '80px', // Increased from 60px to 80px for more space
                 fontSize: '18px',
                 fontWeight: 'normal'
               }}

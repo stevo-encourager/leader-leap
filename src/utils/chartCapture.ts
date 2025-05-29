@@ -1,7 +1,7 @@
 
 import html2canvas from 'html2canvas';
 
-// Restore the working radar chart capture logic from 11:11 version
+// Restore the exact working radar chart capture logic from 11:11 version
 export const captureRadarChartAsPNG = async (): Promise<string | null> => {
   return new Promise((resolve) => {
     console.log('ChartCapture: Starting radar chart capture process...');
@@ -10,7 +10,7 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
     setTimeout(async () => {
       console.log('ChartCapture: Looking for radar chart container...');
       
-      // Try multiple selectors to find the chart
+      // Try multiple selectors to find the chart - prioritize the most specific ones first
       const selectors = [
         '[data-testid="radar-chart-container"]',
         '[data-chart-type="radar"]',

@@ -1,4 +1,3 @@
-
 import React, { useMemo, useRef, useEffect } from 'react';
 import { 
   ResponsiveContainer,
@@ -6,8 +5,7 @@ import {
   PolarGrid, 
   PolarAngleAxis, 
   Radar,
-  Tooltip,
-  Legend
+  Tooltip
 } from 'recharts';
 import { Category } from '@/utils/assessmentTypes';
 import { Button } from '@/components/ui/button';
@@ -350,7 +348,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
   // Log DOM structure for debugging chart capture
   console.log("SkillGapChart - About to render with testid 'radar-chart-container'");
 
-  // Radar chart implementation with PDF-specific perfect circle configuration
+  // Radar chart implementation - removed Legend component to eliminate duplicate legend
   return (
     <div 
       ref={chartContainerRef}
@@ -408,17 +406,6 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             strokeWidth={2}
           />
           <Tooltip />
-          <Legend 
-            layout="horizontal"
-            verticalAlign="bottom"
-            align="center"
-            wrapperStyle={{
-              marginTop: isPDF ? '15px' : '60px',
-              fontSize: isPDF ? '11px' : '18px',
-              fontWeight: 'normal',
-              paddingBottom: isPDF ? '5px' : '0px'
-            }}
-          />
         </RadarChart>
       </ResponsiveContainer>
     </div>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import { Category, Demographics } from '@/utils/assessmentTypes';
@@ -19,7 +18,6 @@ const styles = StyleSheet.create({
   },
   logo: {
     maxWidth: 200,
-    maxHeight: 60,
     marginBottom: 10,
     alignSelf: 'center',
   },
@@ -351,10 +349,9 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
         <View style={styles.coachingContainer}>
           <View style={styles.coachingText}>
             <Text style={styles.text}>Ready to take your leadership skills to the next level? Our expert coaches can help you:</Text>
-            <Text style={styles.listItem}>• Create personalized development plans</Text>
-            <Text style={styles.listItem}>• Practice new skills in a safe environment</Text>
-            <Text style={styles.listItem}>• Overcome specific leadership challenges</Text>
-            <Text style={styles.listItem}>• Track your progress over time</Text>
+            <Text style={styles.listItem}>• Learn how to lean into your strengths to achieve your goals</Text>
+            <Text style={styles.listItem}>• Understand yourself better and eliminate self-limiting beliefs or obstacles that hold you back</Text>
+            <Text style={styles.listItem}>• Establish accountability for practice and reflection</Text>
             
             <Text style={[styles.boldText, { marginTop: 10 }]}>Book a free 30-minute discovery call now</Text>
             <Text style={styles.linkText}>www.encouragercoaching.com</Text>

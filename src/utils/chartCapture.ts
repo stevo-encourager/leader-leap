@@ -104,8 +104,8 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         // Clone the SVG to avoid modifying the original
         const clonedSvg = chartElement.cloneNode(true) as SVGElement;
         
-        // Set explicit dimensions and viewBox - improved aspect ratio
-        const finalWidth = Math.max(svgWidth, 420); // Ensure minimum width for better aspect ratio
+        // Set explicit dimensions and viewBox - wider chart for better balance
+        const finalWidth = Math.max(svgWidth, 480); // Increased width for better aspect ratio
         const finalHeight = Math.max(svgHeight, 350);
         
         clonedSvg.setAttribute('width', finalWidth.toString());
@@ -164,7 +164,7 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
         const svgUrl = URL.createObjectURL(svgBlob);
         
-        // Create canvas for high-quality rendering with improved aspect ratio
+        // Create canvas for high-quality rendering with wider aspect ratio
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         
@@ -174,7 +174,7 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
           return;
         }
         
-        // Set high resolution for better quality with improved dimensions
+        // Set high resolution for better quality with wider dimensions
         const scale = 2;
         canvas.width = finalWidth * scale;
         canvas.height = finalHeight * scale;
@@ -197,7 +197,7 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
           
           // Validate that we actually have image data
           if (pngDataUrl.length > 1000) { // Basic validation
-            console.log('ChartCapture: Successfully captured radar chart as PNG with improved dimensions');
+            console.log('ChartCapture: Successfully captured radar chart as PNG with wider dimensions');
             resolve(pngDataUrl);
           } else {
             console.error('ChartCapture: Generated PNG seems too small, might be empty');

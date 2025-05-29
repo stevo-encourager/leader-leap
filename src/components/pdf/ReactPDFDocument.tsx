@@ -72,12 +72,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
   },
   chartImage: {
-    width: 420,
+    width: 480,
     height: 350,
     marginBottom: 10,
   },
   chartPlaceholder: {
-    width: 420,
+    width: 480,
     height: 350,
     backgroundColor: '#f3f4f6',
     border: '2px dashed #d1d5db',

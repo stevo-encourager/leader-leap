@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import { Category, Demographics } from '@/utils/assessmentTypes';
@@ -32,6 +33,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#64748b',
     textAlign: 'center',
+    marginBottom: 20,
+  },
+  leftAlignedSubtitle: {
+    fontSize: 12,
+    color: '#64748b',
+    textAlign: 'left',
     marginBottom: 20,
   },
   sectionTitle: {
@@ -132,6 +139,7 @@ const styles = StyleSheet.create({
     maxWidth: 150,
     maxHeight: 200,
     alignSelf: 'flex-start',
+    borderRadius: 8,
   },
   linkText: {
     fontSize: 12,
@@ -150,6 +158,11 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#e2e8f0',
     paddingTop: 8,
+  },
+  bottomLogo: {
+    maxWidth: 120,
+    marginTop: 8,
+    alignSelf: 'center',
   },
 });
 
@@ -266,7 +279,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
       {/* Page 2 - AI Insights */}
       <Page size="A4" style={styles.page}>
         <Text style={styles.sectionTitle}>AI-Powered Insights</Text>
-        <Text style={styles.subtitle}>Personalized leadership development insights powered by Encourager GPT</Text>
+        <Text style={styles.leftAlignedSubtitle}>Personalized leadership development insights powered by Encourager GPT</Text>
 
         {parsedInsights ? (
           <View>
@@ -343,6 +356,12 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
             
             <Text style={[styles.boldText, { marginTop: 10 }]}>Book a free 30-minute discovery call now</Text>
             <Text style={styles.linkText}>www.encouragercoaching.com</Text>
+            
+            {/* Logo added underneath the web link */}
+            <Image 
+              style={styles.bottomLogo}
+              src="/lovable-uploads/db40277e-6ff0-437e-acf2-faaa2d92671e.png"
+            />
           </View>
           
           <Image 

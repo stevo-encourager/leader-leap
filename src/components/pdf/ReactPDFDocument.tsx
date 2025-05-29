@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import { Category, Demographics } from '@/utils/assessmentTypes';
@@ -73,12 +72,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
   },
   chartImage: {
-    width: 350,
+    width: 420,
     height: 350,
     marginBottom: 10,
   },
   chartPlaceholder: {
-    width: 350,
+    width: 420,
     height: 350,
     backgroundColor: '#f3f4f6',
     border: '2px dashed #d1d5db',
@@ -227,15 +226,14 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
               <Image 
                 style={styles.chartImage} 
                 src={chartImageDataUrl}
-                debug={true}
               />
               <View style={styles.chartLegend}>
                 <View style={styles.legendItem}>
-                  <View style={[styles.legendColor, { backgroundColor: '#3b82f6' }]} />
+                  <View style={[styles.legendColor, { backgroundColor: '#2F564D' }]} />
                   <Text style={styles.legendText}>Current State</Text>
                 </View>
                 <View style={styles.legendItem}>
-                  <View style={[styles.legendColor, { backgroundColor: '#ef4444' }]} />
+                  <View style={[styles.legendColor, { backgroundColor: '#8baca5' }]} />
                   <Text style={styles.legendText}>Desired State</Text>
                 </View>
               </View>

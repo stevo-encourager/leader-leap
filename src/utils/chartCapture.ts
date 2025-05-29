@@ -104,14 +104,17 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         // Clone the SVG to avoid modifying the original
         const clonedSvg = chartElement.cloneNode(true) as SVGElement;
         
-        // Set explicit dimensions and viewBox
-        clonedSvg.setAttribute('width', svgWidth.toString());
-        clonedSvg.setAttribute('height', svgHeight.toString());
+        // Set explicit dimensions and viewBox - improved aspect ratio
+        const finalWidth = Math.max(svgWidth, 420); // Ensure minimum width for better aspect ratio
+        const finalHeight = Math.max(svgHeight, 350);
+        
+        clonedSvg.setAttribute('width', finalWidth.toString());
+        clonedSvg.setAttribute('height', finalHeight.toString());
         clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
         
         // Ensure viewBox is set correctly
         if (!clonedSvg.getAttribute('viewBox')) {
-          clonedSvg.setAttribute('viewBox', `0 0 ${svgWidth} ${svgHeight}`);
+          clonedSvg.setAttribute('viewBox', `0 0 ${finalWidth} ${finalHeight}`);
         }
         
         // Inline all styles to ensure they're preserved
@@ -161,7 +164,7 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
         const svgUrl = URL.createObjectURL(svgBlob);
         
-        // Create canvas for high-quality rendering
+        // Create canvas for high-quality rendering with improved aspect ratio
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         
@@ -171,30 +174,30 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
           return;
         }
         
-        // Set high resolution for better quality
+        // Set high resolution for better quality with improved dimensions
         const scale = 2;
-        canvas.width = svgWidth * scale;
-        canvas.height = svgHeight * scale;
+        canvas.width = finalWidth * scale;
+        canvas.height = finalHeight * scale;
         ctx.scale(scale, scale);
         
-        // Set white background
+        // Set white background (clean, no borders)
         ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, svgWidth, svgHeight);
+        ctx.fillRect(0, 0, finalWidth, finalHeight);
         
         const img = new Image();
         img.onload = () => {
           console.log('ChartCapture: Image loaded successfully');
-          ctx.drawImage(img, 0, 0, svgWidth, svgHeight);
+          ctx.drawImage(img, 0, 0, finalWidth, finalHeight);
           URL.revokeObjectURL(svgUrl);
           
-          // Convert to high-quality PNG
+          // Convert to high-quality PNG (clean output, no overlays)
           const pngDataUrl = canvas.toDataURL('image/png', 1.0);
           console.log('ChartCapture: PNG data URL length:', pngDataUrl.length);
           console.log('ChartCapture: PNG data URL preview:', pngDataUrl.substring(0, 100) + '...');
           
           // Validate that we actually have image data
           if (pngDataUrl.length > 1000) { // Basic validation
-            console.log('ChartCapture: Successfully captured radar chart as PNG');
+            console.log('ChartCapture: Successfully captured radar chart as PNG with improved dimensions');
             resolve(pngDataUrl);
           } else {
             console.error('ChartCapture: Generated PNG seems too small, might be empty');

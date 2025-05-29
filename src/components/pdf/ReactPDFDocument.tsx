@@ -205,8 +205,8 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
     day: 'numeric'
   });
 
-  // Enhanced chart image logging with detailed debugging for 11:11 version restoration
-  console.log('ReactPDFDocument: Chart image data received (11:11 version debug):', {
+  // Enhanced chart image logging with detailed debugging
+  console.log('ReactPDFDocument: Chart image data received:', {
     hasChartData: !!chartImageDataUrl,
     dataUrlLength: chartImageDataUrl?.length || 0,
     dataUrlPreview: chartImageDataUrl?.substring(0, 100) || 'No data',
@@ -267,20 +267,35 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
         <Text style={styles.text}><Text style={styles.boldText}>Overall Development Gap:</Text> {averageGap.toFixed(2)} points</Text>
         <Text style={styles.text}>Assessment completed across {categories.length} competency areas</Text>
 
-        {/* Enhanced Chart section with better error handling and 11:11 version logic restoration */}
+        {/* Enhanced Chart section with better error handling and improved messaging */}
         <Text style={[styles.sectionTitle, { marginTop: 15 }]}>Competency Analysis - Radar Chart</Text>
         
         <View style={styles.chartContainer}>
           {chartImageDataUrl && chartImageDataUrl.startsWith('data:image/') ? (
-            <Image 
-              style={styles.chartImage}
-              src={chartImageDataUrl}
-            />
+            <>
+              <Image 
+                style={styles.chartImage}
+                src={chartImageDataUrl}
+              />
+              <View style={styles.chartLegend}>
+                <View style={styles.legendItem}>
+                  <View style={[styles.legendColor, { backgroundColor: '#2F564D' }]} />
+                  <Text style={styles.legendText}>Current Level</Text>
+                </View>
+                <View style={styles.legendItem}>
+                  <View style={[styles.legendColor, { backgroundColor: '#8baca5' }]} />
+                  <Text style={styles.legendText}>Desired Level</Text>
+                </View>
+              </View>
+            </>
           ) : (
             <View style={styles.chartPlaceholder}>
-              <Text style={styles.text}>Radar chart visualization shows your current vs desired competency levels</Text>
-              <Text style={[styles.text, { fontSize: 10, color: '#64748b', marginTop: 10 }]}>
-                Chart image could not be captured - this may indicate a technical issue with chart rendering
+              <Text style={[styles.text, { textAlign: 'center', marginBottom: 10 }]}>
+                Radar Chart Visualization
+              </Text>
+              <Text style={[styles.text, { textAlign: 'center', fontSize: 10, color: '#64748b' }]}>
+                The radar chart shows your current vs desired competency levels across all leadership areas.
+                {!chartImageDataUrl ? " Chart image could not be captured for this PDF export." : " Invalid chart data format."}
               </Text>
             </View>
           )}

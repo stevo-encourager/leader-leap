@@ -24,14 +24,20 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
       // Try each selector and pick the first one with content
       for (const selector of selectors) {
         const elements = document.querySelectorAll(selector);
+        console.log(`ChartCapture: Checking selector "${selector}" - found ${elements.length} elements`);
+        
         for (let i = 0; i < elements.length; i++) {
           const element = elements[i] as HTMLElement;
+          
+          // First check if the element itself has dimensions
           if (element && element.offsetWidth > 0 && element.offsetHeight > 0) {
             // Check if it contains an SVG (which means it's the actual chart)
             const svg = element.querySelector('svg');
             if (svg) {
               // For SVG elements, check getBoundingClientRect instead of offsetWidth
               const svgRect = svg.getBoundingClientRect();
+              console.log(`ChartCapture: SVG found with dimensions: ${svgRect.width}x${svgRect.height}`);
+              
               if (svgRect.width > 0 && svgRect.height > 0) {
                 chartContainer = element;
                 console.log(`ChartCapture: Found valid chart container using selector: ${selector}`);
@@ -79,7 +85,18 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
       
       try {
         // Wait for any animations or transitions to complete
+        console.log('ChartCapture: Waiting for chart rendering to complete...');
         await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Double-check that the chart is still valid before capture
+        const finalSvgRect = svg?.getBoundingClientRect();
+        if (!finalSvgRect || finalSvgRect.width === 0 || finalSvgRect.height === 0) {
+          console.error('ChartCapture: Chart became invalid during wait period');
+          resolve(null);
+          return;
+        }
+        
+        console.log('ChartCapture: Starting html2canvas capture...');
         
         // Capture with optimized settings for SVG content
         const canvas = await html2canvas(chartContainer, {

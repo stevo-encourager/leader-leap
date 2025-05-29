@@ -29,48 +29,40 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         for (let i = 0; i < elements.length; i++) {
           const element = elements[i] as HTMLElement;
           
-          // Check if the element itself has dimensions using multiple methods
-          const hasOffsetDimensions = element.offsetWidth > 0 && element.offsetHeight > 0;
+          // Check if the element itself has dimensions using getBoundingClientRect
           const rect = element.getBoundingClientRect();
           const hasBoundingRect = rect.width > 0 && rect.height > 0;
           
           console.log(`ChartCapture: Element ${i} dimensions:`, {
-            offsetWidth: element.offsetWidth,
-            offsetHeight: element.offsetHeight,
             boundingWidth: rect.width,
             boundingHeight: rect.height,
-            hasOffsetDimensions,
             hasBoundingRect
           });
           
-          // Element is valid if it has any kind of positive dimensions
-          if (hasOffsetDimensions || hasBoundingRect) {
+          // Element is valid if it has positive dimensions
+          if (hasBoundingRect) {
             // Check if it contains an SVG (which means it's the actual chart)
             const svg = element.querySelector('svg');
             if (svg) {
               console.log('ChartCapture: SVG found, checking SVG dimensions...');
               
-              // For SVG, be more lenient - check both methods
+              // For SVG, use getBoundingClientRect only
               const svgRect = svg.getBoundingClientRect();
-              const svgHasOffset = svg.offsetWidth > 0 && svg.offsetHeight > 0;
               const svgHasBounding = svgRect.width > 0 && svgRect.height > 0;
               
               console.log(`ChartCapture: SVG dimensions:`, {
-                offsetWidth: svg.offsetWidth,
-                offsetHeight: svg.offsetHeight,
                 boundingWidth: svgRect.width,
                 boundingHeight: svgRect.height,
-                svgHasOffset,
                 svgHasBounding
               });
               
-              // Accept SVG if it has any positive dimensions or if parent container is valid
-              if (svgHasOffset || svgHasBounding || hasOffsetDimensions) {
+              // Accept SVG if it has positive dimensions or if parent container is valid
+              if (svgHasBounding || hasBoundingRect) {
                 chartContainer = element;
                 console.log(`ChartCapture: Found valid chart container using selector: ${selector}`);
                 break;
               }
-            } else if (hasOffsetDimensions) {
+            } else if (hasBoundingRect) {
               // Even without SVG, if container has dimensions, it might be valid
               console.log('ChartCapture: No SVG found but container has dimensions, accepting as fallback');
               chartContainer = element;
@@ -94,7 +86,6 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
           console.log(`Element ${index}:`, {
             className: htmlEl.className,
             testId: htmlEl.getAttribute('data-testid'),
-            offsetDimensions: `${htmlEl.offsetWidth}x${htmlEl.offsetHeight}`,
             boundingDimensions: `${rect.width}x${rect.height}`,
             hasSVG: !!svg,
             svgContent: svg ? 'SVG present' : 'No SVG'
@@ -111,7 +102,6 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
       console.log('ChartCapture: Found chart container:', {
         element: chartContainer.tagName,
         className: chartContainer.className,
-        offsetDimensions: `${chartContainer.offsetWidth}x${chartContainer.offsetHeight}`,
         boundingDimensions: `${containerRect.width}x${containerRect.height}`,
         hasSVG: !!svg
       });
@@ -123,8 +113,7 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         
         // Double-check that the container is still valid before capture
         const finalRect = chartContainer.getBoundingClientRect();
-        const stillValid = (chartContainer.offsetWidth > 0 && chartContainer.offsetHeight > 0) || 
-                          (finalRect.width > 0 && finalRect.height > 0);
+        const stillValid = finalRect.width > 0 && finalRect.height > 0;
         
         if (!stillValid) {
           console.error('ChartCapture: Chart container became invalid during wait period');
@@ -141,8 +130,8 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
           useCORS: true,
           allowTaint: false,
           logging: false,
-          width: chartContainer.offsetWidth || Math.round(containerRect.width),
-          height: chartContainer.offsetHeight || Math.round(containerRect.height),
+          width: Math.round(containerRect.width),
+          height: Math.round(containerRect.height),
           scrollX: 0,
           scrollY: 0,
           windowWidth: window.innerWidth,

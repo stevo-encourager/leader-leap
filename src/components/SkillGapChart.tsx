@@ -303,15 +303,15 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
 
   console.log("SkillGapChart - Rendering radar chart with data:", validChartData);
 
-  // Adjusted margins to accommodate increased label spacing
+  // Adjusted margins to accommodate increased label spacing and legend spacing
   const chartMargins = isPDF 
-    ? { top: 30, right: 70, left: 70, bottom: 70 } // Increased margins for PDF
-    : { top: 60, right: 120, left: 120, bottom: 60 }; // Increased margins for dashboard
+    ? { top: 30, right: 70, left: 70, bottom: 70 } // Keep PDF margins as is
+    : { top: 60, right: 120, left: 120, bottom: 120 }; // Increased bottom margin for dashboard to make room for legend
 
   // PDF-specific centering and sizing - adjusted for new spacing
   const centerX = isPDF ? "50%" : "50%";
-  const centerY = isPDF ? "50%" : "45%";
-  const outerRadius = isPDF ? "65%" : "80%"; // Slightly reduced to accommodate larger margins
+  const centerY = isPDF ? "50%" : "40%"; // Move chart up slightly in dashboard to accommodate legend space
+  const outerRadius = isPDF ? "65%" : "70%"; // Slightly reduced to accommodate larger margins
 
   // Enhanced radar chart with proper capture attributes - this is critical for the capture to work
   return (
@@ -323,7 +323,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
       style={{
         width: '100%',
         height: '100%',
-        minHeight: isPDF ? '400px' : '500px',
+        minHeight: isPDF ? '400px' : '550px', // Increased dashboard height to accommodate legend spacing
         position: 'relative'
       }}
     >
@@ -363,14 +363,14 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             strokeWidth={2}
           />
           <Tooltip />
-          {/* Only show Legend for dashboard (not PDF) with increased spacing from chart */}
+          {/* Only show Legend for dashboard (not PDF) with proper positioning */}
           {!isPDF && (
             <Legend 
               layout="horizontal"
               verticalAlign="bottom"
               align="center"
               wrapperStyle={{
-                marginTop: '80px', // Increased from 60px to 80px for more space
+                paddingTop: '40px', // Use padding instead of margin for better control
                 fontSize: '18px',
                 fontWeight: 'normal'
               }}

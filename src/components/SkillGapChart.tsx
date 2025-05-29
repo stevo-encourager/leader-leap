@@ -236,9 +236,16 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
     ? { top: 5, right: 25, left: 25, bottom: 45 } // Further reduced bottom margin
     : { top: 50, right: 100, left: 100, bottom: 50 };
 
-  // Radar chart implementation with PDF-optimized settings and unique identifier
+  // Log DOM structure for debugging chart capture
+  console.log("SkillGapChart - About to render with testid 'radar-chart-container'");
+
+  // Radar chart implementation with PDF-optimized settings and explicit data-testid
   return (
-    <div className={`radar-chart-container ${className} page-break-avoid`} data-testid="radar-chart-container">
+    <div 
+      className={`radar-chart-container ${className} page-break-avoid`} 
+      data-testid="radar-chart-container"
+      data-chart-type="radar"
+    >
       <ResponsiveContainer width="100%" height="100%">
         <RadarChart 
           data={validChartData} 
@@ -246,6 +253,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
           cx="50%" 
           cy={isPDF ? "38%" : "45%"} // Optimized position for tighter spacing
           outerRadius={isPDF ? "52%" : "75%"} // Slightly larger to fill space better
+          className="recharts-radar-chart"
         >
           <PolarGrid 
             strokeDasharray="2 2" 

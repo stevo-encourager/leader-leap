@@ -68,7 +68,7 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
       
       console.log('ChartCapture: Found radar chart container:', radarContainer);
       
-      // Get all SVGs inside the radar chart container
+      // Get all SVGs inside the radar chart container using the confirmed working selector
       const svgsInContainer = radarContainer.querySelectorAll('svg');
       console.log(`ChartCapture: Found ${svgsInContainer.length} SVGs in radar chart container`);
       
@@ -118,17 +118,17 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
       try {
         // Get the SVG's computed styles and dimensions
         const svgRect = selectedSvg.getBoundingClientRect();
-        const svgWidth = svgRect.width || parseInt(selectedSvg.getAttribute('width') || '480');
-        const svgHeight = svgRect.height || parseInt(selectedSvg.getAttribute('height') || '350');
+        const svgWidth = svgRect.width || parseInt(selectedSvg.getAttribute('width') || '600');
+        const svgHeight = svgRect.height || parseInt(selectedSvg.getAttribute('height') || '400');
         
         console.log('ChartCapture: Using radar chart SVG with dimensions:', { svgWidth, svgHeight });
         
         // Clone the SVG to avoid modifying the original
         const clonedSvg = selectedSvg.cloneNode(true) as SVGElement;
         
-        // Set explicit dimensions and viewBox
-        const finalWidth = Math.max(svgWidth, 480);
-        const finalHeight = Math.max(svgHeight, 350);
+        // Set wider dimensions for better proportions in PDF
+        const finalWidth = Math.max(svgWidth, 600); // Increased from 480
+        const finalHeight = Math.max(svgHeight, 400); // Increased from 350
         
         clonedSvg.setAttribute('width', finalWidth.toString());
         clonedSvg.setAttribute('height', finalHeight.toString());

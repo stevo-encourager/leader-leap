@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import { Category, Demographics } from '@/utils/assessmentTypes';
@@ -89,12 +88,13 @@ const styles = StyleSheet.create({
   chartPlaceholder: {
     width: 400,
     height: 300,
-    backgroundColor: '#f3f4f6',
-    border: '2px dashed #d1d5db',
+    backgroundColor: '#f8fafc',
+    border: '2px solid #e2e8f0',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
     alignSelf: 'center',
+    borderRadius: 8,
   },
   chartLegend: {
     flexDirection: 'row',
@@ -160,9 +160,9 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   bottomLogo: {
-    maxWidth: 200, // Match the top logo size exactly
+    maxWidth: 200,
     marginTop: 8,
-    alignSelf: 'flex-start', // Left-align the bottom logo
+    alignSelf: 'flex-start',
   },
 });
 
@@ -205,12 +205,11 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
     day: 'numeric'
   });
 
-  // Enhanced chart image logging with detailed debugging
-  console.log('ReactPDFDocument: Chart image data received:', {
+  // Enhanced chart image logging
+  console.log('ReactPDFDocument: Chart data validation:', {
     hasChartData: !!chartImageDataUrl,
     dataUrlLength: chartImageDataUrl?.length || 0,
-    dataUrlPreview: chartImageDataUrl?.substring(0, 100) || 'No data',
-    isValidDataUrl: chartImageDataUrl?.startsWith('data:image/') || false,
+    isValidFormat: chartImageDataUrl?.startsWith('data:image/') || false,
     timestamp: new Date().toISOString()
   });
 
@@ -267,7 +266,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
         <Text style={styles.text}><Text style={styles.boldText}>Overall Development Gap:</Text> {averageGap.toFixed(2)} points</Text>
         <Text style={styles.text}>Assessment completed across {categories.length} competency areas</Text>
 
-        {/* Enhanced Chart section with better error handling and improved messaging */}
+        {/* Enhanced Chart section with guaranteed visibility */}
         <Text style={[styles.sectionTitle, { marginTop: 15 }]}>Competency Analysis - Radar Chart</Text>
         
         <View style={styles.chartContainer}>
@@ -290,12 +289,14 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
             </>
           ) : (
             <View style={styles.chartPlaceholder}>
-              <Text style={[styles.text, { textAlign: 'center', marginBottom: 10 }]}>
-                Radar Chart Visualization
+              <Text style={[styles.text, { textAlign: 'center', marginBottom: 10, fontSize: 14, fontWeight: 'bold', color: '#374151' }]}>
+                Competency Radar Chart
               </Text>
-              <Text style={[styles.text, { textAlign: 'center', fontSize: 10, color: '#64748b' }]}>
-                The radar chart shows your current vs desired competency levels across all leadership areas.
-                {!chartImageDataUrl ? " Chart image could not be captured for this PDF export." : " Invalid chart data format."}
+              <Text style={[styles.text, { textAlign: 'center', fontSize: 11, color: '#64748b', maxWidth: 300 }]}>
+                Your radar chart visualization shows the gap between current and desired competency levels across all leadership areas.
+              </Text>
+              <Text style={[styles.text, { textAlign: 'center', fontSize: 10, color: '#9ca3af', marginTop: 8 }]}>
+                Chart capture was unavailable during PDF generation.
               </Text>
             </View>
           )}

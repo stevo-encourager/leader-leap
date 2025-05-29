@@ -29,10 +29,14 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
           if (element && element.offsetWidth > 0 && element.offsetHeight > 0) {
             // Check if it contains an SVG (which means it's the actual chart)
             const svg = element.querySelector('svg');
-            if (svg && svg.offsetWidth > 0) {
-              chartContainer = element;
-              console.log(`ChartCapture: Found valid chart container using selector: ${selector}`);
-              break;
+            if (svg) {
+              // For SVG elements, check getBoundingClientRect instead of offsetWidth
+              const svgRect = svg.getBoundingClientRect();
+              if (svgRect.width > 0 && svgRect.height > 0) {
+                chartContainer = element;
+                console.log(`ChartCapture: Found valid chart container using selector: ${selector}`);
+                break;
+              }
             }
           }
         }
@@ -47,11 +51,14 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         console.log('ChartCapture: Available chart-related elements:', allContainers.length);
         allContainers.forEach((el, index) => {
           const htmlEl = el as HTMLElement;
+          const svg = htmlEl.querySelector('svg');
+          const svgRect = svg?.getBoundingClientRect();
           console.log(`Element ${index}:`, {
             className: htmlEl.className,
             testId: htmlEl.getAttribute('data-testid'),
             dimensions: `${htmlEl.offsetWidth}x${htmlEl.offsetHeight}`,
-            hasSVG: !!htmlEl.querySelector('svg')
+            hasSVG: !!svg,
+            svgDimensions: svgRect ? `${svgRect.width}x${svgRect.height}` : 'N/A'
           });
         });
         
@@ -59,11 +66,15 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         return;
       }
       
+      const svg = chartContainer.querySelector('svg');
+      const svgRect = svg?.getBoundingClientRect();
+      
       console.log('ChartCapture: Found chart container:', {
         element: chartContainer.tagName,
         className: chartContainer.className,
         dimensions: `${chartContainer.offsetWidth}x${chartContainer.offsetHeight}`,
-        hasSVG: !!chartContainer.querySelector('svg')
+        hasSVG: !!svg,
+        svgDimensions: svgRect ? `${svgRect.width}x${svgRect.height}` : 'N/A'
       });
       
       try {

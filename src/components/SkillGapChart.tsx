@@ -1,4 +1,3 @@
-
 import React, { useMemo, useRef, useEffect } from 'react';
 import { 
   ResponsiveContainer,
@@ -33,7 +32,7 @@ const CustomTick = (props: any) => {
   // Calculate angle from center to current position
   const angle = Math.atan2(y - cy, x - cx);
   
-  // Use much more conservative radius for PDF to prevent clipping
+  // Keep label radius consistent for both web and PDF to maintain distance
   const labelRadius = isPDF ? 120 : 175;
   
   const labelX = cx + labelRadius * Math.cos(angle);
@@ -337,15 +336,15 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
 
   console.log("SkillGapChart - Rendering radar chart with data:", validChartData);
 
-  // Further reduced margins for PDF to minimize bottom space
+  // Optimized margins to accommodate wider radar plot while keeping labels close
   const chartMargins = isPDF 
-    ? { top: 5, right: 25, left: 25, bottom: 45 } // Further reduced bottom margin
+    ? { top: 5, right: 25, left: 25, bottom: 45 } 
     : { top: 50, right: 100, left: 100, bottom: 50 };
 
   // Log DOM structure for debugging chart capture
   console.log("SkillGapChart - About to render with testid 'radar-chart-container'");
 
-  // Radar chart implementation with PDF-optimized settings and explicit data-testid
+  // Radar chart implementation with wider radar plot area but consistent label positioning
   return (
     <div 
       ref={chartContainerRef}
@@ -372,8 +371,8 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
           data={validChartData} 
           margin={chartMargins}
           cx="50%" 
-          cy={isPDF ? "38%" : "45%"} // Optimized position for tighter spacing
-          outerRadius={isPDF ? "52%" : "75%"} // Slightly larger to fill space better
+          cy={isPDF ? "38%" : "45%"} 
+          outerRadius={isPDF ? "65%" : "85%"} // Increased radius for wider radar plot area
           className="recharts-radar-chart"
         >
           <PolarGrid 
@@ -408,10 +407,10 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             verticalAlign="bottom"
             align="center"
             wrapperStyle={{
-              marginTop: isPDF ? '20px' : '60px', // Further reduced margin
+              marginTop: isPDF ? '20px' : '60px',
               fontSize: isPDF ? '11px' : '18px',
               fontWeight: 'normal',
-              paddingBottom: isPDF ? '5px' : '0px' // Minimal bottom padding
+              paddingBottom: isPDF ? '5px' : '0px'
             }}
           />
         </RadarChart>

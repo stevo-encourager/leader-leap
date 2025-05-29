@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { ArrowLeft, Download, Plus, Info } from 'lucide-react';
+import { ArrowLeft, Download, Plus, Info, TestTube } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
@@ -41,6 +40,19 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     demographics,
     averageGap,
     assessmentId
+  });
+  
+  // Check if we're in development mode
+  const isDevelopment = process.env.NODE_ENV === 'development' || 
+                       window.location.hostname === 'localhost' || 
+                       window.location.hostname === '127.0.0.1' ||
+                       window.location.port !== '';
+  
+  console.log('ResultsActions: Environment check:', {
+    NODE_ENV: process.env.NODE_ENV,
+    hostname: window.location.hostname,
+    port: window.location.port,
+    isDevelopment
   });
   
   // Enhanced validation to check if we actually have assessment data
@@ -128,17 +140,31 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     return true;
   };
   
-  // Test function for chart capture
+  // Test function for chart capture - Enhanced with better feedback
   const handleTestChartCapture = async () => {
     console.log('ResultsActions: Testing chart capture...');
+    console.log('ResultsActions: Looking for radar chart elements in DOM...');
+    
+    // Log current DOM state for debugging
+    const radarContainer = document.querySelector('[data-testid="radar-chart-container"]');
+    const allSvgs = document.querySelectorAll('svg');
+    
+    console.log('ResultsActions: DOM Analysis:', {
+      radarContainerFound: !!radarContainer,
+      totalSvgElements: allSvgs.length,
+      radarContainerHTML: radarContainer ? radarContainer.outerHTML.substring(0, 200) + '...' : 'Not found'
+    });
+    
     try {
       const chartImageDataUrl = await captureRadarChartAsPNG();
       
       if (chartImageDataUrl) {
         console.log('ResultsActions: Chart capture test successful');
+        console.log('ResultsActions: Image data length:', chartImageDataUrl.length);
+        
         toast({
-          title: "Chart Capture Test Successful",
-          description: "The radar chart was captured successfully. Check console for details.",
+          title: "Chart Capture Test Successful ✅",
+          description: `Chart captured successfully! Data URL length: ${chartImageDataUrl.length} characters. Check console for details.`,
         });
         
         // Create a temporary download to verify the image
@@ -148,19 +174,21 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        
+        console.log('ResultsActions: Test image downloaded for verification');
       } else {
-        console.error('ResultsActions: Chart capture test failed');
+        console.error('ResultsActions: Chart capture test failed - no data returned');
         toast({
-          title: "Chart Capture Test Failed",
-          description: "Could not capture the radar chart. Check console for details.",
+          title: "Chart Capture Test Failed ❌",
+          description: "Could not capture the radar chart. No image data was generated. Check console for details.",
           variant: "destructive",
         });
       }
     } catch (error) {
       console.error('ResultsActions: Chart capture test error:', error);
       toast({
-        title: "Chart Capture Error",
-        description: "An error occurred during chart capture testing.",
+        title: "Chart Capture Error ⚠️",
+        description: `An error occurred during chart capture testing: ${error.message}`,
         variant: "destructive",
       });
     }
@@ -305,15 +333,29 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
         Back to Assessment
       </Button>
       <div className="flex gap-2">
-        {/* Add debug button in development */}
-        {process.env.NODE_ENV === 'development' && (
-          <Button 
-            variant="outline" 
-            onClick={handleTestChartCapture}
-            size="sm"
-          >
-            Test Chart
-          </Button>
+        {/* Enhanced Test Chart button - Always visible and more prominent */}
+        {isDevelopment && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  onClick={handleTestChartCapture}
+                  size="default"
+                  className="flex items-center gap-2 border-2 border-blue-300 text-blue-700 hover:bg-blue-50"
+                >
+                  <TestTube className="h-4 w-4" />
+                  Test Chart Capture
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p className="max-w-xs text-sm">
+                  Development tool: Test if the radar chart can be captured as PNG. 
+                  Check console logs and download result for verification.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         )}
         {!user && (
           <TooltipProvider>

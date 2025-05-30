@@ -32,8 +32,8 @@ const CustomTick = (props: any) => {
   // Calculate angle from center to current position
   const angle = Math.atan2(y - cy, x - cx);
   
-  // Optimized label radius - closer to chart for better visual balance
-  const labelRadius = isPDF ? 100 : 140; // Reduced from 120/200 to 100/140
+  // Adjusted label radius - slightly further out to prevent overlap with chart
+  const labelRadius = isPDF ? 110 : 155; // Increased from 100/140 to 110/155
   
   const labelX = cx + labelRadius * Math.cos(angle);
   const labelY = cy + labelRadius * Math.sin(angle);
@@ -326,8 +326,9 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
         display: 'grid',
         gridTemplateRows: isPDF ? '1fr' : '1fr auto',
         gridTemplateAreas: isPDF ? '"chart"' : '"chart" "legend"',
-        gap: isPDF ? '0' : '24px', // Reduced gap from 60px to 24px for better balance
-        overflow: 'visible'
+        gap: isPDF ? '0' : '16px', // Reduced gap slightly for better spacing
+        overflow: 'visible',
+        paddingBottom: isPDF ? '0' : '20px' // Add bottom padding to prevent legend cropping
       }}
     >
       {/* Chart area with proper grid positioning */}
@@ -389,8 +390,9 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             minHeight: 'auto',
             height: 'auto',
             backgroundColor: 'white',
-            padding: '16px',
-            borderRadius: '8px'
+            padding: '16px 16px 24px 16px', // Extra bottom padding to prevent cropping
+            borderRadius: '8px',
+            marginBottom: '8px' // Additional margin to ensure full visibility
           }}
         >
           {/* Horizontal separator line */}

@@ -14,13 +14,13 @@ const PurposeSection: React.FC = () => {
             <CircleDot className="text-encourager flex-shrink-0 mt-1" size={16} strokeWidth={2} />
             <span className="text-slate-700 leading-relaxed">
               The Leader Leap tool gives you a clear picture of your leadership capabilities today 
-              and helps you chart your growth path across 10 core competencies.
+              and charts your target growth path across 10 core competencies.
             </span>
           </li>
           <li className="flex items-start gap-2">
             <CircleDot className="text-encourager flex-shrink-0 mt-1" size={16} strokeWidth={2} />
             <span className="text-slate-700 leading-relaxed">
-              These insights, enhanced by AI-powered recommendations, then help you create a focused 
+              These insights, enhanced by AI-powered recommendations, help you to create a focused 
               development plan to bridge the gaps and achieve your goals.
             </span>
           </li>

@@ -1,4 +1,3 @@
-
 import jsPDF from 'jspdf';
 import { Category, Demographics } from './assessmentTypes';
 import { calculateAverageGap } from './assessmentCalculations/averages';
@@ -166,7 +165,7 @@ export const generatePDFWithJsPDF = async (
     // Title
     doc.setFontSize(24);
     doc.setFont('helvetica', 'bold');
-    doc.text('Leadership Assessment Results', pageWidth / 2, yPosition, { align: 'center' });
+    doc.text('Leader Leap Assessment Results', pageWidth / 2, yPosition, { align: 'center' });
     yPosition += 15;
 
     // Date
@@ -421,7 +420,7 @@ export const generatePDFWithJsPDF = async (
     yPosition = pageHeight - 20;
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    doc.text('Leadership Assessment Tool • Generated on ' + currentDate, pageWidth / 2, yPosition, { align: 'center' });
+    doc.text('Leader Leap Assessment Tool • Generated on ' + currentDate, pageWidth / 2, yPosition, { align: 'center' });
     doc.text('This assessment is designed to help you identify development opportunities and create targeted improvement plans.', pageWidth / 2, yPosition + 5, { align: 'center' });
 
     // Save the PDF

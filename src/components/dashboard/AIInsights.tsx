@@ -232,11 +232,6 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
               <p className="text-sm text-slate-600 mt-1">
                 Personalized leadership development insights powered by Encourager GPT
               </p>
-              {assessmentId && (
-                <p className="text-xs text-slate-500 mt-1">
-                  Insights stored permanently for assessment: {assessmentId.slice(0, 8)}...
-                </p>
-              )}
             </div>
           </div>
         </div>

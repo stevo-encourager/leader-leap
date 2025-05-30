@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -177,8 +176,8 @@ const Results = () => {
     return <AssessmentLoading />;
   }
 
-  // CRITICAL FIX: Only show error for specific assessment if there's no fallback data available
-  if (assessmentId && specificAssessmentError && (!categories || categories.length === 0)) {
+  // Error state for specific assessment ID
+  if (assessmentId && specificAssessmentError) {
     console.error("Results page - Showing error for specific assessment:", specificAssessmentError);
     return (
       <div className="min-h-screen bg-slate-50">
@@ -220,8 +219,8 @@ const Results = () => {
     finalDisplayDemographics = specificAssessmentData.demographics || {};
     hasValidData = true;
   }
-  // Case 2: Using assessment context (just completed OR fallback for failed specific assessment)
-  else if (categories && categories.length > 0) {
+  // Case 2: Using assessment context (just completed)
+  else if (!assessmentId && categories && categories.length > 0) {
     console.log("Results page - Using context assessment data");
     finalDisplayCategories = categories;
     finalDisplayDemographics = demographics || {};

@@ -1,18 +1,11 @@
+
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { calculateAverageGap } from '@/utils/assessmentCalculations/averages';
 import { generateResourceLink } from '@/utils/resourceMapping';
 
-// Ensure Buffer is available for @react-pdf/renderer
-if (typeof window !== 'undefined' && !window.Buffer) {
-  // Dynamically import and set Buffer
-  import('buffer').then(({ Buffer }) => {
-    window.Buffer = Buffer;
-  });
-}
-
-// Enhanced PDF-compatible styles
+// Define styles for React PDF
 const styles = StyleSheet.create({
   page: {
     flexDirection: 'column',
@@ -86,25 +79,22 @@ const styles = StyleSheet.create({
     marginVertical: 15,
     backgroundColor: '#ffffff',
     width: '100%',
-    minHeight: 320,
   },
   chartImage: {
-    maxWidth: 480,
-    maxHeight: 320,
+    maxWidth: 500,
+    maxHeight: 500,
     marginBottom: 8,
     alignSelf: 'center',
   },
   chartPlaceholder: {
     width: 400,
     height: 300,
-    backgroundColor: '#f8fafc',
-    border: '2px solid #e2e8f0',
+    backgroundColor: '#f3f4f6',
+    border: '2px dashed #d1d5db',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
     alignSelf: 'center',
-    borderRadius: 8,
-    padding: 20,
   },
   chartLegend: {
     flexDirection: 'row',
@@ -170,9 +160,9 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   bottomLogo: {
-    maxWidth: 200,
+    maxWidth: 200, // Match the top logo size exactly
     marginTop: 8,
-    alignSelf: 'flex-start',
+    alignSelf: 'flex-start', // Left-align the bottom logo
   },
 });
 
@@ -215,42 +205,23 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
     day: 'numeric'
   });
 
-  // Enhanced chart image validation with better error handling
-  console.log('ReactPDFDocument: Chart data validation:', {
+  // Enhanced chart image logging with detailed debugging for 11:11 version restoration
+  console.log('ReactPDFDocument: Chart image data received (11:11 version debug):', {
     hasChartData: !!chartImageDataUrl,
     dataUrlLength: chartImageDataUrl?.length || 0,
-    isValidFormat: chartImageDataUrl?.startsWith('data:image/') || false,
-    bufferAvailable: typeof window !== 'undefined' ? !!window.Buffer : false,
+    dataUrlPreview: chartImageDataUrl?.substring(0, 100) || 'No data',
+    isValidDataUrl: chartImageDataUrl?.startsWith('data:image/') || false,
     timestamp: new Date().toISOString()
   });
 
-  // Safely process chart image data with better validation
-  const processedChartData = React.useMemo(() => {
-    if (!chartImageDataUrl || !chartImageDataUrl.startsWith('data:image/png')) {
-      console.warn('ReactPDFDocument: Invalid or missing chart data');
-      return null;
-    }
-
-    try {
-      // Check data URL format more thoroughly
-      const base64Part = chartImageDataUrl.split(',')[1];
-      if (!base64Part || base64Part.length < 100) {
-        console.warn('ReactPDFDocument: Chart data appears to be empty or corrupted');
-        return null;
-      }
-
-      // Size validation - not too large for PDF
-      if (chartImageDataUrl.length > 1000000) { // ~1MB limit
-        console.warn('ReactPDFDocument: Chart image very large, may cause PDF issues');
-      }
-      
-      console.log('ReactPDFDocument: Valid chart image data received, ready for PDF inclusion');
-      return chartImageDataUrl;
-    } catch (error) {
-      console.error('ReactPDFDocument: Error processing chart data:', error);
-      return null;
-    }
-  }, [chartImageDataUrl]);
+  // Log additional context about chart data availability
+  if (!chartImageDataUrl) {
+    console.error('ReactPDFDocument: No chart image data URL provided - chart capture may have failed');
+  } else if (!chartImageDataUrl.startsWith('data:image/')) {
+    console.error('ReactPDFDocument: Invalid chart image data URL format:', chartImageDataUrl?.substring(0, 50));
+  } else {
+    console.log('ReactPDFDocument: Valid chart image data received, ready for PDF inclusion');
+  }
 
   const parseInsights = (insightsText: string): AIInsightsData | null => {
     try {
@@ -296,38 +267,20 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
         <Text style={styles.text}><Text style={styles.boldText}>Overall Development Gap:</Text> {averageGap.toFixed(2)} points</Text>
         <Text style={styles.text}>Assessment completed across {categories.length} competency areas</Text>
 
-        {/* Enhanced Chart section with better fallback */}
+        {/* Enhanced Chart section with better error handling and 11:11 version logic restoration */}
         <Text style={[styles.sectionTitle, { marginTop: 15 }]}>Competency Analysis - Radar Chart</Text>
         
         <View style={styles.chartContainer}>
-          {processedChartData ? (
-            <>
-              <Image 
-                style={styles.chartImage}
-                src={processedChartData}
-              />
-              <View style={styles.chartLegend}>
-                <View style={styles.legendItem}>
-                  <View style={[styles.legendColor, { backgroundColor: '#2F564D' }]} />
-                  <Text style={styles.legendText}>Current Level</Text>
-                </View>
-                <View style={styles.legendItem}>
-                  <View style={[styles.legendColor, { backgroundColor: '#8baca5' }]} />
-                  <Text style={styles.legendText}>Desired Level</Text>
-                </View>
-              </View>
-            </>
+          {chartImageDataUrl && chartImageDataUrl.startsWith('data:image/') ? (
+            <Image 
+              style={styles.chartImage}
+              src={chartImageDataUrl}
+            />
           ) : (
             <View style={styles.chartPlaceholder}>
-              <Text style={[styles.text, { textAlign: 'center', marginBottom: 10, fontSize: 14, fontWeight: 'bold', color: '#374151' }]}>
-                Competency Radar Chart
-              </Text>
-              <Text style={[styles.text, { textAlign: 'center', fontSize: 11, color: '#64748b', maxWidth: 350, lineHeight: 1.4 }]}>
-                Your radar chart visualization shows the gap between current and desired competency levels across all leadership areas. 
-                The chart displays your self-assessment across {categories.length} key competency categories with an overall development gap of {averageGap.toFixed(2)} points.
-              </Text>
-              <Text style={[styles.text, { textAlign: 'center', fontSize: 10, color: '#9ca3af', marginTop: 8 }]}>
-                Chart image could not be embedded in this PDF version.
+              <Text style={styles.text}>Radar chart visualization shows your current vs desired competency levels</Text>
+              <Text style={[styles.text, { fontSize: 10, color: '#64748b', marginTop: 10 }]}>
+                Chart image could not be captured - this may indicate a technical issue with chart rendering
               </Text>
             </View>
           )}
@@ -415,6 +368,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
             <Text style={[styles.boldText, { marginTop: 10 }]}>Book a free 30-minute discovery call now</Text>
             <Text style={styles.linkText}>www.encouragercoaching.com</Text>
             
+            {/* Bottom logo - left-aligned and matching top logo size (fixed from user request) */}
             <Image 
               style={styles.bottomLogo}
               src="/lovable-uploads/db40277e-6ff0-437e-acf2-faaa2d92671e.png"

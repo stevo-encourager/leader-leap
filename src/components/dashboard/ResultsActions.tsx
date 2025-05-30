@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { ArrowLeft, Download, Plus, Info } from 'lucide-react';
+import { ArrowLeft, Download, Plus, Info, TestTube } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
@@ -43,10 +42,27 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     assessmentId
   });
   
+  // ENHANCED DEVELOPMENT MODE DETECTION WITH EXPLICIT LOGGING
+  const isDevelopment = process.env.NODE_ENV === 'development' || 
+                       window.location.hostname === 'localhost' || 
+                       window.location.hostname === '127.0.0.1' ||
+                       window.location.port !== '';
+  
+  // EXPLICIT LOGGING FOR BUTTON VISIBILITY DEBUGGING
+  console.log('=== ResultsActions Button Visibility Debug ===');
+  console.log('NODE_ENV:', process.env.NODE_ENV);
+  console.log('window.location.hostname:', window.location.hostname);
+  console.log('window.location.port:', window.location.port);
+  console.log('window.location.href:', window.location.href);
+  console.log('isDevelopment calculated as:', isDevelopment);
+  console.log('Button should be visible:', isDevelopment);
+  console.log('==============================================');
+  
   // Enhanced validation to check if we actually have assessment data
   const hasValidAssessmentData = () => {
     console.log('ResultsActions: Checking for valid assessment data...');
     console.log('ResultsActions: categories length:', categories?.length || 0);
+    console.log('ResultsActions: assessmentId:', assessmentId);
     
     if (!categories || !Array.isArray(categories) || categories.length === 0) {
       console.log('ResultsActions: No categories or empty array');
@@ -123,13 +139,71 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
       return false;
     }
     
-    console.log('ResultsActions: Insights are ready for export');
+    console.log('ResultsActions: Insights are ready for export with consistent data');
     return true;
   };
   
-  // Enhanced PDF download with better chart detection
+  // Test function for chart capture - Enhanced with better feedback
+  const handleTestChartCapture = async () => {
+    console.log('=== TEST CHART CAPTURE CLICKED ===');
+    console.log('ResultsActions: Testing chart capture...');
+    console.log('ResultsActions: Looking for radar chart elements in DOM...');
+    
+    // Log current DOM state for debugging
+    const radarContainer = document.querySelector('[data-testid="radar-chart-container"]');
+    const allSvgs = document.querySelectorAll('svg');
+    
+    console.log('ResultsActions: DOM Analysis:', {
+      radarContainerFound: !!radarContainer,
+      totalSvgElements: allSvgs.length,
+      radarContainerHTML: radarContainer ? radarContainer.outerHTML.substring(0, 200) + '...' : 'Not found'
+    });
+    
+    try {
+      const chartImageDataUrl = await captureRadarChartAsPNG();
+      
+      if (chartImageDataUrl) {
+        console.log('ResultsActions: Chart capture test successful');
+        console.log('ResultsActions: Image data length:', chartImageDataUrl.length);
+        
+        toast({
+          title: "Chart Capture Test Successful ✅",
+          description: `Chart captured successfully! Data URL length: ${chartImageDataUrl.length} characters. Check console for details.`,
+        });
+        
+        // Create a temporary download to verify the image
+        const link = document.createElement('a');
+        link.download = 'test-radar-chart.png';
+        link.href = chartImageDataUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        console.log('ResultsActions: Test image downloaded for verification');
+      } else {
+        console.error('ResultsActions: Chart capture test failed - no data returned');
+        toast({
+          title: "Chart Capture Test Failed ❌",
+          description: "Could not capture the radar chart. No image data was generated. Check console for details.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('ResultsActions: Chart capture test error:', error);
+      toast({
+        title: "Chart Capture Error ⚠️",
+        description: `An error occurred during chart capture testing: ${error.message}`,
+        variant: "destructive",
+      });
+    }
+  };
+  
+  // Handle PDF download using React PDF
   const handleDownloadPDF = async () => {
-    console.log('ResultsActions: Starting PDF download...');
+    console.log('ResultsActions: PDF download button clicked');
+    console.log('ResultsActions: categories received:', categories?.length || 0);
+    console.log('ResultsActions: demographics received:', demographics ? Object.keys(demographics) : 'none');
+    console.log('ResultsActions: assessmentId for consistent insights:', assessmentId);
     
     if (!hasValidAssessmentData()) {
       toast({
@@ -152,58 +226,24 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     setIsDownloading(true);
     
     try {
-      // First, verify that the chart is actually visible on the page
-      const chartElements = document.querySelectorAll('[data-testid="radar-chart-container"], .radar-chart-container');
-      const visibleCharts = Array.from(chartElements).filter(el => {
-        const rect = el.getBoundingClientRect();
-        return rect.width > 0 && rect.height > 0;
-      });
+      console.log('ResultsActions: Starting PDF generation with React PDF');
       
-      console.log(`ResultsActions: Found ${chartElements.length} chart containers, ${visibleCharts.length} visible`);
-      
-      if (visibleCharts.length === 0) {
-        console.warn('ResultsActions: No visible chart found on page');
-        toast({
-          title: "Chart Not Ready",
-          description: "The radar chart is not visible on the page. Please wait for it to load and try again.",
-          variant: "default",
-        });
-        setIsDownloading(false);
-        return;
-      }
-      
-      // Show progress to user
-      toast({
-        title: "Generating PDF",
-        description: "Capturing radar chart and preparing your document...",
-        variant: "default",
-      });
-      
-      // Wait a moment to ensure chart is stable
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Attempt chart capture
-      console.log('ResultsActions: Attempting chart capture...');
+      // Capture the radar chart as PNG with detailed logging
+      console.log('ResultsActions: Attempting to capture radar chart...');
       const chartImageDataUrl = await captureRadarChartAsPNG();
       
-      if (chartImageDataUrl && chartImageDataUrl.startsWith('data:image/png') && chartImageDataUrl.length > 2000) {
-        console.log('ResultsActions: Chart captured successfully');
-        toast({
-          title: "Chart Captured",
-          description: "Radar chart captured successfully. Generating PDF...",
-          variant: "default",
-        });
+      if (chartImageDataUrl) {
+        console.log('ResultsActions: Successfully captured radar chart, data length:', chartImageDataUrl.length);
       } else {
-        console.warn('ResultsActions: Chart capture failed, continuing with placeholder');
+        console.warn('ResultsActions: Failed to capture radar chart, proceeding without it');
         toast({
-          title: "Chart Capture Issue",
-          description: "Unable to capture radar chart. PDF will include a placeholder.",
+          title: "Chart Capture Warning",
+          description: "Could not capture the radar chart. PDF will be generated without the chart visualization.",
           variant: "default",
         });
       }
       
-      // Generate PDF
-      console.log('ResultsActions: Generating PDF document...');
+      // Generate PDF using React PDF
       const pdfDoc = (
         <ReactPDFDocument
           categories={categories}
@@ -213,29 +253,26 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
         />
       );
       
+      console.log('ResultsActions: Generating PDF blob...');
       const pdfBlob = await pdf(pdfDoc).toBlob();
       
-      // Download
+      // Create download link
       const url = URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `leadership-assessment-results-${new Date().toISOString().split('T')[0]}.pdf`;
+      link.download = 'leadership-assessment-results.pdf';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
       
-      console.log('ResultsActions: PDF download completed');
-      
       toast({
-        title: "Download Complete",
-        description: chartImageDataUrl 
-          ? "Your leadership assessment results have been downloaded with the radar chart included."
-          : "Your leadership assessment results have been downloaded with a chart placeholder.",
+        title: "Download Successful",
+        description: "Your leadership assessment results have been downloaded as a PDF with proper formatting and pagination.",
       });
       
     } catch (error) {
-      console.error('ResultsActions: Error during PDF download:', error);
+      console.error('ResultsActions: Error during React PDF download:', error);
       toast({
         title: "Download Failed", 
         description: "There was an error generating your PDF. Please try again.",
@@ -247,10 +284,13 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
   };
 
   const handleNewAssessment = () => {
+    // Notify user that a new assessment is starting
     toast({
       title: "Starting new assessment",
       description: "All previous ratings have been reset to default values.",
     });
+    
+    // Call the provided restart function
     onRestart();
   };
 
@@ -290,6 +330,10 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     return 'Download your complete assessment results as a professionally formatted PDF';
   };
 
+  // EXPLICIT JSX STRUCTURE FOR DEBUGGING
+  console.log('=== RENDERING BUTTONS ===');
+  console.log('About to render Test Chart button with isDevelopment:', isDevelopment);
+  
   return (
     <div className="flex justify-between w-full">
       <Button variant="outline" onClick={onBack}>
@@ -297,6 +341,30 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
         Back to Assessment
       </Button>
       <div className="flex gap-2">
+        {/* TEST CHART CAPTURE BUTTON - ALWAYS VISIBLE FOR NOW */}
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="outline" 
+                onClick={handleTestChartCapture}
+                size="default"
+                className="flex items-center gap-2 border-2 border-blue-300 text-blue-700 hover:bg-blue-50"
+              >
+                <TestTube className="h-4 w-4" />
+                Test Chart Capture
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="top">
+              <p className="max-w-xs text-sm">
+                Development tool: Test if the radar chart can be captured as PNG. 
+                Check console logs and download result for verification.
+                Currently ALWAYS VISIBLE for debugging.
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
         {!user && (
           <TooltipProvider>
             <Tooltip>

@@ -21,6 +21,7 @@ export const getLatestAssessmentResults = async (): Promise<FetchAssessmentResul
   console.log("getLatestAssessmentResults - Starting fetch");
   
   try {
+    // Check if user is authenticated
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
     if (authError) {
@@ -35,6 +36,7 @@ export const getLatestAssessmentResults = async (): Promise<FetchAssessmentResul
 
     console.log(`getLatestAssessmentResults - Fetching for user: ${user.id}`);
 
+    // Fetch the most recent completed assessment
     const { data, error } = await supabase
       .from('assessment_results')
       .select('*')
@@ -62,15 +64,18 @@ export const getLatestAssessmentResults = async (): Promise<FetchAssessmentResul
       created_at: assessment.created_at
     });
 
+    // Validate and normalize the categories data
     const rawCategories = assessment.categories;
     if (!rawCategories || !Array.isArray(rawCategories)) {
       console.error("getLatestAssessmentResults - Invalid categories data:", rawCategories);
       return { success: false, error: "Invalid assessment data format" };
     }
 
+    // Normalize the data to ensure consistent format
     const normalizedCategories = normalizeCategories(rawCategories);
     const normalizedDemographics = normalizeDemographics(assessment.demographics);
 
+    // Validate that we have meaningful data after normalization
     const validCategories = normalizedCategories.filter(cat => 
       cat && cat.skills && cat.skills.length > 0 &&
       cat.skills.some(skill => 
@@ -102,10 +107,12 @@ export const getLatestAssessmentResults = async (): Promise<FetchAssessmentResul
   }
 };
 
+// Add the getAssessmentById function that was missing
 export const getAssessmentById = async (assessmentId: string): Promise<FetchAssessmentResult> => {
   console.log(`getAssessmentById - Fetching assessment: ${assessmentId}`);
   
   try {
+    // Check if user is authenticated
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
     if (authError) {
@@ -118,8 +125,7 @@ export const getAssessmentById = async (assessmentId: string): Promise<FetchAsse
       return { success: false, error: "User not authenticated" };
     }
 
-    console.log(`getAssessmentById - Fetching for user ${user.id}, assessment ${assessmentId}`);
-
+    // Fetch the specific assessment
     const { data, error } = await supabase
       .from('assessment_results')
       .select('*')
@@ -138,34 +144,26 @@ export const getAssessmentById = async (assessmentId: string): Promise<FetchAsse
     }
 
     const assessment = data[0];
-    console.log("getAssessmentById - Found assessment:", {
+    console.log("getAssessmentById - Raw assessment data:", {
       id: assessment.id,
       categoriesType: typeof assessment.categories,
       categoriesLength: Array.isArray(assessment.categories) ? assessment.categories.length : 'not array',
-      demographicsType: typeof assessment.demographics,
-      created_at: assessment.created_at,
-      completed: assessment.completed
+      demographicsType: typeof assessment.demographics
     });
 
+    // Validate and normalize the categories data
     const rawCategories = assessment.categories;
-    if (!rawCategories) {
-      console.error("getAssessmentById - No categories data found");
-      return { success: false, error: "No categories data found in assessment" };
+    if (!rawCategories || !Array.isArray(rawCategories)) {
+      console.error("getAssessmentById - Invalid categories data:", rawCategories);
+      return { success: false, error: "Invalid assessment data format" };
     }
 
-    if (!Array.isArray(rawCategories)) {
-      console.error("getAssessmentById - Categories data is not an array:", typeof rawCategories);
-      return { success: false, error: "Invalid categories data format" };
-    }
-
-    console.log(`getAssessmentById - Processing ${rawCategories.length} categories`);
-
+    // Normalize the data to ensure consistent format
     const normalizedCategories = normalizeCategories(rawCategories);
     const normalizedDemographics = normalizeDemographics(assessment.demographics);
 
     console.log(`getAssessmentById - Successfully normalized ${normalizedCategories.length} categories`);
 
-    // Don't filter out categories without ratings for viewing existing assessments
     const result: AssessmentResult = {
       id: assessment.id,
       categories: normalizedCategories,

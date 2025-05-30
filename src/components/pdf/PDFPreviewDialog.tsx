@@ -49,7 +49,7 @@ const PDFPreviewDialog: React.FC<PDFPreviewDialogProps> = ({
       const textContent = previewContainer.textContent || '';
       
       // Check for essential content
-      const hasHeader = textContent.includes('Leadership Assessment Results');
+      const hasHeader = textContent.includes('Leader Leap Assessment Results');
       const hasProfile = textContent.includes('Profile Summary');
       const hasChart = textContent.includes('Competency Analysis');
       const hasAIInsights = textContent.includes('AI-Powered Insights');
@@ -139,12 +139,12 @@ const PDFPreviewDialog: React.FC<PDFPreviewDialogProps> = ({
         categories,
         demographics,
         insights,
-        'leadership-assessment-results.pdf'
+        'leader-leap-assessment-results.pdf'
       );
       
       toast({
         title: "Download Successful",
-        description: "Your leadership assessment results have been downloaded as a PDF with proper page breaks.",
+        description: "Your Leader Leap assessment results have been downloaded as a PDF with proper page breaks.",
       });
       
       onClose();
@@ -165,7 +165,7 @@ const PDFPreviewDialog: React.FC<PDFPreviewDialogProps> = ({
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center justify-between">
-            <span>PDF Preview - Leadership Assessment Results</span>
+            <span>PDF Preview - Leader Leap Assessment Results</span>
             <Button variant="ghost" size="sm" onClick={onClose}>
               <X className="h-4 w-4" />
             </Button>

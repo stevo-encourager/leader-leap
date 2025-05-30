@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { calculateAverageGap } from '@/utils/assessmentCalculations/averages';
@@ -275,7 +276,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
 
         {/* Header - Page 1 content */}
         <div className="no-spacing">
-          <h1>Leadership Assessment Results</h1>
+          <h1>Leader Leap Assessment Results</h1>
           <p style={{ textAlign: 'center', color: '#64748b', margin: '0 0 8px 0', padding: '0' }}>
             Generated on {currentDate}
           </p>
@@ -326,11 +327,11 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
         <div className="ai-insights-section no-spacing">
           <h2>AI-Powered Insights</h2>
           <p style={{ color: '#64748b', fontSize: '12px', margin: '0 0 8px 0', padding: '0' }}>
-            Personalized leadership development insights powered by Encourager GPT
+            Personalized leadership development insights powered by EncouragerGPT
           </p>
           
           {isLoading && (
-            <p style={{ margin: '8px 0', padding: '0' }}>Encourager GPT is analyzing your assessment results...</p>
+            <p style={{ margin: '8px 0', padding: '0' }}>EncouragerGPT is analyzing your assessment results...</p>
           )}
 
           {error && (
@@ -486,7 +487,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
           paddingTop: '8px'
         }}>
           <p style={{ margin: '0 0 4px 0', fontWeight: '600' }}>
-            Leadership Assessment Tool • Generated on {currentDate}
+            Leader Leap Assessment Tool • Generated on {currentDate}
           </p>
           <p style={{ margin: '0', lineHeight: '1.4' }}>
             This assessment is designed to help you identify development opportunities and create targeted improvement plans.

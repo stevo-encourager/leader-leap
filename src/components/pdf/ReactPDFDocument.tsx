@@ -160,9 +160,9 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   bottomLogo: {
-    maxWidth: 200, // Match the top logo size exactly
+    maxWidth: 200,
     marginTop: 8,
-    alignSelf: 'flex-start', // Left-align the bottom logo
+    alignSelf: 'flex-start',
   },
 });
 
@@ -250,7 +250,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
             style={styles.logo}
             src="/lovable-uploads/db40277e-6ff0-437e-acf2-faaa2d92671e.png"
           />
-          <Text style={styles.title}>Leadership Assessment Results</Text>
+          <Text style={styles.title}>Leader Leap Assessment Results</Text>
           <Text style={styles.subtitle}>Generated on {currentDate}</Text>
         </View>
 
@@ -290,7 +290,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
       {/* Page 2 - AI Insights */}
       <Page size="A4" style={styles.page}>
         <Text style={styles.sectionTitle}>AI-Powered Insights</Text>
-        <Text style={styles.leftAlignedSubtitle}>Personalized leadership development insights powered by Encourager GPT</Text>
+        <Text style={styles.leftAlignedSubtitle}>Personalized leadership development insights powered by EncouragerGPT</Text>
 
         {parsedInsights ? (
           <View>
@@ -382,7 +382,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
         </View>
 
         <Text style={styles.footer}>
-          Leadership Assessment Tool • Generated on {currentDate}{'\n'}
+          Leader Leap Assessment Tool • Generated on {currentDate}{'\n'}
           This assessment is designed to help you identify development opportunities and create targeted improvement plans.
         </Text>
       </Page>

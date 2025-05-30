@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Category, Demographics } from '../utils/assessmentTypes';
@@ -81,7 +82,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
       <Card>
         <CardHeader className="flex flex-row justify-between items-start">
           <div>
-            <CardTitle className="text-2xl">Your Leadership Assessment Results</CardTitle>
+            <CardTitle className="text-2xl">Your Leader Leap Assessment Results</CardTitle>
             <CardDescription>
               Review your leadership competency gaps and development opportunities
             </CardDescription>
@@ -89,7 +90,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
           <div className="ml-4">
             <img 
               src="/lovable-uploads/8320d514-fba5-4e1b-a658-1563758db943.png" 
-              alt="Leadership Assessment Logo" 
+              alt="Leader Leap Assessment Logo" 
               className="h-28 w-auto" 
             />
           </div>
@@ -133,7 +134,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
                 <div className="bg-white p-4 h-full border border-slate-200 rounded-lg shadow-sm flex flex-col justify-between">
                   <p className="text-slate-700 mb-6">
                     <strong>Want to save your results, download as PDF, and access them later?</strong><br />
-                    Create an account to unlock all features of the Leadership Assessment Tool.
+                    Create an account to unlock all features of the Leader Leap Assessment Tool.
                   </p>
                   <button 
                     className="bg-encourager hover:bg-encourager-light text-white px-4 py-2 rounded-md transition-colors w-full mt-auto"

@@ -34,11 +34,11 @@ const IntroductionHeader: React.FC<IntroductionHeaderProps> = ({ onStartAssessme
       </a>
       
       <h1 className="text-4xl md:text-5xl font-bold text-encourager mb-4 text-center">
-        Leadership Gap Assessment Tool
+        Leader Leap Assessment Tool
       </h1>
       
       <p className="text-xl text-slate-600 max-w-2xl text-center mb-10">
-        Identify gaps between your current leadership competencies and where you want to be.
+        Identify and close the gaps between your current leadership competencies and where you want to be.
       </p>
       
       <Button 

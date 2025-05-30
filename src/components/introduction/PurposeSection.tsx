@@ -13,15 +13,15 @@ const PurposeSection: React.FC = () => {
           <li className="flex items-start gap-2">
             <CircleDot className="text-encourager flex-shrink-0 mt-1" size={16} strokeWidth={2} />
             <span className="text-slate-700 leading-relaxed">
-              This leadership assessment tool is designed to help you identify the gaps between current 
-              leadership competencies (10 in total) and where you aspire to be.
+              The Leader Leap tool gives you a clear picture of your leadership capabilities today 
+              and helps you chart your growth path across 10 core competencies.
             </span>
           </li>
           <li className="flex items-start gap-2">
             <CircleDot className="text-encourager flex-shrink-0 mt-1" size={16} strokeWidth={2} />
             <span className="text-slate-700 leading-relaxed">
-              By understanding these gaps, you can create focused development plans that target your 
-              specific growth areas.
+              These insights, enhanced by AI-powered recommendations, then help you create a focused 
+              development plan to bridge the gaps and achieve your goals.
             </span>
           </li>
         </ul>

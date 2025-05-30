@@ -110,7 +110,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     const placeholderTexts = [
       'analysing your assessment results',
       'analyzing your assessment results',
-      'Encourager GPT is analyzing',
+      'EncouragerGPT is analyzing',
       'generating insights',
       'please wait'
     ];
@@ -190,7 +190,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
       const url = URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'leadership-assessment-results.pdf';
+      link.download = 'leader-leap-assessment-results.pdf';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -198,7 +198,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
       
       toast({
         title: "Download Successful",
-        description: "Your leadership assessment results have been downloaded as a PDF with proper formatting and pagination.",
+        description: "Your Leader Leap assessment results have been downloaded as a PDF with proper formatting and pagination.",
       });
       
     } catch (error) {

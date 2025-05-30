@@ -32,8 +32,8 @@ const CustomTick = (props: any) => {
   // Calculate angle from center to current position
   const angle = Math.atan2(y - cy, x - cx);
   
-  // Adjusted label radius - slightly further out to prevent overlap with chart
-  const labelRadius = isPDF ? 110 : 155; // Increased from 100/140 to 110/155
+  // Adjusted label radius - moved slightly further out for comfortable spacing
+  const labelRadius = isPDF ? 115 : 165; // Increased from 110/155 to 115/165
   
   const labelX = cx + labelRadius * Math.cos(angle);
   const labelY = cy + labelRadius * Math.sin(angle);

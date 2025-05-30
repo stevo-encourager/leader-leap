@@ -25,15 +25,15 @@ interface ChartData {
   skillCount?: number;
 }
 
-// Custom tick component for competency names with enhanced PDF support and improved spacing
+// Custom tick component for competency names with optimized spacing
 const CustomTick = (props: any) => {
   const { payload, x, y, cx, cy, textAnchor, index, isPDF } = props;
   
   // Calculate angle from center to current position
   const angle = Math.atan2(y - cy, x - cx);
   
-  // Increased label radius for better spacing - further from the chart
-  const labelRadius = isPDF ? 120 : 200; // Increased from 100/175 to 120/200
+  // Optimized label radius - closer to chart for better visual balance
+  const labelRadius = isPDF ? 100 : 140; // Reduced from 120/200 to 100/140
   
   const labelX = cx + labelRadius * Math.cos(angle);
   const labelY = cy + labelRadius * Math.sin(angle);
@@ -302,10 +302,10 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
 
   console.log("SkillGapChart - Rendering radar chart with data:", validChartData);
 
-  // Chart margins
+  // Optimized chart margins for larger chart size
   const chartMargins = isPDF 
-    ? { top: 20, right: 70, left: 70, bottom: 20 }
-    : { top: 20, right: 120, left: 120, bottom: 20 };
+    ? { top: 20, right: 50, left: 50, bottom: 20 } // Reduced margins for PDF
+    : { top: 20, right: 80, left: 80, bottom: 20 }; // Reduced margins for larger chart
 
   /**
    * CRITICAL FOR PDF EXPORT: This container MUST always have data-testid="radar-chart-container"
@@ -326,8 +326,8 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
         display: 'grid',
         gridTemplateRows: isPDF ? '1fr' : '1fr auto',
         gridTemplateAreas: isPDF ? '"chart"' : '"chart" "legend"',
-        gap: isPDF ? '0' : '60px',
-        overflow: 'visible' // Ensure nothing gets clipped
+        gap: isPDF ? '0' : '24px', // Reduced gap from 60px to 24px for better balance
+        overflow: 'visible'
       }}
     >
       {/* Chart area with proper grid positioning */}
@@ -377,7 +377,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
         </ResponsiveContainer>
       </div>
 
-      {/* Legend area - ALWAYS show for dashboard (non-PDF) with DEBUG styling */}
+      {/* Legend area - Clean styling with proper visual separation */}
       {!isPDF && (
         <div 
           style={{ 
@@ -385,39 +385,27 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '20px',
+            gap: '16px',
             minHeight: 'auto',
             height: 'auto',
-            // DEBUG: Add bright background to verify it's rendering
-            backgroundColor: '#ffeb3b', // Bright yellow background for debugging
-            border: '2px solid #f44336', // Red border for debugging
-            padding: '20px',
+            backgroundColor: 'white',
+            padding: '16px',
             borderRadius: '8px'
           }}
         >
-          {/* DEBUG: Add text to confirm legend is rendering */}
-          <div style={{ 
-            color: 'red', 
-            fontWeight: 'bold', 
-            fontSize: '18px',
-            textAlign: 'center'
-          }}>
-            LEGEND AREA (DEBUG - this should be visible!)
-          </div>
-          
           {/* Horizontal separator line */}
           <div style={{ 
             width: '100%', 
-            height: '2px', 
-            backgroundColor: '#333',
+            height: '1px', 
+            backgroundColor: '#e2e8f0',
             flexShrink: 0
           }}></div>
           
           {/* Legend items */}
           <div style={{ 
             display: 'flex', 
-            gap: '40px', 
-            fontSize: '16px',
+            gap: '32px', 
+            fontSize: '14px',
             alignItems: 'center',
             justifyContent: 'center',
             flexShrink: 0
@@ -432,7 +420,8 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
                 height: '16px', 
                 backgroundColor: '#2F564D', 
                 opacity: 0.6,
-                flexShrink: 0
+                flexShrink: 0,
+                borderRadius: '2px'
               }}></div>
               <span style={{ color: '#64748b', fontWeight: '500' }}>Current Level</span>
             </div>
@@ -446,7 +435,8 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
                 height: '16px', 
                 backgroundColor: '#8baca5', 
                 opacity: 0.6,
-                flexShrink: 0
+                flexShrink: 0,
+                borderRadius: '2px'
               }}></div>
               <span style={{ color: '#64748b', fontWeight: '500' }}>Desired Level</span>
             </div>

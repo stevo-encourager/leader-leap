@@ -1,4 +1,3 @@
-
 import React, { useMemo, useRef, useEffect } from 'react';
 import { 
   ResponsiveContainer,
@@ -305,10 +304,10 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
 
   console.log("SkillGapChart - Rendering radar chart with data:", validChartData);
 
-  // Restore original chart margins and positioning - keep chart full size
+  // Reduced top margin to balance with increased bottom space
   const chartMargins = isPDF 
-    ? { top: 30, right: 70, left: 70, bottom: 30 } // Original margins for PDF
-    : { top: 60, right: 120, left: 120, bottom: 60 }; // Original margins for dashboard
+    ? { top: 30, right: 70, left: 70, bottom: 30 } // Keep PDF margins unchanged
+    : { top: 30, right: 120, left: 120, bottom: 60 }; // Reduced top margin from 60 to 30
 
   // Restore original chart centering and sizing - keep chart at original size
   const centerX = isPDF ? "50%" : "50%";
@@ -330,7 +329,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
       style={{
         width: '100%',
         height: '100%',
-        minHeight: isPDF ? '400px' : '650px', // Further increased height to accommodate much more space for legend
+        minHeight: isPDF ? '400px' : '700px', // Increased height to accommodate even more space for legend
         position: 'relative',
         backgroundColor: 'white' // Ensure white background for capture
       }}
@@ -371,15 +370,15 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             strokeWidth={2}
           />
           <Tooltip />
-          {/* Only show Legend for dashboard (not PDF) positioned at the bottom with generous spacing */}
+          {/* Only show Legend for dashboard (not PDF) positioned at the bottom with very generous spacing */}
           {!isPDF && (
             <Legend 
               layout="horizontal"
               verticalAlign="bottom"
               align="center"
               wrapperStyle={{
-                marginTop: '180px', // Significantly increased from 120px to create much more space
-                paddingTop: '40px', // Increased padding for even better visual separation
+                marginTop: '220px', // Further increased from 180px to create very generous space
+                paddingTop: '50px', // Increased padding for maximum visual separation
                 fontSize: '18px',
                 fontWeight: 'normal',
                 borderTop: '1px solid #e2e8f0', // Subtle border for visual separation

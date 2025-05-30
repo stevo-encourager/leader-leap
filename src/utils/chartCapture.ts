@@ -4,9 +4,9 @@ import html2canvas from 'html2canvas';
 // Enhanced radar chart capture with comprehensive debugging and error handling
 export const captureRadarChartAsPNG = async (): Promise<string | null> => {
   return new Promise((resolve) => {
-    console.log('ChartCapture: Starting enhanced radar chart capture with comprehensive debugging...');
+    console.log('ChartCapture: Starting enhanced radar chart capture...');
     
-    // First, wait for any pending renders
+    // Wait longer for chart to fully render and stabilize
     setTimeout(async () => {
       console.log('ChartCapture: Looking for radar chart with enhanced selectors...');
       
@@ -16,12 +16,13 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         '.radar-chart-container',
         '[data-chart-type="radar"]',
         '.recharts-wrapper',
-        '.recharts-radar-chart'
+        '.recharts-radar-chart',
+        '.recharts-surface'
       ];
       
       let chartContainer: HTMLElement | null = null;
       
-      // Try each selector and pick the first one with content
+      // Try each selector and pick the first one with valid content
       for (const selector of selectors) {
         const elements = document.querySelectorAll(selector);
         console.log(`ChartCapture: Checking selector "${selector}" - found ${elements.length} elements`);
@@ -29,64 +30,41 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         for (let i = 0; i < elements.length; i++) {
           const element = elements[i] as HTMLElement;
           
-          // Check if the element itself has dimensions using getBoundingClientRect
+          // Check if element is visible and has dimensions
           const rect = element.getBoundingClientRect();
-          const hasBoundingRect = rect.width > 0 && rect.height > 0;
+          const isVisible = rect.width > 0 && rect.height > 0 && element.offsetParent !== null;
           
-          console.log(`ChartCapture: Element ${i} dimensions:`, {
-            boundingWidth: rect.width,
-            boundingHeight: rect.height,
-            hasBoundingRect,
-            isVisible: element.style.display !== 'none',
+          console.log(`ChartCapture: Element ${i} check:`, {
+            selector,
+            width: rect.width,
+            height: rect.height,
+            isVisible,
             hasChildren: element.children.length > 0
           });
           
-          // Element is valid if it has positive dimensions
-          if (hasBoundingRect) {
-            // Check if it contains an SVG (which means it's the actual chart)
+          if (isVisible) {
+            // Look for SVG inside this element
             const svg = element.querySelector('svg');
             if (svg) {
-              console.log('ChartCapture: SVG found, checking SVG dimensions...');
-              
-              // For SVG, use getBoundingClientRect only
               const svgRect = svg.getBoundingClientRect();
-              const svgHasBounding = svgRect.width > 0 && svgRect.height > 0;
-              
-              console.log(`ChartCapture: SVG dimensions:`, {
-                boundingWidth: svgRect.width,
-                boundingHeight: svgRect.height,
-                svgHasBounding,
-                svgChildren: svg.children.length,
-                svgViewBox: svg.getAttribute('viewBox'),
-                svgWidth: svg.getAttribute('width'),
-                svgHeight: svg.getAttribute('height')
+              console.log('ChartCapture: Found SVG:', {
+                svgWidth: svgRect.width,
+                svgHeight: svgRect.height,
+                svgVisible: svgRect.width > 0 && svgRect.height > 0,
+                svgChildren: svg.children.length
               });
               
-              // Accept SVG if it has positive dimensions OR if parent container is valid
-              if (svgHasBounding || hasBoundingRect) {
+              if (svgRect.width > 0 && svgRect.height > 0) {
                 chartContainer = element;
-                console.log(`ChartCapture: Found valid chart container using selector: ${selector}`);
-                console.log('ChartCapture: Container details:', {
-                  tagName: element.tagName,
-                  className: element.className,
-                  id: element.id,
-                  testId: element.getAttribute('data-testid'),
-                  boundingRect: rect,
-                  svgPresent: true,
-                  svgRect: svgRect
-                });
+                console.log(`ChartCapture: Selected chart container with selector: ${selector}`);
                 break;
-              } else {
-                console.log('ChartCapture: SVG found but has no valid dimensions');
               }
-            } else if (hasBoundingRect) {
-              // Even without SVG, if container has dimensions, it might be valid
-              console.log('ChartCapture: No SVG found but container has dimensions, accepting as fallback');
+            } else if (isVisible && element.children.length > 0) {
+              // Fallback: accept container even without SVG if it has content
               chartContainer = element;
+              console.log(`ChartCapture: Selected fallback container with selector: ${selector}`);
               break;
             }
-          } else {
-            console.log(`ChartCapture: Element ${i} has no valid dimensions`);
           }
         }
         if (chartContainer) break;
@@ -95,144 +73,103 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
       if (!chartContainer) {
         console.error('ChartCapture: No valid radar chart container found');
         
-        // Enhanced debugging: Log what elements we can find
-        const allContainers = document.querySelectorAll('[class*="radar"], [data-testid*="radar"], [class*="recharts"], .recharts-wrapper');
-        console.log('ChartCapture: Available chart-related elements:', allContainers.length);
-        allContainers.forEach((el, index) => {
+        // Enhanced debugging: List all possible chart elements
+        const debugElements = document.querySelectorAll('[class*="chart"], [class*="radar"], [data-testid*="chart"], svg');
+        console.log('ChartCapture: Found potential chart elements:', debugElements.length);
+        debugElements.forEach((el, index) => {
           const htmlEl = el as HTMLElement;
-          const svg = htmlEl.querySelector('svg');
           const rect = htmlEl.getBoundingClientRect();
-          console.log(`Element ${index}:`, {
-            selector: el.tagName + (el.className ? '.' + el.className.split(' ').join('.') : ''),
+          console.log(`Debug element ${index}:`, {
+            tagName: htmlEl.tagName,
             className: htmlEl.className,
             testId: htmlEl.getAttribute('data-testid'),
-            boundingDimensions: `${rect.width}x${rect.height}`,
-            hasSVG: !!svg,
-            svgContent: svg ? `SVG with ${svg.children.length} children` : 'No SVG',
-            isVisible: htmlEl.style.display !== 'none' && rect.width > 0 && rect.height > 0
+            dimensions: `${rect.width}x${rect.height}`,
+            visible: rect.width > 0 && rect.height > 0
           });
-        });
-        
-        // Additional debugging: Check for any ResponsiveContainer or RadarChart elements
-        const responsiveContainers = document.querySelectorAll('.recharts-responsive-container');
-        const radarCharts = document.querySelectorAll('.recharts-radar-chart');
-        console.log('ChartCapture: Additional debugging:', {
-          responsiveContainers: responsiveContainers.length,
-          radarCharts: radarCharts.length
         });
         
         resolve(null);
         return;
       }
       
-      const svg = chartContainer.querySelector('svg');
-      const containerRect = chartContainer.getBoundingClientRect();
-      
-      console.log('ChartCapture: Found chart container:', {
-        element: chartContainer.tagName,
-        className: chartContainer.className,
-        boundingDimensions: `${containerRect.width}x${containerRect.height}`,
-        hasSVG: !!svg,
-        containerPosition: {
-          top: containerRect.top,
-          left: containerRect.left,
-          bottom: containerRect.bottom,
-          right: containerRect.right
-        }
-      });
-      
       try {
-        // Wait for any animations or transitions to complete
-        console.log('ChartCapture: Waiting for chart rendering to complete...');
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        console.log('ChartCapture: Waiting for chart animations to complete...');
+        // Wait longer for any animations or data loading
+        await new Promise(resolve => setTimeout(resolve, 2000));
         
-        // Double-check that the container is still valid before capture
+        // Verify container is still valid
         const finalRect = chartContainer.getBoundingClientRect();
-        const stillValid = finalRect.width > 0 && finalRect.height > 0;
-        
-        if (!stillValid) {
-          console.error('ChartCapture: Chart container became invalid during wait period');
-          console.log('ChartCapture: Final rect:', finalRect);
+        if (finalRect.width === 0 || finalRect.height === 0) {
+          console.error('ChartCapture: Chart container became invalid during wait');
           resolve(null);
           return;
         }
         
-        console.log('ChartCapture: Starting html2canvas capture with dimensions:', {
-          width: Math.round(containerRect.width),
-          height: Math.round(containerRect.height),
-          finalWidth: Math.round(finalRect.width),
-          finalHeight: Math.round(finalRect.height)
-        });
+        console.log('ChartCapture: Starting html2canvas capture...');
         
-        // Capture with optimized settings for SVG content
+        // Enhanced html2canvas options for better SVG capture
         const canvas = await html2canvas(chartContainer, {
           backgroundColor: '#ffffff',
-          scale: 2,
+          scale: 3, // Higher scale for better quality
           useCORS: true,
           allowTaint: false,
-          logging: true, // Enable logging temporarily for debugging
+          logging: false, // Disable logging to reduce noise
           width: Math.round(finalRect.width),
           height: Math.round(finalRect.height),
           scrollX: 0,
           scrollY: 0,
-          windowWidth: window.innerWidth,
-          windowHeight: window.innerHeight,
-          // Enhanced SVG handling
+          // Critical SVG handling options
           foreignObjectRendering: true,
-          removeContainer: false
+          removeContainer: false,
+          // Force SVG rendering
+          onclone: (clonedDoc) => {
+            console.log('ChartCapture: Processing cloned document for SVG elements');
+            const clonedSvgs = clonedDoc.querySelectorAll('svg');
+            clonedSvgs.forEach((svg) => {
+              // Ensure SVG has explicit dimensions
+              if (!svg.getAttribute('width') && finalRect.width > 0) {
+                svg.setAttribute('width', finalRect.width.toString());
+              }
+              if (!svg.getAttribute('height') && finalRect.height > 0) {
+                svg.setAttribute('height', finalRect.height.toString());
+              }
+            });
+          }
         });
         
-        console.log('ChartCapture: html2canvas completed, checking canvas:', {
-          canvasExists: !!canvas,
-          canvasWidth: canvas?.width || 0,
-          canvasHeight: canvas?.height || 0,
-          canvasArea: (canvas?.width || 0) * (canvas?.height || 0)
+        console.log('ChartCapture: html2canvas completed:', {
+          canvasWidth: canvas.width,
+          canvasHeight: canvas.height,
+          canvasArea: canvas.width * canvas.height
         });
         
         if (!canvas || canvas.width === 0 || canvas.height === 0) {
-          console.error('ChartCapture: Generated canvas is invalid');
+          console.error('ChartCapture: Invalid canvas generated');
           resolve(null);
           return;
         }
         
-        console.log('ChartCapture: Canvas created successfully:', {
-          width: canvas.width,
-          height: canvas.height,
-          area: canvas.width * canvas.height
-        });
-        
-        // Convert to high-quality PNG
+        // Convert to PNG with maximum quality
         const dataUrl = canvas.toDataURL('image/png', 1.0);
         
-        console.log('ChartCapture: Data URL generated:', {
-          length: dataUrl.length,
-          startsWithPNG: dataUrl.startsWith('data:image/png'),
-          preview: dataUrl.substring(0, 100) + '...'
-        });
-        
-        // Validate the data URL
-        if (!dataUrl || !dataUrl.startsWith('data:image/png') || dataUrl.length < 1000) {
-          console.error('ChartCapture: Invalid or empty data URL generated', {
+        // Validate the result
+        if (!dataUrl || !dataUrl.startsWith('data:image/png') || dataUrl.length < 2000) {
+          console.error('ChartCapture: Invalid or empty PNG data', {
             hasDataUrl: !!dataUrl,
-            startsCorrectly: dataUrl?.startsWith('data:image/png'),
-            length: dataUrl?.length || 0
+            correctFormat: dataUrl?.startsWith('data:image/png'),
+            dataLength: dataUrl?.length || 0
           });
           resolve(null);
           return;
         }
         
-        console.log('ChartCapture: Successfully captured chart image, size:', dataUrl.length);
+        console.log('ChartCapture: Successfully captured chart image');
         resolve(dataUrl);
         
       } catch (error) {
-        console.error('ChartCapture: Error during html2canvas capture:', error);
-        console.error('ChartCapture: Error details:', {
-          message: error.message,
-          stack: error.stack,
-          containerStillExists: !!document.contains(chartContainer)
-        });
+        console.error('ChartCapture: Error during capture:', error);
         resolve(null);
       }
-    }, 2000); // Increased initial delay to ensure chart is fully rendered
+    }, 3000); // Increased delay to ensure chart is fully rendered
   });
 };

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ArrowLeft, Download, Plus, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -46,7 +47,6 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
   const hasValidAssessmentData = () => {
     console.log('ResultsActions: Checking for valid assessment data...');
     console.log('ResultsActions: categories length:', categories?.length || 0);
-    console.log('ResultsActions: assessmentId:', assessmentId);
     
     if (!categories || !Array.isArray(categories) || categories.length === 0) {
       console.log('ResultsActions: No categories or empty array');
@@ -123,13 +123,13 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
       return false;
     }
     
-    console.log('ResultsActions: Insights are ready for export with consistent data');
+    console.log('ResultsActions: Insights are ready for export');
     return true;
   };
   
-  // Enhanced PDF download with comprehensive debugging
+  // Enhanced PDF download with better chart detection
   const handleDownloadPDF = async () => {
-    console.log('ResultsActions: Starting PDF download with comprehensive debugging...');
+    console.log('ResultsActions: Starting PDF download...');
     
     if (!hasValidAssessmentData()) {
       toast({
@@ -152,79 +152,58 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     setIsDownloading(true);
     
     try {
-      console.log('ResultsActions: Starting enhanced chart capture process...');
+      // First, verify that the chart is actually visible on the page
+      const chartElements = document.querySelectorAll('[data-testid="radar-chart-container"], .radar-chart-container');
+      const visibleCharts = Array.from(chartElements).filter(el => {
+        const rect = el.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0;
+      });
       
-      // Show user that we're capturing the chart
+      console.log(`ResultsActions: Found ${chartElements.length} chart containers, ${visibleCharts.length} visible`);
+      
+      if (visibleCharts.length === 0) {
+        console.warn('ResultsActions: No visible chart found on page');
+        toast({
+          title: "Chart Not Ready",
+          description: "The radar chart is not visible on the page. Please wait for it to load and try again.",
+          variant: "default",
+        });
+        setIsDownloading(false);
+        return;
+      }
+      
+      // Show progress to user
       toast({
-        title: "Preparing PDF",
-        description: "Capturing radar chart visualization...",
+        title: "Generating PDF",
+        description: "Capturing radar chart and preparing your document...",
         variant: "default",
       });
       
-      // Wait a bit to ensure chart is fully rendered before capture
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // Wait a moment to ensure chart is stable
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Enhanced chart capture with multiple attempts and detailed logging
-      let chartImageDataUrl: string | null = null;
-      const maxAttempts = 3;
+      // Attempt chart capture
+      console.log('ResultsActions: Attempting chart capture...');
+      const chartImageDataUrl = await captureRadarChartAsPNG();
       
-      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        console.log(`ResultsActions: Chart capture attempt ${attempt}/${maxAttempts}`);
-        
-        // Check if chart elements are present before attempting capture
-        const radarContainers = document.querySelectorAll('[data-testid="radar-chart-container"], .radar-chart-container');
-        const svgElements = document.querySelectorAll('svg');
-        console.log(`ResultsActions: Pre-capture check - radar containers: ${radarContainers.length}, SVGs: ${svgElements.length}`);
-        
-        chartImageDataUrl = await captureRadarChartAsPNG();
-        
-        console.log(`ResultsActions: Attempt ${attempt} result:`, {
-          success: !!chartImageDataUrl,
-          dataLength: chartImageDataUrl?.length || 0,
-          startsWithPNG: chartImageDataUrl?.startsWith('data:image/png') || false
-        });
-        
-        if (chartImageDataUrl && chartImageDataUrl.startsWith('data:image/png') && chartImageDataUrl.length > 1000) {
-          console.log(`ResultsActions: Chart captured successfully on attempt ${attempt}`);
-          break;
-        }
-        
-        if (attempt < maxAttempts) {
-          console.log(`ResultsActions: Attempt ${attempt} failed, waiting before retry...`);
-          // Wait before retry
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-      }
-      
-      if (!chartImageDataUrl || !chartImageDataUrl.startsWith('data:image/png') || chartImageDataUrl.length < 1000) {
-        console.warn('ResultsActions: All chart capture attempts failed or produced invalid data');
-        console.log('ResultsActions: Chart capture final result:', {
-          hasData: !!chartImageDataUrl,
-          dataLength: chartImageDataUrl?.length || 0,
-          startsWithPNG: chartImageDataUrl?.startsWith('data:image/png') || false,
-          preview: chartImageDataUrl?.substring(0, 50) || 'null'
-        });
-        
-        toast({
-          title: "Chart Capture Warning",
-          description: "Unable to capture the radar chart. PDF will be generated with a placeholder.",
-          variant: "default",
-        });
-        
-        // Set to undefined to trigger placeholder in PDF
-        chartImageDataUrl = undefined;
-      } else {
-        console.log('ResultsActions: Chart successfully captured for PDF inclusion');
+      if (chartImageDataUrl && chartImageDataUrl.startsWith('data:image/png') && chartImageDataUrl.length > 2000) {
+        console.log('ResultsActions: Chart captured successfully');
         toast({
           title: "Chart Captured",
           description: "Radar chart captured successfully. Generating PDF...",
           variant: "default",
         });
+      } else {
+        console.warn('ResultsActions: Chart capture failed, continuing with placeholder');
+        toast({
+          title: "Chart Capture Issue",
+          description: "Unable to capture radar chart. PDF will include a placeholder.",
+          variant: "default",
+        });
       }
       
-      // Generate PDF with enhanced error handling
+      // Generate PDF
       console.log('ResultsActions: Generating PDF document...');
-      
       const pdfDoc = (
         <ReactPDFDocument
           categories={categories}
@@ -234,40 +213,29 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
         />
       );
       
-      console.log('ResultsActions: Creating PDF blob...');
       const pdfBlob = await pdf(pdfDoc).toBlob();
       
-      console.log('ResultsActions: PDF blob created:', {
-        size: pdfBlob.size,
-        type: pdfBlob.type
-      });
-      
-      // Create and trigger download
+      // Download
       const url = URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'leadership-assessment-results.pdf';
+      link.download = `leadership-assessment-results-${new Date().toISOString().split('T')[0]}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
       
-      console.log('ResultsActions: PDF download completed successfully');
+      console.log('ResultsActions: PDF download completed');
       
       toast({
-        title: "Download Successful",
+        title: "Download Complete",
         description: chartImageDataUrl 
           ? "Your leadership assessment results have been downloaded with the radar chart included."
-          : "Your leadership assessment results have been downloaded (chart placeholder included due to capture issues).",
+          : "Your leadership assessment results have been downloaded with a chart placeholder.",
       });
       
     } catch (error) {
-      console.error('ResultsActions: Error during enhanced PDF download:', error);
-      console.error('ResultsActions: Error details:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name
-      });
+      console.error('ResultsActions: Error during PDF download:', error);
       toast({
         title: "Download Failed", 
         description: "There was an error generating your PDF. Please try again.",
@@ -279,13 +247,10 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
   };
 
   const handleNewAssessment = () => {
-    // Notify user that a new assessment is starting
     toast({
       title: "Starting new assessment",
       description: "All previous ratings have been reset to default values.",
     });
-    
-    // Call the provided restart function
     onRestart();
   };
 

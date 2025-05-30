@@ -1,3 +1,4 @@
+
 import React, { useMemo, useRef, useEffect } from 'react';
 import { 
   ResponsiveContainer,
@@ -32,8 +33,8 @@ const CustomTick = (props: any) => {
   // Calculate angle from center to current position
   const angle = Math.atan2(y - cy, x - cx);
   
-  // Adjusted label radius - moved slightly further out for comfortable spacing
-  const labelRadius = isPDF ? 115 : 165; // Increased from 110/155 to 115/165
+  // Adjusted label radius - moved further out for optimal breathing room
+  const labelRadius = isPDF ? 120 : 175; // Increased from 115/165 to 120/175
   
   const labelX = cx + labelRadius * Math.cos(angle);
   const labelY = cy + labelRadius * Math.sin(angle);

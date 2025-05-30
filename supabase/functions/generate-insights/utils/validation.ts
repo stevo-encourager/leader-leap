@@ -32,10 +32,10 @@ export const validateInsightsStructure = (insights: any): void => {
     throw new Error('Invalid JSON structure - key_strengths must have at least 2 items');
   }
 
-  // Validate priority areas structure with more flexible insights validation
+  // Validate priority areas structure with updated resources validation
   for (const area of insights.priority_areas) {
-    if (!area.competency || !area.insights || !Array.isArray(area.insights) || !area.resource) {
-      throw new Error('Invalid priority area structure - must have competency, insights array, and resource');
+    if (!area.competency || !area.insights || !Array.isArray(area.insights)) {
+      throw new Error('Invalid priority area structure - must have competency and insights array');
     }
     
     // Check that insights array has at least 2 items and at most 5 items
@@ -57,9 +57,19 @@ export const validateInsightsStructure = (insights: any): void => {
     if (typeof area.gap !== 'number') {
       throw new Error('Invalid priority area structure - gap must be a number');
     }
+
+    // Handle both old 'resource' field and new 'resources' field for backward compatibility
+    if (!area.resources && area.resource) {
+      area.resources = [area.resource];
+    }
+    
+    // Resources field is optional now, but if present must be an array
+    if (area.resources && !Array.isArray(area.resources)) {
+      throw new Error('Invalid priority area structure - resources must be an array');
+    }
   }
 
-  // Validate key strengths structure with more flexible advice validation  
+  // Validate key strengths structure with updated resources validation  
   for (const strength of insights.key_strengths) {
     if (!strength.competency || !strength.example || !strength.leverage_advice || !Array.isArray(strength.leverage_advice)) {
       throw new Error('Invalid key strength structure - must have competency, example, and leverage_advice array');
@@ -79,6 +89,11 @@ export const validateInsightsStructure = (insights: any): void => {
       if (advice.length < 15) {
         throw new Error('Invalid key strength structure - leverage advice must be actionable, not just titles');
       }
+    }
+
+    // Resources field is optional, but if present must be an array
+    if (strength.resources && !Array.isArray(strength.resources)) {
+      throw new Error('Invalid key strength structure - resources must be an array');
     }
   }
 };

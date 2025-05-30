@@ -33,8 +33,8 @@ const CustomTick = (props: any) => {
   // Calculate angle from center to current position
   const angle = Math.atan2(y - cy, x - cx);
   
-  // Adjusted label radius - moved even further out for maximum breathing room
-  const labelRadius = isPDF ? 125 : 180; // Increased from 120/175 to 125/180
+  // Adjusted label radius - moved to maximum distance for ultimate breathing room
+  const labelRadius = isPDF ? 130 : 185; // Increased from 125/180 to 130/185
   
   const labelX = cx + labelRadius * Math.cos(angle);
   const labelY = cy + labelRadius * Math.sin(angle);

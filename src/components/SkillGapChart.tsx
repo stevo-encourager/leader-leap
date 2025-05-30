@@ -285,7 +285,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
 
   console.log("SkillGapChart - Rendering radar chart with data:", validChartData);
 
-  // Simplified chart margins for the new grid layout
+  // Chart margins
   const chartMargins = isPDF 
     ? { top: 20, right: 70, left: 70, bottom: 20 }
     : { top: 20, right: 120, left: 120, bottom: 20 };
@@ -309,7 +309,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
         display: 'grid',
         gridTemplateRows: isPDF ? '1fr' : '1fr auto',
         gridTemplateAreas: isPDF ? '"chart"' : '"chart" "legend"',
-        gap: isPDF ? '0' : '40px'
+        gap: isPDF ? '0' : '60px'
       }}
     >
       {/* Chart area with proper grid positioning */}
@@ -319,7 +319,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          minHeight: 0 // Important for grid items to shrink properly
+          minHeight: 0
         }}
       >
         <ResponsiveContainer width="100%" height="100%">
@@ -359,18 +359,25 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
         </ResponsiveContainer>
       </div>
 
-      {/* Legend area with fixed positioning below chart for dashboard only */}
+      {/* Legend area with horizontal line above it for dashboard only */}
       {!isPDF && (
         <div 
           style={{ 
             gridArea: 'legend',
             display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'flex-start',
-            paddingTop: '20px',
-            borderTop: '1px solid #e2e8f0'
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '20px'
           }}
         >
+          {/* Horizontal separator line */}
+          <div style={{ 
+            width: '100%', 
+            height: '1px', 
+            backgroundColor: '#e2e8f0' 
+          }}></div>
+          
+          {/* Legend */}
           <div style={{ 
             display: 'flex', 
             gap: '40px', 

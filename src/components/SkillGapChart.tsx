@@ -1,4 +1,3 @@
-
 import React, { useMemo, useRef, useEffect } from 'react';
 import { 
   ResponsiveContainer,
@@ -305,15 +304,15 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
 
   console.log("SkillGapChart - Rendering radar chart with data:", validChartData);
 
-  // Adjusted margins to accommodate increased label spacing
+  // Adjusted margins to accommodate increased label spacing and legend
   const chartMargins = isPDF 
-    ? { top: 30, right: 70, left: 70, bottom: 70 } // Increased margins for PDF
-    : { top: 60, right: 120, left: 120, bottom: 60 }; // Increased margins for dashboard
+    ? { top: 30, right: 70, left: 70, bottom: 100 } // Increased bottom margin for PDF legend spacing
+    : { top: 60, right: 120, left: 120, bottom: 120 }; // Increased bottom margin for better legend spacing
 
   // PDF-specific centering and sizing - adjusted for new spacing
   const centerX = isPDF ? "50%" : "50%";
-  const centerY = isPDF ? "50%" : "45%";
-  const outerRadius = isPDF ? "65%" : "80%"; // Slightly reduced to accommodate larger margins
+  const centerY = isPDF ? "45%" : "40%"; // Moved chart up slightly to accommodate legend spacing
+  const outerRadius = isPDF ? "60%" : "75%"; // Slightly reduced to accommodate larger margins and legend
 
   /**
    * CRITICAL FOR PDF EXPORT: This container MUST always have data-testid="radar-chart-container"
@@ -371,16 +370,20 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             strokeWidth={2}
           />
           <Tooltip />
-          {/* Only show Legend for dashboard (not PDF) */}
+          {/* Only show Legend for dashboard (not PDF) with improved spacing */}
           {!isPDF && (
             <Legend 
               layout="horizontal"
               verticalAlign="bottom"
               align="center"
               wrapperStyle={{
-                marginTop: '60px',
+                marginTop: '80px', // Increased from 60px to 80px for more spacing
+                paddingTop: '20px', // Added padding for extra visual separation
                 fontSize: '18px',
-                fontWeight: 'normal'
+                fontWeight: 'normal',
+                borderTop: '1px solid #e2e8f0', // Subtle border for visual separation
+                paddingLeft: '20px',
+                paddingRight: '20px'
               }}
             />
           )}

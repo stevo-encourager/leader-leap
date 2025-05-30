@@ -4,6 +4,14 @@ import { Category, Demographics } from '@/utils/assessmentTypes';
 import { calculateAverageGap } from '@/utils/assessmentCalculations/averages';
 import { generateResourceLink } from '@/utils/resourceMapping';
 
+// Ensure Buffer is available for @react-pdf/renderer
+if (typeof window !== 'undefined' && !window.Buffer) {
+  // Dynamically import and set Buffer
+  import('buffer').then(({ Buffer }) => {
+    window.Buffer = Buffer;
+  });
+}
+
 // Define styles for React PDF
 const styles = StyleSheet.create({
   page: {
@@ -205,22 +213,34 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
     day: 'numeric'
   });
 
-  // Enhanced chart image logging
+  // Enhanced chart image validation with buffer handling
   console.log('ReactPDFDocument: Chart data validation:', {
     hasChartData: !!chartImageDataUrl,
     dataUrlLength: chartImageDataUrl?.length || 0,
     isValidFormat: chartImageDataUrl?.startsWith('data:image/') || false,
+    bufferAvailable: typeof window !== 'undefined' ? !!window.Buffer : false,
     timestamp: new Date().toISOString()
   });
 
-  // Log additional context about chart data availability
-  if (!chartImageDataUrl) {
-    console.error('ReactPDFDocument: No chart image data URL provided - chart capture may have failed');
-  } else if (!chartImageDataUrl.startsWith('data:image/')) {
-    console.error('ReactPDFDocument: Invalid chart image data URL format:', chartImageDataUrl?.substring(0, 50));
-  } else {
-    console.log('ReactPDFDocument: Valid chart image data received, ready for PDF inclusion');
-  }
+  // Safely process chart image data
+  const processedChartData = React.useMemo(() => {
+    if (!chartImageDataUrl || !chartImageDataUrl.startsWith('data:image/')) {
+      console.warn('ReactPDFDocument: Invalid or missing chart data');
+      return null;
+    }
+
+    try {
+      // Additional validation for PDF compatibility
+      if (chartImageDataUrl.length > 500000) { // ~500KB limit
+        console.warn('ReactPDFDocument: Chart image too large, may cause PDF issues');
+      }
+      
+      return chartImageDataUrl;
+    } catch (error) {
+      console.error('ReactPDFDocument: Error processing chart data:', error);
+      return null;
+    }
+  }, [chartImageDataUrl]);
 
   const parseInsights = (insightsText: string): AIInsightsData | null => {
     try {
@@ -266,15 +286,15 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
         <Text style={styles.text}><Text style={styles.boldText}>Overall Development Gap:</Text> {averageGap.toFixed(2)} points</Text>
         <Text style={styles.text}>Assessment completed across {categories.length} competency areas</Text>
 
-        {/* Enhanced Chart section with guaranteed visibility */}
+        {/* Enhanced Chart section with better error handling */}
         <Text style={[styles.sectionTitle, { marginTop: 15 }]}>Competency Analysis - Radar Chart</Text>
         
         <View style={styles.chartContainer}>
-          {chartImageDataUrl && chartImageDataUrl.startsWith('data:image/') ? (
+          {processedChartData ? (
             <>
               <Image 
                 style={styles.chartImage}
-                src={chartImageDataUrl}
+                src={processedChartData}
               />
               <View style={styles.chartLegend}>
                 <View style={styles.legendItem}>
@@ -296,7 +316,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
                 Your radar chart visualization shows the gap between current and desired competency levels across all leadership areas.
               </Text>
               <Text style={[styles.text, { textAlign: 'center', fontSize: 10, color: '#9ca3af', marginTop: 8 }]}>
-                Chart capture was unavailable during PDF generation.
+                Chart image processing was unavailable during PDF generation.
               </Text>
             </View>
           )}

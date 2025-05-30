@@ -1,7 +1,13 @@
 
 import html2canvas from 'html2canvas';
+import { Buffer } from 'buffer';
 
-// Enhanced radar chart capture with comprehensive debugging and error handling
+// Ensure Buffer is available globally for @react-pdf/renderer
+if (typeof window !== 'undefined' && !window.Buffer) {
+  window.Buffer = Buffer;
+}
+
+// Enhanced radar chart capture with buffer handling for PDF compatibility
 export const captureRadarChartAsPNG = async (): Promise<string | null> => {
   return new Promise((resolve) => {
     console.log('ChartCapture: Starting enhanced radar chart capture...');
@@ -34,26 +40,11 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
           const rect = element.getBoundingClientRect();
           const isVisible = rect.width > 0 && rect.height > 0 && element.offsetParent !== null;
           
-          console.log(`ChartCapture: Element ${i} check:`, {
-            selector,
-            width: rect.width,
-            height: rect.height,
-            isVisible,
-            hasChildren: element.children.length > 0
-          });
-          
           if (isVisible) {
             // Look for SVG inside this element
             const svg = element.querySelector('svg');
             if (svg) {
               const svgRect = svg.getBoundingClientRect();
-              console.log('ChartCapture: Found SVG:', {
-                svgWidth: svgRect.width,
-                svgHeight: svgRect.height,
-                svgVisible: svgRect.width > 0 && svgRect.height > 0,
-                svgChildren: svg.children.length
-              });
-              
               if (svgRect.width > 0 && svgRect.height > 0) {
                 chartContainer = element;
                 console.log(`ChartCapture: Selected chart container with selector: ${selector}`);
@@ -72,22 +63,6 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
       
       if (!chartContainer) {
         console.error('ChartCapture: No valid radar chart container found');
-        
-        // Enhanced debugging: List all possible chart elements
-        const debugElements = document.querySelectorAll('[class*="chart"], [class*="radar"], [data-testid*="chart"], svg');
-        console.log('ChartCapture: Found potential chart elements:', debugElements.length);
-        debugElements.forEach((el, index) => {
-          const htmlEl = el as HTMLElement;
-          const rect = htmlEl.getBoundingClientRect();
-          console.log(`Debug element ${index}:`, {
-            tagName: htmlEl.tagName,
-            className: htmlEl.className,
-            testId: htmlEl.getAttribute('data-testid'),
-            dimensions: `${rect.width}x${rect.height}`,
-            visible: rect.width > 0 && rect.height > 0
-          });
-        });
-        
         resolve(null);
         return;
       }
@@ -110,23 +85,20 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         // Enhanced html2canvas options for better SVG capture
         const canvas = await html2canvas(chartContainer, {
           backgroundColor: '#ffffff',
-          scale: 3, // Higher scale for better quality
+          scale: 2, // Reduced from 3 to 2 for better compatibility
           useCORS: true,
           allowTaint: false,
-          logging: false, // Disable logging to reduce noise
+          logging: false,
           width: Math.round(finalRect.width),
           height: Math.round(finalRect.height),
           scrollX: 0,
           scrollY: 0,
-          // Critical SVG handling options
           foreignObjectRendering: true,
           removeContainer: false,
-          // Force SVG rendering
           onclone: (clonedDoc) => {
             console.log('ChartCapture: Processing cloned document for SVG elements');
             const clonedSvgs = clonedDoc.querySelectorAll('svg');
             clonedSvgs.forEach((svg) => {
-              // Ensure SVG has explicit dimensions
               if (!svg.getAttribute('width') && finalRect.width > 0) {
                 svg.setAttribute('width', finalRect.width.toString());
               }
@@ -149,11 +121,11 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
           return;
         }
         
-        // Convert to PNG with maximum quality
-        const dataUrl = canvas.toDataURL('image/png', 1.0);
+        // Convert to PNG with high quality but reduced file size for PDF compatibility
+        const dataUrl = canvas.toDataURL('image/png', 0.9);
         
         // Validate the result
-        if (!dataUrl || !dataUrl.startsWith('data:image/png') || dataUrl.length < 2000) {
+        if (!dataUrl || !dataUrl.startsWith('data:image/png') || dataUrl.length < 1000) {
           console.error('ChartCapture: Invalid or empty PNG data', {
             hasDataUrl: !!dataUrl,
             correctFormat: dataUrl?.startsWith('data:image/png'),
@@ -163,13 +135,13 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
           return;
         }
         
-        console.log('ChartCapture: Successfully captured chart image');
+        console.log('ChartCapture: Successfully captured chart image, size:', dataUrl.length);
         resolve(dataUrl);
         
       } catch (error) {
         console.error('ChartCapture: Error during capture:', error);
         resolve(null);
       }
-    }, 3000); // Increased delay to ensure chart is fully rendered
+    }, 3000);
   });
 };

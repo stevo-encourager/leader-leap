@@ -1,3 +1,4 @@
+
 import React, { useMemo, useRef, useEffect } from 'react';
 import { 
   ResponsiveContainer,
@@ -69,10 +70,8 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
   // Ensure categories is always an array
   const safeCategories = Array.isArray(categories) ? categories : [];
   
-  // Log detailed info about categories
   console.log("SkillGapChart - Categories count:", safeCategories.length);
   if (safeCategories.length > 0) {
-    // Safely stringify categories to avoid circular references
     const safeCategoriesString = JSON.stringify(
       safeCategories.map(cat => ({
         title: cat.title,
@@ -89,7 +88,6 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
     const totalSkills = safeCategories.reduce((total, cat) => total + (cat.skills?.length || 0), 0);
     console.log("SkillGapChart - Total skills:", totalSkills);
     
-    // Log first category as sample
     if (safeCategories[0]) {
       const firstCat = safeCategories[0];
       console.log("SkillGapChart - First category:", {
@@ -111,34 +109,27 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
       return [];
     }
     
-    // Process all categories to chart data
     const result: ChartData[] = [];
     
     for (const category of safeCategories) {
-      // Skip invalid categories
       if (!category || !category.skills || !Array.isArray(category.skills)) {
         console.log(`SkillGapChart - Skipping invalid category: ${category?.title || 'unknown'}`);
         continue;
       }
       
-      // Default values
       let totalCurrent = 0;
       let totalDesired = 0;
       let validSkillCount = 0;
       
-      // Process each skill in the category
       for (const skill of category.skills) {
-        // Skip invalid skills
         if (!skill || !skill.ratings) {
           console.log(`SkillGapChart - Skipping invalid skill (no ratings): ${skill?.name || 'unknown'}`);
           continue;
         }
         
-        // Get ratings with detailed validation
         let current = 0;
         let desired = 0;
         
-        // Handle current rating
         if (typeof skill.ratings.current === 'number') {
           current = skill.ratings.current;
         } else if (skill.ratings.current !== undefined && skill.ratings.current !== null) {
@@ -149,7 +140,6 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
           }
         }
         
-        // Handle desired rating
         if (typeof skill.ratings.desired === 'number') {
           desired = skill.ratings.desired;
         } else if (skill.ratings.desired !== undefined && skill.ratings.desired !== null) {
@@ -160,11 +150,9 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
           }
         }
         
-        // Ensure valid numbers
         current = isNaN(current) ? 0 : current;
         desired = isNaN(desired) ? 0 : desired;
         
-        // Only include valid, non-zero ratings
         if (current > 0 || desired > 0) {
           totalCurrent += current;
           totalDesired += desired;
@@ -175,13 +163,10 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
         }
       }
       
-      // Only include categories with valid skills
       if (validSkillCount > 0) {
-        // Calculate averages
         const avgCurrent = parseFloat((totalCurrent / validSkillCount).toFixed(1));
         const avgDesired = parseFloat((totalDesired / validSkillCount).toFixed(1));
         
-        // Shorter category names for PDF display to prevent clipping
         const displayTitle = isPDF && category.title && category.title.length > 15 
           ? category.title.substring(0, 12) + '...' 
           : category.title || "Unknown Category";
@@ -208,7 +193,6 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
     return result;
   }, [safeCategories, isPDF]);
 
-  // Filter to only show categories with actual data
   const validChartData = chartData.filter(
     item => item.skillCount && item.skillCount > 0 && 
            ((item.current > 0 || item.desired > 0) && 
@@ -237,7 +221,6 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             children: container.children.length
           });
           
-          // Check for SVG elements specifically
           const svgInContainer = container.querySelector('svg');
           if (svgInContainer) {
             console.log('SVG found in radar container:', {
@@ -249,7 +232,6 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
               children: svgInContainer.children.length
             });
             
-            // Check for specific recharts elements
             const rechartsWrapper = container.querySelector('.recharts-wrapper');
             const rechartsRadar = container.querySelector('.recharts-radar-chart');
             const rechartsRadarElements = container.querySelectorAll('[class*="recharts-radar"]');
@@ -264,7 +246,6 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
           }
         }
         
-        // Test all our capture selectors to see what they find
         const captureSelectors = [
           '[data-testid="radar-chart-container"]',
           '[data-chart-type="radar"]',
@@ -304,15 +285,10 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
 
   console.log("SkillGapChart - Rendering radar chart with data:", validChartData);
 
-  // Reduced top margin to balance with increased bottom space
+  // Simplified chart margins for the new grid layout
   const chartMargins = isPDF 
-    ? { top: 30, right: 70, left: 70, bottom: 30 } // Keep PDF margins unchanged
-    : { top: 30, right: 120, left: 120, bottom: 60 }; // Reduced top margin from 60 to 30
-
-  // Restore original chart centering and sizing - keep chart at original size
-  const centerX = isPDF ? "50%" : "50%";
-  const centerY = isPDF ? "50%" : "50%"; // Restore original center position
-  const outerRadius = isPDF ? "65%" : "80%"; // Restore original chart size
+    ? { top: 20, right: 70, left: 70, bottom: 20 }
+    : { top: 20, right: 120, left: 120, bottom: 20 };
 
   /**
    * CRITICAL FOR PDF EXPORT: This container MUST always have data-testid="radar-chart-container"
@@ -328,68 +304,100 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
       id="radar-chart-container"
       style={{
         width: '100%',
-        height: '100%',
-        minHeight: isPDF ? '400px' : '700px', // Increased height to accommodate even more space for legend
-        position: 'relative',
-        backgroundColor: 'white' // Ensure white background for capture
+        height: isPDF ? '400px' : '600px',
+        backgroundColor: 'white',
+        display: 'grid',
+        gridTemplateRows: isPDF ? '1fr' : '1fr auto',
+        gridTemplateAreas: isPDF ? '"chart"' : '"chart" "legend"',
+        gap: isPDF ? '0' : '40px'
       }}
     >
-      <ResponsiveContainer width="100%" height="100%">
-        <RadarChart 
-          data={validChartData} 
-          margin={chartMargins}
-          cx={centerX}
-          cy={centerY}
-          outerRadius={outerRadius}
-          className="recharts-radar-chart"
-        >
-          <PolarGrid 
-            strokeDasharray="2 2" 
-            stroke="#94a3b8"
-            strokeWidth={1.2}
-            gridType="polygon"
-          />
-          <PolarAngleAxis 
-            dataKey="subject"
-            tick={(props) => <CustomTick {...props} isPDF={isPDF} />}
-          />
-          <Radar
-            name={isPDF ? "Current State" : "Current Level"}
-            dataKey="current"
-            stroke="#2F564D"
-            fill="#2F564D"
-            fillOpacity={0.6}
-            strokeWidth={2}
-          />
-          <Radar
-            name={isPDF ? "Desired State" : "Desired Level"}
-            dataKey="desired"
-            stroke="#8baca5"
-            fill="#8baca5"
-            fillOpacity={0.6}
-            strokeWidth={2}
-          />
-          <Tooltip />
-          {/* Only show Legend for dashboard (not PDF) positioned at the bottom with very generous spacing */}
-          {!isPDF && (
-            <Legend 
-              layout="horizontal"
-              verticalAlign="bottom"
-              align="center"
-              wrapperStyle={{
-                marginTop: '220px', // Further increased from 180px to create very generous space
-                paddingTop: '50px', // Increased padding for maximum visual separation
-                fontSize: '18px',
-                fontWeight: 'normal',
-                borderTop: '1px solid #e2e8f0', // Subtle border for visual separation
-                paddingLeft: '20px',
-                paddingRight: '20px',
-                paddingBottom: '20px' // Bottom padding for the legend
-              }}
+      {/* Chart area with proper grid positioning */}
+      <div 
+        style={{ 
+          gridArea: 'chart',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: 0 // Important for grid items to shrink properly
+        }}
+      >
+        <ResponsiveContainer width="100%" height="100%">
+          <RadarChart 
+            data={validChartData} 
+            margin={chartMargins}
+            className="recharts-radar-chart"
+          >
+            <PolarGrid 
+              strokeDasharray="2 2" 
+              stroke="#94a3b8"
+              strokeWidth={1.2}
+              gridType="polygon"
             />
-          )}
-        </RadarChart>
-      </ResponsiveContainer>
+            <PolarAngleAxis 
+              dataKey="subject"
+              tick={(props) => <CustomTick {...props} isPDF={isPDF} />}
+            />
+            <Radar
+              name={isPDF ? "Current State" : "Current Level"}
+              dataKey="current"
+              stroke="#2F564D"
+              fill="#2F564D"
+              fillOpacity={0.6}
+              strokeWidth={2}
+            />
+            <Radar
+              name={isPDF ? "Desired State" : "Desired Level"}
+              dataKey="desired"
+              stroke="#8baca5"
+              fill="#8baca5"
+              fillOpacity={0.6}
+              strokeWidth={2}
+            />
+            <Tooltip />
+          </RadarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Legend area with fixed positioning below chart for dashboard only */}
+      {!isPDF && (
+        <div 
+          style={{ 
+            gridArea: 'legend',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'flex-start',
+            paddingTop: '20px',
+            borderTop: '1px solid #e2e8f0'
+          }}
+        >
+          <div style={{ 
+            display: 'flex', 
+            gap: '40px', 
+            fontSize: '16px',
+            alignItems: 'center'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ 
+                width: '16px', 
+                height: '16px', 
+                backgroundColor: '#2F564D', 
+                opacity: 0.6 
+              }}></div>
+              <span>Current Level</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ 
+                width: '16px', 
+                height: '16px', 
+                backgroundColor: '#8baca5', 
+                opacity: 0.6 
+              }}></div>
+              <span>Desired Level</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

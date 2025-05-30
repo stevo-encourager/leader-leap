@@ -77,14 +77,15 @@ You MUST output ONLY a valid JSON object with this EXACT structure:
       "competency": "string",
       "gap": number,
       "insights": ["string1", "string2", "string3"],
-      "resource": "string"
+      "resources": ["string1", "string2", "string3"]
     }
   ],
   "key_strengths": [
     {
       "competency": "string", 
       "example": "string",
-      "leverage_advice": ["string1", "string2", "string3"]
+      "leverage_advice": ["string1", "string2", "string3"],
+      "resources": ["string1", "string2", "string3"]
     }
   ]
 }
@@ -95,7 +96,7 @@ You MUST output ONLY a valid JSON object with this EXACT structure:
 
 CRITICAL FORMATTING FOR SUMMARY: Structure the summary as TWO clear paragraphs that will be separated by post-processing. Use transition phrases like "However," "At the same time," "Additionally," or "Your results also" to start the second paragraph. Follow this pattern:
 
-First paragraph: Begin by identifying your most distinctive competencies and what those mean for your leadership style. Include a brief example of a well-known leader who exemplifies the same top competencies, naming the leader and connecting to your assessment.
+First paragraph: Begin by identifying your most distinctive competencies and what those mean for your leadership style. Include a brief example of a well-known leader who exemplifies the same top competencies, making the leader's name a clickable link to a relevant external web page (such as Wikipedia or the leader's official site) using markdown format: [Leader Name](https://example.com).
 
 Second paragraph: Start with a transition phrase, then note your key areas for development, explaining why they matter and how your competencies can support growth in these areas.
 
@@ -115,34 +116,21 @@ The summary should be written as continuous text but structured so it can be spl
     - Address lesser-known but useful aspects of the competency
     - Provide depth beyond common knowledge
     
-    **EXAMPLES OF GOOD vs BAD INSIGHTS**:
-    
-    BAD (generic): "Developing emotional intelligence can enhance your ability to empathize with team members, improving communication and collaboration."
-    
-    GOOD (specific & actionable): "Practice the 'emotional labeling' technique from neuroscience research: when you notice strong emotions arising in meetings, mentally name the emotion (e.g., 'I'm feeling frustrated') which activates your prefrontal cortex and reduces the emotion's intensity by up to 50%."
-    
-    BAD (obvious): "Good communication helps build trust with your team."
-    
-    GOOD (actionable): "Use the 'SBI model' (Situation-Behavior-Impact) when giving feedback: describe the specific situation, the observable behavior, and its impact, which reduces defensiveness and increases the likelihood of behavior change by 40% according to CCL research."
-    
     **REQUIRED ELEMENTS FOR EACH INSIGHT**:
     - Must include specific techniques, frameworks, or research-backed strategies
     - Should reference measurable outcomes when possible
     - Must go beyond what most people already know about the topic
     - Should include practical implementation advice
-    - One insight per competency must reference or connect to the recommended resource
+    - One insight per competency may reference recommended resources
 
-    **OPTIONAL CLIFTON STRENGTHS / PREDICTIVE INDEX INTEGRATION**:
-    - Maximum of ONE mention per assessment across all insights and leverage advice combined
+    **CRITICAL TOOL EXCLUSIVITY RULE**:
+    - Maximum of ONE mention per assessment of EITHER Clifton Strengths OR Predictive Index (never both)
     - Only include when naturally relevant to the competency being discussed
-    - Examples of natural integration:
-      * For team building/delegation: "Consider using Clifton Strengths assessments to understand your team's natural talents and delegate tasks that align with their top themes"
-      * For professional development: "The Predictive Index can help you understand your behavioral drives and adapt your leadership style to different team members' needs"
-      * For communication/conflict resolution: "Use insights from tools like Clifton Strengths or The Predictive Index to understand how different team members prefer to receive feedback and communicate"
+    - If one tool is mentioned anywhere in the assessment, the other must NOT be mentioned
     - Should feel helpful and natural, not forced or promotional
-    - Focus on how these tools can enhance the specific competency being developed
+    - Focus on how the chosen tool can enhance the specific competency being developed
 
-  - \`resource\` (string): A well-known, practical resource. When possible, use these EXACT titles for consistency:
+  - \`resources\` (array of 1-3 strings): List all practical resources mentioned in the insights. When possible, use these EXACT titles for consistency:
     * For Emotional Intelligence: "Emotional Intelligence 2.0 by Travis Bradberry"
     * For Conflict Resolution: "Crucial Conversations by Kerry Patterson" or "Crucial Conversations training program"
     * For Change Management: "ADKAR Model" or "Kotter 8-Step Process"
@@ -157,17 +145,19 @@ The summary should be written as continuous text but structured so it can be spl
 - \`key_strengths\`: An array with at least 2 objects, each for a key competency to leverage:
   - \`competency\` (string): The name of the competency from the assessment data above
   - \`example\` (string): A concrete example of this competency in action (from data or a plausible scenario)
-  - \`leverage_advice\` (array of exactly 3 strings): Three actionable, positive suggestions for further leveraging this competency. Apply the same quality standards as insights - avoid generic advice, provide specific strategies, frameworks, or research-backed approaches. The optional Clifton Strengths/Predictive Index integration guideline also applies here if not already used in the insights section.
+  - \`leverage_advice\` (array of exactly 3 strings): Three actionable, positive suggestions for further leveraging this competency. Apply the same quality standards as insights - avoid generic advice, provide specific strategies, frameworks, or research-backed approaches. The CRITICAL TOOL EXCLUSIVITY RULE also applies here.
+  - \`resources\` (array of 0-3 strings): List any practical resources mentioned in the leverage advice using the same exact titles when possible.
 
 ### CRITICAL JSON Rules
 - Output MUST be valid JSON only. No text, markdown, or formatting before/after.
-- The \`insights\` field must be an array of strings ONLY. Do NOT include any other keys inside this array.
-- The \`resource\` field must be at the same level as \`insights\`, NOT inside the insights array.
+- The \`insights\` and \`leverage_advice\` fields must be arrays of strings ONLY.
+- The \`resources\` field must be an array of strings listing all resources mentioned in insights/advice.
 - All arrays must contain only the specified data types.
-- Structure the summary for easy paragraph splitting during post-processing.
+- Structure the summary for easy paragraph splitting during post-processing with leader names as clickable links.
 - When possible, use the exact resource titles listed above for consistency with our resource mapping system.
 - NEVER write generic, obvious statements - every insight must provide genuine value and actionable advice.
-- Remember: Maximum ONE mention of Clifton Strengths or Predictive Index per entire assessment, and only when naturally relevant.
+- Remember: Maximum ONE mention of either Clifton Strengths or Predictive Index per entire assessment, and only when naturally relevant.
+- Make leader names clickable links using markdown format in the summary.
 
 Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above.`;
 };

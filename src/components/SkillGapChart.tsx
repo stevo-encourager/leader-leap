@@ -70,6 +70,9 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
   const safeCategories = Array.isArray(categories) ? categories : [];
   
   console.log("SkillGapChart - Categories count:", safeCategories.length);
+  console.log("SkillGapChart - isPDF:", isPDF);
+  console.log("SkillGapChart - Should show legend:", !isPDF);
+  
   if (safeCategories.length > 0) {
     const safeCategoriesString = JSON.stringify(
       safeCategories.map(cat => ({
@@ -243,6 +246,21 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
           } else {
             console.warn('No SVG found in radar chart container!');
           }
+          
+          // DEBUG: Check for legend element specifically
+          const legendElement = container.querySelector('[style*="gridArea"]');
+          console.log('Legend element found:', !!legendElement);
+          if (legendElement) {
+            console.log('Legend element details:', {
+              element: legendElement,
+              computedStyle: window.getComputedStyle(legendElement),
+              offsetWidth: (legendElement as HTMLElement).offsetWidth,
+              offsetHeight: (legendElement as HTMLElement).offsetHeight,
+              display: window.getComputedStyle(legendElement).display,
+              visibility: window.getComputedStyle(legendElement).visibility,
+              opacity: window.getComputedStyle(legendElement).opacity
+            });
+          }
         }
         
         const captureSelectors = [
@@ -308,7 +326,8 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
         display: 'grid',
         gridTemplateRows: isPDF ? '1fr' : '1fr auto',
         gridTemplateAreas: isPDF ? '"chart"' : '"chart" "legend"',
-        gap: isPDF ? '0' : '60px'
+        gap: isPDF ? '0' : '60px',
+        overflow: 'visible' // Ensure nothing gets clipped
       }}
     >
       {/* Chart area with proper grid positioning */}
@@ -358,7 +377,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
         </ResponsiveContainer>
       </div>
 
-      {/* Legend area - ALWAYS show for dashboard (non-PDF) */}
+      {/* Legend area - ALWAYS show for dashboard (non-PDF) with DEBUG styling */}
       {!isPDF && (
         <div 
           style={{ 
@@ -368,14 +387,29 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             alignItems: 'center',
             gap: '20px',
             minHeight: 'auto',
-            height: 'auto'
+            height: 'auto',
+            // DEBUG: Add bright background to verify it's rendering
+            backgroundColor: '#ffeb3b', // Bright yellow background for debugging
+            border: '2px solid #f44336', // Red border for debugging
+            padding: '20px',
+            borderRadius: '8px'
           }}
         >
+          {/* DEBUG: Add text to confirm legend is rendering */}
+          <div style={{ 
+            color: 'red', 
+            fontWeight: 'bold', 
+            fontSize: '18px',
+            textAlign: 'center'
+          }}>
+            LEGEND AREA (DEBUG - this should be visible!)
+          </div>
+          
           {/* Horizontal separator line */}
           <div style={{ 
             width: '100%', 
-            height: '1px', 
-            backgroundColor: '#e2e8f0',
+            height: '2px', 
+            backgroundColor: '#333',
             flexShrink: 0
           }}></div>
           

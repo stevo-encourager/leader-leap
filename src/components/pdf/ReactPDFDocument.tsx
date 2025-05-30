@@ -243,7 +243,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
 
   return (
     <Document>
-      {/* Page 1 - Header, Profile, and Chart */}
+      {/* Page 1 - Header and Profile */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
           <Image 

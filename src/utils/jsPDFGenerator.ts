@@ -163,10 +163,10 @@ export const generatePDFWithJsPDF = async (
     }
     yPosition += 30;
 
-    // Title
+    // Title - Updated to "Leader Leap Assessment Results"
     doc.setFontSize(24);
     doc.setFont('helvetica', 'bold');
-    doc.text('Leadership Assessment Results', pageWidth / 2, yPosition, { align: 'center' });
+    doc.text('Leader Leap Assessment Results', pageWidth / 2, yPosition, { align: 'center' });
     yPosition += 15;
 
     // Date
@@ -243,7 +243,7 @@ export const generatePDFWithJsPDF = async (
 
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    doc.text('Personalized leadership development insights powered by Encourager GPT', margin, yPosition);
+    doc.text('Personalized leadership development insights powered by EncouragerGPT', margin, yPosition);
     yPosition += 15;
 
     // Parse and display insights
@@ -421,7 +421,7 @@ export const generatePDFWithJsPDF = async (
     yPosition = pageHeight - 20;
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    doc.text('Leadership Assessment Tool • Generated on ' + currentDate, pageWidth / 2, yPosition, { align: 'center' });
+    doc.text('Leader Leap Assessment Tool • Generated on ' + currentDate, pageWidth / 2, yPosition, { align: 'center' });
     doc.text('This assessment is designed to help you identify development opportunities and create targeted improvement plans.', pageWidth / 2, yPosition + 5, { align: 'center' });
 
     // Save the PDF

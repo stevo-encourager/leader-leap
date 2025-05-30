@@ -274,7 +274,7 @@ const PDFTemplate: React.FC<PDFTemplateProps> = ({ categories, demographics, ass
           }}
         />
 
-        {/* Header - Page 1 content */}
+        {/* Header - Page 1 content - Updated title */}
         <div className="no-spacing">
           <h1>Leader Leap Assessment Results</h1>
           <p style={{ textAlign: 'center', color: '#64748b', margin: '0 0 8px 0', padding: '0' }}>

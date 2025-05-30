@@ -12,7 +12,7 @@ if (typeof window !== 'undefined' && !window.Buffer) {
   });
 }
 
-// Define styles for React PDF
+// Enhanced PDF-compatible styles
 const styles = StyleSheet.create({
   page: {
     flexDirection: 'column',
@@ -86,10 +86,11 @@ const styles = StyleSheet.create({
     marginVertical: 15,
     backgroundColor: '#ffffff',
     width: '100%',
+    minHeight: 320,
   },
   chartImage: {
-    maxWidth: 500,
-    maxHeight: 500,
+    maxWidth: 480,
+    maxHeight: 320,
     marginBottom: 8,
     alignSelf: 'center',
   },
@@ -103,6 +104,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     alignSelf: 'center',
     borderRadius: 8,
+    padding: 20,
   },
   chartLegend: {
     flexDirection: 'row',
@@ -213,7 +215,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
     day: 'numeric'
   });
 
-  // Enhanced chart image validation with buffer handling
+  // Enhanced chart image validation with better error handling
   console.log('ReactPDFDocument: Chart data validation:', {
     hasChartData: !!chartImageDataUrl,
     dataUrlLength: chartImageDataUrl?.length || 0,
@@ -222,19 +224,27 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
     timestamp: new Date().toISOString()
   });
 
-  // Safely process chart image data
+  // Safely process chart image data with better validation
   const processedChartData = React.useMemo(() => {
-    if (!chartImageDataUrl || !chartImageDataUrl.startsWith('data:image/')) {
+    if (!chartImageDataUrl || !chartImageDataUrl.startsWith('data:image/png')) {
       console.warn('ReactPDFDocument: Invalid or missing chart data');
       return null;
     }
 
     try {
-      // Additional validation for PDF compatibility
-      if (chartImageDataUrl.length > 500000) { // ~500KB limit
-        console.warn('ReactPDFDocument: Chart image too large, may cause PDF issues');
+      // Check data URL format more thoroughly
+      const base64Part = chartImageDataUrl.split(',')[1];
+      if (!base64Part || base64Part.length < 100) {
+        console.warn('ReactPDFDocument: Chart data appears to be empty or corrupted');
+        return null;
+      }
+
+      // Size validation - not too large for PDF
+      if (chartImageDataUrl.length > 1000000) { // ~1MB limit
+        console.warn('ReactPDFDocument: Chart image very large, may cause PDF issues');
       }
       
+      console.log('ReactPDFDocument: Valid chart image data received, ready for PDF inclusion');
       return chartImageDataUrl;
     } catch (error) {
       console.error('ReactPDFDocument: Error processing chart data:', error);
@@ -286,7 +296,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
         <Text style={styles.text}><Text style={styles.boldText}>Overall Development Gap:</Text> {averageGap.toFixed(2)} points</Text>
         <Text style={styles.text}>Assessment completed across {categories.length} competency areas</Text>
 
-        {/* Enhanced Chart section with better error handling */}
+        {/* Enhanced Chart section with better fallback */}
         <Text style={[styles.sectionTitle, { marginTop: 15 }]}>Competency Analysis - Radar Chart</Text>
         
         <View style={styles.chartContainer}>
@@ -312,11 +322,12 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
               <Text style={[styles.text, { textAlign: 'center', marginBottom: 10, fontSize: 14, fontWeight: 'bold', color: '#374151' }]}>
                 Competency Radar Chart
               </Text>
-              <Text style={[styles.text, { textAlign: 'center', fontSize: 11, color: '#64748b', maxWidth: 300 }]}>
-                Your radar chart visualization shows the gap between current and desired competency levels across all leadership areas.
+              <Text style={[styles.text, { textAlign: 'center', fontSize: 11, color: '#64748b', maxWidth: 350, lineHeight: 1.4 }]}>
+                Your radar chart visualization shows the gap between current and desired competency levels across all leadership areas. 
+                The chart displays your self-assessment across {categories.length} key competency categories with an overall development gap of {averageGap.toFixed(2)} points.
               </Text>
               <Text style={[styles.text, { textAlign: 'center', fontSize: 10, color: '#9ca3af', marginTop: 8 }]}>
-                Chart image processing was unavailable during PDF generation.
+                Chart image could not be embedded in this PDF version.
               </Text>
             </View>
           )}
@@ -404,7 +415,6 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
             <Text style={[styles.boldText, { marginTop: 10 }]}>Book a free 30-minute discovery call now</Text>
             <Text style={styles.linkText}>www.encouragercoaching.com</Text>
             
-            {/* Bottom logo - left-aligned and matching top logo size (fixed from user request) */}
             <Image 
               style={styles.bottomLogo}
               src="/lovable-uploads/db40277e-6ff0-437e-acf2-faaa2d92671e.png"

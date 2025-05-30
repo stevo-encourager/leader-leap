@@ -329,7 +329,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
       style={{
         width: '100%',
         height: '100%',
-        minHeight: isPDF ? '400px' : '650px', // Increased height to accommodate legend below
+        minHeight: isPDF ? '400px' : '550px', // Reduced height to move chart higher
         position: 'relative',
         backgroundColor: 'white' // Ensure white background for capture
       }}
@@ -377,8 +377,8 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
               verticalAlign="bottom"
               align="center"
               wrapperStyle={{
-                marginTop: '120px', // Increased margin to push legend further down
-                paddingTop: '30px', // Extra padding for visual separation
+                marginTop: '80px', // Reduced from 120px to bring legend closer to chart
+                paddingTop: '20px', // Reduced padding
                 fontSize: '18px',
                 fontWeight: 'normal',
                 borderTop: '1px solid #e2e8f0', // Subtle border for visual separation

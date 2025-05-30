@@ -242,7 +242,7 @@ export const generatePDFWithJsPDF = async (
 
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    doc.text('Personalized leadership development insights powered by EncouragerGPT', margin, yPosition);
+    doc.text('Personalized leadership development insights powered by Encourager GPT', margin, yPosition);
     yPosition += 15;
 
     // Parse and display insights

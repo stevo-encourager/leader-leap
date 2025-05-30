@@ -230,7 +230,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
             <div>
               <h2 className="text-2xl font-bold text-encourager font-playfair">AI-Powered Insights</h2>
               <p className="text-sm text-slate-600 mt-1">
-                Personalized leadership development insights powered by EncouragerGPT
+                Personalized leadership development insights powered by Encourager GPT
               </p>
             </div>
           </div>
@@ -240,7 +240,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
           <div className="flex items-center justify-center py-12">
             <div className="flex items-center gap-3 text-encourager">
               <Bot className="animate-pulse" size={24} />
-              <span className="text-lg">EncouragerGPT is analyzing your assessment results...</span>
+              <span className="text-lg">Encourager GPT is analyzing your assessment results...</span>
             </div>
           </div>
         )}

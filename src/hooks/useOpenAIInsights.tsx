@@ -96,7 +96,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
         setInsights(data.insights);
         console.log('useOpenAIInsights: Successfully received and stored AI insights permanently');
       } else {
-        throw new Error('No insights received from EncouragerGPT');
+        throw new Error('No insights received from OpenAI');
       }
     } catch (err) {
       console.error('useOpenAIInsights: Error generating insights:', err);

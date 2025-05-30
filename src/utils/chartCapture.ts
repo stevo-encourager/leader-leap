@@ -1,7 +1,17 @@
 
 import html2canvas from 'html2canvas';
 
-// Enhanced radar chart capture logic with improved selector fallbacks
+/**
+ * CRITICAL FOR PDF EXPORT: Enhanced radar chart capture logic
+ * 
+ * This function is essential for PDF export functionality. It captures the radar chart
+ * as a PNG image that gets embedded in the PDF. The primary selector used is:
+ * [data-testid="radar-chart-container"]
+ * 
+ * DO NOT CHANGE the primary selector without updating the SkillGapChart component!
+ * The data-testid="radar-chart-container" attribute in SkillGapChart.tsx must match
+ * the primary selector here, or PDF exports will fail.
+ */
 export const captureRadarChartAsPNG = async (): Promise<string | null> => {
   return new Promise((resolve) => {
     console.log('ChartCapture: Starting radar chart capture process...');
@@ -10,9 +20,14 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
     setTimeout(async () => {
       console.log('ChartCapture: Looking for radar chart container...');
       
-      // Enhanced selectors with recharts-surface fallback - prioritize containers first
+      /**
+       * SELECTOR PRIORITY ORDER:
+       * 1. [data-testid="radar-chart-container"] - PRIMARY SELECTOR (must not be changed!)
+       * 2. Fallback selectors for backwards compatibility
+       * 3. .recharts-surface - Last resort fallback to SVG element
+       */
       const selectors = [
-        '[data-testid="radar-chart-container"]',
+        '[data-testid="radar-chart-container"]', // PRIMARY - DO NOT REMOVE!
         '#radar-chart-container', 
         '[data-chart-type="radar"]',
         '.radar-chart-container',
@@ -33,7 +48,8 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
       }
       
       if (!radarContainer) {
-        console.warn('ChartCapture: No radar chart container found with any selector');
+        console.error('ChartCapture: CRITICAL ERROR - No radar chart container found with any selector!');
+        console.error('ChartCapture: This usually means the data-testid="radar-chart-container" attribute is missing from SkillGapChart.tsx');
         console.log('ChartCapture: Available elements:', {
           totalElements: document.querySelectorAll('*').length,
           svgElements: document.querySelectorAll('svg').length,
@@ -64,7 +80,8 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         while (parentContainer && parentContainer !== document.body) {
           if (parentContainer.offsetWidth > radarContainer.offsetWidth || 
               parentContainer.classList.contains('recharts-wrapper') ||
-              parentContainer.classList.contains('radar-chart-container')) {
+              parentContainer.classList.contains('radar-chart-container') ||
+              parentContainer.getAttribute('data-testid') === 'radar-chart-container') {
             console.log('ChartCapture: Using parent container instead of SVG');
             radarContainer = parentContainer;
             break;

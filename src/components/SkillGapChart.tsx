@@ -315,7 +315,11 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
   const centerY = isPDF ? "50%" : "45%";
   const outerRadius = isPDF ? "65%" : "80%"; // Slightly reduced to accommodate larger margins
 
-  // Enhanced radar chart with proper capture attributes and CRITICAL container structure
+  /**
+   * CRITICAL FOR PDF EXPORT: This container MUST always have data-testid="radar-chart-container"
+   * The PDF export function captureRadarChartAsPNG() depends on this attribute to find and capture the chart.
+   * DO NOT REMOVE OR CHANGE this data-testid attribute - it will break PDF exports!
+   */
   return (
     <div 
       ref={chartContainerRef}

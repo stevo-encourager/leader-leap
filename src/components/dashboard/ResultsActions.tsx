@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { ArrowLeft, Download, Plus, Info, TestTube } from 'lucide-react';
+import { ArrowLeft, Download, Plus, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
@@ -41,22 +42,6 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     averageGap,
     assessmentId
   });
-  
-  // ENHANCED DEVELOPMENT MODE DETECTION WITH EXPLICIT LOGGING
-  const isDevelopment = process.env.NODE_ENV === 'development' || 
-                       window.location.hostname === 'localhost' || 
-                       window.location.hostname === '127.0.0.1' ||
-                       window.location.port !== '';
-  
-  // EXPLICIT LOGGING FOR BUTTON VISIBILITY DEBUGGING
-  console.log('=== ResultsActions Button Visibility Debug ===');
-  console.log('NODE_ENV:', process.env.NODE_ENV);
-  console.log('window.location.hostname:', window.location.hostname);
-  console.log('window.location.port:', window.location.port);
-  console.log('window.location.href:', window.location.href);
-  console.log('isDevelopment calculated as:', isDevelopment);
-  console.log('Button should be visible:', isDevelopment);
-  console.log('==============================================');
   
   // Enhanced validation to check if we actually have assessment data
   const hasValidAssessmentData = () => {
@@ -141,61 +126,6 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     
     console.log('ResultsActions: Insights are ready for export with consistent data');
     return true;
-  };
-  
-  // Test function for chart capture - Enhanced with better feedback
-  const handleTestChartCapture = async () => {
-    console.log('=== TEST CHART CAPTURE CLICKED ===');
-    console.log('ResultsActions: Testing chart capture...');
-    console.log('ResultsActions: Looking for radar chart elements in DOM...');
-    
-    // Log current DOM state for debugging
-    const radarContainer = document.querySelector('[data-testid="radar-chart-container"]');
-    const allSvgs = document.querySelectorAll('svg');
-    
-    console.log('ResultsActions: DOM Analysis:', {
-      radarContainerFound: !!radarContainer,
-      totalSvgElements: allSvgs.length,
-      radarContainerHTML: radarContainer ? radarContainer.outerHTML.substring(0, 200) + '...' : 'Not found'
-    });
-    
-    try {
-      const chartImageDataUrl = await captureRadarChartAsPNG();
-      
-      if (chartImageDataUrl) {
-        console.log('ResultsActions: Chart capture test successful');
-        console.log('ResultsActions: Image data length:', chartImageDataUrl.length);
-        
-        toast({
-          title: "Chart Capture Test Successful ✅",
-          description: `Chart captured successfully! Data URL length: ${chartImageDataUrl.length} characters. Check console for details.`,
-        });
-        
-        // Create a temporary download to verify the image
-        const link = document.createElement('a');
-        link.download = 'test-radar-chart.png';
-        link.href = chartImageDataUrl;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        console.log('ResultsActions: Test image downloaded for verification');
-      } else {
-        console.error('ResultsActions: Chart capture test failed - no data returned');
-        toast({
-          title: "Chart Capture Test Failed ❌",
-          description: "Could not capture the radar chart. No image data was generated. Check console for details.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error('ResultsActions: Chart capture test error:', error);
-      toast({
-        title: "Chart Capture Error ⚠️",
-        description: `An error occurred during chart capture testing: ${error.message}`,
-        variant: "destructive",
-      });
-    }
   };
   
   // Handle PDF download using React PDF
@@ -330,10 +260,6 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     return 'Download your complete assessment results as a professionally formatted PDF';
   };
 
-  // EXPLICIT JSX STRUCTURE FOR DEBUGGING
-  console.log('=== RENDERING BUTTONS ===');
-  console.log('About to render Test Chart button with isDevelopment:', isDevelopment);
-  
   return (
     <div className="flex justify-between w-full">
       <Button variant="outline" onClick={onBack}>
@@ -341,30 +267,6 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
         Back to Assessment
       </Button>
       <div className="flex gap-2">
-        {/* TEST CHART CAPTURE BUTTON - ALWAYS VISIBLE FOR NOW */}
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="outline" 
-                onClick={handleTestChartCapture}
-                size="default"
-                className="flex items-center gap-2 border-2 border-blue-300 text-blue-700 hover:bg-blue-50"
-              >
-                <TestTube className="h-4 w-4" />
-                Test Chart Capture
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="top">
-              <p className="max-w-xs text-sm">
-                Development tool: Test if the radar chart can be captured as PNG. 
-                Check console logs and download result for verification.
-                Currently ALWAYS VISIBLE for debugging.
-              </p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        
         {!user && (
           <TooltipProvider>
             <Tooltip>

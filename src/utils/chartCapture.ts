@@ -99,26 +99,3 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
     }, 2000); // Use 2000ms as in working version
   });
 };
-
-// Test function to validate chart capture and download for verification
-export const testChartCapture = async (): Promise<void> => {
-  console.log('ChartCapture: Starting test capture...');
-  
-  const dataUrl = await captureRadarChartAsPNG();
-  
-  if (dataUrl) {
-    console.log('ChartCapture: Test successful - radar chart captured');
-    
-    // Create a temporary download link to verify the image
-    const link = document.createElement('a');
-    link.download = 'test-radar-chart.png';
-    link.href = dataUrl;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    console.log('ChartCapture: Test radar chart image downloaded for verification');
-  } else {
-    console.error('ChartCapture: Test failed - no radar chart captured');
-  }
-};

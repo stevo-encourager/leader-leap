@@ -80,14 +80,14 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   return (
     <div className="fade-in space-y-6">
       <Card>
-        <CardHeader className="flex flex-row justify-between items-start">
-          <div>
-            <CardTitle className="text-2xl">Your Leader Leap Assessment Results</CardTitle>
-            <CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div className="flex-1 pr-4">
+            <CardTitle className="text-2xl text-left">Your Leader Leap Assessment Results</CardTitle>
+            <CardDescription className="text-left mt-2">
               Review your leadership competency gaps and development opportunities
             </CardDescription>
           </div>
-          <div className="ml-4">
+          <div className="flex-shrink-0">
             <img 
               src="/lovable-uploads/8320d514-fba5-4e1b-a658-1563758db943.png" 
               alt="Leader Leap Assessment Logo" 

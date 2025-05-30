@@ -304,15 +304,15 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
 
   console.log("SkillGapChart - Rendering radar chart with data:", validChartData);
 
-  // Adjusted margins to accommodate increased label spacing and legend
+  // Restore original chart margins and positioning - keep chart full size
   const chartMargins = isPDF 
-    ? { top: 30, right: 70, left: 70, bottom: 100 } // Increased bottom margin for PDF legend spacing
-    : { top: 60, right: 120, left: 120, bottom: 120 }; // Increased bottom margin for better legend spacing
+    ? { top: 30, right: 70, left: 70, bottom: 30 } // Original margins for PDF
+    : { top: 60, right: 120, left: 120, bottom: 60 }; // Original margins for dashboard
 
-  // PDF-specific centering and sizing - adjusted for new spacing
+  // Restore original chart centering and sizing - keep chart at original size
   const centerX = isPDF ? "50%" : "50%";
-  const centerY = isPDF ? "45%" : "40%"; // Moved chart up slightly to accommodate legend spacing
-  const outerRadius = isPDF ? "60%" : "75%"; // Slightly reduced to accommodate larger margins and legend
+  const centerY = isPDF ? "50%" : "50%"; // Restore original center position
+  const outerRadius = isPDF ? "65%" : "80%"; // Restore original chart size
 
   /**
    * CRITICAL FOR PDF EXPORT: This container MUST always have data-testid="radar-chart-container"
@@ -329,7 +329,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
       style={{
         width: '100%',
         height: '100%',
-        minHeight: isPDF ? '400px' : '500px',
+        minHeight: isPDF ? '400px' : '650px', // Increased height to accommodate legend below
         position: 'relative',
         backgroundColor: 'white' // Ensure white background for capture
       }}
@@ -370,20 +370,21 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             strokeWidth={2}
           />
           <Tooltip />
-          {/* Only show Legend for dashboard (not PDF) with improved spacing */}
+          {/* Only show Legend for dashboard (not PDF) positioned at the bottom with proper spacing */}
           {!isPDF && (
             <Legend 
               layout="horizontal"
               verticalAlign="bottom"
               align="center"
               wrapperStyle={{
-                marginTop: '80px', // Increased from 60px to 80px for more spacing
-                paddingTop: '20px', // Added padding for extra visual separation
+                marginTop: '120px', // Increased margin to push legend further down
+                paddingTop: '30px', // Extra padding for visual separation
                 fontSize: '18px',
                 fontWeight: 'normal',
                 borderTop: '1px solid #e2e8f0', // Subtle border for visual separation
                 paddingLeft: '20px',
-                paddingRight: '20px'
+                paddingRight: '20px',
+                paddingBottom: '20px' // Bottom padding for the legend
               }}
             />
           )}

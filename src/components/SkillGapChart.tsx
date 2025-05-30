@@ -330,7 +330,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
       style={{
         width: '100%',
         height: '100%',
-        minHeight: isPDF ? '400px' : '600px', // Increased height to accommodate more space for legend
+        minHeight: isPDF ? '400px' : '650px', // Further increased height to accommodate much more space for legend
         position: 'relative',
         backgroundColor: 'white' // Ensure white background for capture
       }}
@@ -371,15 +371,15 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             strokeWidth={2}
           />
           <Tooltip />
-          {/* Only show Legend for dashboard (not PDF) positioned at the bottom with proper spacing */}
+          {/* Only show Legend for dashboard (not PDF) positioned at the bottom with generous spacing */}
           {!isPDF && (
             <Legend 
               layout="horizontal"
               verticalAlign="bottom"
               align="center"
               wrapperStyle={{
-                marginTop: '120px', // Increased from 80px to push legend further down from chart
-                paddingTop: '30px', // Increased padding for better visual separation
+                marginTop: '180px', // Significantly increased from 120px to create much more space
+                paddingTop: '40px', // Increased padding for even better visual separation
                 fontSize: '18px',
                 fontWeight: 'normal',
                 borderTop: '1px solid #e2e8f0', // Subtle border for visual separation

@@ -11,6 +11,7 @@ import Assessment from "./pages/Assessment";
 import Results from "./pages/Results";
 import PreviousAssessments from "./pages/PreviousAssessments";
 import Admin from "./pages/Admin";
+import Privacy from "./pages/Privacy";
 import NotFound from "./pages/NotFound";
 
 // Configure the QueryClient with sensible defaults
@@ -37,6 +38,8 @@ const App = () => (
             <Route path="/results/:id" element={<Results />} />
             <Route path="/previous-assessments" element={<PreviousAssessments />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/privacy-policy" element={<Privacy />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Toaster />

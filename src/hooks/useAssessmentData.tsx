@@ -43,7 +43,7 @@ export const useAssessmentData = (
       let sourcedCategories: Category[] = [];
       let sourcedDemographics: Demographics = {};
       
-      // Case 1: Viewing a specific assessment
+      // Case 1: Viewing a specific assessment AND data is available
       if (assessmentId && specificAssessment && specificAssessment.categories) {
         console.log("useAssessmentData - Using specific assessment data");
         debug.dataSource = "specific_assessment";
@@ -67,6 +67,13 @@ export const useAssessmentData = (
         debug.dataSource = "loading_specific";
         setDebugData(debug);
         return;
+        
+      } else if (assessmentId && !loadingSpecificAssessment && !specificAssessment && contextCategories && contextCategories.length > 0) {
+        // CRITICAL FIX: Specific assessment failed to load (likely auth error), but we have context categories
+        console.log("useAssessmentData - Specific assessment failed to load, falling back to context categories");
+        debug.dataSource = "context_fallback_from_failed_specific";
+        sourcedCategories = contextCategories;
+        sourcedDemographics = contextDemographics || {};
         
       } else if (!assessmentId && contextCategories && contextCategories.length > 0) {
         // Case 2: Using categories from current context (just completed assessment)

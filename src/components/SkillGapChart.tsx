@@ -1,4 +1,3 @@
-
 import React, { useMemo, useRef, useEffect } from 'react';
 import { 
   ResponsiveContainer,
@@ -359,7 +358,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
         </ResponsiveContainer>
       </div>
 
-      {/* Legend area with horizontal line above it for dashboard only */}
+      {/* Legend area - ALWAYS show for dashboard (non-PDF) */}
       {!isPDF && (
         <div 
           style={{ 
@@ -367,40 +366,55 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '20px'
+            gap: '20px',
+            minHeight: 'auto',
+            height: 'auto'
           }}
         >
           {/* Horizontal separator line */}
           <div style={{ 
             width: '100%', 
             height: '1px', 
-            backgroundColor: '#e2e8f0' 
+            backgroundColor: '#e2e8f0',
+            flexShrink: 0
           }}></div>
           
-          {/* Legend */}
+          {/* Legend items */}
           <div style={{ 
             display: 'flex', 
             gap: '40px', 
             fontSize: '16px',
-            alignItems: 'center'
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px' 
+            }}>
               <div style={{ 
                 width: '16px', 
                 height: '16px', 
                 backgroundColor: '#2F564D', 
-                opacity: 0.6 
+                opacity: 0.6,
+                flexShrink: 0
               }}></div>
-              <span>Current Level</span>
+              <span style={{ color: '#64748b', fontWeight: '500' }}>Current Level</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '8px' 
+            }}>
               <div style={{ 
                 width: '16px', 
                 height: '16px', 
                 backgroundColor: '#8baca5', 
-                opacity: 0.6 
+                opacity: 0.6,
+                flexShrink: 0
               }}></div>
-              <span>Desired Level</span>
+              <span style={{ color: '#64748b', fontWeight: '500' }}>Desired Level</span>
             </div>
           </div>
         </div>

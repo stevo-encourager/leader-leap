@@ -1,3 +1,4 @@
+
 import React, { useMemo, useRef, useEffect } from 'react';
 import { 
   ResponsiveContainer,
@@ -269,7 +270,8 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
           '[data-testid="radar-chart-container"]',
           '[data-chart-type="radar"]',
           '.radar-chart-container',
-          '.recharts-radar-chart'
+          '.recharts-radar-chart',
+          '.recharts-surface'
         ];
         
         console.log('Testing chart capture selectors:');
@@ -313,18 +315,20 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
   const centerY = isPDF ? "50%" : "45%";
   const outerRadius = isPDF ? "65%" : "80%"; // Slightly reduced to accommodate larger margins
 
-  // Enhanced radar chart with proper capture attributes - this is critical for the capture to work
+  // Enhanced radar chart with proper capture attributes and CRITICAL container structure
   return (
     <div 
       ref={chartContainerRef}
       className={`radar-chart-container ${className} page-break-avoid`} 
       data-testid="radar-chart-container"
       data-chart-type="radar"
+      id="radar-chart-container"
       style={{
         width: '100%',
         height: '100%',
         minHeight: isPDF ? '400px' : '500px',
-        position: 'relative'
+        position: 'relative',
+        backgroundColor: 'white' // Ensure white background for capture
       }}
     >
       <ResponsiveContainer width="100%" height="100%">

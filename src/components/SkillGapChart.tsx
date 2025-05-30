@@ -1,3 +1,4 @@
+
 import React, { useMemo, useRef, useEffect } from 'react';
 import { 
   ResponsiveContainer,
@@ -329,7 +330,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
       style={{
         width: '100%',
         height: '100%',
-        minHeight: isPDF ? '400px' : '550px', // Reduced height to move chart higher
+        minHeight: isPDF ? '400px' : '600px', // Increased height to accommodate more space for legend
         position: 'relative',
         backgroundColor: 'white' // Ensure white background for capture
       }}
@@ -377,8 +378,8 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
               verticalAlign="bottom"
               align="center"
               wrapperStyle={{
-                marginTop: '80px', // Reduced from 120px to bring legend closer to chart
-                paddingTop: '20px', // Reduced padding
+                marginTop: '120px', // Increased from 80px to push legend further down from chart
+                paddingTop: '30px', // Increased padding for better visual separation
                 fontSize: '18px',
                 fontWeight: 'normal',
                 borderTop: '1px solid #e2e8f0', // Subtle border for visual separation

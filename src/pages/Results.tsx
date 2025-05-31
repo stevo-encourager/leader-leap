@@ -23,7 +23,6 @@ const Results = () => {
   const localDataLoadedRef = useRef(false);
   const [isPageReady, setIsPageReady] = useState(false);
   const [isInitialDataChecked, setIsInitialDataChecked] = useState(false);
-  const [hasScrolledToChart, setHasScrolledToChart] = useState(false);
   
   // Log the assessment ID for debugging
   console.log('Results page - URL assessmentId parameter:', assessmentId);
@@ -166,63 +165,6 @@ const Results = () => {
       saveTriggeredRef.current = true;
     }
   }, [user, currentStep, assessmentId, categories, handleSaveResults, handleCategoriesUpdate, handleDemographicsUpdate, isPageReady, isInitialDataChecked]);
-
-  // Auto-scroll to radar chart for new assessments
-  useEffect(() => {
-    // Only scroll for new assessments (no assessmentId) and only once
-    if (!assessmentId && 
-        isPageReady && 
-        isInitialDataChecked && 
-        !hasScrolledToChart &&
-        (categories?.length > 0 || displayCategories?.length > 0)) {
-      
-      console.log('Results page - Attempting to scroll to radar chart for new assessment');
-      
-      // Wait a bit for the chart to render, then scroll
-      const scrollTimer = setTimeout(() => {
-        const radarChartContainer = document.querySelector('[data-testid="radar-chart-container"]') || 
-                                   document.querySelector('#radar-chart-container');
-        
-        if (radarChartContainer) {
-          console.log('Results page - Found radar chart container, scrolling to it');
-          
-          radarChartContainer.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start',
-            inline: 'nearest'
-          });
-          
-          setHasScrolledToChart(true);
-        } else {
-          console.log('Results page - Radar chart container not found, trying again...');
-          
-          // Try again after another delay if not found
-          const retryTimer = setTimeout(() => {
-            const retryContainer = document.querySelector('[data-testid="radar-chart-container"]') || 
-                                  document.querySelector('#radar-chart-container');
-            
-            if (retryContainer) {
-              console.log('Results page - Found radar chart container on retry, scrolling to it');
-              
-              retryContainer.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start',
-                inline: 'nearest'
-              });
-              
-              setHasScrolledToChart(true);
-            } else {
-              console.warn('Results page - Could not find radar chart container after retry');
-            }
-          }, 1000);
-          
-          return () => clearTimeout(retryTimer);
-        }
-      }, 1500); // Allow time for chart to render
-      
-      return () => clearTimeout(scrollTimer);
-    }
-  }, [assessmentId, isPageReady, isInitialDataChecked, hasScrolledToChart, categories, displayCategories]);
 
   // Wait for auth, data, and page readiness before rendering
   if (loading || !isPageReady || (!isInitialDataChecked && !assessmentId)) {

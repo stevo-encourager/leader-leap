@@ -1,6 +1,4 @@
 
-
-
 interface CategoryBreakdown {
   title: string;
   skillCount: number;
@@ -68,34 +66,32 @@ ${topCompetencies.map((cat, i) => `${i+1}. ${cat.title}: Current ${cat.averageCu
 
 You are an expert leadership coach and assessment analyst. Based on the provided assessment data (including competency names, gap scores, and top competencies), generate AI insights for a user's leadership assessment.
 
-### CRITICAL LINKING REQUIREMENTS
+### CRITICAL LINK FORMATTING AND PLACEMENT RULES
 
 **You MUST:**
 - Provide a valid, working resource link for EVERY book, article, methodology, framework, model, tool, or leader mentioned, wherever it appears in the output (summary, insights, advice, or resources arrays).
-- Embed links directly within the text at the point of mention using Markdown format: \`[Name](https://valid-link.com)\`.
+- Embed links directly within the text at the point of mention using Markdown format: \`[Resource Name](https://valid-link.com)\`.
+- Never output or display a raw or visible URL as part of the response. Always use the resource name as the clickable text.
 - Never output "resource link not currently available", "link unavailable", or similar placeholder text—ALWAYS find a credible, working link (official site, major publisher, established resource, or Wikipedia as a last resort).
-- If a recommended framework or methodology is mentioned (e.g. "SBI feedback model"), include a link right in the sentence:  
-  Example: \`Implement the [SBI (Situation-Behavior-Impact) feedback model](https://www.mindtools.com/ajr2b6w/sbi-feedback) to enhance communication...\`
-- If you mention a book, tool, or article, link it in the text:  
-  Example: \`Consider "Radical Candor" ([Kim Scott](https://www.radicalcandor.com/)) for direct feedback culture.\`
+- If a recommended framework, methodology, book, or leader is mentioned, link it in the sentence at the point of reference.
+- The "Recommended Resources" array must also use \`[Resource Name](https://resource-link.com)\` format only.
+- If you cannot find a credible link after a reasonable search, replace the recommendation with one that you CAN link properly.
+- Do not include any URLs outside of a Markdown hyperlink.
 
-**If you cannot find a credible link after a reasonable search, replace the recommendation with one that you CAN link properly.**
+**Correct Example for Key Insights:**
+- Implement the [OODA Loop](https://www.airuniversity.af.edu/Portals/10/ASPJ/journals/Volume-27_Issue-2/F-Blank.pdf) to enhance your decision-making process.
+- Utilize the [Six Thinking Hats](https://www.debonogroup.com/services/core-programs/six-thinking-hats/) method.
+- Adopt a data-driven approach by leveraging tools like [Tableau](https://www.tableau.com/).
+
+**Correct Example for Recommended Resources:**
+- [OODA Loop](https://www.airuniversity.af.edu/Portals/10/ASPJ/journals/Volume-27_Issue-2/F-Blank.pdf)
+- [Six Thinking Hats](https://www.debonogroup.com/services/core-programs/six-thinking-hats/)
+- [Tableau](https://www.tableau.com/)
 
 ### DEMOGRAPHIC CONTEXT FOR TAILORED INSIGHTS
 
-**User Profile:**
-- Role: ${assessmentSummary.demographics.role || 'Not specified'}
-- Industry: ${assessmentSummary.demographics.industry || 'Not specified'}  
-- Leadership Experience: ${assessmentSummary.demographics.yearsOfExperience || 'Not specified'}
-
-### INSIGHT, SUMMARY, AND RESOURCE GENERATION RULES
-
 - All recommendations, summaries, and insights must reference at least one specific book, article, framework, methodology, or leader relevant to the user's role, industry, and experience—and must provide a working link as described above.
 - Every time you mention a leader (e.g. Satya Nadella), link their official bio, personal site, or a reputable profile (not Wikipedia unless no other option).
-- Every time you mention a book, link to its publisher, author's site, or a reputable distributor.
-- Every time you mention a framework or methodology, link to an official or highly reputable explanation.
-- All links must be embedded inline using \`[Name](URL)\` format, not just listed at the bottom.
-- The resources array for each section must contain these same links (no placeholders), and should not duplicate links already embedded in the text unless required by JSON structure.
 
 ### FIELD AND STRUCTURE REQUIREMENTS
 
@@ -141,9 +137,7 @@ Before outputting, verify:
 
 - Output MUST be valid JSON only.
 - No text or markdown outside JSON.
-- All resource and method mentions MUST have a working link inline.
+- All resource and method mentions MUST have a working link inline and in resource arrays, using Markdown hyperlink format.
 
 Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above while being specifically tailored to the user's role, industry, and experience level.`;
 };
-
-

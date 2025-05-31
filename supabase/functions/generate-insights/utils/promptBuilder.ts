@@ -107,7 +107,7 @@ The summary should be written as continuous text but structured so it can be spl
   - \`gap\` (number): The gap score from the assessment data above
   - \`insights\` (array of exactly 3 strings): CRITICAL INSIGHT QUALITY REQUIREMENTS:
     
-    **AVOID GENERIC STATEMENTS**: Do not write obvious, surface-level statements like "Developing emotional intelligence can enhance your ability to empathize" or "Improving communication helps build better relationships."
+    **AVOID GENERIC STATEMENTS**: Do not write obvious, surface-level statements like "Developing emotional intelligence can enhance your ability to empathy" or "Improving communication helps build better relationships."
     
     **PROVIDE ACTIONABLE, RESEARCH-BACKED INSIGHTS**: Each insight must be:
     - Actionable with specific strategies or approaches
@@ -129,6 +129,15 @@ The summary should be written as continuous text but structured so it can be spl
     - If one tool is mentioned anywhere in the assessment, the other must NOT be mentioned
     - Should feel helpful and natural, not forced or promotional
     - Focus on how the chosen tool can enhance the specific competency being developed
+    - Use language like "consider using a tool such as [tool name]" rather than direct recommendations
+
+    **REFERENCE LINKS FOR TECHNIQUES OR METHODOLOGIES**:
+    - Whenever you mention a technique or methodology (e.g., Eisenhower Box, SMART goals, etc.), ensure it appears in the resources section with an appropriate link
+    - For techniques without established resource mappings, mention them in insights but include them in resources for linking
+
+    **PRODUCT RECOMMENDATIONS**:
+    - If recommending any products (as opposed to books or reference documents), include the product name in the insight text for potential linking
+    - Products should be mentioned naturally within the insight context
 
   - \`resources\` (array of 1-3 strings): List all practical resources mentioned in the insights. When possible, use these EXACT titles for consistency:
     * For Emotional Intelligence: "Emotional Intelligence 2.0 by Travis Bradberry"
@@ -138,15 +147,16 @@ The summary should be written as continuous text but structured so it can be spl
     * For Leadership Development: "The Leadership Challenge" or "Good to Great by Jim Collins"
     * For Team Building: "The 7 Habits of Highly Effective People"
     * For Strategic Thinking: "Good to Great by Jim Collins"
-    * For Time Management: "The 7 Habits of Highly Effective People"
+    * For Time Management: "The 7 Habits of Highly Effective People" or "Eisenhower Matrix"
     * For Decision Making: "Thinking, Fast and Slow by Daniel Kahneman"
     * For Professional Development: "StrengthsFinder 2.0" or "DISC Assessment"
+    * For Techniques: Include technique names (e.g., "Eisenhower Matrix", "SMART Goals", "Pomodoro Technique") for linking
 
 - \`key_strengths\`: An array with at least 2 objects, each for a key competency to leverage:
   - \`competency\` (string): The name of the competency from the assessment data above
   - \`example\` (string): A concrete example of this competency in action (from data or a plausible scenario)
-  - \`leverage_advice\` (array of exactly 3 strings): Three actionable, positive suggestions for further leveraging this competency. Apply the same quality standards as insights - avoid generic advice, provide specific strategies, frameworks, or research-backed approaches. The CRITICAL TOOL EXCLUSIVITY RULE also applies here.
-  - \`resources\` (array of 0-3 strings): List any practical resources mentioned in the leverage advice using the same exact titles when possible.
+  - \`leverage_advice\` (array of exactly 3 strings): Three actionable, positive suggestions for further leveraging this competency. Apply the same quality standards as insights - avoid generic advice, provide specific strategies, frameworks, or research-backed approaches. The CRITICAL TOOL EXCLUSIVITY RULE also applies here. Use the same guidelines for reference links and product recommendations as in the insights section.
+  - \`resources\` (array of 0-3 strings): List any practical resources mentioned in the leverage advice using the same exact titles when possible. Include techniques and methodologies mentioned for potential linking.
 
 ### CRITICAL JSON Rules
 - Output MUST be valid JSON only. No text, markdown, or formatting before/after.
@@ -155,9 +165,11 @@ The summary should be written as continuous text but structured so it can be spl
 - All arrays must contain only the specified data types.
 - Structure the summary for easy paragraph splitting during post-processing with leader names as clickable links.
 - When possible, use the exact resource titles listed above for consistency with our resource mapping system.
+- Include technique and methodology names in resources for potential linking (e.g., "Eisenhower Matrix", "SMART Goals").
 - NEVER write generic, obvious statements - every insight must provide genuine value and actionable advice.
-- Remember: Maximum ONE mention of either Clifton Strengths or Predictive Index per entire assessment, and only when naturally relevant.
+- Remember: Maximum ONE mention of either Clifton Strengths or Predictive Index per entire assessment, and only when naturally relevant, using suggestive language.
 - Make leader names clickable links using markdown format in the summary.
+- Include techniques, methodologies, and products mentioned in insights within the resources array for proper linking.
 
 Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above.`;
 };

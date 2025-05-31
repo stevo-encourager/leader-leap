@@ -16,10 +16,17 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
   const [error, setError] = useState<string | null>(null);
   const hasCheckedExistingRef = useRef(false);
   const isGeneratingRef = useRef(false);
+  const insightsLoadedRef = useRef(false);
 
   // CRITICAL SAFEGUARD: Check for existing insights first and NEVER regenerate if they exist
   useEffect(() => {
     const checkForExistingInsights = async () => {
+      // CRITICAL PROTECTION: If we already have insights loaded, NEVER check again
+      if (insightsLoadedRef.current) {
+        console.log('CRITICAL PROTECTION: Insights already loaded - preventing any further operations');
+        return;
+      }
+
       // PROTECTION: Prevent multiple simultaneous checks
       if (hasCheckedExistingRef.current || isGeneratingRef.current) {
         console.log('CRITICAL PROTECTION: Already checked or generating - preventing duplicate operation');
@@ -58,12 +65,13 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
             console.log('CRITICAL PROTECTION: Found existing insights - using saved version - NEVER regenerating');
             console.log('CRITICAL PROTECTION: Insights length:', assessment.ai_insights.length);
             setInsights(assessment.ai_insights);
+            insightsLoadedRef.current = true; // Mark as loaded to prevent future operations
             return; // CRITICAL: Exit early - don't generate new insights
           }
         }
 
         // Only generate new insights if none exist and we're not already generating
-        if (!isGeneratingRef.current) {
+        if (!isGeneratingRef.current && !insightsLoadedRef.current) {
           console.log('CRITICAL SAFEGUARD: No existing insights found, generating new ones (ONLY ONCE)');
           await generateNewInsights();
         }
@@ -75,12 +83,18 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     };
 
     checkForExistingInsights();
-  }, [assessmentId, categories]); // Only depend on assessmentId and categories
+  }, [assessmentId]); // CRITICAL FIX: Only depend on assessmentId, NOT categories
 
   const generateNewInsights = async () => {
     // PROTECTION: Prevent simultaneous generation
     if (isGeneratingRef.current) {
       console.log('CRITICAL PROTECTION: Already generating insights - preventing duplicate generation');
+      return;
+    }
+
+    // PROTECTION: Never generate if insights are already loaded
+    if (insightsLoadedRef.current) {
+      console.log('CRITICAL PROTECTION: Insights already loaded - preventing regeneration');
       return;
     }
 
@@ -112,6 +126,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
 
       if (data && data.insights) {
         setInsights(data.insights);
+        insightsLoadedRef.current = true; // Mark as loaded to prevent future operations
         console.log('CRITICAL SUCCESS: Successfully received and stored AI insights permanently');
       } else {
         throw new Error('No insights received from OpenAI');
@@ -132,6 +147,9 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     // Provide a manual regenerate function for future use (but with protections)
     regenerateInsights: () => {
       console.log('CRITICAL WARNING: Manual regeneration requested - this should only be used for new assessments');
+      // Reset the loaded flag only for manual regeneration
+      insightsLoadedRef.current = false;
+      hasCheckedExistingRef.current = false;
       generateNewInsights();
     }
   };

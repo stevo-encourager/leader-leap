@@ -16,8 +16,7 @@ interface PriorityArea {
   competency: string;
   gap: number;
   insights: string[];
-  resource?: string;
-  resources?: string[];
+  resource: string;
 }
 
 interface KeyStrength {
@@ -51,157 +50,55 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
   }, [assessmentId, insights, isLoading]);
 
   const parseInsights = (insightsText: string): AIInsightsData | null => {
-    console.log('=== PARSING INSIGHTS DEBUG ===');
-    console.log('Raw insightsText received:', insightsText);
-    console.log('insightsText type:', typeof insightsText);
-    console.log('insightsText length:', insightsText?.length || 0);
-    console.log('First 200 characters:', insightsText?.substring(0, 200));
-    console.log('Last 200 characters:', insightsText?.substring(insightsText.length - 200));
-
     try {
-      let cleanedText = insightsText;
-
-      // Handle potential markdown code block formatting
-      if (cleanedText.includes('```json')) {
-        console.log('Found markdown JSON code block, extracting...');
-        const jsonMatch = cleanedText.match(/```json\s*([\s\S]*?)\s*```/);
-        if (jsonMatch) {
-          cleanedText = jsonMatch[1].trim();
-          console.log('Extracted JSON from markdown:', cleanedText.substring(0, 200));
-        }
-      } else if (cleanedText.includes('```')) {
-        console.log('Found generic code block, extracting...');
-        const codeMatch = cleanedText.match(/```\s*([\s\S]*?)\s*```/);
-        if (codeMatch) {
-          cleanedText = codeMatch[1].trim();
-          console.log('Extracted content from code block:', cleanedText.substring(0, 200));
-        }
-      }
-
-      // Remove any leading/trailing whitespace and non-JSON characters
-      cleanedText = cleanedText.trim();
-      
-      // Remove any text before the opening brace
-      const openBraceIndex = cleanedText.indexOf('{');
-      if (openBraceIndex > 0) {
-        console.log('Removing text before opening brace');
-        cleanedText = cleanedText.substring(openBraceIndex);
-      }
-
-      // Remove any text after the closing brace
-      const closeBraceIndex = cleanedText.lastIndexOf('}');
-      if (closeBraceIndex !== -1 && closeBraceIndex < cleanedText.length - 1) {
-        console.log('Removing text after closing brace');
-        cleanedText = cleanedText.substring(0, closeBraceIndex + 1);
-      }
-
-      console.log('Cleaned text for parsing:', cleanedText.substring(0, 200));
-
-      const parsed = JSON.parse(cleanedText);
-      console.log('Successfully parsed JSON:', {
-        hasSummary: !!parsed.summary,
-        priorityAreasCount: parsed.priority_areas?.length || 0,
-        keyStrengthsCount: parsed.key_strengths?.length || 0
-      });
+      const parsed = JSON.parse(insightsText);
       
       // Validate structure
       if (!parsed.summary || !parsed.priority_areas || !parsed.key_strengths) {
         console.error('AIInsights: Invalid insights structure - missing required fields');
-        console.error('Missing fields:', {
-          summary: !parsed.summary,
-          priority_areas: !parsed.priority_areas,
-          key_strengths: !parsed.key_strengths
-        });
         return null;
       }
       
       if (!Array.isArray(parsed.priority_areas) || !Array.isArray(parsed.key_strengths)) {
         console.error('AIInsights: Invalid insights structure - arrays expected');
-        console.error('Field types:', {
-          priority_areas: typeof parsed.priority_areas,
-          key_strengths: typeof parsed.key_strengths
-        });
         return null;
       }
 
       // Validate priority areas
-      for (let i = 0; i < parsed.priority_areas.length; i++) {
-        const area = parsed.priority_areas[i];
-        console.log(`Validating priority area ${i + 1}:`, {
-          hasCompetency: !!area.competency,
-          hasInsights: !!area.insights,
-          insightsIsArray: Array.isArray(area.insights),
-          hasResource: !!area.resource,
-          hasResources: !!area.resources,
-          insightsLength: area.insights?.length || 0
-        });
-
-        if (!area.competency || !area.insights || !Array.isArray(area.insights)) {
-          console.error(`AIInsights: Invalid priority area ${i + 1} structure:`, area);
-          return null;
-        }
-        
-        // Accept either 'resource' or 'resources' field for backward compatibility
-        if (!area.resource && !area.resources) {
-          console.error(`AIInsights: Priority area ${i + 1} missing resource field:`, area);
+      for (const area of parsed.priority_areas) {
+        if (!area.competency || !area.insights || !Array.isArray(area.insights) || !area.resource) {
+          console.error('AIInsights: Invalid priority area structure:', area);
           return null;
         }
         
         // Ensure insights is an array of strings only
-        for (let j = 0; j < area.insights.length; j++) {
-          const insight = area.insights[j];
+        for (const insight of area.insights) {
           if (typeof insight !== 'string') {
-            console.error(`AIInsights: Invalid insight type in area ${i + 1}, insight ${j + 1} - must be string:`, insight);
+            console.error('AIInsights: Invalid insight type - must be string:', insight);
             return null;
           }
         }
       }
 
       // Validate key strengths
-      for (let i = 0; i < parsed.key_strengths.length; i++) {
-        const strength = parsed.key_strengths[i];
-        console.log(`Validating key strength ${i + 1}:`, {
-          hasCompetency: !!strength.competency,
-          hasExample: !!strength.example,
-          hasLeverageAdvice: !!strength.leverage_advice,
-          leverageAdviceIsArray: Array.isArray(strength.leverage_advice),
-          leverageAdviceLength: strength.leverage_advice?.length || 0
-        });
-
+      for (const strength of parsed.key_strengths) {
         if (!strength.competency || !strength.example || !strength.leverage_advice || !Array.isArray(strength.leverage_advice)) {
-          console.error(`AIInsights: Invalid key strength ${i + 1} structure:`, strength);
+          console.error('AIInsights: Invalid key strength structure:', strength);
           return null;
         }
         
         // Ensure leverage_advice is an array of strings only
-        for (let j = 0; j < strength.leverage_advice.length; j++) {
-          const advice = strength.leverage_advice[j];
+        for (const advice of strength.leverage_advice) {
           if (typeof advice !== 'string') {
-            console.error(`AIInsights: Invalid advice type in strength ${i + 1}, advice ${j + 1} - must be string:`, advice);
+            console.error('AIInsights: Invalid advice type - must be string:', advice);
             return null;
           }
         }
       }
-
-      console.log('=== VALIDATION PASSED ===');
+      
       return parsed;
     } catch (error) {
-      console.error('=== JSON PARSING ERROR ===');
-      console.error('Error parsing insights JSON:', error);
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
-      
-      // Log the problematic text around the error location if available
-      if (error.message.includes('position')) {
-        const positionMatch = error.message.match(/position (\d+)/);
-        if (positionMatch) {
-          const position = parseInt(positionMatch[1]);
-          const start = Math.max(0, position - 50);
-          const end = Math.min(insightsText.length, position + 50);
-          console.error('Text around error position:', insightsText.substring(start, end));
-        }
-      }
-      
+      console.error('AIInsights: Error parsing insights JSON:', error);
       return null;
     }
   };
@@ -227,9 +124,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
       </h3>
       <div className="space-y-6">
         {priorityAreas.map((area, index) => {
-          // Handle both 'resource' and 'resources' fields
-          const resourceToUse = area.resource || (Array.isArray(area.resources) ? area.resources[0] : area.resources);
-          const resourceLink = generateResourceLink(resourceToUse || '');
+          const resourceLink = generateResourceLink(area.resource);
           
           return (
             <div key={index} className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
@@ -255,7 +150,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
                     ))}
                   </ul>
                 </div>
-                {resourceToUse && (
+                {area.resource && (
                   <div className="bg-slate-50 p-4 rounded border-l-4 border-encourager">
                     <h6 className="text-slate-700 mb-2 font-montserrat">Recommended Resource:</h6>
                     {resourceLink.hasValidLink ? (
@@ -370,7 +265,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
                   <div className="text-center py-8 text-slate-500">
                     <AlertCircle className="mx-auto mb-3" size={40} />
                     <p className="text-lg">Unable to parse AI insights</p>
-                    <p className="text-sm">The insights format appears to be invalid. Please check the console for detailed error information and try refreshing to regenerate.</p>
+                    <p className="text-sm">The insights format appears to be invalid. Please try refreshing to regenerate.</p>
                   </div>
                 );
               }

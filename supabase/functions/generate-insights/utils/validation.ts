@@ -16,8 +16,6 @@ export const validateEnvironmentVariables = () => {
 };
 
 export const validateInsightsStructure = (insights: any): void => {
-  console.log('Validating insights structure:', JSON.stringify(insights, null, 2));
-
   if (!insights.summary || !insights.priority_areas || !insights.key_strengths) {
     throw new Error('Invalid JSON structure - missing required fields: summary, priority_areas, or key_strengths');
   }
@@ -34,17 +32,10 @@ export const validateInsightsStructure = (insights: any): void => {
     throw new Error('Invalid JSON structure - key_strengths must have at least 2 items');
   }
 
-  // Validate priority areas structure with flexible resource validation
+  // Validate priority areas structure with more flexible insights validation
   for (const area of insights.priority_areas) {
-    console.log('Validating priority area:', JSON.stringify(area, null, 2));
-    
-    if (!area.competency || !area.insights || !Array.isArray(area.insights)) {
-      throw new Error('Invalid priority area structure - must have competency and insights array');
-    }
-    
-    // Accept either 'resource' or 'resources' field for backward compatibility
-    if (!area.resource && !area.resources) {
-      throw new Error('Invalid priority area structure - must have either resource or resources field');
+    if (!area.competency || !area.insights || !Array.isArray(area.insights) || !area.resource) {
+      throw new Error('Invalid priority area structure - must have competency, insights array, and resource');
     }
     
     // Check that insights array has at least 2 items and at most 5 items
@@ -68,10 +59,8 @@ export const validateInsightsStructure = (insights: any): void => {
     }
   }
 
-  // Validate key strengths structure with flexible advice validation  
+  // Validate key strengths structure with more flexible advice validation  
   for (const strength of insights.key_strengths) {
-    console.log('Validating key strength:', JSON.stringify(strength, null, 2));
-    
     if (!strength.competency || !strength.example || !strength.leverage_advice || !Array.isArray(strength.leverage_advice)) {
       throw new Error('Invalid key strength structure - must have competency, example, and leverage_advice array');
     }
@@ -92,6 +81,4 @@ export const validateInsightsStructure = (insights: any): void => {
       }
     }
   }
-
-  console.log('Validation passed successfully');
 };

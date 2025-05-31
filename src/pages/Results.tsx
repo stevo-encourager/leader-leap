@@ -21,6 +21,7 @@ const Results = () => {
   const { user, loading } = useAuth();
   const saveTriggeredRef = useRef(false);
   const localDataLoadedRef = useRef(false);
+  const scrollExecutedRef = useRef(false);
   const [isPageReady, setIsPageReady] = useState(false);
   const [isInitialDataChecked, setIsInitialDataChecked] = useState(false);
   
@@ -49,6 +50,39 @@ const Results = () => {
 
     return () => clearTimeout(readyTimer);
   }, []);
+
+  // Auto-scroll to radar chart for new assessments (no assessmentId)
+  useEffect(() => {
+    // Only scroll for NEW assessments (not when viewing existing ones)
+    if (!assessmentId && 
+        isPageReady && 
+        isInitialDataChecked && 
+        !scrollExecutedRef.current) {
+      
+      console.log('Results page - Attempting to scroll to radar chart for new assessment');
+      
+      const scrollToRadarChart = () => {
+        const radarChartElement = document.querySelector('[data-testid="radar-chart-container"]');
+        
+        if (radarChartElement) {
+          console.log('Results page - Found radar chart element, scrolling to it');
+          radarChartElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+            inline: 'nearest'
+          });
+          scrollExecutedRef.current = true;
+        } else {
+          console.log('Results page - Radar chart element not found yet, will retry');
+        }
+      };
+      
+      // Wait a bit longer to ensure the chart is fully rendered
+      const scrollTimer = setTimeout(scrollToRadarChart, 800);
+      
+      return () => clearTimeout(scrollTimer);
+    }
+  }, [assessmentId, isPageReady, isInitialDataChecked]);
 
   // Log assessment state data with more detail
   useEffect(() => {

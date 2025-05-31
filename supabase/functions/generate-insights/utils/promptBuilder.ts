@@ -152,9 +152,6 @@ The summary should be written as continuous text but structured so it can be spl
     * For Professional Development: "StrengthsFinder 2.0" or "DISC Assessment"
     * For Techniques: Include technique names (e.g., "Eisenhower Matrix", "SMART Goals", "Pomodoro Technique") for linking
 
-    **CRITICAL RESOURCE LINK REQUIREMENT**:
-    - For every recommended resource listed, ALWAYS include a highly relevant, working link to an authoritative or official source. Do NOT display "Resource link not currently available" under any circumstance. If a link cannot be found, select an alternative resource that does have a suitable link.
-
 - \`key_strengths\`: An array with at least 2 objects, each for a key competency to leverage:
   - \`competency\` (string): The name of the competency from the assessment data above
   - \`example\` (string): A concrete example of this competency in action (from data or a plausible scenario)
@@ -173,8 +170,6 @@ The summary should be written as continuous text but structured so it can be spl
 - Remember: Maximum ONE mention of either Clifton Strengths or Predictive Index per entire assessment, and only when naturally relevant, using suggestive language.
 - Make leader names clickable links using markdown format in the summary.
 - Include techniques, methodologies, and products mentioned in insights within the resources array for proper linking.
-- Strictly ensure that only one reference to either CliftonStrengths or Predictive Index appears per assessment, including across both 'priority_areas' and 'key_strengths' arrays. If one is mentioned anywhere, the other must NOT appear anywhere in the output.
-- For every resource listed in 'resources', a highly relevant, working link must be provided. If a suitable link cannot be found, choose an alternative resource that does have a reliable link.
 
 Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above.`;
 };

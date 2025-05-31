@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -74,9 +75,9 @@ const DemographicsForm: React.FC<DemographicsFormProps> = ({ demographics, onDem
     <div className="fade-in">
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">About You (Optional)</CardTitle>
+          <CardTitle className="text-2xl">About You</CardTitle>
           <CardDescription>
-            Help us understand your background and context. This information is optional but helps provide better insights.
+            Help us understand your background and context. This information helps provide better insights.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -134,7 +135,7 @@ const DemographicsForm: React.FC<DemographicsFormProps> = ({ demographics, onDem
 
             <div className="bg-blue-50 text-blue-700 p-4 rounded-md">
               <p className="text-sm">
-                <strong>Note:</strong> All demographic information is optional and used only to provide more tailored insights in your results.
+                <strong>Note:</strong> All demographic information is used only to provide more tailored insights and new results.
               </p>
             </div>
           </div>

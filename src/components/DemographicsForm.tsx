@@ -49,6 +49,7 @@ const industryOptions = [
 ];
 
 const experienceOptions = [
+  "None",
   "Less than 1 year",
   "1-3 years",
   "4-7 years",

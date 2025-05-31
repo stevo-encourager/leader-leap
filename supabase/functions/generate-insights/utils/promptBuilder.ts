@@ -1,4 +1,5 @@
 
+
 interface CategoryBreakdown {
   title: string;
   skillCount: number;
@@ -123,53 +124,65 @@ The summary should be written as continuous text but structured so it can be spl
     - Should include practical implementation advice
     - One insight per competency may reference recommended resources
 
-    **CRITICAL TOOL EXCLUSIVITY RULE**:
-    - Maximum of ONE mention per assessment of EITHER Clifton Strengths OR Predictive Index (never both)
+    **MANDATORY TECHNIQUE/METHODOLOGY RESOURCE REQUIREMENT**:
+    - EVERY time you mention ANY technique, methodology, framework, or tool (e.g., Eisenhower Matrix, SMART Goals, Pomodoro Technique, ADKAR Model, etc.), you MUST include that exact technique/methodology name in the resources array
+    - This ensures users get access to resources for every technique mentioned
+    - No exceptions - if mentioned in insights, it must appear in resources
+
+    **CRITICAL TOOL EXCLUSIVITY RULE - ABSOLUTELY ENFORCED**:
+    - MAXIMUM of ONE mention per ENTIRE assessment of EITHER "StrengthsFinder 2.0" OR "Predictive Index" (NEVER both)
+    - This applies across ALL sections: priority_areas AND key_strengths combined
+    - If one appears ANYWHERE in the assessment, the other must NOT appear ANYWHERE
     - Only include when naturally relevant to the competency being discussed
-    - If one tool is mentioned anywhere in the assessment, the other must NOT be mentioned
+    - NEVER use direct recommendations - always use suggestive language like "consider using a tool such as StrengthsFinder 2.0" or "you might find value in an assessment tool like Predictive Index"
     - Should feel helpful and natural, not forced or promotional
     - Focus on how the chosen tool can enhance the specific competency being developed
-    - Use language like "consider using a tool such as [tool name]" rather than direct recommendations
-
-    **REFERENCE LINKS FOR TECHNIQUES OR METHODOLOGIES**:
-    - Whenever you mention a technique or methodology (e.g., Eisenhower Box, SMART goals, etc.), ensure it appears in the resources section with an appropriate link
-    - For techniques without established resource mappings, mention them in insights but include them in resources for linking
 
     **PRODUCT RECOMMENDATIONS**:
     - If recommending any products (as opposed to books or reference documents), include the product name in the insight text for potential linking
     - Products should be mentioned naturally within the insight context
 
-  - \`resources\` (array of 1-3 strings): List all practical resources mentioned in the insights. When possible, use these EXACT titles for consistency:
-    * For Emotional Intelligence: "Emotional Intelligence 2.0 by Travis Bradberry"
-    * For Conflict Resolution: "Crucial Conversations by Kerry Patterson" or "Crucial Conversations training program"
-    * For Change Management: "ADKAR Model" or "Kotter 8-Step Process"
-    * For Communication: "Crucial Conversations by Kerry Patterson"
-    * For Leadership Development: "The Leadership Challenge" or "Good to Great by Jim Collins"
-    * For Team Building: "The 7 Habits of Highly Effective People"
-    * For Strategic Thinking: "Good to Great by Jim Collins"
-    * For Time Management: "The 7 Habits of Highly Effective People" or "Eisenhower Matrix"
-    * For Decision Making: "Thinking, Fast and Slow by Daniel Kahneman"
-    * For Professional Development: "StrengthsFinder 2.0" or "DISC Assessment"
-    * For Techniques: Include technique names (e.g., "Eisenhower Matrix", "SMART Goals", "Pomodoro Technique") for linking
+  - \`resources\` (array of 1-3 strings): CRITICAL RESOURCE REQUIREMENTS:
+    
+    **MANDATORY INCLUSION RULES**:
+    - MUST include ALL techniques, methodologies, frameworks, or tools mentioned in insights
+    - MUST include ALL practical resources referenced in insights
+    - Use EXACT titles from this approved list when applicable:
+      * For Emotional Intelligence: "Emotional Intelligence 2.0 by Travis Bradberry"
+      * For Conflict Resolution: "Crucial Conversations by Kerry Patterson"
+      * For Change Management: "ADKAR Model" or "Kotter 8-Step Process"
+      * For Communication: "Crucial Conversations by Kerry Patterson"
+      * For Leadership Development: "The Leadership Challenge" or "Good to Great by Jim Collins"
+      * For Team Building: "The 7 Habits of Highly Effective People"
+      * For Strategic Thinking: "Good to Great by Jim Collins"
+      * For Time Management: "The 7 Habits of Highly Effective People" or "Eisenhower Matrix"
+      * For Decision Making: "Thinking, Fast and Slow by Daniel Kahneman"
+      * For Professional Development: "StrengthsFinder 2.0" or "DISC Assessment"
+      * For Techniques: Include exact technique names (e.g., "Eisenhower Matrix", "SMART Goals", "Pomodoro Technique")
+    
+    **ABSOLUTE REQUIREMENT**: Every single resource listed MUST have a corresponding working link in our system. Only recommend resources that are guaranteed to have links available.
 
 - \`key_strengths\`: An array with at least 2 objects, each for a key competency to leverage:
   - \`competency\` (string): The name of the competency from the assessment data above
   - \`example\` (string): A concrete example of this competency in action (from data or a plausible scenario)
-  - \`leverage_advice\` (array of exactly 3 strings): Three actionable, positive suggestions for further leveraging this competency. Apply the same quality standards as insights - avoid generic advice, provide specific strategies, frameworks, or research-backed approaches. The CRITICAL TOOL EXCLUSIVITY RULE also applies here. Use the same guidelines for reference links and product recommendations as in the insights section.
-  - \`resources\` (array of 0-3 strings): List any practical resources mentioned in the leverage advice using the same exact titles when possible. Include techniques and methodologies mentioned for potential linking.
+  - \`leverage_advice\` (array of exactly 3 strings): Three actionable, positive suggestions for further leveraging this competency. Apply the same quality standards as insights - avoid generic advice, provide specific strategies, frameworks, or research-backed approaches. The CRITICAL TOOL EXCLUSIVITY RULE and MANDATORY TECHNIQUE/METHODOLOGY RESOURCE REQUIREMENT also apply here.
+  - \`resources\` (array of 0-3 strings): List any practical resources mentioned in the leverage advice using the same exact titles when possible. Include ALL techniques and methodologies mentioned for potential linking. Same absolute linking requirement applies.
 
 ### CRITICAL JSON Rules
 - Output MUST be valid JSON only. No text, markdown, or formatting before/after.
 - The \`insights\` and \`leverage_advice\` fields must be arrays of strings ONLY.
-- The \`resources\` field must be an array of strings listing all resources mentioned in insights/advice.
+- The \`resources\` field must be an array of strings listing ALL resources mentioned in insights/advice.
 - All arrays must contain only the specified data types.
 - Structure the summary for easy paragraph splitting during post-processing with leader names as clickable links.
 - When possible, use the exact resource titles listed above for consistency with our resource mapping system.
-- Include technique and methodology names in resources for potential linking (e.g., "Eisenhower Matrix", "SMART Goals").
+- Include ALL technique and methodology names in resources for potential linking (e.g., "Eisenhower Matrix", "SMART Goals").
 - NEVER write generic, obvious statements - every insight must provide genuine value and actionable advice.
-- Remember: Maximum ONE mention of either Clifton Strengths or Predictive Index per entire assessment, and only when naturally relevant, using suggestive language.
+- ABSOLUTE ENFORCEMENT: Maximum ONE mention of either StrengthsFinder 2.0 or Predictive Index per ENTIRE assessment, including across both priority_areas and key_strengths arrays combined.
 - Make leader names clickable links using markdown format in the summary.
-- Include techniques, methodologies, and products mentioned in insights within the resources array for proper linking.
+- Include ALL techniques, methodologies, and products mentioned in insights within the resources array for proper linking.
+- Use only suggestive language for assessment tools: "consider using a tool such as [tool name]" rather than direct recommendations.
+- Every resource listed must have a guaranteed working link - do not recommend resources without confirmed link availability.
 
 Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above.`;
 };
+

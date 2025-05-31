@@ -41,27 +41,14 @@ const Results = () => {
     handleSaveResults
   } = useAssessment();
 
-  // Ensure page scrolls to top when component mounts or when assessment data is ready
+  // Add a brief delay to let everything settle before showing content
   useEffect(() => {
-    // Scroll to top immediately when component mounts
-    window.scrollTo(0, 0);
-    
     const readyTimer = setTimeout(() => {
       setIsPageReady(true);
-      // Ensure we're at the top after page is ready
-      window.scrollTo(0, 0);
     }, 300);
 
     return () => clearTimeout(readyTimer);
   }, []);
-
-  // Additional scroll to top when valid assessment data is available
-  useEffect(() => {
-    if (isPageReady && (categories?.length > 0 || assessmentId)) {
-      // Ensure page is at the top when results are displayed
-      window.scrollTo(0, 0);
-    }
-  }, [isPageReady, categories, assessmentId]);
 
   // Log assessment state data with more detail
   useEffect(() => {
@@ -317,7 +304,7 @@ const Results = () => {
             }}
             onSignup={handleShowSignupForm}
             isAuthenticated={!!user}
-            assessmentId={assessmentId}
+            assessmentId={assessmentId} // Pass the assessment ID from URL params
           />
         )}
       </main>

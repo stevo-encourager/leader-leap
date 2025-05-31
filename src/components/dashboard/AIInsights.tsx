@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Bot, AlertCircle, Target, TrendingUp, ExternalLink } from 'lucide-react';
 import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
@@ -17,14 +16,13 @@ interface PriorityArea {
   competency: string;
   gap: number;
   insights: string[];
-  resources: string[];
+  resource: string;
 }
 
 interface KeyStrength {
   competency: string;
   example: string;
   leverage_advice: string[];
-  resources: string[];
 }
 
 interface AIInsightsData {
@@ -68,7 +66,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
 
       // Validate priority areas
       for (const area of parsed.priority_areas) {
-        if (!area.competency || !area.insights || !Array.isArray(area.insights)) {
+        if (!area.competency || !area.insights || !Array.isArray(area.insights) || !area.resource) {
           console.error('AIInsights: Invalid priority area structure:', area);
           return null;
         }
@@ -79,14 +77,6 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
             console.error('AIInsights: Invalid insight type - must be string:', insight);
             return null;
           }
-        }
-
-        // Handle both old 'resource' field and new 'resources' field for backward compatibility
-        if (area.resource && !area.resources) {
-          area.resources = [area.resource];
-        }
-        if (!area.resources) {
-          area.resources = [];
         }
       }
 
@@ -104,11 +94,6 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
             return null;
           }
         }
-
-        // Ensure resources field exists
-        if (!strength.resources) {
-          strength.resources = [];
-        }
       }
       
       return parsed;
@@ -118,7 +103,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
     }
   };
 
-  // Enhanced helper function to render summary with automatic paragraph formatting and leader links
+  // Enhanced helper function to render summary with automatic paragraph formatting
   const renderFormattedSummary = (summary: string) => {
     return (
       <div className="mb-8 bg-blue-50 p-6 rounded-lg border border-blue-200">
@@ -138,65 +123,58 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
         Top 3 Priority Development Areas
       </h3>
       <div className="space-y-6">
-        {priorityAreas.map((area, index) => (
-          <div key={index} className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
-            <div className="mb-4">
-              <h4 className="text-lg text-slate-800 font-montserrat">
-                {index + 1}. {area.competency}
-              </h4>
-              <span className="text-sm text-slate-600 bg-slate-100 px-2 py-1 rounded">
-                Gap: {area.gap.toFixed(1)}
-              </span>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <h5 className="text-slate-700 mb-3 font-montserrat">Key insights:</h5>
-                <ul className="space-y-3">
-                  {area.insights && Array.isArray(area.insights) && area.insights.map((insight, insightIndex) => (
-                    <li key={insightIndex} className="flex items-start gap-3">
-                      <span className="flex-shrink-0 w-6 h-6 bg-encourager text-white rounded-full flex items-center justify-center text-sm font-medium">
-                        {insightIndex + 1}
-                      </span>
-                      <p className="text-slate-700 leading-relaxed">{insight}</p>
-                    </li>
-                  ))}
-                </ul>
+        {priorityAreas.map((area, index) => {
+          const resourceLink = generateResourceLink(area.resource);
+          
+          return (
+            <div key={index} className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
+              <div className="mb-4">
+                <h4 className="text-lg text-slate-800 font-montserrat">
+                  {index + 1}. {area.competency}
+                </h4>
+                <span className="text-sm text-slate-600 bg-slate-100 px-2 py-1 rounded">
+                  Gap: {area.gap.toFixed(1)}
+                </span>
               </div>
-              {area.resources && area.resources.length > 0 && (
-                <div className="bg-slate-50 p-4 rounded border-l-4 border-encourager">
-                  <h6 className="text-slate-700 mb-2 font-montserrat">
-                    Recommended Resources:
-                  </h6>
-                  <div className="space-y-2">
-                    {area.resources.map((resource, resourceIndex) => {
-                      const resourceLink = generateResourceLink(resource);
-                      return (
-                        <div key={resourceIndex}>
-                          {resourceLink.hasValidLink ? (
-                            <a 
-                              href={resourceLink.url!} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="text-encourager hover:text-encourager-light text-sm flex items-center gap-1 underline"
-                            >
-                              <ExternalLink className="h-3 w-3" />
-                              {resourceLink.title}
-                            </a>
-                          ) : (
-                            <div className="text-slate-600 text-sm">
-                              <span className="font-medium">{resourceLink.title}</span>
-                              <p className="text-xs text-slate-500 mt-1">Resource link not currently available</p>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
+              <div className="space-y-4">
+                <div>
+                  <h5 className="text-slate-700 mb-3 font-montserrat">Key insights:</h5>
+                  <ul className="space-y-3">
+                    {area.insights && Array.isArray(area.insights) && area.insights.map((insight, insightIndex) => (
+                      <li key={insightIndex} className="flex items-start gap-3">
+                        <span className="flex-shrink-0 w-6 h-6 bg-encourager text-white rounded-full flex items-center justify-center text-sm font-medium">
+                          {insightIndex + 1}
+                        </span>
+                        <p className="text-slate-700 leading-relaxed">{insight}</p>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-              )}
+                {area.resource && (
+                  <div className="bg-slate-50 p-4 rounded border-l-4 border-encourager">
+                    <h6 className="text-slate-700 mb-2 font-montserrat">Recommended Resource:</h6>
+                    {resourceLink.hasValidLink ? (
+                      <a 
+                        href={resourceLink.url!} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-encourager hover:text-encourager-light text-sm flex items-center gap-1 underline"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        {resourceLink.title}
+                      </a>
+                    ) : (
+                      <div className="text-slate-600 text-sm">
+                        <span className="font-medium">{resourceLink.title}</span>
+                        <p className="text-xs text-slate-500 mt-1">Resource link not currently available</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -233,38 +211,6 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
                   ))}
                 </ul>
               </div>
-              {strength.resources && strength.resources.length > 0 && (
-                <div className="bg-slate-50 p-4 rounded border-l-4 border-encourager">
-                  <h6 className="text-slate-700 mb-2 font-montserrat">
-                    Recommended Resources:
-                  </h6>
-                  <div className="space-y-2">
-                    {strength.resources.map((resource, resourceIndex) => {
-                      const resourceLink = generateResourceLink(resource);
-                      return (
-                        <div key={resourceIndex}>
-                          {resourceLink.hasValidLink ? (
-                            <a 
-                              href={resourceLink.url!} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="text-encourager hover:text-encourager-light text-sm flex items-center gap-1 underline"
-                            >
-                              <ExternalLink className="h-3 w-3" />
-                              {resourceLink.title}
-                            </a>
-                          ) : (
-                            <div className="text-slate-600 text-sm">
-                              <span className="font-medium">{resourceLink.title}</span>
-                              <p className="text-xs text-slate-500 mt-1">Resource link not currently available</p>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         ))}

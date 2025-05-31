@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { CircleGauge, ArrowLeft, Plus } from 'lucide-react';
+import { CircleGauge, ArrowLeft } from 'lucide-react';
 import Navigation from '@/components/layout/Navigation';
 import Footer from '@/components/layout/Footer';
 import { useAssessmentHistory } from '@/hooks/useAssessmentHistory';
@@ -77,27 +77,16 @@ const PreviousAssessments = () => {
             </Button>
           </Link>
           
-          <div className="flex items-center gap-3">
-            {allAssessments.length > 0 && (
-              <>
-                <Link to="/assessment">
-                  <Button variant="encourager" className="flex items-center gap-2">
-                    <Plus size={16} />
-                    <span>Start New Assessment</span>
-                  </Button>
-                </Link>
-                
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleRefresh} 
-                  disabled={isLoading}
-                >
-                  Refresh List
-                </Button>
-              </>
-            )}
-          </div>
+          {allAssessments.length > 0 && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleRefresh} 
+              disabled={isLoading}
+            >
+              Refresh List
+            </Button>
+          )}
         </div>
 
         <h1 className="text-3xl font-bold text-encourager mb-8">Your Previous Assessments</h1>

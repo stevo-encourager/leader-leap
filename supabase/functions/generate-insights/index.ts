@@ -24,21 +24,17 @@ serve(async (req) => {
 
     const { categories, demographics, averageGap, assessmentId } = await req.json();
 
-    // CRITICAL FIRST CHECK: Always verify existing insights before ANY processing
-    if (assessmentId && assessmentId.trim() !== '') {
-      console.log('CRITICAL SAFEGUARD: Checking for existing insights before any processing');
+    // CRITICAL: Always check if insights already exist first - NEVER regenerate
+    if (assessmentId) {
       const existingInsights = await checkExistingInsights(assessmentId, supabaseUrl, supabaseServiceKey);
       if (existingInsights) {
-        console.log('CRITICAL SAFEGUARD: Existing insights found - returning immediately without any generation');
         return new Response(JSON.stringify({ insights: existingInsights }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-    } else {
-      console.log('CRITICAL SAFEGUARD: No assessment ID provided - proceeding with generation for temporary use');
     }
 
-    console.log('CRITICAL SAFEGUARD: No existing insights confirmed - generating new insights (ONLY ONCE)');
+    console.log('No existing insights found - generating new insights (ONLY ONCE)');
 
     // Build assessment data and prompt
     const assessmentSummary = buildAssessmentData(categories, averageGap, demographics);
@@ -76,15 +72,12 @@ serve(async (req) => {
     // Convert back to JSON string with enhanced formatted summary
     const finalInsights = JSON.stringify(parsedInsights);
 
-    // CRITICAL FINAL SAFEGUARD: Only save if we have a valid assessment ID and confirm no existing insights
-    if (assessmentId && assessmentId.trim() !== '') {
-      console.log('CRITICAL FINAL SAFEGUARD: Attempting to save insights with final protection check');
+    // ALWAYS save insights to database if assessmentId is provided
+    if (assessmentId) {
       await saveInsights(assessmentId, finalInsights, supabaseUrl, supabaseServiceKey);
-    } else {
-      console.log('CRITICAL FINAL SAFEGUARD: No assessment ID - returning insights without saving');
     }
 
-    console.log('Successfully generated and processed insights with all critical safeguards in place');
+    console.log('Successfully generated and saved insights with enhanced paragraph formatting and improved insight quality');
 
     return new Response(JSON.stringify({ insights: finalInsights }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -94,8 +87,6 @@ serve(async (req) => {
     
     const errorMessage = error.message.includes('OpenAI') 
       ? 'Unable to generate insights due to AI service error. Please try again later.'
-      : error.message.includes('already exist')
-      ? 'Insights already exist for this assessment and cannot be regenerated.'
       : 'An unexpected error occurred while generating insights. Please try again.';
     
     return new Response(JSON.stringify({ error: errorMessage }), {

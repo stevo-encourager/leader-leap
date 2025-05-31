@@ -78,22 +78,24 @@ const PreviousAssessments = () => {
           </Link>
           
           <div className="flex items-center gap-3">
-            <Link to="/assessment">
-              <Button variant="encourager" className="flex items-center gap-2">
-                <Plus size={16} />
-                <span>Start New Assessment</span>
-              </Button>
-            </Link>
-            
             {allAssessments.length > 0 && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleRefresh} 
-                disabled={isLoading}
-              >
-                Refresh List
-              </Button>
+              <>
+                <Link to="/assessment">
+                  <Button variant="encourager" className="flex items-center gap-2">
+                    <Plus size={16} />
+                    <span>Start New Assessment</span>
+                  </Button>
+                </Link>
+                
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleRefresh} 
+                  disabled={isLoading}
+                >
+                  Refresh List
+                </Button>
+              </>
             )}
           </div>
         </div>

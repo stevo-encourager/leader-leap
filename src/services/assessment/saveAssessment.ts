@@ -57,18 +57,20 @@ const checkForDuplicateAssessment = async (
       let assessmentCategories: Category[] = [];
       let assessmentDemographics: Demographics = {};
       
-      // Handle categories - could be JSON string or object
+      // Handle categories - convert from Supabase Json type
       if (typeof assessment.categories === 'string') {
         assessmentCategories = JSON.parse(assessment.categories);
       } else if (Array.isArray(assessment.categories)) {
-        assessmentCategories = assessment.categories as Category[];
+        // Safely convert from Json[] to Category[] through unknown
+        assessmentCategories = assessment.categories as unknown as Category[];
       }
       
-      // Handle demographics - could be JSON string or object
+      // Handle demographics - convert from Supabase Json type
       if (typeof assessment.demographics === 'string') {
         assessmentDemographics = JSON.parse(assessment.demographics);
       } else if (assessment.demographics && typeof assessment.demographics === 'object') {
-        assessmentDemographics = assessment.demographics as Demographics;
+        // Safely convert from Json to Demographics through unknown
+        assessmentDemographics = assessment.demographics as unknown as Demographics;
       }
       
       const existingSignature = generateAssessmentSignature(

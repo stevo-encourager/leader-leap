@@ -6,9 +6,10 @@ import { TOOL_RESOURCES } from './tools';
 import { LEADERSHIP_FRAMEWORK_RESOURCES } from './leadership-frameworks';
 import { PROFESSIONAL_DEVELOPMENT_RESOURCES } from './professional-development';
 import { TEAM_LEADERSHIP_RESOURCES } from './team-leadership';
+import { LEADER_RESOURCES } from './leaders';
 
 /**
- * Combined mapping of all leadership resources
+ * Combined mapping of all leadership resources including inspirational leaders
  */
 export const ALL_RESOURCE_MAPPINGS: Record<string, ResourceMapping> = {
   ...BOOK_RESOURCES,
@@ -17,7 +18,8 @@ export const ALL_RESOURCE_MAPPINGS: Record<string, ResourceMapping> = {
   ...TOOL_RESOURCES,
   ...LEADERSHIP_FRAMEWORK_RESOURCES,
   ...PROFESSIONAL_DEVELOPMENT_RESOURCES,
-  ...TEAM_LEADERSHIP_RESOURCES
+  ...TEAM_LEADERSHIP_RESOURCES,
+  ...LEADER_RESOURCES
 };
 
 // Export individual mappings for specific use cases
@@ -28,7 +30,8 @@ export {
   TOOL_RESOURCES,
   LEADERSHIP_FRAMEWORK_RESOURCES,
   PROFESSIONAL_DEVELOPMENT_RESOURCES,
-  TEAM_LEADERSHIP_RESOURCES
+  TEAM_LEADERSHIP_RESOURCES,
+  LEADER_RESOURCES
 };
 
 /**

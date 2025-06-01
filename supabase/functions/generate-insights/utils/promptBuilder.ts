@@ -1,4 +1,3 @@
-
 interface CategoryBreakdown {
   title: string;
   skillCount: number;
@@ -36,6 +35,49 @@ export const buildAssessmentData = (categories: any[], averageGap: number, demog
     demographics: demographics,
     categoryBreakdown: categoryBreakdown
   };
+};
+
+// Build the validated leaders list for the prompt
+const buildValidatedLeadersList = (): string => {
+  return `
+**VALIDATED INSPIRATIONAL LEADERS - USE ONLY THESE LEADERS:**
+
+**Leadership Development & Inspiration:**
+- Simon Sinek (Start With Why, leadership inspiration)
+
+**Vulnerability & Courage Leadership:**
+- Brené Brown (Vulnerability, courage, leadership)
+
+**Executive Coaching & Leadership Transitions:**
+- Marshall Goldsmith (Executive coaching, leadership transitions)
+
+**Team Dynamics & Organizational Health:**
+- Patrick Lencioni (Team dynamics, organizational health)
+
+**Leadership Research & Good to Great:**
+- Jim Collins (Good to Great, leadership research)
+
+**Situational Leadership:**
+- Ken Blanchard (Situational Leadership)
+
+**Principle-Centered Leadership:**
+- Stephen Covey (Principle-centered leadership)
+
+**Leadership Development & Influence:**
+- John Maxwell (Leadership development, influence)
+
+**Emotional Intelligence Leadership:**
+- Daniel Goleman (Emotional Intelligence, leadership)
+
+**Servant Leadership & Leadership Principles:**
+- James Kouzes (Servant Leadership, Leadership Challenge)
+
+**Innovation & Change Leadership:**
+- John Kotter (Change management, leadership)
+
+**Strengths-Based Leadership:**
+- Tom Rath (Strengths-based leadership)
+`;
 };
 
 // Build the validated resources list for the prompt
@@ -159,6 +201,7 @@ ${topCompetencies.map((cat, i) => `${i+1}. ${cat.title}: Current ${cat.averageCu
 `;
 
   const validatedResourcesList = buildValidatedResourcesList();
+  const validatedLeadersList = buildValidatedLeadersList();
 
   return `${assessmentDataSection}
 
@@ -218,6 +261,8 @@ You are an expert leadership coach and assessment analyst. Based on the provided
 
 ${validatedResourcesList}
 
+${validatedLeadersList}
+
 ### CRITICAL RESOURCE SELECTION RULES
 
 **MANDATORY RESOURCE CONSTRAINTS:**
@@ -239,6 +284,26 @@ ${validatedResourcesList}
 - Match resource sophistication to user's experience level (${assessmentSummary.demographics.yearsOfExperience || 'Not specified'} years)
 - Ensure industry relevance when selecting between similar resources
 
+### CRITICAL INSPIRATIONAL LEADER SELECTION RULES
+
+**MANDATORY LEADER CONSTRAINTS:**
+- You MUST ONLY use leaders from the validated leaders database above
+- NEVER create or reference leaders not in this list
+- Each leader name you use must match EXACTLY as written in the database
+- If you want to reference a leader not in the database, omit the leader reference entirely
+- Always use the exact leader name and principle as specified in the database
+
+**Leader Selection Process:**
+1. Identify the leadership principle you want to highlight in your summary
+2. Find the EXACT matching leader from the validated database who exemplifies that principle
+3. Use only leaders whose names and principles match exactly from the database
+4. If no exact match exists for your intended principle, omit the leader reference
+
+**Leader Quality Validation:**
+- Every leader reference must directly relate to the specific leadership principle being discussed
+- Ensure the leader's known expertise aligns with the user's industry context when possible
+- Match leader examples to user's experience level and role context
+
 ### ENHANCED QUALITY STANDARDS
 
 **Insight Specificity Requirements:**
@@ -256,17 +321,9 @@ ${validatedResourcesList}
 
 ### INSPIRATIONAL LEADER SELECTION
 
-**Choose leaders whose official profiles/pages you can confidently link to, ensuring they exemplify the specific leadership principle being discussed and are relevant to the user's industry context.**
+**Choose leaders whose names appear EXACTLY in the validated leaders list above, ensuring they exemplify the specific leadership principle being discussed and are relevant to the user's industry context.**
 
-**Verified Leader Options (use only these):**
-- Simon Sinek (Start With Why, leadership inspiration)
-- Brené Brown (Vulnerability, courage, leadership)
-- John Maxwell (Leadership development, influence)
-- Patrick Lencioni (Team dynamics, organizational health)
-- Jim Collins (Good to Great, leadership research)
-- Marshall Goldsmith (Executive coaching, leadership transitions)
-- Ken Blanchard (Situational Leadership)
-- Stephen Covey (Principle-centered leadership)
+**CRITICAL: You MUST ONLY use leaders from the validated database above. Do not reference any leader not explicitly listed.**
 
 **Format requirement for summary:** "Like [Leader Name](https://workinglink.com), who is known for [specific principle]..."
 
@@ -319,7 +376,10 @@ Before generating the JSON response, verify:
 □ No custom or external resources are included
 □ Every framework mentioned has a corresponding validated resource
 □ Resource names are used as specified in the database (exact titles only)
-□ Summary includes verified leader with working link in correct format
+□ Leader name matches EXACTLY with the validated leaders database
+□ Leader reference uses the exact name and principle from the database
+□ If no suitable validated leader exists for context, leader reference is omitted
+□ Summary includes verified leader with working link in correct format (only if validated leader found)
 □ All demographic context (role, industry, experience) is referenced appropriately
 □ Summary contains exactly 2 distinct paragraphs with transition phrase
 □ All competency names match exactly from assessment data
@@ -335,6 +395,7 @@ Before generating the JSON response, verify:
 - Use only suggestive language for assessment tools: "consider using a tool such as [tool name]" rather than direct recommendations.
 - **PERSONALIZATION REQUIREMENT**: Use ALL THREE demographic dimensions (role, industry, experience) to tailor insights, examples, and leader selection for maximum relevance to the user's specific context.
 - **VALIDATED RESOURCE REQUIREMENT**: Every resource in the resources arrays must be an exact match from the validated database above
+- **VALIDATED LEADER REQUIREMENT**: Every leader in the summary must be an exact match from the validated leaders database above. If no suitable validated leader exists for the context, omit the leader reference entirely rather than using an unvalidated leader.
 
-Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above while being specifically tailored to the user's role, industry, and experience level. Remember: ONLY use resources from the validated database with exact title matching.`;
+Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above while being specifically tailored to the user's role, industry, and experience level. Remember: ONLY use resources and leaders from the validated databases with exact title matching.`;
 };

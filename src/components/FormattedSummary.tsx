@@ -1,6 +1,6 @@
-
 import React from 'react';
 import { ExternalLink } from 'lucide-react';
+import { generateLeaderLink } from '@/utils/leaderMapping';
 
 interface FormattedSummaryProps {
   summary: string;
@@ -38,7 +38,7 @@ export const FormattedSummary: React.FC<FormattedSummaryProps> = ({
     return [text];
   };
 
-  // Convert markdown links to React elements
+  // Convert markdown links to React elements with leader validation
   const renderTextWithLinks = (text: string) => {
     // Regex to match markdown links: [text](url)
     const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
@@ -52,21 +52,42 @@ export const FormattedSummary: React.FC<FormattedSummaryProps> = ({
         parts.push(text.substring(lastIndex, match.index));
       }
       
-      // Add the link
+      // Validate the link - check if it's a leader link
       const linkText = match[1];
       const linkUrl = match[2];
-      parts.push(
-        <a
-          key={match.index}
-          href={linkUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-encourager hover:text-encourager-light underline inline-flex items-center gap-1"
-        >
-          {linkText}
-          <ExternalLink className="h-3 w-3" />
-        </a>
-      );
+      
+      // Try to validate as a leader first
+      const leaderValidation = generateLeaderLink(linkText);
+      
+      if (leaderValidation.hasValidLink) {
+        // Use validated leader link
+        parts.push(
+          <a
+            key={match.index}
+            href={leaderValidation.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-encourager hover:text-encourager-light underline inline-flex items-center gap-1"
+          >
+            {leaderValidation.name}
+            <ExternalLink className="h-3 w-3" />
+          </a>
+        );
+      } else {
+        // Use original link if it's not a leader or if leader validation fails
+        parts.push(
+          <a
+            key={match.index}
+            href={linkUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-encourager hover:text-encourager-light underline inline-flex items-center gap-1"
+          >
+            {linkText}
+            <ExternalLink className="h-3 w-3" />
+          </a>
+        );
+      }
       
       lastIndex = linkRegex.lastIndex;
     }

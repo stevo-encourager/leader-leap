@@ -72,6 +72,9 @@ const DemographicsForm: React.FC<DemographicsFormProps> = ({ demographics, onDem
     onDemographicsUpdate({ ...demographics, yearsOfExperience: value });
   };
 
+  // Check if all required fields are completed
+  const isFormComplete = demographics.role && demographics.industry && demographics.yearsOfExperience;
+
   return (
     <div className="fade-in">
       <Card>
@@ -146,7 +149,7 @@ const DemographicsForm: React.FC<DemographicsFormProps> = ({ demographics, onDem
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
           </Button>
-          <Button onClick={onContinue}>
+          <Button onClick={onContinue} disabled={!isFormComplete}>
             Continue to Assessment
           </Button>
         </CardFooter>

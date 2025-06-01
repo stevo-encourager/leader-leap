@@ -1,8 +1,7 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { CircleGauge, ArrowLeft } from 'lucide-react';
+import { CircleGauge, ArrowLeft, Plus } from 'lucide-react';
 import Navigation from '@/components/layout/Navigation';
 import Footer from '@/components/layout/Footer';
 import { useAssessmentHistory } from '@/hooks/useAssessmentHistory';
@@ -78,14 +77,25 @@ const PreviousAssessments = () => {
           </Link>
           
           {allAssessments.length > 0 && (
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleRefresh} 
-              disabled={isLoading}
-            >
-              Refresh List
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="encourager"
+                size="sm"
+                onClick={() => navigate('/assessment')}
+                className="flex items-center gap-2"
+              >
+                <Plus size={16} />
+                Start New Assessment
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleRefresh} 
+                disabled={isLoading}
+              >
+                Refresh List
+              </Button>
+            </div>
           )}
         </div>
 

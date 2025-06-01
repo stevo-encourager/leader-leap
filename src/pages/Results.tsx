@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -42,14 +41,27 @@ const Results = () => {
     handleSaveResults
   } = useAssessment();
 
-  // Add a brief delay to let everything settle before showing content
+  // Ensure page scrolls to top when component mounts or when assessment data is ready
   useEffect(() => {
+    // Scroll to top immediately when component mounts
+    window.scrollTo(0, 0);
+    
     const readyTimer = setTimeout(() => {
       setIsPageReady(true);
+      // Ensure we're at the top after page is ready
+      window.scrollTo(0, 0);
     }, 300);
 
     return () => clearTimeout(readyTimer);
   }, []);
+
+  // Additional scroll to top when valid assessment data is available
+  useEffect(() => {
+    if (isPageReady && (categories?.length > 0 || assessmentId)) {
+      // Ensure page is at the top when results are displayed
+      window.scrollTo(0, 0);
+    }
+  }, [isPageReady, categories, assessmentId]);
 
   // Log assessment state data with more detail
   useEffect(() => {
@@ -101,7 +113,7 @@ const Results = () => {
     demographics
   );
 
-  // UPDATED: Only save for NEW assessments that come from completing the assessment
+  // CRITICAL FIX: Only save for NEW assessments, never for existing ones being viewed
   useEffect(() => {
     // IMMEDIATELY RETURN if we're viewing an existing assessment
     if (assessmentId) {
@@ -111,46 +123,61 @@ const Results = () => {
     
     // Only attempt to save if:
     // 1. User is logged in
-    // 2. On results page (currentStep === 'results') 
-    // 3. NOT viewing an existing assessment (no assessmentId)
-    // 4. Haven't already triggered save for this page load
+    // 2. On results page (currentStep === 'results')
+    // 3. NOT viewing an existing assessment (no assessmentId) - already checked above
+    // 4. Haven't already triggered save
     // 5. Page is ready and initial data is checked
-    // 6. We actually have assessment data to save
     if (user && 
         currentStep === 'results' && 
         !saveTriggeredRef.current && 
         isPageReady &&
-        isInitialDataChecked &&
-        categories && 
-        categories.length > 0) {
+        isInitialDataChecked) {
       
-      // Check if this looks like a newly completed assessment (has ratings)
-      const hasRatings = categories.some(cat => 
-        cat && cat.skills && cat.skills.some(skill => 
-          skill && skill.ratings && (
-            (typeof skill.ratings.current === 'number' && skill.ratings.current > 0) || 
-            (typeof skill.ratings.desired === 'number' && skill.ratings.desired > 0)
-          )
-        )
-      );
+      console.log('Results page - Checking if we should save NEW assessment (no assessmentId present)');
       
-      if (hasRatings) {
+      // Only save if we have categories with data
+      if (categories && categories.length > 0) {
         console.log('Results page - Triggering assessment save for NEW assessment with categories:', categories.length);
         saveTriggeredRef.current = true;
         
         // Delay to ensure all state is properly set
         setTimeout(() => {
           handleSaveResults();
-        }, 500); // Increased delay to prevent race conditions
+        }, 300);
       } else {
-        console.log('Results page - No ratings found, likely viewing existing results');
+        console.error('Results page - Cannot save assessment: categories is empty or invalid');
+        
+        // Try one more time to load from local storage
+        const localData = getLocalAssessmentData();
+        if (localData && localData.categories && localData.categories.length > 0) {
+          console.log('Results page - Found local assessment data, using that before save');
+          handleCategoriesUpdate(localData.categories);
+          if (localData.demographics) {
+            handleDemographicsUpdate(localData.demographics);
+          }
+          
+          // Try saving after a short delay
+          setTimeout(() => {
+            saveTriggeredRef.current = true;
+            handleSaveResults();
+          }, 400);
+        } else {
+          console.log('Results page - No local data available, cannot save');
+          console.log('Results page - Categories value:', categories);
+        }
       }
     } 
-    // For guest users, don't trigger any saves - they're handled elsewhere
-    else if (!user && currentStep === 'results') {
-      console.log('Results page - Guest user on results page, no action needed');
+    // For guest users, just ensure local storage is updated without triggering auth errors
+    else if (!user && 
+             currentStep === 'results' && 
+             !saveTriggeredRef.current && 
+             categories && 
+             categories.length > 0 &&
+             isPageReady) {
+      console.log('Results page - Guest user, ensuring local storage is updated');
+      saveTriggeredRef.current = true;
     }
-  }, [user, currentStep, assessmentId, categories, handleSaveResults, isPageReady, isInitialDataChecked]);
+  }, [user, currentStep, assessmentId, categories, handleSaveResults, handleCategoriesUpdate, handleDemographicsUpdate, isPageReady, isInitialDataChecked]);
 
   // Wait for auth, data, and page readiness before rendering
   if (loading || !isPageReady || (!isInitialDataChecked && !assessmentId)) {
@@ -290,7 +317,7 @@ const Results = () => {
             }}
             onSignup={handleShowSignupForm}
             isAuthenticated={!!user}
-            assessmentId={assessmentId} // Pass the assessment ID from URL params
+            assessmentId={assessmentId}
           />
         )}
       </main>

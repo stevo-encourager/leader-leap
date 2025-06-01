@@ -33,30 +33,9 @@ export const useAssessment = () => {
   const { handleCompleteAssessment: wrappedHandleCompleteAssessment } = 
     useAssessmentCompletion(categories, demographics, handleCompleteAssessment);
 
-  const {
-    showAuthForm,
-    loadingPreviousResults,
-    handleSaveResults,
-    handleLoadPreviousResults,
-    handleCloseAuthForm,
-    handleShowSignupForm,
-    handleStartNewAssessment, // This now includes session management
-    currentAssessmentId
-  } = useResultsManagement(
-    categories, 
-    demographics, 
-    handleCategoriesUpdate,
-    handleDemographicsUpdate,
-    setCurrentStep
-  );
-
   // Reset all categories to default values when starting a new assessment
-  const handleStartNewAssessmentWithReset = () => {
-    console.log("useAssessment - Starting new assessment with fresh categories and new session");
-    
-    // Clear the session first
-    handleStartNewAssessment();
-    
+  const handleStartNewAssessment = () => {
+    console.log("useAssessment - Starting new assessment with fresh categories");
     // Create completely fresh copy of default categories with all ratings reset to 0
     const freshCategories = createFreshCategories();
     console.log("useAssessment - Fresh categories created:", freshCategories?.length || 0);
@@ -66,9 +45,25 @@ export const useAssessment = () => {
     handleStartAssessment();
   };
 
+  const {
+    showAuthForm,
+    loadingPreviousResults,
+    handleSaveResults,
+    handleLoadPreviousResults,
+    handleCloseAuthForm,
+    handleShowSignupForm,
+    currentAssessmentId
+  } = useResultsManagement(
+    categories, 
+    demographics, 
+    handleCategoriesUpdate,
+    handleDemographicsUpdate,
+    setCurrentStep
+  );
+
   const { user } = useAuth();
 
-  // Effect to handle result saving when user logs in (but only if not already saved)
+  // Effect to handle result saving when user logs in
   useEffect(() => {
     if (user && currentStep === 'results' && categories && categories.length > 0) {
       console.log("useAssessment - User logged in and on results page, triggering save");
@@ -87,7 +82,7 @@ export const useAssessment = () => {
     handleDemographicsUpdate,
     
     // Navigation functions
-    handleStartAssessment: handleStartNewAssessmentWithReset,
+    handleStartAssessment: handleStartNewAssessment,
     handleContinueToAssessment,
     handleBackToIntro,
     handleBackToDemographics,

@@ -22,48 +22,27 @@ serve(async (req) => {
     // Validate environment variables
     const { openAIApiKey, supabaseUrl, supabaseServiceKey } = validateEnvironmentVariables();
 
-    const { categories, demographics, averageGap, assessmentId, forceRegenerate = false } = await req.json();
+    const { categories, demographics, averageGap, assessmentId } = await req.json();
 
-    console.log('=== PROMPT DEBUG INFO ===');
-    console.log('Assessment ID:', assessmentId);
-    console.log('Force Regenerate:', forceRegenerate);
-    console.log('Demographics:', demographics);
-    
-    // CRITICAL: Always check if insights already exist first - NEVER regenerate unless forced
-    if (assessmentId && !forceRegenerate) {
+    // CRITICAL FIRST CHECK: Always verify existing insights before ANY processing
+    if (assessmentId && assessmentId.trim() !== '') {
+      console.log('CRITICAL SAFEGUARD: Checking for existing insights before any processing');
       const existingInsights = await checkExistingInsights(assessmentId, supabaseUrl, supabaseServiceKey);
       if (existingInsights) {
-        console.log('=== USING EXISTING INSIGHTS ===');
-        console.log('Existing insights found - using cached version (generated with previous prompt)');
-        return new Response(JSON.stringify({ 
-          insights: existingInsights,
-          promptUsed: 'CACHED_INSIGHTS_FROM_PREVIOUS_GENERATION',
-          regenerated: false
-        }), {
+        console.log('CRITICAL SAFEGUARD: Existing insights found - returning immediately without any generation');
+        return new Response(JSON.stringify({ insights: existingInsights }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
+    } else {
+      console.log('CRITICAL SAFEGUARD: No assessment ID provided - proceeding with generation for temporary use');
     }
 
-    if (forceRegenerate) {
-      console.log('=== FORCED REGENERATION ===');
-      console.log('Force regenerate flag is true - will generate new insights with current prompt');
-    } else {
-      console.log('=== GENERATING NEW INSIGHTS ===');
-      console.log('No existing insights found - generating new insights with current prompt');
-    }
+    console.log('CRITICAL SAFEGUARD: No existing insights confirmed - generating new insights (ONLY ONCE)');
 
     // Build assessment data and prompt
     const assessmentSummary = buildAssessmentData(categories, averageGap, demographics);
     const prompt = buildPrompt(assessmentSummary);
-
-    // Log prompt information for debugging
-    console.log('=== CURRENT PROMPT INFO ===');
-    console.log('Prompt length:', prompt.length);
-    console.log('Prompt contains "BANNED PHRASES":', prompt.includes('BANNED PHRASES'));
-    console.log('Prompt contains "PERSONALIZATION MANDATE":', prompt.includes('PERSONALIZATION MANDATE'));
-    console.log('Prompt contains "RESOURCE LINKING REQUIREMENTS":', prompt.includes('RESOURCE LINKING REQUIREMENTS'));
-    console.log('Demographics being used:', JSON.stringify(demographics, null, 2));
 
     // Call OpenAI
     const rawInsights = await callOpenAI(prompt, openAIApiKey);
@@ -76,32 +55,6 @@ serve(async (req) => {
     try {
       parsedInsights = JSON.parse(cleanedInsights);
       validateInsightsStructure(parsedInsights);
-
-      // If recommended_resources exist but priority_areas don't have resources, 
-      // we can optionally map some resources to priority areas for backward compatibility
-      if (parsedInsights.recommended_resources && Array.isArray(parsedInsights.recommended_resources)) {
-        console.log('Found recommended_resources section, ensuring priority areas have resource fields for compatibility');
-        
-        // Add a generic resource field to priority areas if they don't have one
-        parsedInsights.priority_areas.forEach((area: any, index: number) => {
-          if (!area.resource && !area.resources) {
-            // Try to find a relevant resource from the recommended_resources
-            const relevantResource = parsedInsights.recommended_resources.find((res: any) => 
-              res.relevance && res.relevance.toLowerCase().includes(area.competency.toLowerCase().split(' ')[0])
-            );
-            
-            if (relevantResource) {
-              area.resource = relevantResource.name;
-            } else if (parsedInsights.recommended_resources[index]) {
-              // Fallback: assign resources in order
-              area.resource = parsedInsights.recommended_resources[index].name;
-            } else {
-              // Final fallback: use a generic placeholder
-              area.resource = "Leadership development resource";
-            }
-          }
-        });
-      }
 
       // POST-PROCESS THE SUMMARY: Apply enhanced paragraph formatting
       if (parsedInsights.summary) {
@@ -123,28 +76,17 @@ serve(async (req) => {
     // Convert back to JSON string with enhanced formatted summary
     const finalInsights = JSON.stringify(parsedInsights);
 
-    // ALWAYS save insights to database if assessmentId is provided
-    if (assessmentId) {
+    // CRITICAL FINAL SAFEGUARD: Only save if we have a valid assessment ID and confirm no existing insights
+    if (assessmentId && assessmentId.trim() !== '') {
+      console.log('CRITICAL FINAL SAFEGUARD: Attempting to save insights with final protection check');
       await saveInsights(assessmentId, finalInsights, supabaseUrl, supabaseServiceKey);
+    } else {
+      console.log('CRITICAL FINAL SAFEGUARD: No assessment ID - returning insights without saving');
     }
 
-    console.log('=== GENERATION COMPLETE ===');
-    console.log('Successfully generated and saved insights with current prompt');
+    console.log('Successfully generated and processed insights with all critical safeguards in place');
 
-    return new Response(JSON.stringify({ 
-      insights: finalInsights,
-      promptUsed: 'CURRENT_PROMPT_VERSION',
-      regenerated: forceRegenerate || false,
-      debugInfo: {
-        promptLength: prompt.length,
-        hasNewPromptFeatures: {
-          bannedPhrases: prompt.includes('BANNED PHRASES'),
-          personalizationMandate: prompt.includes('PERSONALIZATION MANDATE'),
-          resourceLinking: prompt.includes('RESOURCE LINKING REQUIREMENTS')
-        },
-        demographics: demographics
-      }
-    }), {
+    return new Response(JSON.stringify({ insights: finalInsights }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
@@ -152,6 +94,8 @@ serve(async (req) => {
     
     const errorMessage = error.message.includes('OpenAI') 
       ? 'Unable to generate insights due to AI service error. Please try again later.'
+      : error.message.includes('already exist')
+      ? 'Insights already exist for this assessment and cannot be regenerated.'
       : 'An unexpected error occurred while generating insights. Please try again.';
     
     return new Response(JSON.stringify({ error: errorMessage }), {

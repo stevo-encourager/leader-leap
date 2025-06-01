@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -76,27 +77,27 @@ const PreviousAssessments = () => {
             </Button>
           </Link>
           
-          {allAssessments.length > 0 && (
-            <div className="flex gap-2">
-              <Button
-                variant="encourager"
-                size="sm"
-                onClick={() => navigate('/assessment')}
-                className="flex items-center gap-2"
-              >
-                <Plus size={16} />
-                Start New Assessment
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleRefresh} 
-                disabled={isLoading}
-              >
-                Refresh List
-              </Button>
-            </div>
-          )}
+          <div className="flex items-center gap-3">
+            {allAssessments.length > 0 && (
+              <>
+                <Link to="/assessment">
+                  <Button variant="encourager" className="flex items-center gap-2">
+                    <Plus size={16} />
+                    <span>Start New Assessment</span>
+                  </Button>
+                </Link>
+                
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleRefresh} 
+                  disabled={isLoading}
+                >
+                  Refresh List
+                </Button>
+              </>
+            )}
+          </div>
         </div>
 
         <h1 className="text-3xl font-bold text-encourager mb-8">Your Previous Assessments</h1>

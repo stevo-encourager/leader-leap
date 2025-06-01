@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Category, Demographics } from '@/utils/assessmentTypes';
-import { saveAssessmentResults, clearAssessmentSession } from '@/services/assessment/saveAssessment';
+import { saveAssessmentResults } from '@/services/assessment/saveAssessment';
 import { storeLocalAssessmentData, getLocalAssessmentData } from '@/services/assessment/manageAssessmentHistory';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
@@ -17,8 +17,7 @@ export const useResultsManagement = (
   setCurrentStep: (step: any) => void
 ) => {
   const [isSaving, setIsSaving] = useState(false);
-  const saveInProgressRef = useRef(false);
-  const saveAttemptedRef = useRef(false); // Track if we've already attempted to save
+  const saveInProgressRef = useRef(false); // Additional ref to prevent race conditions
   const { user } = useAuth();
   
   // Log categories data for debugging
@@ -83,14 +82,14 @@ export const useResultsManagement = (
         )
       );
       
-      if (hasRatings && !saveAttemptedRef.current) {
+      if (hasRatings) {
         console.log('Categories/demographics changed with ratings, resetting saved flag');
         resetSaveState();
       }
     }
   }, [categories, demographics, resetSaveState]);
 
-  // Always store assessment data locally when completing the assessment
+  // CRITICAL FIX: Always store assessment data locally when completing the assessment
   useEffect(() => {
     if (categories && categories.length > 0) {
       const hasRatings = categories.some(cat => 
@@ -109,19 +108,11 @@ export const useResultsManagement = (
     }
   }, [categories, demographics]);
 
-  // Function to start a new assessment session
-  const handleStartNewAssessment = () => {
-    console.log('useResultsManagement - Starting new assessment session');
-    clearAssessmentSession();
-    saveAttemptedRef.current = false;
-    resetSaveState();
-  };
-
   // Results save function
   const handleSaveResults = async () => {
-    // Prevent multiple simultaneous save operations
-    if (isSaving || saveInProgressRef.current || saveAttemptedRef.current) {
-      console.log('Save already in progress or attempted, skipping duplicate call');
+    // Prevent multiple simultaneous save operations using both state and ref
+    if (isSaving || saveInProgressRef.current) {
+      console.log('Already saving results, skipping duplicate call');
       return;
     }
     
@@ -131,8 +122,7 @@ export const useResultsManagement = (
       return;
     }
 
-    // Mark that we've attempted to save for this session
-    saveAttemptedRef.current = true;
+    // Set both flags to prevent race conditions
     saveInProgressRef.current = true;
     
     // If user isn't authenticated, save to local storage only
@@ -154,7 +144,6 @@ export const useResultsManagement = (
         const saveResult = await saveAssessmentResults(categories, demographics);
         if (saveResult.success) {
           console.log('Assessment saved to local storage successfully');
-          markAsSaved(undefined, new Date().toISOString().split('T')[0]);
         }
       } catch (error) {
         console.error('Error saving to local storage:', error);
@@ -177,8 +166,7 @@ export const useResultsManagement = (
         
         // Wait a bit for state to update before continuing
         setTimeout(() => {
-          saveInProgressRef.current = false;
-          saveAttemptedRef.current = false; // Reset for retry
+          saveInProgressRef.current = false; // Reset the ref before retry
           handleSaveResults();
         }, 200);
         return;
@@ -240,44 +228,35 @@ export const useResultsManagement = (
     setIsSaving(true);
     
     try {
+      // Check if we already saved an assessment today
+      const today = new Date().toISOString().split('T')[0];
+      if (lastSavedDate === today) {
+        console.log('Already saved an assessment today, updating instead of creating a new one');
+      }
+      
       const result = await saveAssessmentResults(categories, demographics);
       
       if (result.success) {
         // Log success details
         console.log('Successfully saved assessment results:', result);
         
-        // Mark as saved for this session
+        // Mark as saved for this session - safely handling the data property
         if (result.success && 'data' in result && result.data && result.data.length > 0) {
           const assessmentId = result.data[0].id;
-          const today = new Date().toISOString().split('T')[0];
           console.log('Saved assessment with ID:', assessmentId);
           markAsSaved(assessmentId, today);
-          
-          if (result.isExisting) {
-            toast({
-              title: "Results updated",
-              description: "Your assessment results have been updated in your account.",
-            });
-          } else {
-            toast({
-              title: "Results saved",
-              description: "Your assessment results have been saved to your account.",
-            });
-          }
         } else {
           // Still mark as saved but without an assessment ID
           console.log('Assessment saved but no ID returned');
-          const today = new Date().toISOString().split('T')[0];
           markAsSaved(undefined, today);
-          
-          toast({
-            title: "Results saved",
-            description: "Your assessment results have been saved.",
-          });
         }
+        
+        toast({
+          title: "Results saved",
+          description: "Your assessment results have been saved to your account.",
+        });
       } else {
         console.error('Error saving results:', result.error);
-        saveAttemptedRef.current = false; // Allow retry on error
         toast({
           title: "Error saving results",
           description: result.error || "An error occurred while saving your results.",
@@ -286,7 +265,6 @@ export const useResultsManagement = (
       }
     } catch (error) {
       console.error("Error in handleSaveResults:", error);
-      saveAttemptedRef.current = false; // Allow retry on error
       toast({
         title: "Error saving results",
         description: "An unexpected error occurred while saving your results.",
@@ -294,7 +272,7 @@ export const useResultsManagement = (
       });
     } finally {
       setIsSaving(false);
-      saveInProgressRef.current = false;
+      saveInProgressRef.current = false; // Reset the ref flag
       console.log('Assessment save operation completed');
     }
   };
@@ -306,7 +284,6 @@ export const useResultsManagement = (
     handleLoadPreviousResults,
     handleCloseAuthForm,
     handleShowSignupForm,
-    handleStartNewAssessment,
     currentAssessmentId
   };
 };

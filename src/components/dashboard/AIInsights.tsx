@@ -5,7 +5,6 @@ import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { FormattedSummary } from '@/components/FormattedSummary';
 import { generateResourceLink } from '@/utils/resourceMapping';
-import PromptDebugger from './PromptDebugger';
 
 interface AIInsightsProps {
   categories: Category[];
@@ -18,14 +17,14 @@ interface PriorityArea {
   competency: string;
   gap: number;
   insights: string[];
-  resource?: string;     // Support both singular
-  resources?: string[];  // and plural formats
+  resources: string[];
 }
 
 interface KeyStrength {
   competency: string;
   example: string;
   leverage_advice: string[];
+  resources: string[];
 }
 
 interface AIInsightsData {
@@ -49,83 +48,29 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
     console.log('AIInsights: Loading state:', isLoading);
     if (insights) {
       console.log('AIInsights: Using insights from database for consistent display');
-      console.log('AIInsights: Raw insights text length:', insights.length);
     }
   }, [assessmentId, insights, isLoading]);
 
   const parseInsights = (insightsText: string): AIInsightsData | null => {
-    console.log('AIInsights: Starting to parse insights text:', insightsText?.substring(0, 200) + '...');
-    
     try {
-      // Clean the text first - remove markdown code blocks if present
-      let cleanedText = insightsText.trim();
-      
-      // Remove markdown code block formatting
-      if (cleanedText.startsWith('```json')) {
-        cleanedText = cleanedText.substring(7);
-      }
-      if (cleanedText.startsWith('```')) {
-        cleanedText = cleanedText.substring(3);
-      }
-      if (cleanedText.endsWith('```')) {
-        cleanedText = cleanedText.substring(0, cleanedText.length - 3);
-      }
-      
-      // Remove any extra whitespace
-      cleanedText = cleanedText.trim();
-      
-      console.log('AIInsights: Cleaned text for parsing:', cleanedText?.substring(0, 200) + '...');
-      
-      const parsed = JSON.parse(cleanedText);
-      
-      console.log('AIInsights: Successfully parsed JSON:', {
-        hasSummary: !!parsed.summary,
-        priorityAreasCount: parsed.priority_areas?.length || 0,
-        keyStrengthsCount: parsed.key_strengths?.length || 0
-      });
+      const parsed = JSON.parse(insightsText);
       
       // Validate structure
       if (!parsed.summary || !parsed.priority_areas || !parsed.key_strengths) {
         console.error('AIInsights: Invalid insights structure - missing required fields');
-        console.error('AIInsights: Available fields:', Object.keys(parsed));
         return null;
       }
       
       if (!Array.isArray(parsed.priority_areas) || !Array.isArray(parsed.key_strengths)) {
         console.error('AIInsights: Invalid insights structure - arrays expected');
-        console.error('AIInsights: Priority areas type:', typeof parsed.priority_areas);
-        console.error('AIInsights: Key strengths type:', typeof parsed.key_strengths);
         return null;
       }
 
-      // Validate priority areas with more flexible resource handling
-      for (let i = 0; i < parsed.priority_areas.length; i++) {
-        const area = parsed.priority_areas[i];
-        console.log(`AIInsights: Validating priority area ${i}:`, {
-          hasCompetency: !!area.competency,
-          hasInsights: !!area.insights,
-          insightsIsArray: Array.isArray(area.insights),
-          hasResource: !!area.resource,
-          hasResources: !!area.resources,
-          hasGap: typeof area.gap === 'number'
-        });
-        
+      // Validate priority areas
+      for (const area of parsed.priority_areas) {
         if (!area.competency || !area.insights || !Array.isArray(area.insights)) {
-          console.error('AIInsights: Invalid priority area structure - missing required fields:', area);
+          console.error('AIInsights: Invalid priority area structure:', area);
           return null;
-        }
-        
-        // Don't require resource fields anymore - they're optional
-        if (!area.resource && !area.resources) {
-          console.log('AIInsights: Priority area has no resource field, will use fallback');
-          area.resource = "General leadership development";
-        }
-        
-        // Normalize resources to single resource field
-        if (area.resources && Array.isArray(area.resources) && area.resources.length > 0) {
-          // Take the first resource if it's an array
-          area.resource = area.resources[0];
-          console.log('AIInsights: Normalized resources array to single resource:', area.resource);
         }
         
         // Ensure insights is an array of strings only
@@ -135,23 +80,18 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
             return null;
           }
         }
-        
-        if (typeof area.gap !== 'number') {
-          console.error('AIInsights: Invalid gap type - must be number:', area.gap);
-          return null;
+
+        // Handle both old 'resource' field and new 'resources' field for backward compatibility
+        if (area.resource && !area.resources) {
+          area.resources = [area.resource];
+        }
+        if (!area.resources) {
+          area.resources = [];
         }
       }
 
       // Validate key strengths
-      for (let i = 0; i < parsed.key_strengths.length; i++) {
-        const strength = parsed.key_strengths[i];
-        console.log(`AIInsights: Validating key strength ${i}:`, {
-          hasCompetency: !!strength.competency,
-          hasExample: !!strength.example,
-          hasLeverageAdvice: !!strength.leverage_advice,
-          leverageAdviceIsArray: Array.isArray(strength.leverage_advice)
-        });
-        
+      for (const strength of parsed.key_strengths) {
         if (!strength.competency || !strength.example || !strength.leverage_advice || !Array.isArray(strength.leverage_advice)) {
           console.error('AIInsights: Invalid key strength structure:', strength);
           return null;
@@ -164,18 +104,21 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
             return null;
           }
         }
+
+        // Ensure resources field exists
+        if (!strength.resources) {
+          strength.resources = [];
+        }
       }
       
-      console.log('AIInsights: Successfully validated all insights data');
       return parsed;
     } catch (error) {
       console.error('AIInsights: Error parsing insights JSON:', error);
-      console.error('AIInsights: Raw text that failed to parse:', insightsText);
       return null;
     }
   };
 
-  // Enhanced helper function to render summary with automatic paragraph formatting
+  // Enhanced helper function to render summary with automatic paragraph formatting and leader links
   const renderFormattedSummary = (summary: string) => {
     return (
       <div className="mb-8 bg-blue-50 p-6 rounded-lg border border-blue-200">
@@ -195,60 +138,65 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
         Top 3 Priority Development Areas
       </h3>
       <div className="space-y-6">
-        {priorityAreas.map((area, index) => {
-          // Use the normalized resource field with better fallback handling
-          const resourceText = area.resource || (area.resources && area.resources[0]) || 'Leadership development resource';
-          const resourceLink = generateResourceLink(resourceText);
-          
-          return (
-            <div key={index} className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
-              <div className="mb-4">
-                <h4 className="text-lg text-slate-800 font-montserrat">
-                  {index + 1}. {area.competency}
-                </h4>
-                <span className="text-sm text-slate-600 bg-slate-100 px-2 py-1 rounded">
-                  Gap: {area.gap.toFixed(1)}
-                </span>
-              </div>
-              <div className="space-y-4">
-                <div>
-                  <h5 className="text-slate-700 mb-3 font-montserrat">Suggested Steps:</h5>
-                  <ul className="space-y-3">
-                    {area.insights && Array.isArray(area.insights) && area.insights.map((insight, insightIndex) => (
-                      <li key={insightIndex} className="flex items-start gap-3">
-                        <span className="flex-shrink-0 w-6 h-6 bg-encourager text-white rounded-full flex items-center justify-center text-sm font-medium">
-                          {insightIndex + 1}
-                        </span>
-                        <p className="text-slate-700 leading-relaxed">{insight}</p>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-                {resourceText && resourceText !== 'Leadership development resource' && (
-                  <div className="bg-slate-50 p-4 rounded border-l-4 border-encourager">
-                    <h6 className="text-slate-700 mb-2 font-montserrat">Recommended Resource:</h6>
-                    {resourceLink.hasValidLink ? (
-                      <a 
-                        href={resourceLink.url!} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-encourager hover:text-encourager-light text-sm flex items-center gap-1 underline"
-                      >
-                        <ExternalLink className="h-3 w-3" />
-                        {resourceLink.title}
-                      </a>
-                    ) : (
-                      <div className="text-slate-600 text-sm">
-                        <span className="font-medium">{resourceLink.title}</span>
-                        <p className="text-xs text-slate-500 mt-1">Resource link not currently available</p>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+        {priorityAreas.map((area, index) => (
+          <div key={index} className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
+            <div className="mb-4">
+              <h4 className="text-lg text-slate-800 font-montserrat">
+                {index + 1}. {area.competency}
+              </h4>
+              <span className="text-sm text-slate-600 bg-slate-100 px-2 py-1 rounded">
+                Gap: {area.gap.toFixed(1)}
+              </span>
             </div>
-          );
-        })}
+            <div className="space-y-4">
+              <div>
+                <h5 className="text-slate-700 mb-3 font-montserrat">Key insights:</h5>
+                <ul className="space-y-3">
+                  {area.insights && Array.isArray(area.insights) && area.insights.map((insight, insightIndex) => (
+                    <li key={insightIndex} className="flex items-start gap-3">
+                      <span className="flex-shrink-0 w-6 h-6 bg-encourager text-white rounded-full flex items-center justify-center text-sm font-medium">
+                        {insightIndex + 1}
+                      </span>
+                      <p className="text-slate-700 leading-relaxed">{insight}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              {area.resources && area.resources.length > 0 && (
+                <div className="bg-slate-50 p-4 rounded border-l-4 border-encourager">
+                  <h6 className="text-slate-700 mb-2 font-montserrat">
+                    Recommended Resources:
+                  </h6>
+                  <div className="space-y-2">
+                    {area.resources.map((resource, resourceIndex) => {
+                      const resourceLink = generateResourceLink(resource);
+                      return (
+                        <div key={resourceIndex}>
+                          {resourceLink.hasValidLink ? (
+                            <a 
+                              href={resourceLink.url!} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-encourager hover:text-encourager-light text-sm flex items-center gap-1 underline"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                              {resourceLink.title}
+                            </a>
+                          ) : (
+                            <div className="text-slate-600 text-sm">
+                              <span className="font-medium">{resourceLink.title}</span>
+                              <p className="text-xs text-slate-500 mt-1">Resource link not currently available</p>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -285,6 +233,38 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
                   ))}
                 </ul>
               </div>
+              {strength.resources && strength.resources.length > 0 && (
+                <div className="bg-slate-50 p-4 rounded border-l-4 border-encourager">
+                  <h6 className="text-slate-700 mb-2 font-montserrat">
+                    Recommended Resources:
+                  </h6>
+                  <div className="space-y-2">
+                    {strength.resources.map((resource, resourceIndex) => {
+                      const resourceLink = generateResourceLink(resource);
+                      return (
+                        <div key={resourceIndex}>
+                          {resourceLink.hasValidLink ? (
+                            <a 
+                              href={resourceLink.url!} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="text-encourager hover:text-encourager-light text-sm flex items-center gap-1 underline"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                              {resourceLink.title}
+                            </a>
+                          ) : (
+                            <div className="text-slate-600 text-sm">
+                              <span className="font-medium">{resourceLink.title}</span>
+                              <p className="text-xs text-slate-500 mt-1">Resource link not currently available</p>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         ))}
@@ -339,7 +319,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
                   <div className="text-center py-8 text-slate-500">
                     <AlertCircle className="mx-auto mb-3" size={40} />
                     <p className="text-lg">Unable to parse AI insights</p>
-                    <p className="text-sm">The insights format appears to be invalid. Check the console for detailed error information.</p>
+                    <p className="text-sm">The insights format appears to be invalid. Please try refreshing to regenerate.</p>
                   </div>
                 );
               }
@@ -361,14 +341,6 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
             <p className="text-lg">AI insights will appear here once your assessment data is analyzed.</p>
           </div>
         )}
-
-        {/* Add the prompt debugger for testing */}
-        <PromptDebugger 
-          categories={categories}
-          demographics={demographics}
-          averageGap={averageGap}
-          assessmentId={assessmentId}
-        />
       </div>
     </div>
   );

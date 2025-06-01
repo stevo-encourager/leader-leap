@@ -147,10 +147,14 @@ export const saveAssessmentResults = async (
     
     // Look for an assessment with matching session key
     if (existingAssessment && existingAssessment.length > 0) {
-      existingRecord = existingAssessment.find(assessment => 
-        assessment.demographics && 
-        assessment.demographics.sessionKey === sessionKey
-      );
+      existingRecord = existingAssessment.find(assessment => {
+        // Type-safe check for sessionKey in demographics
+        if (assessment.demographics && typeof assessment.demographics === 'object' && !Array.isArray(assessment.demographics)) {
+          const demographicsObj = assessment.demographics as Record<string, any>;
+          return demographicsObj.sessionKey === sessionKey;
+        }
+        return false;
+      });
       
       if (existingRecord) {
         console.log(`saveAssessmentResults - Found existing assessment with session key: ${existingRecord.id}`);

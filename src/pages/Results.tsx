@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -114,6 +115,7 @@ const Results = () => {
   );
 
   // CRITICAL FIX: Only save for NEW assessments, never for existing ones being viewed
+  // Also ensure we don't save multiple times in the same session
   useEffect(() => {
     // IMMEDIATELY RETURN if we're viewing an existing assessment
     if (assessmentId) {
@@ -121,23 +123,37 @@ const Results = () => {
       return;
     }
     
+    // IMMEDIATELY RETURN if we've already triggered a save in this session
+    if (saveTriggeredRef.current) {
+      console.log('Results page - Save already triggered in this session, skipping');
+      return;
+    }
+    
     // Only attempt to save if:
     // 1. User is logged in
-    // 2. On results page (currentStep === 'results')
+    // 2. On results page (currentStep === 'results')  
     // 3. NOT viewing an existing assessment (no assessmentId) - already checked above
-    // 4. Haven't already triggered save
+    // 4. Haven't already triggered save - already checked above
     // 5. Page is ready and initial data is checked
+    // 6. We have valid categories with actual ratings
     if (user && 
         currentStep === 'results' && 
-        !saveTriggeredRef.current && 
         isPageReady &&
-        isInitialDataChecked) {
+        isInitialDataChecked &&
+        categories && 
+        categories.length > 0) {
       
-      console.log('Results page - Checking if we should save NEW assessment (no assessmentId present)');
+      // Verify we have actual rating data before saving
+      const hasValidRatings = categories.some(cat => 
+        cat && cat.skills && cat.skills.some(skill => 
+          skill && skill.ratings && 
+          skill.ratings.current > 0 && 
+          skill.ratings.desired > 0
+        )
+      );
       
-      // Only save if we have categories with data
-      if (categories && categories.length > 0) {
-        console.log('Results page - Triggering assessment save for NEW assessment with categories:', categories.length);
+      if (hasValidRatings) {
+        console.log('Results page - Triggering one-time assessment save for NEW assessment');
         saveTriggeredRef.current = true;
         
         // Delay to ensure all state is properly set
@@ -145,7 +161,7 @@ const Results = () => {
           handleSaveResults();
         }, 300);
       } else {
-        console.error('Results page - Cannot save assessment: categories is empty or invalid');
+        console.log('Results page - Categories present but no valid ratings found, checking local storage');
         
         // Try one more time to load from local storage
         const localData = getLocalAssessmentData();
@@ -156,14 +172,15 @@ const Results = () => {
             handleDemographicsUpdate(localData.demographics);
           }
           
-          // Try saving after a short delay
+          // Try saving after a short delay, but only once
           setTimeout(() => {
-            saveTriggeredRef.current = true;
-            handleSaveResults();
+            if (!saveTriggeredRef.current) {
+              saveTriggeredRef.current = true;
+              handleSaveResults();
+            }
           }, 400);
         } else {
-          console.log('Results page - No local data available, cannot save');
-          console.log('Results page - Categories value:', categories);
+          console.log('Results page - No valid rating data available, cannot save');
         }
       }
     } 

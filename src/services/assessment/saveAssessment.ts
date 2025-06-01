@@ -7,14 +7,79 @@ export interface SaveAssessmentResult {
   success: boolean;
   error?: string;
   data?: any;
+  isUpdate?: boolean; // Flag to indicate if this was an update vs new insert
 }
+
+// Helper function to generate a deterministic assessment signature
+const generateAssessmentSignature = (categories: Category[], demographics: Demographics): string => {
+  // Create a signature based on the assessment content
+  const categorySignature = categories.map(cat => 
+    cat.skills.map(skill => `${skill.id}-${skill.ratings.current}-${skill.ratings.desired}`).join('|')
+  ).join('||');
+  
+  const demoSignature = `${demographics.role || ''}-${demographics.industry || ''}-${demographics.yearsOfExperience || ''}`;
+  
+  return `${categorySignature}::${demoSignature}`;
+};
+
+// Check if an assessment with the same content already exists for this user
+const checkForDuplicateAssessment = async (
+  userId: string, 
+  assessmentSignature: string
+): Promise<{ exists: boolean; assessmentId?: string }> => {
+  console.log("checkForDuplicateAssessment - Checking for duplicate with signature:", assessmentSignature.substring(0, 100) + "...");
+  
+  // Check for assessments created in the last 24 hours to avoid checking too far back
+  const oneDayAgo = new Date();
+  oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+  
+  const { data: recentAssessments, error } = await supabase
+    .from('assessment_results')
+    .select('id, categories, demographics, created_at')
+    .eq('user_id', userId)
+    .gte('created_at', oneDayAgo.toISOString())
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error("checkForDuplicateAssessment - Error checking for duplicates:", error);
+    return { exists: false };
+  }
+
+  if (!recentAssessments || recentAssessments.length === 0) {
+    console.log("checkForDuplicateAssessment - No recent assessments found");
+    return { exists: false };
+  }
+
+  // Check each recent assessment to see if it has the same signature
+  for (const assessment of recentAssessments) {
+    try {
+      const existingSignature = generateAssessmentSignature(
+        assessment.categories, 
+        assessment.demographics || {}
+      );
+      
+      if (existingSignature === assessmentSignature) {
+        console.log("checkForDuplicateAssessment - Found duplicate assessment:", assessment.id);
+        return { exists: true, assessmentId: assessment.id };
+      }
+    } catch (error) {
+      console.error("checkForDuplicateAssessment - Error comparing assessment:", error);
+      continue;
+    }
+  }
+
+  console.log("checkForDuplicateAssessment - No duplicate found among recent assessments");
+  return { exists: false };
+};
 
 export const saveAssessmentResults = async (
   categories: Category[], 
-  demographics: Demographics
+  demographics: Demographics,
+  forceNew: boolean = false // Allow forcing a new assessment if needed
 ): Promise<SaveAssessmentResult> => {
   console.log("saveAssessmentResults - Starting save process");
   console.log("saveAssessmentResults - Categories input:", categories ? `${categories.length} categories` : "none");
+  console.log("saveAssessmentResults - Force new assessment:", forceNew);
   
   // Validate input data
   if (!categories || !Array.isArray(categories) || categories.length === 0) {
@@ -91,59 +156,50 @@ export const saveAssessmentResults = async (
     // Convert Demographics to a regular object to satisfy TypeScript
     const demographicsObject = { ...demographics };
 
-    // Use a more robust approach to prevent duplicates
-    // Create a unique constraint based on user_id and a time window
-    const now = new Date();
-    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000); // 5 minutes ago
+    // Generate assessment signature for duplicate detection
+    const assessmentSignature = generateAssessmentSignature(processedCategories, demographicsObject);
     
-    console.log("saveAssessmentResults - Checking for recent assessments within 5 minutes");
-    
-    // Check for any assessment created in the last 5 minutes
-    const { data: recentAssessments, error: fetchError } = await supabase
-      .from('assessment_results')
-      .select('id, created_at')
-      .eq('user_id', user.id)
-      .gte('created_at', fiveMinutesAgo.toISOString())
-      .order('created_at', { ascending: false })
-      .limit(1);
-
-    if (fetchError) {
-      console.error("saveAssessmentResults - Error checking for recent assessments:", fetchError);
-      // Continue with insert if we can't check for duplicates
-    }
-
     let result;
 
-    if (recentAssessments && recentAssessments.length > 0) {
-      // Update the most recent assessment instead of creating a new one
-      const recentAssessment = recentAssessments[0];
-      console.log(`saveAssessmentResults - Updating recent assessment: ${recentAssessment.id} (created at: ${recentAssessment.created_at})`);
+    if (!forceNew) {
+      // Check for duplicate assessment with same content
+      const duplicateCheck = await checkForDuplicateAssessment(user.id, assessmentSignature);
       
-      result = await supabase
-        .from('assessment_results')
-        .update({
-          categories: processedCategories,
-          demographics: demographicsObject,
-          completed: isComplete,
-          ai_insights: null // Initialize as null, will be populated when first accessed
-        })
-        .eq('id', recentAssessment.id)
-        .eq('user_id', user.id)
-        .select();
-    } else {
-      // Create new assessment only if no recent one exists
-      console.log("saveAssessmentResults - Creating new assessment (no recent assessments found)");
-      result = await supabase
-        .from('assessment_results')
-        .insert({
-          user_id: user.id,
-          categories: processedCategories,
-          demographics: demographicsObject,
-          completed: isComplete,
-          ai_insights: null // Initialize as null, will be populated when first accessed
-        })
-        .select();
+      if (duplicateCheck.exists && duplicateCheck.assessmentId) {
+        console.log(`saveAssessmentResults - Duplicate assessment found, updating existing: ${duplicateCheck.assessmentId}`);
+        
+        // Update the existing duplicate assessment
+        result = await supabase
+          .from('assessment_results')
+          .update({
+            categories: processedCategories,
+            demographics: demographicsObject,
+            completed: isComplete,
+            ai_insights: null // Reset insights when updating
+          })
+          .eq('id', duplicateCheck.assessmentId)
+          .eq('user_id', user.id)
+          .select();
+          
+        if (result.data) {
+          console.log("saveAssessmentResults - Successfully updated existing assessment");
+          return { success: true, data: result.data, isUpdate: true };
+        }
+      }
     }
+
+    // If no duplicate found or force new is true, create new assessment
+    console.log("saveAssessmentResults - Creating new assessment");
+    result = await supabase
+      .from('assessment_results')
+      .insert({
+        user_id: user.id,
+        categories: processedCategories,
+        demographics: demographicsObject,
+        completed: isComplete,
+        ai_insights: null // Initialize as null, will be populated when first accessed
+      })
+      .select();
 
     const { data, error } = result;
 
@@ -153,7 +209,7 @@ export const saveAssessmentResults = async (
     }
 
     console.log("saveAssessmentResults - Successfully saved to database:", data);
-    return { success: true, data };
+    return { success: true, data, isUpdate: false };
 
   } catch (error) {
     console.error("saveAssessmentResults - Unexpected error:", error);

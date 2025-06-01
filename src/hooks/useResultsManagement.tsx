@@ -18,6 +18,7 @@ export const useResultsManagement = (
 ) => {
   const [isSaving, setIsSaving] = useState(false);
   const saveInProgressRef = useRef(false); // Additional ref to prevent race conditions
+  const assessmentSavedThisSessionRef = useRef(false); // Track if we've saved in this session
   const { user } = useAuth();
   
   // Log categories data for debugging
@@ -69,7 +70,7 @@ export const useResultsManagement = (
     handleLoadPreviousResults
   } = usePreviousResults(setCategories, setDemographics, setCurrentStep);
 
-  // Reset the saved flag when categories or demographics change
+  // Reset the saved flag when categories or demographics change significantly
   useEffect(() => {
     if (categories && categories.length > 0) {
       // Only reset if we have actual categories with data
@@ -85,6 +86,7 @@ export const useResultsManagement = (
       if (hasRatings) {
         console.log('Categories/demographics changed with ratings, resetting saved flag');
         resetSaveState();
+        assessmentSavedThisSessionRef.current = false; // Reset session flag too
       }
     }
   }, [categories, demographics, resetSaveState]);
@@ -117,7 +119,7 @@ export const useResultsManagement = (
     }
     
     // Skip save if already saved in this session
-    if (isSaved) {
+    if (isSaved || assessmentSavedThisSessionRef.current) {
       console.log('Results already saved in this session, skipping');
       return;
     }
@@ -144,6 +146,7 @@ export const useResultsManagement = (
         const saveResult = await saveAssessmentResults(categories, demographics);
         if (saveResult.success) {
           console.log('Assessment saved to local storage successfully');
+          assessmentSavedThisSessionRef.current = true;
         }
       } catch (error) {
         console.error('Error saving to local storage:', error);
@@ -228,12 +231,6 @@ export const useResultsManagement = (
     setIsSaving(true);
     
     try {
-      // Check if we already saved an assessment today
-      const today = new Date().toISOString().split('T')[0];
-      if (lastSavedDate === today) {
-        console.log('Already saved an assessment today, updating instead of creating a new one');
-      }
-      
       const result = await saveAssessmentResults(categories, demographics);
       
       if (result.success) {
@@ -244,16 +241,22 @@ export const useResultsManagement = (
         if (result.success && 'data' in result && result.data && result.data.length > 0) {
           const assessmentId = result.data[0].id;
           console.log('Saved assessment with ID:', assessmentId);
-          markAsSaved(assessmentId, today);
+          markAsSaved(assessmentId, new Date().toISOString().split('T')[0]);
+          assessmentSavedThisSessionRef.current = true;
         } else {
           // Still mark as saved but without an assessment ID
           console.log('Assessment saved but no ID returned');
-          markAsSaved(undefined, today);
+          markAsSaved(undefined, new Date().toISOString().split('T')[0]);
+          assessmentSavedThisSessionRef.current = true;
         }
+        
+        const toastMessage = result.isUpdate 
+          ? "Your assessment results have been updated in your account."
+          : "Your assessment results have been saved to your account.";
         
         toast({
           title: "Results saved",
-          description: "Your assessment results have been saved to your account.",
+          description: toastMessage,
         });
       } else {
         console.error('Error saving results:', result.error);

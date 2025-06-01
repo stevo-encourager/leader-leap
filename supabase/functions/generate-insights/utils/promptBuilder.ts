@@ -1,6 +1,4 @@
 
-
-
 interface CategoryBreakdown {
   title: string;
   skillCount: number;
@@ -40,6 +38,102 @@ export const buildAssessmentData = (categories: any[], averageGap: number, demog
   };
 };
 
+// Build the validated resources list for the prompt
+const buildValidatedResourcesList = (): string => {
+  return `
+**VALIDATED RESOURCE DATABASE - USE ONLY THESE RESOURCES:**
+
+**Time Management & Productivity:**
+- Eisenhower Matrix
+- Eisenhower Decision Matrix Guide
+- The Pomodoro Technique Official Site
+- Getting Things Done (GTD) Methodology
+- Time Blocking Guide by Cal Newport
+
+**Goal Setting & Planning:**
+- SMART Goals Framework
+- Objectives and Key Results (OKRs)
+- OKR Framework Guide
+
+**Communication & Feedback:**
+- SBI Feedback Model by Center for Creative Leadership
+- Radical Candor Framework
+- Nonviolent Communication by Marshall Rosenberg
+- Active Listening Techniques
+
+**Decision Making:**
+- Decision Making Frameworks
+- DACI Decision Making Framework
+- RACI Matrix for Decision Making
+
+**Strategic Thinking:**
+- SWOT Analysis Framework
+- Design Thinking Process by IDEO
+- Scenario Planning for Strategic Thinking
+
+**Emotional Intelligence:**
+- Emotional Intelligence by Daniel Goleman
+- EQ-i 2.0 Emotional Intelligence Assessment
+
+**Trust & Relationship Building:**
+- The Speed of Trust by Stephen Covey
+- The Trust Equation
+
+**Delegation & Empowerment:**
+- Effective Delegation Framework
+- Situational Leadership Model
+
+**Performance Management:**
+- Performance Feedback Best Practices
+- Effective One-on-One Meetings
+
+**Conflict Resolution:**
+- Thomas-Kilmann Conflict Resolution Model
+- Getting to Yes - Interest-Based Negotiation
+
+**Change Management:**
+- ADKAR Change Management Model
+- Kotter's 8-Step Change Model
+- Bridges Transition Model
+- Lewin's 3-Stage Change Model
+
+**Team Development:**
+- Tuckman's Team Development Model
+- Creating Effective Team Charters
+- Psychological Safety in Teams
+
+**Learning & Development:**
+- 70-20-10 Learning and Development Model
+- Growth Mindset by Carol Dweck
+- Deliberate Practice Framework
+
+**Coaching & Mentoring:**
+- GROW Coaching Model
+- Effective Coaching Conversations
+
+**Assessment Tools:**
+- DISC Assessment
+- Myers-Briggs Type Indicator (MBTI)
+- StrengthsFinder 2.0
+
+**Leadership Books:**
+- Emotional Intelligence 2.0 by Travis Bradberry
+- Crucial Conversations by Kerry Patterson
+- The 7 Habits of Highly Effective People by Stephen Covey
+- Good to Great by Jim Collins
+- Dare to Lead by Brené Brown
+- The Leadership Challenge by James Kouzes
+- Primal Leadership by Daniel Goleman
+
+**Training & Courses:**
+- Crucial Conversations Training
+- Crucial Accountability Training
+- Emotional Intelligence Training
+- Harvard Business Review Leadership Courses
+- Center for Creative Leadership
+`;
+};
+
 export const buildPrompt = (assessmentSummary: any): string => {
   const topGapCategories = assessmentSummary.categoryBreakdown
     .sort((a, b) => b.gap - a.gap)
@@ -63,6 +157,8 @@ ${topGapCategories.map((cat, i) => `${i+1}. ${cat.title}: Gap ${cat.gap.toFixed(
 Top Competency Areas (High Current Ratings, Low Gaps):
 ${topCompetencies.map((cat, i) => `${i+1}. ${cat.title}: Current ${cat.averageCurrentRating.toFixed(1)}, Gap ${cat.gap.toFixed(1)}`).join('\n')}
 `;
+
+  const validatedResourcesList = buildValidatedResourcesList();
 
   return `${assessmentDataSection}
 
@@ -120,86 +216,28 @@ You are an expert leadership coach and assessment analyst. Based on the provided
 - Travel & Hospitality: Customer experience, service excellence, operational resilience
 - Wellbeing: Client outcomes, holistic approaches, evidence-based practices
 
-### RESOURCE GUIDELINES
+${validatedResourcesList}
 
-**Core Trusted Sources (use when applicable):**
+### CRITICAL RESOURCE SELECTION RULES
 
-**Leadership Assessments:**
-- CliftonStrengths (Gallup)
-- Predictive Index
-- 16personalities (Myers-Briggs based)
+**MANDATORY RESOURCE CONSTRAINTS:**
+- You MUST ONLY use resources from the validated resource database above
+- NEVER create or suggest resources not in this list
+- Each resource name you use must match EXACTLY as written in the database
+- If a framework or methodology you want to mention is not in the database, do not include it as a resource
+- Always use the exact resource title as specified in the database
 
-**Business Publications:**
-- Harvard Business Review
-- McKinsey Insights
-- MIT Sloan Management Review
-- Stanford Business Insights
-- Deloitte Insights
-- BCG Insights
-- Korn Ferry Institute
-- Strategy+Business (PwC)
+**Resource Selection Process:**
+1. Identify the specific framework, tool, or methodology in your insight
+2. Find the EXACT matching resource name from the validated database
+3. Use only that exact name in your resources array
+4. If no exact match exists, do not include a resource for that insight
 
-**Academic Institutions:**
-- MIT Sloan School of Management
-- Stanford Graduate School of Business
-- Wharton School (University of Pennsylvania)
-- INSEAD (France/Singapore)
-- London Business School (UK)
-- IE Business School (Spain)
-- IESE Business School (Spain)
-- HEC Paris (France)
-- Oxford Saïd Business School (UK)
-- Cambridge Judge Business School (UK)
-- IMD Business School (Switzerland)
-- ESADE Business School (Spain)
-- Henley Business School (UK)
-
-**Professional Development Organizations:**
-- Center for Creative Leadership (CCL)
-- International Coach Federation (ICF)
-- Society for Human Resource Management (SHRM)
-- Association for Talent Development (ATD)
-- Project Management Institute (PMI)
-- Scrum Alliance
-- International Association of Business Coaches (IABC)
-- Executive Networks
-- Dale Carnegie
-- Franklin Covey
-
-**Dynamic Source Selection:**
-- Prioritize official websites and authoritative sources
+**Quality Validation:**
+- Every resource must directly support the specific insight being provided
+- Prioritize the most authoritative and specific resource for each recommendation
 - Match resource sophistication to user's experience level (${assessmentSummary.demographics.yearsOfExperience || 'Not specified'} years)
-- Ensure industry relevance over generic applicability
-- Validate that the resource directly addresses the specific competency gap
-
-**Quality Checks:**
-- Does this resource provide actionable frameworks or tools?
-- Is the source credible and current?
-- Does it match the user's ${assessmentSummary.demographics.role || 'Not specified'} role and ${assessmentSummary.demographics.industry || 'Not specified'} industry context?
-- Will this resource help bridge the specific competency gap being addressed?
-
-### LINK VALIDATION REQUIREMENTS
-
-**MANDATORY LINK STANDARDS:**
-- Only use links from well-established, authoritative sources
-- Verify links point to official websites, not third-party aggregators
-- Use specific resource names, never generic descriptions like "click here"
-- Format: [Specific Resource Name](working-url)
-- When in doubt, prefer no link over a potentially broken link
-
-**VALIDATION PROTOCOL:**
-- Use core trusted sources when they align with the competency being addressed
-- For sources outside this list, ensure they meet the same standards of authority and relevance
-- When referencing assessment tools, prioritize those with established validity and reliability
-- For academic sources, prefer peer-reviewed research and established business school publications
-- For professional sources, choose organizations with recognized expertise in leadership development
-
-**YOUR RESPONSIBILITY:**
-You must only include links you are confident are:
-1. Currently active and working
-2. From authoritative, official sources
-3. Directly relevant to the specific competency being addressed
-4. Appropriate for the user's experience level
+- Ensure industry relevance when selecting between similar resources
 
 ### ENHANCED QUALITY STANDARDS
 
@@ -219,6 +257,16 @@ You must only include links you are confident are:
 ### INSPIRATIONAL LEADER SELECTION
 
 **Choose leaders whose official profiles/pages you can confidently link to, ensuring they exemplify the specific leadership principle being discussed and are relevant to the user's industry context.**
+
+**Verified Leader Options (use only these):**
+- Simon Sinek (Start With Why, leadership inspiration)
+- Brené Brown (Vulnerability, courage, leadership)
+- John Maxwell (Leadership development, influence)
+- Patrick Lencioni (Team dynamics, organizational health)
+- Jim Collins (Good to Great, leadership research)
+- Marshall Goldsmith (Executive coaching, leadership transitions)
+- Ken Blanchard (Situational Leadership)
+- Stephen Covey (Principle-centered leadership)
 
 **Format requirement for summary:** "Like [Leader Name](https://workinglink.com), who is known for [specific principle]..."
 
@@ -256,22 +304,22 @@ You MUST output ONLY a valid JSON object with this EXACT structure:
   - \`competency\`: The exact competency name from assessment data
   - \`gap\`: The numerical gap score
   - \`insights\`: Array of exactly 3 actionable, research-backed insights that avoid generic statements, include specific methodologies/frameworks, and integrate role/industry/experience context
-  - \`resources\`: Array of exactly 3 working links formatted as [Resource Name](url) from verified sources
+  - \`resources\`: Array of exactly 3 resource names from the validated database, using EXACT titles as specified
 
 - **key_strengths**: An array with at least 2 objects, each for a key competency to leverage. Each object must contain:
   - \`competency\`: The exact competency name from assessment data
   - \`example\`: Concrete example of how this strength manifests in their specific role/industry context
   - \`leverage_advice\`: Array of exactly 3 specific strategies for leveraging this strength that incorporate role/industry/experience context
-  - \`resources\`: Array of exactly 3 working links formatted as [Resource Name](url) from verified sources
+  - \`resources\`: Array of exactly 3 resource names from the validated database, using EXACT titles as specified
 
 ### PRE-OUTPUT VALIDATION CHECKLIST
 
 Before generating the JSON response, verify:
-□ All links point to authoritative, official sources
-□ All framework mentions have corresponding working resource links
-□ Resource names are descriptive and action-oriented using [Name](url) format
-□ No generic phrases like "leadership resources" are used
-□ Summary includes leader with working link in correct format
+□ All resource names match EXACTLY with the validated database
+□ No custom or external resources are included
+□ Every framework mentioned has a corresponding validated resource
+□ Resource names are used as specified in the database (exact titles only)
+□ Summary includes verified leader with working link in correct format
 □ All demographic context (role, industry, experience) is referenced appropriately
 □ Summary contains exactly 2 distinct paragraphs with transition phrase
 □ All competency names match exactly from assessment data
@@ -282,12 +330,11 @@ Before generating the JSON response, verify:
 - Output MUST be valid JSON only. No text, markdown, or formatting before/after.
 - The \`insights\` and \`leverage_advice\` fields must be arrays of strings ONLY.
 - All arrays must contain only the specified data types.
-- NEVER use placeholder or broken links - only use verified working links from approved sources.
+- NEVER use resources not in the validated database - this is critical for link integrity
 - NEVER write generic, obvious statements - every insight must provide genuine value and actionable advice.
 - Use only suggestive language for assessment tools: "consider using a tool such as [tool name]" rather than direct recommendations.
 - **PERSONALIZATION REQUIREMENT**: Use ALL THREE demographic dimensions (role, industry, experience) to tailor insights, examples, and leader selection for maximum relevance to the user's specific context.
-- **LINK REQUIREMENT**: Every framework, methodology, or tool mentioned must have a corresponding working resource link included using the exact format: [Resource Name](url)
+- **VALIDATED RESOURCE REQUIREMENT**: Every resource in the resources arrays must be an exact match from the validated database above
 
-Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above while being specifically tailored to the user's role, industry, and experience level.`;
+Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above while being specifically tailored to the user's role, industry, and experience level. Remember: ONLY use resources from the validated database with exact title matching.`;
 };
-

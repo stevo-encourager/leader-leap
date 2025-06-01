@@ -53,9 +53,27 @@ const checkForDuplicateAssessment = async (
   // Check each recent assessment to see if it has the same signature
   for (const assessment of recentAssessments) {
     try {
+      // Safely parse the categories and demographics from the database
+      let assessmentCategories: Category[] = [];
+      let assessmentDemographics: Demographics = {};
+      
+      // Handle categories - could be JSON string or object
+      if (typeof assessment.categories === 'string') {
+        assessmentCategories = JSON.parse(assessment.categories);
+      } else if (Array.isArray(assessment.categories)) {
+        assessmentCategories = assessment.categories as Category[];
+      }
+      
+      // Handle demographics - could be JSON string or object
+      if (typeof assessment.demographics === 'string') {
+        assessmentDemographics = JSON.parse(assessment.demographics);
+      } else if (assessment.demographics && typeof assessment.demographics === 'object') {
+        assessmentDemographics = assessment.demographics as Demographics;
+      }
+      
       const existingSignature = generateAssessmentSignature(
-        assessment.categories, 
-        assessment.demographics || {}
+        assessmentCategories, 
+        assessmentDemographics
       );
       
       if (existingSignature === assessmentSignature) {

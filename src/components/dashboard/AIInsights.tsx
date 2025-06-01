@@ -97,7 +97,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
         return null;
       }
 
-      // Validate and normalize priority areas
+      // Validate priority areas with more flexible resource handling
       for (let i = 0; i < parsed.priority_areas.length; i++) {
         const area = parsed.priority_areas[i];
         console.log(`AIInsights: Validating priority area ${i}:`, {
@@ -114,10 +114,10 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
           return null;
         }
         
-        // Handle both "resource" and "resources" fields
+        // Don't require resource fields anymore - they're optional
         if (!area.resource && !area.resources) {
-          console.error('AIInsights: Invalid priority area structure - missing resource field:', area);
-          return null;
+          console.log('AIInsights: Priority area has no resource field, will use fallback');
+          area.resource = "General leadership development";
         }
         
         // Normalize resources to single resource field
@@ -195,8 +195,8 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
       </h3>
       <div className="space-y-6">
         {priorityAreas.map((area, index) => {
-          // Use the normalized resource field
-          const resourceText = area.resource || (area.resources && area.resources[0]) || '';
+          // Use the normalized resource field with better fallback handling
+          const resourceText = area.resource || (area.resources && area.resources[0]) || 'Leadership development resource';
           const resourceLink = generateResourceLink(resourceText);
           
           return (
@@ -223,7 +223,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
                     ))}
                   </ul>
                 </div>
-                {resourceText && (
+                {resourceText && resourceText !== 'Leadership development resource' && (
                   <div className="bg-slate-50 p-4 rounded border-l-4 border-encourager">
                     <h6 className="text-slate-700 mb-2 font-montserrat">Recommended Resource:</h6>
                     {resourceLink.hasValidLink ? (

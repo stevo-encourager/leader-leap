@@ -5,80 +5,76 @@ export const validateEnvironmentVariables = () => {
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
   if (!openAIApiKey) {
-    throw new Error('OpenAI API key not configured');
+    throw new Error('OpenAI API key not found');
   }
 
   if (!supabaseUrl || !supabaseServiceKey) {
-    throw new Error('Supabase configuration not complete');
+    throw new Error('Supabase configuration missing');
   }
 
   return { openAIApiKey, supabaseUrl, supabaseServiceKey };
 };
 
-export const validateInsightsStructure = (insights: any): void => {
-  if (!insights.summary || !insights.priority_areas || !insights.key_strengths) {
-    throw new Error('Invalid JSON structure - missing required fields: summary, priority_areas, or key_strengths');
-  }
+export const validateInsightsStructure = (insights: any) => {
+  console.log('Validating insights structure:', Object.keys(insights));
   
-  if (!Array.isArray(insights.priority_areas) || !Array.isArray(insights.key_strengths)) {
-    throw new Error('Invalid JSON structure - priority_areas and key_strengths must be arrays');
+  if (!insights.summary || typeof insights.summary !== 'string') {
+    throw new Error('Invalid insights structure - missing or invalid summary');
   }
 
-  if (insights.priority_areas.length !== 3) {
-    throw new Error('Invalid JSON structure - priority_areas must have exactly 3 items');
+  if (!insights.priority_areas || !Array.isArray(insights.priority_areas)) {
+    throw new Error('Invalid insights structure - missing or invalid priority_areas array');
   }
 
-  if (insights.key_strengths.length < 2) {
-    throw new Error('Invalid JSON structure - key_strengths must have at least 2 items');
+  if (!insights.key_strengths || !Array.isArray(insights.key_strengths)) {
+    throw new Error('Invalid insights structure - missing or invalid key_strengths array');
   }
 
-  // Validate priority areas structure with more flexible insights validation
+  // Validate priority areas structure
   for (const area of insights.priority_areas) {
-    if (!area.competency || !area.insights || !Array.isArray(area.insights) || !area.resource) {
-      throw new Error('Invalid priority area structure - must have competency, insights array, and resource');
+    if (!area.competency || typeof area.competency !== 'string') {
+      throw new Error('Invalid priority area structure - missing or invalid competency');
     }
     
-    // Check that insights array has at least 2 items and at most 5 items
-    if (area.insights.length < 2 || area.insights.length > 5) {
-      throw new Error('Invalid priority area structure - insights array must have 2-5 items');
-    }
-    
-    for (const insight of area.insights) {
-      if (typeof insight !== 'string') {
-        throw new Error('Invalid priority area structure - insights array must contain only strings');
-      }
-      
-      // Check if insight looks like a resource title (very short, no actionable content)
-      if (insight.length < 20) {
-        throw new Error('Invalid priority area structure - insights must be actionable advice, not resource titles');
-      }
+    if (!area.insights || !Array.isArray(area.insights)) {
+      throw new Error('Invalid priority area structure - missing or invalid insights array');
     }
     
     if (typeof area.gap !== 'number') {
-      throw new Error('Invalid priority area structure - gap must be a number');
+      throw new Error('Invalid priority area structure - missing or invalid gap number');
+    }
+    
+    // Note: We don't require resource/resources fields in priority areas anymore
+    // since they can be provided separately in recommended_resources
+  }
+
+  // Validate key strengths structure  
+  for (const strength of insights.key_strengths) {
+    if (!strength.competency || typeof strength.competency !== 'string') {
+      throw new Error('Invalid key strength structure - missing or invalid competency');
+    }
+    
+    if (!strength.example || typeof strength.example !== 'string') {
+      throw new Error('Invalid key strength structure - missing or invalid example');
+    }
+    
+    if (!strength.leverage_advice || !Array.isArray(strength.leverage_advice)) {
+      throw new Error('Invalid key strength structure - missing or invalid leverage_advice array');
     }
   }
 
-  // Validate key strengths structure with more flexible advice validation  
-  for (const strength of insights.key_strengths) {
-    if (!strength.competency || !strength.example || !strength.leverage_advice || !Array.isArray(strength.leverage_advice)) {
-      throw new Error('Invalid key strength structure - must have competency, example, and leverage_advice array');
-    }
-    
-    // Check that leverage_advice array has at least 2 items and at most 5 items
-    if (strength.leverage_advice.length < 2 || strength.leverage_advice.length > 5) {
-      throw new Error('Invalid key strength structure - leverage_advice array must have 2-5 items');
-    }
-    
-    for (const advice of strength.leverage_advice) {
-      if (typeof advice !== 'string') {
-        throw new Error('Invalid key strength structure - leverage_advice array must contain only strings');
+  // Optional: Validate recommended_resources if present
+  if (insights.recommended_resources && Array.isArray(insights.recommended_resources)) {
+    for (const resource of insights.recommended_resources) {
+      if (!resource.name || typeof resource.name !== 'string') {
+        throw new Error('Invalid recommended resource structure - missing or invalid name');
       }
       
-      // Check if advice looks actionable (not too short)
-      if (advice.length < 15) {
-        throw new Error('Invalid key strength structure - leverage advice must be actionable, not just titles');
+      if (!resource.url || typeof resource.url !== 'string') {
+        throw new Error('Invalid recommended resource structure - missing or invalid url');
       }
     }
   }
+
+  console.log('Insights structure validation passed');
 };

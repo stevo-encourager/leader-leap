@@ -52,6 +52,32 @@ serve(async (req) => {
       parsedInsights = JSON.parse(cleanedInsights);
       validateInsightsStructure(parsedInsights);
 
+      // If recommended_resources exist but priority_areas don't have resources, 
+      // we can optionally map some resources to priority areas for backward compatibility
+      if (parsedInsights.recommended_resources && Array.isArray(parsedInsights.recommended_resources)) {
+        console.log('Found recommended_resources section, ensuring priority areas have resource fields for compatibility');
+        
+        // Add a generic resource field to priority areas if they don't have one
+        parsedInsights.priority_areas.forEach((area: any, index: number) => {
+          if (!area.resource && !area.resources) {
+            // Try to find a relevant resource from the recommended_resources
+            const relevantResource = parsedInsights.recommended_resources.find((res: any) => 
+              res.relevance && res.relevance.toLowerCase().includes(area.competency.toLowerCase().split(' ')[0])
+            );
+            
+            if (relevantResource) {
+              area.resource = relevantResource.name;
+            } else if (parsedInsights.recommended_resources[index]) {
+              // Fallback: assign resources in order
+              area.resource = parsedInsights.recommended_resources[index].name;
+            } else {
+              // Final fallback: use a generic placeholder
+              area.resource = "Leadership development resource";
+            }
+          }
+        });
+      }
+
       // POST-PROCESS THE SUMMARY: Apply enhanced paragraph formatting
       if (parsedInsights.summary) {
         console.log('Original summary:', parsedInsights.summary);

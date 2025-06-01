@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Bot, AlertCircle, Target, TrendingUp, ExternalLink } from 'lucide-react';
 import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
@@ -211,7 +212,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
               </div>
               <div className="space-y-4">
                 <div>
-                  <h5 className="text-slate-700 mb-3 font-montserrat">Key insights:</h5>
+                  <h5 className="text-slate-700 mb-3 font-montserrat">Suggested Steps:</h5>
                   <ul className="space-y-3">
                     {area.insights && Array.isArray(area.insights) && area.insights.map((insight, insightIndex) => (
                       <li key={insightIndex} className="flex items-start gap-3">

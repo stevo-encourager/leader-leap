@@ -7,7 +7,38 @@ export interface SaveAssessmentResult {
   success: boolean;
   error?: string;
   data?: any;
+  isExisting?: boolean; // Flag to indicate if we updated an existing record
 }
+
+// Generate a session-based key for tracking assessment attempts
+const generateSessionKey = (): string => {
+  // Use a combination of timestamp and random string for uniqueness
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(2);
+  return `assessment_${timestamp}_${random}`;
+};
+
+// Get or create a session key for this assessment attempt
+const getAssessmentSessionKey = (): string => {
+  const storageKey = 'current_assessment_session';
+  let sessionKey = sessionStorage.getItem(storageKey);
+  
+  if (!sessionKey) {
+    sessionKey = generateSessionKey();
+    sessionStorage.setItem(storageKey, sessionKey);
+    console.log('Generated new assessment session key:', sessionKey);
+  } else {
+    console.log('Using existing assessment session key:', sessionKey);
+  }
+  
+  return sessionKey;
+};
+
+// Clear the session key when starting a new assessment
+export const clearAssessmentSession = (): void => {
+  sessionStorage.removeItem('current_assessment_session');
+  console.log('Cleared assessment session key');
+};
 
 export const saveAssessmentResults = async (
   categories: Category[], 
@@ -76,6 +107,9 @@ export const saveAssessmentResults = async (
   try {
     console.log(`saveAssessmentResults - Saving to database for user: ${user.id}`);
     
+    // Get session key for this assessment attempt
+    const sessionKey = getAssessmentSessionKey();
+    
     // Prepare the data to save - ensure all ratings are properly formatted
     const processedCategories = categories.map(category => ({
       ...category,
@@ -88,36 +122,58 @@ export const saveAssessmentResults = async (
       }))
     }));
 
-    // Convert Demographics to a regular object to satisfy TypeScript
-    const demographicsObject = { ...demographics };
+    // Convert Demographics to a regular object and add session key
+    const demographicsObject = { 
+      ...demographics,
+      sessionKey // Add session key to track this specific assessment attempt
+    };
 
-    // Use a more robust approach to prevent duplicates
-    // Create a unique constraint based on user_id and a time window
-    const now = new Date();
-    const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000); // 5 minutes ago
+    // First, check if we already have an assessment for this session
+    console.log("saveAssessmentResults - Checking for existing assessment with session key:", sessionKey);
     
-    console.log("saveAssessmentResults - Checking for recent assessments within 5 minutes");
-    
-    // Check for any assessment created in the last 5 minutes
-    const { data: recentAssessments, error: fetchError } = await supabase
+    const { data: existingAssessment, error: fetchError } = await supabase
       .from('assessment_results')
-      .select('id, created_at')
+      .select('id, created_at, demographics')
       .eq('user_id', user.id)
-      .gte('created_at', fiveMinutesAgo.toISOString())
       .order('created_at', { ascending: false })
-      .limit(1);
+      .limit(10); // Check recent assessments
 
     if (fetchError) {
-      console.error("saveAssessmentResults - Error checking for recent assessments:", fetchError);
-      // Continue with insert if we can't check for duplicates
+      console.error("saveAssessmentResults - Error checking for existing assessments:", fetchError);
+      // Continue with insert if we can't check for existing
+    }
+
+    let existingRecord = null;
+    
+    // Look for an assessment with matching session key
+    if (existingAssessment && existingAssessment.length > 0) {
+      existingRecord = existingAssessment.find(assessment => 
+        assessment.demographics && 
+        assessment.demographics.sessionKey === sessionKey
+      );
+      
+      if (existingRecord) {
+        console.log(`saveAssessmentResults - Found existing assessment with session key: ${existingRecord.id}`);
+      } else {
+        // Also check for very recent assessments (within last 2 minutes) without session key
+        // This handles assessments created before the session key system
+        const twoMinutesAgo = new Date(Date.now() - 2 * 60 * 1000);
+        const recentRecord = existingAssessment.find(assessment => 
+          new Date(assessment.created_at) > twoMinutesAgo
+        );
+        
+        if (recentRecord) {
+          console.log(`saveAssessmentResults - Found recent assessment within 2 minutes: ${recentRecord.id}`);
+          existingRecord = recentRecord;
+        }
+      }
     }
 
     let result;
 
-    if (recentAssessments && recentAssessments.length > 0) {
-      // Update the most recent assessment instead of creating a new one
-      const recentAssessment = recentAssessments[0];
-      console.log(`saveAssessmentResults - Updating recent assessment: ${recentAssessment.id} (created at: ${recentAssessment.created_at})`);
+    if (existingRecord) {
+      // Update the existing assessment
+      console.log(`saveAssessmentResults - Updating existing assessment: ${existingRecord.id}`);
       
       result = await supabase
         .from('assessment_results')
@@ -125,14 +181,19 @@ export const saveAssessmentResults = async (
           categories: processedCategories,
           demographics: demographicsObject,
           completed: isComplete,
-          ai_insights: null // Initialize as null, will be populated when first accessed
+          ai_insights: null // Reset insights when updating assessment data
         })
-        .eq('id', recentAssessment.id)
+        .eq('id', existingRecord.id)
         .eq('user_id', user.id)
         .select();
+        
+      if (result.data && result.data.length > 0) {
+        console.log("saveAssessmentResults - Successfully updated existing assessment");
+        return { success: true, data: result.data, isExisting: true };
+      }
     } else {
-      // Create new assessment only if no recent one exists
-      console.log("saveAssessmentResults - Creating new assessment (no recent assessments found)");
+      // Create new assessment only if no existing one found
+      console.log("saveAssessmentResults - Creating new assessment (no existing assessment found)");
       result = await supabase
         .from('assessment_results')
         .insert({
@@ -153,7 +214,7 @@ export const saveAssessmentResults = async (
     }
 
     console.log("saveAssessmentResults - Successfully saved to database:", data);
-    return { success: true, data };
+    return { success: true, data, isExisting: !!existingRecord };
 
   } catch (error) {
     console.error("saveAssessmentResults - Unexpected error:", error);

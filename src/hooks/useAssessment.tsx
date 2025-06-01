@@ -33,18 +33,6 @@ export const useAssessment = () => {
   const { handleCompleteAssessment: wrappedHandleCompleteAssessment } = 
     useAssessmentCompletion(categories, demographics, handleCompleteAssessment);
 
-  // Reset all categories to default values when starting a new assessment
-  const handleStartNewAssessment = () => {
-    console.log("useAssessment - Starting new assessment with fresh categories");
-    // Create completely fresh copy of default categories with all ratings reset to 0
-    const freshCategories = createFreshCategories();
-    console.log("useAssessment - Fresh categories created:", freshCategories?.length || 0);
-    resetAssessment(freshCategories);
-    
-    // Call the original handler
-    handleStartAssessment();
-  };
-
   const {
     showAuthForm,
     loadingPreviousResults,
@@ -52,6 +40,7 @@ export const useAssessment = () => {
     handleLoadPreviousResults,
     handleCloseAuthForm,
     handleShowSignupForm,
+    handleStartNewAssessment, // This now includes session management
     currentAssessmentId
   } = useResultsManagement(
     categories, 
@@ -61,9 +50,25 @@ export const useAssessment = () => {
     setCurrentStep
   );
 
+  // Reset all categories to default values when starting a new assessment
+  const handleStartNewAssessmentWithReset = () => {
+    console.log("useAssessment - Starting new assessment with fresh categories and new session");
+    
+    // Clear the session first
+    handleStartNewAssessment();
+    
+    // Create completely fresh copy of default categories with all ratings reset to 0
+    const freshCategories = createFreshCategories();
+    console.log("useAssessment - Fresh categories created:", freshCategories?.length || 0);
+    resetAssessment(freshCategories);
+    
+    // Call the original handler
+    handleStartAssessment();
+  };
+
   const { user } = useAuth();
 
-  // Effect to handle result saving when user logs in
+  // Effect to handle result saving when user logs in (but only if not already saved)
   useEffect(() => {
     if (user && currentStep === 'results' && categories && categories.length > 0) {
       console.log("useAssessment - User logged in and on results page, triggering save");
@@ -82,7 +87,7 @@ export const useAssessment = () => {
     handleDemographicsUpdate,
     
     // Navigation functions
-    handleStartAssessment: handleStartNewAssessment,
+    handleStartAssessment: handleStartNewAssessmentWithReset,
     handleContinueToAssessment,
     handleBackToIntro,
     handleBackToDemographics,

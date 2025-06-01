@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -100,7 +101,7 @@ const Results = () => {
     demographics
   );
 
-  // CRITICAL FIX: Only save for NEW assessments, never for existing ones being viewed
+  // UPDATED: Only save for NEW assessments that come from completing the assessment
   useEffect(() => {
     // IMMEDIATELY RETURN if we're viewing an existing assessment
     if (assessmentId) {
@@ -110,61 +111,46 @@ const Results = () => {
     
     // Only attempt to save if:
     // 1. User is logged in
-    // 2. On results page (currentStep === 'results')
-    // 3. NOT viewing an existing assessment (no assessmentId) - already checked above
-    // 4. Haven't already triggered save
+    // 2. On results page (currentStep === 'results') 
+    // 3. NOT viewing an existing assessment (no assessmentId)
+    // 4. Haven't already triggered save for this page load
     // 5. Page is ready and initial data is checked
+    // 6. We actually have assessment data to save
     if (user && 
         currentStep === 'results' && 
         !saveTriggeredRef.current && 
         isPageReady &&
-        isInitialDataChecked) {
+        isInitialDataChecked &&
+        categories && 
+        categories.length > 0) {
       
-      console.log('Results page - Checking if we should save NEW assessment (no assessmentId present)');
+      // Check if this looks like a newly completed assessment (has ratings)
+      const hasRatings = categories.some(cat => 
+        cat && cat.skills && cat.skills.some(skill => 
+          skill && skill.ratings && (
+            (typeof skill.ratings.current === 'number' && skill.ratings.current > 0) || 
+            (typeof skill.ratings.desired === 'number' && skill.ratings.desired > 0)
+          )
+        )
+      );
       
-      // Only save if we have categories with data
-      if (categories && categories.length > 0) {
+      if (hasRatings) {
         console.log('Results page - Triggering assessment save for NEW assessment with categories:', categories.length);
         saveTriggeredRef.current = true;
         
         // Delay to ensure all state is properly set
         setTimeout(() => {
           handleSaveResults();
-        }, 300);
+        }, 500); // Increased delay to prevent race conditions
       } else {
-        console.error('Results page - Cannot save assessment: categories is empty or invalid');
-        
-        // Try one more time to load from local storage
-        const localData = getLocalAssessmentData();
-        if (localData && localData.categories && localData.categories.length > 0) {
-          console.log('Results page - Found local assessment data, using that before save');
-          handleCategoriesUpdate(localData.categories);
-          if (localData.demographics) {
-            handleDemographicsUpdate(localData.demographics);
-          }
-          
-          // Try saving after a short delay
-          setTimeout(() => {
-            saveTriggeredRef.current = true;
-            handleSaveResults();
-          }, 400);
-        } else {
-          console.log('Results page - No local data available, cannot save');
-          console.log('Results page - Categories value:', categories);
-        }
+        console.log('Results page - No ratings found, likely viewing existing results');
       }
     } 
-    // For guest users, just ensure local storage is updated without triggering auth errors
-    else if (!user && 
-             currentStep === 'results' && 
-             !saveTriggeredRef.current && 
-             categories && 
-             categories.length > 0 &&
-             isPageReady) {
-      console.log('Results page - Guest user, ensuring local storage is updated');
-      saveTriggeredRef.current = true;
+    // For guest users, don't trigger any saves - they're handled elsewhere
+    else if (!user && currentStep === 'results') {
+      console.log('Results page - Guest user on results page, no action needed');
     }
-  }, [user, currentStep, assessmentId, categories, handleSaveResults, handleCategoriesUpdate, handleDemographicsUpdate, isPageReady, isInitialDataChecked]);
+  }, [user, currentStep, assessmentId, categories, handleSaveResults, isPageReady, isInitialDataChecked]);
 
   // Wait for auth, data, and page readiness before rendering
   if (loading || !isPageReady || (!isInitialDataChecked && !assessmentId)) {

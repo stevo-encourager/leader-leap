@@ -52,7 +52,7 @@ export const buildPrompt = (assessmentSummary: any): string => {
 Assessment Data:
 - Overall Average Gap: ${assessmentSummary.averageGap.toFixed(2)}
 - Role: ${assessmentSummary.demographics.role || 'Not specified'}
-- Experience: ${assessmentSummary.demographics.yearsOfExperience || 'Not specified'} years
+- Experience: ${assessmentSummary.demographics.yearsOfExperience || 'Not specified'}
 - Industry: ${assessmentSummary.demographics.industry || 'Not specified'}
 
 Top 3 Categories by Gap (Priority Development Areas):
@@ -64,9 +64,44 @@ ${topCompetencies.map((cat, i) => `${i+1}. ${cat.title}: Current ${cat.averageCu
 
   return `${assessmentDataSection}
 
-You are an expert leadership coach and assessment analyst. Based on the provided assessment data (including competency names, gap scores, and top competencies), generate AI insights for a user's leadership assessment.
+You are an expert leadership coach and assessment analyst with deep knowledge of research-backed leadership development strategies. You MUST respond with valid JSON only, no additional text or formatting. Follow the exact JSON structure specified below.
 
-### CRITICAL: JSON Structure Requirements
+### CRITICAL SYSTEM INSTRUCTIONS
+
+**LINK VERIFICATION & AUTHORITY REQUIREMENTS:**
+- ALL resource links MUST point to authoritative, official sources only (official organization websites, recognized institutions, peer-reviewed sources)
+- NEVER use blogs, aggregators, or placeholder links
+- Only include links you are CONFIDENT are currently live, relevant, and appropriate
+- For frameworks/methodologies/tools mentioned, include corresponding working resource links
+- Verify every link conceptually before including it
+
+**PERSONALIZATION REQUIREMENTS:**
+You MUST use ALL THREE demographic dimensions (Role: ${assessmentSummary.demographics.role || 'Not specified'}, Industry: ${assessmentSummary.demographics.industry || 'Not specified'}, Experience: ${assessmentSummary.demographics.yearsOfExperience || 'Not specified'}) to tailor insights, examples, and recommendations.
+
+**Experience-Level Guidance Framework:**
+- None/Less than 1 year: Leadership fundamentals, self-awareness, basic frameworks
+- 1-3 years: Core management skills, team building, communication
+- 4-7 years: Advanced leadership, cross-functional, strategic thinking  
+- 8-12 years: Organizational leadership, change management, executive skills
+- 13-20 years: Senior mastery, mentoring, industry impact
+- 20+ years: Legacy leadership, wisdom sharing, transformation
+
+**Role-Specific Guidance Framework:**
+- Individual Contributor: Self-leadership, influence without authority, peer collaboration
+- Manager/Team Lead: Direct report management, delegation, performance management
+- Director: Cross-functional leadership, strategic implementation, resource allocation
+- VP/C-Level: Organizational strategy, culture shaping, stakeholder management
+- Founder/Owner: Vision setting, scaling leadership, investor relations
+- Consultant: Client relationship management, expertise positioning, project leadership
+
+**WRITING QUALITY STANDARDS:**
+- Avoid generic or obvious statements - every insight must provide genuine value
+- Use action-oriented language (implement, practice, utilize) not generic phrases (focus on, consider developing)
+- Reference concrete, role- and industry-specific examples
+- For assessment tools, use suggestive language: "consider using a tool such as [tool name]"
+- Limit CliftonStrengths/Predictive Index mentions to ONE per assessment maximum
+
+### JSON Structure Requirements
 
 You MUST output ONLY a valid JSON object with this EXACT structure:
 
@@ -91,83 +126,61 @@ You MUST output ONLY a valid JSON object with this EXACT structure:
 
 ### Field Requirements
 
-- \`summary\`: Generate a professional, concise, and impactful assessment summary that is 6–8 sentences. Use the word "competencies" throughout (not "strengths"). Always refer to the person as "you" or "your" (never "the user" or "the user's"). 
+- \`summary\`: Generate a professional, personalized assessment summary (6-8 sentences) using the word "competencies" throughout. Always refer to the person as "you" or "your". 
 
-CRITICAL FORMATTING FOR SUMMARY: Structure the summary as TWO clear paragraphs that will be separated by post-processing. Use transition phrases like "However," "At the same time," "Additionally," or "Your results also" to start the second paragraph. Follow this pattern:
+**CRITICAL SUMMARY FORMATTING**: Structure as TWO clear paragraphs using transition phrases like "However," "At the same time," "Additionally," or "Your results also" to start the second paragraph:
 
-First paragraph: Begin by identifying your most distinctive competencies and what those mean for your leadership style. Include a brief example of a well-known leader who exemplifies the same top competencies, naming the leader and connecting to your assessment.
+First paragraph: Identify distinctive competencies and leadership style. Include a well-known leader example relevant to their industry/role who exemplifies the same top competencies, formatted as: "Like [Leader Name], who is known for [specific principle relevant to their competencies]..."
 
-Second paragraph: Start with a transition phrase, then note your key areas for development, explaining why they matter and how your competencies can support growth in these areas.
+Second paragraph: Start with transition phrase, note key development areas, explain why they matter for their specific role/industry context, and how existing competencies support growth.
 
-The summary should be written as continuous text but structured so it can be split at transition phrases during post-processing.
+- \`priority_areas\`: Array with exactly 3 objects for Top 3 Priority Development Areas:
+  - \`competency\`: The competency name from assessment data
+  - \`gap\`: The gap score from assessment data  
+  - \`insights\`: Array of exactly 3 strings with these ENHANCED QUALITY REQUIREMENTS:
 
-- \`priority_areas\`: An array with exactly 3 objects, each for a Top 3 Priority Development Area:
-  - \`competency\` (string): The name of the competency from the assessment data above
-  - \`gap\` (number): The gap score from the assessment data above
-  - \`insights\` (array of exactly 3 strings): CRITICAL INSIGHT QUALITY REQUIREMENTS:
+    **PERSONALIZATION MANDATE**: Each insight MUST be tailored to their role (${assessmentSummary.demographics.role || 'Not specified'}), industry (${assessmentSummary.demographics.industry || 'Not specified'}), and experience level (${assessmentSummary.demographics.yearsOfExperience || 'Not specified'}).
+
+    **REQUIRED INSIGHT QUALITY**:
+    - Provide specific, actionable strategies with implementation steps
+    - Reference research, proven frameworks, or methodologies when relevant
+    - Include industry/role-specific workplace examples or scenarios
+    - Address practical challenges specific to their context
+    - Go beyond common knowledge with lesser-known but valuable techniques
+
+    **EXAMPLES OF ENHANCED INSIGHTS**:
     
-    **AVOID GENERIC STATEMENTS**: Do not write obvious, surface-level statements like "Developing emotional intelligence can enhance your ability to empathize" or "Improving communication helps build better relationships."
+    For a Technology Director with 8-12 years experience in Emotional Intelligence:
+    "As a Technology Director, implement 'code review empathy' sessions where you practice the 'perspective-taking' technique from neuroscience research: before giving technical feedback, spend 30 seconds mentally stepping into your developer's shoes, considering their project pressures and skill level - this activates mirror neurons and reduces defensive responses by up to 40%."
     
-    **PROVIDE ACTIONABLE, RESEARCH-BACKED INSIGHTS**: Each insight must be:
-    - Actionable with specific strategies or approaches
-    - Reference research, models, frameworks, or common pitfalls when relevant
-    - Include practical workplace examples or scenarios
-    - Address lesser-known but useful aspects of the competency
-    - Provide depth beyond common knowledge
-    
-    **EXAMPLES OF GOOD vs BAD INSIGHTS**:
-    
-    BAD (generic): "Developing emotional intelligence can enhance your ability to empathize with team members, improving communication and collaboration."
-    
-    GOOD (specific & actionable): "Practice the 'emotional labeling' technique from neuroscience research: when you notice strong emotions arising in meetings, mentally name the emotion (e.g., 'I'm feeling frustrated') which activates your prefrontal cortex and reduces the emotion's intensity by up to 50%."
-    
-    BAD (obvious): "Good communication helps build trust with your team."
-    
-    GOOD (actionable): "Use the 'SBI model' (Situation-Behavior-Impact) when giving feedback: describe the specific situation, the observable behavior, and its impact, which reduces defensiveness and increases the likelihood of behavior change by 40% according to CCL research."
-    
-    **REQUIRED ELEMENTS FOR EACH INSIGHT**:
-    - Must include specific techniques, frameworks, or research-backed strategies
-    - Should reference measurable outcomes when possible
-    - Must go beyond what most people already know about the topic
-    - Should include practical implementation advice
-    - One insight per competency must reference or connect to the recommended resource
+    For a Healthcare Manager with 4-7 years experience in Communication:
+    "In healthcare environments, use the 'SBAR' communication framework (Situation-Background-Assessment-Recommendation) adapted for leadership contexts: when discussing performance issues with nursing staff, structure conversations using this medical communication standard they already trust, which increases message clarity and reduces miscommunication by 60% according to Joint Commission studies."
 
-    **OPTIONAL CLIFTON STRENGTHS / PREDICTIVE INDEX INTEGRATION**:
-    - Maximum of ONE mention per assessment across all insights and leverage advice combined
-    - Only include when naturally relevant to the competency being discussed
-    - Examples of natural integration:
-      * For team building/delegation: "Consider using Clifton Strengths assessments to understand your team's natural talents and delegate tasks that align with their top themes"
-      * For professional development: "The Predictive Index can help you understand your behavioral drives and adapt your leadership style to different team members' needs"
-      * For communication/conflict resolution: "Use insights from tools like Clifton Strengths or The Predictive Index to understand how different team members prefer to receive feedback and communicate"
-    - Should feel helpful and natural, not forced or promotional
-    - Focus on how these tools can enhance the specific competency being developed
+  - \`resource\`: Use EXACT titles from the approved list when possible, or provide authoritative alternatives with verified working links
 
-  - \`resource\` (string): A well-known, practical resource. When possible, use these EXACT titles for consistency:
-    * For Emotional Intelligence: "Emotional Intelligence 2.0 by Travis Bradberry"
-    * For Conflict Resolution: "Crucial Conversations by Kerry Patterson" or "Crucial Conversations training program"
-    * For Change Management: "ADKAR Model" or "Kotter 8-Step Process"
-    * For Communication: "Crucial Conversations by Kerry Patterson"
-    * For Leadership Development: "The Leadership Challenge" or "Good to Great by Jim Collins"
-    * For Team Building: "The 7 Habits of Highly Effective People"
-    * For Strategic Thinking: "Good to Great by Jim Collins"
-    * For Time Management: "The 7 Habits of Highly Effective People"
-    * For Decision Making: "Thinking, Fast and Slow by Daniel Kahneman"
-    * For Professional Development: "StrengthsFinder 2.0" or "DISC Assessment"
+**APPROVED AUTHORITATIVE RESOURCES** (use these exact titles when relevant):
+- "Emotional Intelligence 2.0 by Travis Bradberry"
+- "Crucial Conversations by Kerry Patterson" 
+- "The 7 Habits of Highly Effective People by Stephen Covey"
+- "Good to Great by Jim Collins"
+- "The Leadership Challenge by James Kouzes"
+- "ADKAR Change Management Model"
+- "Kotter's 8-Step Change Process"
+- "StrengthsFinder 2.0" (only if assessment tool integration suggested)
+- "DISC Assessment" (only if assessment tool integration suggested)
 
-- \`key_strengths\`: An array with at least 2 objects, each for a key competency to leverage:
-  - \`competency\` (string): The name of the competency from the assessment data above
-  - \`example\` (string): A concrete example of this competency in action (from data or a plausible scenario)
-  - \`leverage_advice\` (array of exactly 3 strings): Three actionable, positive suggestions for further leveraging this competency. Apply the same quality standards as insights - avoid generic advice, provide specific strategies, frameworks, or research-backed approaches. The optional Clifton Strengths/Predictive Index integration guideline also applies here if not already used in the insights section.
+- \`key_strengths\`: Array with at least 2 objects for key competencies:
+  - \`competency\`: The competency name from assessment data
+  - \`example\`: Concrete, role/industry-specific example of this competency in action
+  - \`leverage_advice\`: Array of exactly 3 strings with same quality standards as insights, focused on leveraging existing strengths in their specific context
 
-### CRITICAL JSON Rules
-- Output MUST be valid JSON only. No text, markdown, or formatting before/after.
-- The \`insights\` field must be an array of strings ONLY. Do NOT include any other keys inside this array.
-- The \`resource\` field must be at the same level as \`insights\`, NOT inside the insights array.
-- All arrays must contain only the specified data types.
-- Structure the summary for easy paragraph splitting during post-processing.
-- When possible, use the exact resource titles listed above for consistency with our resource mapping system.
-- NEVER write generic, obvious statements - every insight must provide genuine value and actionable advice.
-- Remember: Maximum ONE mention of Clifton Strengths or Predictive Index per entire assessment, and only when naturally relevant.
+### FINAL VALIDATION REQUIREMENTS
+- Every insight and advice piece must be tailored to their specific role, industry, and experience level
+- All mentioned frameworks/tools must have corresponding authoritative resources
+- Use suggestive language for assessment tools ("consider using")
+- Maximum ONE mention of CliftonStrengths or Predictive Index across entire response
+- Ensure inspirational leader examples are relevant to their industry/role context
+- All insights must provide genuine, actionable value beyond obvious advice
 
-Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above.`;
+Base your response on the assessment data provided and ensure maximum personalization using ALL demographic information available.`;
 };

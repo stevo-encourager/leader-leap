@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -48,6 +49,7 @@ const industryOptions = [
 ];
 
 const experienceOptions = [
+  "None",
   "Less than 1 year",
   "1-3 years",
   "4-7 years",

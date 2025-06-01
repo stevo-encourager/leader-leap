@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Bot, AlertCircle, Target, TrendingUp, ExternalLink } from 'lucide-react';
 import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
@@ -16,7 +17,8 @@ interface PriorityArea {
   competency: string;
   gap: number;
   insights: string[];
-  resource: string;
+  resource?: string;     // Support both singular
+  resources?: string[];  // and plural formats
 }
 
 interface KeyStrength {
@@ -46,29 +48,83 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
     console.log('AIInsights: Loading state:', isLoading);
     if (insights) {
       console.log('AIInsights: Using insights from database for consistent display');
+      console.log('AIInsights: Raw insights text length:', insights.length);
     }
   }, [assessmentId, insights, isLoading]);
 
   const parseInsights = (insightsText: string): AIInsightsData | null => {
+    console.log('AIInsights: Starting to parse insights text:', insightsText?.substring(0, 200) + '...');
+    
     try {
-      const parsed = JSON.parse(insightsText);
+      // Clean the text first - remove markdown code blocks if present
+      let cleanedText = insightsText.trim();
+      
+      // Remove markdown code block formatting
+      if (cleanedText.startsWith('```json')) {
+        cleanedText = cleanedText.substring(7);
+      }
+      if (cleanedText.startsWith('```')) {
+        cleanedText = cleanedText.substring(3);
+      }
+      if (cleanedText.endsWith('```')) {
+        cleanedText = cleanedText.substring(0, cleanedText.length - 3);
+      }
+      
+      // Remove any extra whitespace
+      cleanedText = cleanedText.trim();
+      
+      console.log('AIInsights: Cleaned text for parsing:', cleanedText?.substring(0, 200) + '...');
+      
+      const parsed = JSON.parse(cleanedText);
+      
+      console.log('AIInsights: Successfully parsed JSON:', {
+        hasSummary: !!parsed.summary,
+        priorityAreasCount: parsed.priority_areas?.length || 0,
+        keyStrengthsCount: parsed.key_strengths?.length || 0
+      });
       
       // Validate structure
       if (!parsed.summary || !parsed.priority_areas || !parsed.key_strengths) {
         console.error('AIInsights: Invalid insights structure - missing required fields');
+        console.error('AIInsights: Available fields:', Object.keys(parsed));
         return null;
       }
       
       if (!Array.isArray(parsed.priority_areas) || !Array.isArray(parsed.key_strengths)) {
         console.error('AIInsights: Invalid insights structure - arrays expected');
+        console.error('AIInsights: Priority areas type:', typeof parsed.priority_areas);
+        console.error('AIInsights: Key strengths type:', typeof parsed.key_strengths);
         return null;
       }
 
-      // Validate priority areas
-      for (const area of parsed.priority_areas) {
-        if (!area.competency || !area.insights || !Array.isArray(area.insights) || !area.resource) {
-          console.error('AIInsights: Invalid priority area structure:', area);
+      // Validate and normalize priority areas
+      for (let i = 0; i < parsed.priority_areas.length; i++) {
+        const area = parsed.priority_areas[i];
+        console.log(`AIInsights: Validating priority area ${i}:`, {
+          hasCompetency: !!area.competency,
+          hasInsights: !!area.insights,
+          insightsIsArray: Array.isArray(area.insights),
+          hasResource: !!area.resource,
+          hasResources: !!area.resources,
+          hasGap: typeof area.gap === 'number'
+        });
+        
+        if (!area.competency || !area.insights || !Array.isArray(area.insights)) {
+          console.error('AIInsights: Invalid priority area structure - missing required fields:', area);
           return null;
+        }
+        
+        // Handle both "resource" and "resources" fields
+        if (!area.resource && !area.resources) {
+          console.error('AIInsights: Invalid priority area structure - missing resource field:', area);
+          return null;
+        }
+        
+        // Normalize resources to single resource field
+        if (area.resources && Array.isArray(area.resources) && area.resources.length > 0) {
+          // Take the first resource if it's an array
+          area.resource = area.resources[0];
+          console.log('AIInsights: Normalized resources array to single resource:', area.resource);
         }
         
         // Ensure insights is an array of strings only
@@ -78,10 +134,23 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
             return null;
           }
         }
+        
+        if (typeof area.gap !== 'number') {
+          console.error('AIInsights: Invalid gap type - must be number:', area.gap);
+          return null;
+        }
       }
 
       // Validate key strengths
-      for (const strength of parsed.key_strengths) {
+      for (let i = 0; i < parsed.key_strengths.length; i++) {
+        const strength = parsed.key_strengths[i];
+        console.log(`AIInsights: Validating key strength ${i}:`, {
+          hasCompetency: !!strength.competency,
+          hasExample: !!strength.example,
+          hasLeverageAdvice: !!strength.leverage_advice,
+          leverageAdviceIsArray: Array.isArray(strength.leverage_advice)
+        });
+        
         if (!strength.competency || !strength.example || !strength.leverage_advice || !Array.isArray(strength.leverage_advice)) {
           console.error('AIInsights: Invalid key strength structure:', strength);
           return null;
@@ -96,9 +165,11 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
         }
       }
       
+      console.log('AIInsights: Successfully validated all insights data');
       return parsed;
     } catch (error) {
       console.error('AIInsights: Error parsing insights JSON:', error);
+      console.error('AIInsights: Raw text that failed to parse:', insightsText);
       return null;
     }
   };
@@ -124,7 +195,9 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
       </h3>
       <div className="space-y-6">
         {priorityAreas.map((area, index) => {
-          const resourceLink = generateResourceLink(area.resource);
+          // Use the normalized resource field
+          const resourceText = area.resource || (area.resources && area.resources[0]) || '';
+          const resourceLink = generateResourceLink(resourceText);
           
           return (
             <div key={index} className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
@@ -150,7 +223,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
                     ))}
                   </ul>
                 </div>
-                {area.resource && (
+                {resourceText && (
                   <div className="bg-slate-50 p-4 rounded border-l-4 border-encourager">
                     <h6 className="text-slate-700 mb-2 font-montserrat">Recommended Resource:</h6>
                     {resourceLink.hasValidLink ? (
@@ -265,7 +338,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
                   <div className="text-center py-8 text-slate-500">
                     <AlertCircle className="mx-auto mb-3" size={40} />
                     <p className="text-lg">Unable to parse AI insights</p>
-                    <p className="text-sm">The insights format appears to be invalid. Please try refreshing to regenerate.</p>
+                    <p className="text-sm">The insights format appears to be invalid. Check the console for detailed error information.</p>
                   </div>
                 );
               }

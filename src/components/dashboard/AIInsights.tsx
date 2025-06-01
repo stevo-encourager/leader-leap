@@ -118,6 +118,37 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
     }
   };
 
+  // Parse resources from markdown format [Name](url) and extract working links only
+  const parseResourcesFromText = (resources: string[]): Array<{name: string, url: string}> => {
+    const validResources: Array<{name: string, url: string}> = [];
+    
+    resources.forEach(resource => {
+      // Check if it's in markdown format [Name](url)
+      const markdownMatch = resource.match(/\[([^\]]+)\]\(([^)]+)\)/);
+      if (markdownMatch) {
+        const name = markdownMatch[1];
+        const url = markdownMatch[2];
+        
+        // Only add if URL is valid (starts with http/https)
+        if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+          validResources.push({ name, url });
+        }
+      } else {
+        // Try to get a working link from resource mapping
+        const resourceLink = generateResourceLink(resource);
+        if (resourceLink.hasValidLink && resourceLink.url) {
+          validResources.push({ 
+            name: resourceLink.title, 
+            url: resourceLink.url 
+          });
+        }
+        // If no valid link found, don't include this resource at all
+      }
+    });
+    
+    return validResources;
+  };
+
   // Enhanced helper function to render summary with automatic paragraph formatting and leader links
   const renderFormattedSummary = (summary: string) => {
     return (
@@ -138,65 +169,59 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
         Top 3 Priority Development Areas
       </h3>
       <div className="space-y-6">
-        {priorityAreas.map((area, index) => (
-          <div key={index} className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
-            <div className="mb-4">
-              <h4 className="text-lg text-slate-800 font-montserrat">
-                {index + 1}. {area.competency}
-              </h4>
-              <span className="text-sm text-slate-600 bg-slate-100 px-2 py-1 rounded">
-                Gap: {area.gap.toFixed(1)}
-              </span>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <h5 className="text-slate-700 mb-3 font-montserrat">Key insights:</h5>
-                <ul className="space-y-3">
-                  {area.insights && Array.isArray(area.insights) && area.insights.map((insight, insightIndex) => (
-                    <li key={insightIndex} className="flex items-start gap-3">
-                      <span className="flex-shrink-0 w-6 h-6 bg-encourager text-white rounded-full flex items-center justify-center text-sm font-medium">
-                        {insightIndex + 1}
-                      </span>
-                      <p className="text-slate-700 leading-relaxed">{insight}</p>
-                    </li>
-                  ))}
-                </ul>
+        {priorityAreas.map((area, index) => {
+          const validResources = parseResourcesFromText(area.resources || []);
+          
+          return (
+            <div key={index} className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
+              <div className="mb-4">
+                <h4 className="text-lg text-slate-800 font-montserrat">
+                  {index + 1}. {area.competency}
+                </h4>
+                <span className="text-sm text-slate-600 bg-slate-100 px-2 py-1 rounded">
+                  Gap: {area.gap.toFixed(1)}
+                </span>
               </div>
-              {area.resources && area.resources.length > 0 && (
-                <div className="bg-slate-50 p-4 rounded border-l-4 border-encourager">
-                  <h6 className="text-slate-700 mb-2 font-montserrat">
-                    Recommended Resources:
-                  </h6>
-                  <div className="space-y-2">
-                    {area.resources.map((resource, resourceIndex) => {
-                      const resourceLink = generateResourceLink(resource);
-                      return (
-                        <div key={resourceIndex}>
-                          {resourceLink.hasValidLink ? (
-                            <a 
-                              href={resourceLink.url!} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="text-encourager hover:text-encourager-light text-sm flex items-center gap-1 underline"
-                            >
-                              <ExternalLink className="h-3 w-3" />
-                              {resourceLink.title}
-                            </a>
-                          ) : (
-                            <div className="text-slate-600 text-sm">
-                              <span className="font-medium">{resourceLink.title}</span>
-                              <p className="text-xs text-slate-500 mt-1">Resource link not currently available</p>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
+              <div className="space-y-4">
+                <div>
+                  <h5 className="text-slate-700 mb-3 font-montserrat">Key insights:</h5>
+                  <ul className="space-y-3">
+                    {area.insights && Array.isArray(area.insights) && area.insights.map((insight, insightIndex) => (
+                      <li key={insightIndex} className="flex items-start gap-3">
+                        <span className="flex-shrink-0 w-6 h-6 bg-encourager text-white rounded-full flex items-center justify-center text-sm font-medium">
+                          {insightIndex + 1}
+                        </span>
+                        <p className="text-slate-700 leading-relaxed">{insight}</p>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-              )}
+                {validResources.length > 0 && (
+                  <div className="bg-slate-50 p-4 rounded border-l-4 border-encourager">
+                    <h6 className="text-slate-700 mb-2 font-montserrat">
+                      Recommended Resources:
+                    </h6>
+                    <div className="space-y-2">
+                      {validResources.map((resource, resourceIndex) => (
+                        <div key={resourceIndex}>
+                          <a 
+                            href={resource.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-encourager hover:text-encourager-light text-sm flex items-center gap-1 underline"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            {resource.name}
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -208,66 +233,60 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
         Key Competencies to Leverage
       </h3>
       <div className="space-y-6">
-        {keyStrengths.map((strength, index) => (
-          <div key={index} className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
-            <div className="mb-4">
-              <h4 className="text-lg text-slate-800 font-montserrat">
-                Competency: {strength.competency}
-              </h4>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <h5 className="text-slate-700 mb-3 font-montserrat">Existing Skill:</h5>
-                <p className="text-slate-700 leading-relaxed">{strength.example}</p>
+        {keyStrengths.map((strength, index) => {
+          const validResources = parseResourcesFromText(strength.resources || []);
+          
+          return (
+            <div key={index} className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
+              <div className="mb-4">
+                <h4 className="text-lg text-slate-800 font-montserrat">
+                  Competency: {strength.competency}
+                </h4>
               </div>
-              <div>
-                <h5 className="text-slate-700 mb-3 font-montserrat">How to leverage further:</h5>
-                <ul className="space-y-3">
-                  {strength.leverage_advice && Array.isArray(strength.leverage_advice) && strength.leverage_advice.map((advice, adviceIndex) => (
-                    <li key={adviceIndex} className="flex items-start gap-3">
-                      <span className="flex-shrink-0 w-6 h-6 bg-encourager text-white rounded-full flex items-center justify-center text-sm font-medium">
-                        {adviceIndex + 1}
-                      </span>
-                      <p className="text-slate-700 leading-relaxed">{advice}</p>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              {strength.resources && strength.resources.length > 0 && (
-                <div className="bg-slate-50 p-4 rounded border-l-4 border-encourager">
-                  <h6 className="text-slate-700 mb-2 font-montserrat">
-                    Recommended Resources:
-                  </h6>
-                  <div className="space-y-2">
-                    {strength.resources.map((resource, resourceIndex) => {
-                      const resourceLink = generateResourceLink(resource);
-                      return (
-                        <div key={resourceIndex}>
-                          {resourceLink.hasValidLink ? (
-                            <a 
-                              href={resourceLink.url!} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="text-encourager hover:text-encourager-light text-sm flex items-center gap-1 underline"
-                            >
-                              <ExternalLink className="h-3 w-3" />
-                              {resourceLink.title}
-                            </a>
-                          ) : (
-                            <div className="text-slate-600 text-sm">
-                              <span className="font-medium">{resourceLink.title}</span>
-                              <p className="text-xs text-slate-500 mt-1">Resource link not currently available</p>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
+              <div className="space-y-4">
+                <div>
+                  <h5 className="text-slate-700 mb-3 font-montserrat">Existing Skill:</h5>
+                  <p className="text-slate-700 leading-relaxed">{strength.example}</p>
                 </div>
-              )}
+                <div>
+                  <h5 className="text-slate-700 mb-3 font-montserrat">How to leverage further:</h5>
+                  <ul className="space-y-3">
+                    {strength.leverage_advice && Array.isArray(strength.leverage_advice) && strength.leverage_advice.map((advice, adviceIndex) => (
+                      <li key={adviceIndex} className="flex items-start gap-3">
+                        <span className="flex-shrink-0 w-6 h-6 bg-encourager text-white rounded-full flex items-center justify-center text-sm font-medium">
+                          {adviceIndex + 1}
+                        </span>
+                        <p className="text-slate-700 leading-relaxed">{advice}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                {validResources.length > 0 && (
+                  <div className="bg-slate-50 p-4 rounded border-l-4 border-encourager">
+                    <h6 className="text-slate-700 mb-2 font-montserrat">
+                      Recommended Resources:
+                    </h6>
+                    <div className="space-y-2">
+                      {validResources.map((resource, resourceIndex) => (
+                        <div key={resourceIndex}>
+                          <a 
+                            href={resource.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-encourager hover:text-encourager-light text-sm flex items-center gap-1 underline"
+                          >
+                            <ExternalLink className="h-3 w-3" />
+                            {resource.name}
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

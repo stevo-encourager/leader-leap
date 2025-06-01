@@ -22,23 +22,48 @@ serve(async (req) => {
     // Validate environment variables
     const { openAIApiKey, supabaseUrl, supabaseServiceKey } = validateEnvironmentVariables();
 
-    const { categories, demographics, averageGap, assessmentId } = await req.json();
+    const { categories, demographics, averageGap, assessmentId, forceRegenerate = false } = await req.json();
 
-    // CRITICAL: Always check if insights already exist first - NEVER regenerate
-    if (assessmentId) {
+    console.log('=== PROMPT DEBUG INFO ===');
+    console.log('Assessment ID:', assessmentId);
+    console.log('Force Regenerate:', forceRegenerate);
+    console.log('Demographics:', demographics);
+    
+    // CRITICAL: Always check if insights already exist first - NEVER regenerate unless forced
+    if (assessmentId && !forceRegenerate) {
       const existingInsights = await checkExistingInsights(assessmentId, supabaseUrl, supabaseServiceKey);
       if (existingInsights) {
-        return new Response(JSON.stringify({ insights: existingInsights }), {
+        console.log('=== USING EXISTING INSIGHTS ===');
+        console.log('Existing insights found - using cached version (generated with previous prompt)');
+        return new Response(JSON.stringify({ 
+          insights: existingInsights,
+          promptUsed: 'CACHED_INSIGHTS_FROM_PREVIOUS_GENERATION',
+          regenerated: false
+        }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
     }
 
-    console.log('No existing insights found - generating new insights (ONLY ONCE)');
+    if (forceRegenerate) {
+      console.log('=== FORCED REGENERATION ===');
+      console.log('Force regenerate flag is true - will generate new insights with current prompt');
+    } else {
+      console.log('=== GENERATING NEW INSIGHTS ===');
+      console.log('No existing insights found - generating new insights with current prompt');
+    }
 
     // Build assessment data and prompt
     const assessmentSummary = buildAssessmentData(categories, averageGap, demographics);
     const prompt = buildPrompt(assessmentSummary);
+
+    // Log prompt information for debugging
+    console.log('=== CURRENT PROMPT INFO ===');
+    console.log('Prompt length:', prompt.length);
+    console.log('Prompt contains "BANNED PHRASES":', prompt.includes('BANNED PHRASES'));
+    console.log('Prompt contains "PERSONALIZATION MANDATE":', prompt.includes('PERSONALIZATION MANDATE'));
+    console.log('Prompt contains "RESOURCE LINKING REQUIREMENTS":', prompt.includes('RESOURCE LINKING REQUIREMENTS'));
+    console.log('Demographics being used:', JSON.stringify(demographics, null, 2));
 
     // Call OpenAI
     const rawInsights = await callOpenAI(prompt, openAIApiKey);
@@ -103,9 +128,23 @@ serve(async (req) => {
       await saveInsights(assessmentId, finalInsights, supabaseUrl, supabaseServiceKey);
     }
 
-    console.log('Successfully generated and saved insights with enhanced paragraph formatting and improved insight quality');
+    console.log('=== GENERATION COMPLETE ===');
+    console.log('Successfully generated and saved insights with current prompt');
 
-    return new Response(JSON.stringify({ insights: finalInsights }), {
+    return new Response(JSON.stringify({ 
+      insights: finalInsights,
+      promptUsed: 'CURRENT_PROMPT_VERSION',
+      regenerated: forceRegenerate || false,
+      debugInfo: {
+        promptLength: prompt.length,
+        hasNewPromptFeatures: {
+          bannedPhrases: prompt.includes('BANNED PHRASES'),
+          personalizationMandate: prompt.includes('PERSONALIZATION MANDATE'),
+          resourceLinking: prompt.includes('RESOURCE LINKING REQUIREMENTS')
+        },
+        demographics: demographics
+      }
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {

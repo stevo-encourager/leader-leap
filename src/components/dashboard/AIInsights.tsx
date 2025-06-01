@@ -1,10 +1,10 @@
-
 import React from 'react';
 import { Bot, AlertCircle, Target, TrendingUp, ExternalLink } from 'lucide-react';
 import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { FormattedSummary } from '@/components/FormattedSummary';
 import { generateResourceLink } from '@/utils/resourceMapping';
+import PromptDebugger from './PromptDebugger';
 
 interface AIInsightsProps {
   categories: Category[];
@@ -360,6 +360,14 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
             <p className="text-lg">AI insights will appear here once your assessment data is analyzed.</p>
           </div>
         )}
+
+        {/* Add the prompt debugger for testing */}
+        <PromptDebugger 
+          categories={categories}
+          demographics={demographics}
+          averageGap={averageGap}
+          assessmentId={assessmentId}
+        />
       </div>
     </div>
   );

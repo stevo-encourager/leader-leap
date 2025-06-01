@@ -70,53 +70,38 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
   // Ensure categories is always an array
   const safeCategories = Array.isArray(categories) ? categories : [];
   
-  console.log("SkillGapChart - Categories count:", safeCategories.length);
-  console.log("SkillGapChart - isPDF:", isPDF);
-  console.log("SkillGapChart - Should show legend:", !isPDF);
+  console.log("SkillGapChart - DEBUGGING: Categories received:", {
+    categoriesLength: safeCategories.length,
+    isPDF,
+    categoriesData: safeCategories.map(cat => ({
+      title: cat?.title,
+      skillsCount: cat?.skills?.length || 0,
+      hasSkills: Array.isArray(cat?.skills),
+      firstSkillRatings: cat?.skills?.[0]?.ratings
+    }))
+  });
   
-  if (safeCategories.length > 0) {
-    const safeCategoriesString = JSON.stringify(
-      safeCategories.map(cat => ({
-        title: cat.title,
-        skillsCount: cat.skills?.length || 0,
-        skills: cat.skills?.map(s => ({
-          name: s.name,
-          current: s.ratings?.current,
-          desired: s.ratings?.desired,
-        }))
-      }))
-    );
-    console.log("SkillGapChart - Categories data:", safeCategoriesString.substring(0, 1000) + (safeCategoriesString.length > 1000 ? '...' : ''));
-    
-    const totalSkills = safeCategories.reduce((total, cat) => total + (cat.skills?.length || 0), 0);
-    console.log("SkillGapChart - Total skills:", totalSkills);
-    
-    if (safeCategories[0]) {
-      const firstCat = safeCategories[0];
-      console.log("SkillGapChart - First category:", {
-        title: firstCat.title,
-        skillsCount: firstCat.skills?.length || 0,
-        hasSkills: Array.isArray(firstCat.skills) && firstCat.skills.length > 0,
-        firstSkillName: firstCat.skills?.[0]?.name,
-        firstSkillRatings: firstCat.skills?.[0]?.ratings
-      });
-    }
-  }
-  
-  // Process chart data with detailed logging
+  // Process chart data with simplified validation
   const chartData = useMemo(() => {
-    console.log("SkillGapChart - Processing chart data from categories");
+    console.log("SkillGapChart - DEBUGGING: Processing chart data");
     
     if (!safeCategories || safeCategories.length === 0) {
-      console.warn("SkillGapChart - No categories provided");
+      console.log("SkillGapChart - DEBUGGING: No categories to process");
       return [];
     }
     
     const result: ChartData[] = [];
     
     for (const category of safeCategories) {
-      if (!category || !category.skills || !Array.isArray(category.skills)) {
-        console.log(`SkillGapChart - Skipping invalid category: ${category?.title || 'unknown'}`);
+      // Basic category validation
+      if (!category || !category.title) {
+        console.log("SkillGapChart - DEBUGGING: Skipping category without title");
+        continue;
+      }
+      
+      // Check if category has skills
+      if (!category.skills || !Array.isArray(category.skills) || category.skills.length === 0) {
+        console.log(`SkillGapChart - DEBUGGING: Category "${category.title}" has no valid skills`);
         continue;
       }
       
@@ -124,89 +109,72 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
       let totalDesired = 0;
       let validSkillCount = 0;
       
+      // Process each skill in the category
       for (const skill of category.skills) {
         if (!skill || !skill.ratings) {
-          console.log(`SkillGapChart - Skipping invalid skill (no ratings): ${skill?.name || 'unknown'}`);
           continue;
         }
         
+        // Get ratings with more flexible parsing
+        const currentRating = skill.ratings.current;
+        const desiredRating = skill.ratings.desired;
+        
+        // Convert to numbers and validate
         let current = 0;
         let desired = 0;
         
-        if (typeof skill.ratings.current === 'number') {
-          current = skill.ratings.current;
-        } else if (skill.ratings.current !== undefined && skill.ratings.current !== null) {
-          try {
-            current = parseFloat(String(skill.ratings.current));
-          } catch (e) {
-            console.warn(`SkillGapChart - Error parsing current rating for ${skill.name}:`, e);
-          }
+        if (currentRating !== null && currentRating !== undefined) {
+          current = Number(currentRating);
+          if (isNaN(current)) current = 0;
         }
         
-        if (typeof skill.ratings.desired === 'number') {
-          desired = skill.ratings.desired;
-        } else if (skill.ratings.desired !== undefined && skill.ratings.desired !== null) {
-          try {
-            desired = parseFloat(String(skill.ratings.desired));
-          } catch (e) {
-            console.warn(`SkillGapChart - Error parsing desired rating for ${skill.name}:`, e);
-          }
+        if (desiredRating !== null && desiredRating !== undefined) {
+          desired = Number(desiredRating);
+          if (isNaN(desired)) desired = 0;
         }
         
-        current = isNaN(current) ? 0 : current;
-        desired = isNaN(desired) ? 0 : desired;
-        
+        // Only count skills that have at least one valid rating
         if (current > 0 || desired > 0) {
           totalCurrent += current;
           totalDesired += desired;
           validSkillCount++;
-          console.log(`SkillGapChart - Valid skill: ${skill.name}, current=${current}, desired=${desired}`);
-        } else {
-          console.log(`SkillGapChart - Skill with zero ratings: ${skill.name}`);
+          
+          console.log(`SkillGapChart - DEBUGGING: Valid skill "${skill.name}": current=${current}, desired=${desired}`);
         }
       }
       
+      // Add category to chart data if it has valid skills
       if (validSkillCount > 0) {
-        const avgCurrent = parseFloat((totalCurrent / validSkillCount).toFixed(1));
-        const avgDesired = parseFloat((totalDesired / validSkillCount).toFixed(1));
+        const avgCurrent = totalCurrent / validSkillCount;
+        const avgDesired = totalDesired / validSkillCount;
         
-        const displayTitle = isPDF && category.title && category.title.length > 15 
+        const displayTitle = isPDF && category.title.length > 15 
           ? category.title.substring(0, 12) + '...' 
-          : category.title || "Unknown Category";
+          : category.title;
         
-        result.push({
+        const categoryData = {
           subject: displayTitle,
-          current: avgCurrent,
-          desired: avgDesired,
+          current: Number(avgCurrent.toFixed(1)),
+          desired: Number(avgDesired.toFixed(1)),
           fullMark: 10,
           skillCount: validSkillCount
-        });
+        };
         
-        console.log(`SkillGapChart - Category ${category.title}: avgCurrent=${avgCurrent}, avgDesired=${avgDesired} from ${validSkillCount} valid skills`);
+        result.push(categoryData);
+        
+        console.log(`SkillGapChart - DEBUGGING: Added category "${category.title}" to chart:`, categoryData);
       } else {
-        console.log(`SkillGapChart - Category ${category.title || 'Unknown'} has no valid skills with ratings`);
+        console.log(`SkillGapChart - DEBUGGING: Category "${category.title}" has no valid skills with ratings`);
       }
     }
     
-    console.log("SkillGapChart - Final chart data items:", result.length);
-    if (result.length > 0) {
-      console.log("SkillGapChart - Chart data sample:", result);
-    }
-    
+    console.log("SkillGapChart - DEBUGGING: Final chart data:", result);
     return result;
   }, [safeCategories, isPDF]);
 
-  const validChartData = chartData.filter(
-    item => item.skillCount && item.skillCount > 0 && 
-           ((item.current > 0 || item.desired > 0) && 
-           (!isNaN(item.current) && !isNaN(item.desired)))
-  );
-  
-  console.log("SkillGapChart - Valid chart data items:", validChartData.length);
-  
   // Enhanced DOM structure logging for chart capture debugging
   useEffect(() => {
-    if (chartContainerRef.current && validChartData.length > 0) {
+    if (chartContainerRef.current && chartData.length > 0) {
       setTimeout(() => {
         console.log('=== ENHANCED CHART DOM INSPECTION FOR CAPTURE ===');
         const container = chartContainerRef.current;
@@ -247,48 +215,16 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
           } else {
             console.warn('No SVG found in radar chart container!');
           }
-          
-          // DEBUG: Check for legend element specifically
-          const legendElement = container.querySelector('[style*="gridArea"]');
-          console.log('Legend element found:', !!legendElement);
-          if (legendElement) {
-            console.log('Legend element details:', {
-              element: legendElement,
-              computedStyle: window.getComputedStyle(legendElement),
-              offsetWidth: (legendElement as HTMLElement).offsetWidth,
-              offsetHeight: (legendElement as HTMLElement).offsetHeight,
-              display: window.getComputedStyle(legendElement).display,
-              visibility: window.getComputedStyle(legendElement).visibility,
-              opacity: window.getComputedStyle(legendElement).opacity
-            });
-          }
         }
-        
-        const captureSelectors = [
-          '[data-testid="radar-chart-container"]',
-          '[data-chart-type="radar"]',
-          '.radar-chart-container',
-          '.recharts-radar-chart',
-          '.recharts-surface'
-        ];
-        
-        console.log('Testing chart capture selectors:');
-        captureSelectors.forEach(selector => {
-          const found = document.querySelectorAll(selector);
-          console.log(`Selector "${selector}": found ${found.length} elements`);
-          if (found.length > 0) {
-            const first = found[0] as HTMLElement;
-            console.log(`  First match dimensions: ${first.offsetWidth}x${first.offsetHeight}`);
-          }
-        });
         
         console.log('=== END ENHANCED DOM INSPECTION ===');
       }, 1000);
     }
-  }, [validChartData]);
+  }, [chartData]);
   
-  if (validChartData.length === 0) {
-    console.warn("SkillGapChart - No valid chart data to display");
+  // Check if we have valid data to display
+  if (chartData.length === 0) {
+    console.log("SkillGapChart - DEBUGGING: No valid chart data to display");
     return (
       <div className={`flex flex-col items-center justify-center h-full bg-slate-50 rounded-lg p-6 ${className}`}>
         <p className="text-gray-500 text-center mb-3">
@@ -301,7 +237,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
     );
   }
 
-  console.log("SkillGapChart - Rendering radar chart with data:", validChartData);
+  console.log("SkillGapChart - DEBUGGING: Rendering radar chart with valid data");
 
   // Optimized chart margins for larger chart size
   const chartMargins = isPDF 
@@ -327,9 +263,9 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
         display: 'grid',
         gridTemplateRows: isPDF ? '1fr' : '1fr auto',
         gridTemplateAreas: isPDF ? '"chart"' : '"chart" "legend"',
-        gap: isPDF ? '0' : '16px', // Reduced gap slightly for better spacing
+        gap: isPDF ? '0' : '16px',
         overflow: 'visible',
-        paddingBottom: isPDF ? '0' : '20px' // Add bottom padding to prevent legend cropping
+        paddingBottom: isPDF ? '0' : '20px'
       }}
     >
       {/* Chart area with proper grid positioning */}
@@ -344,7 +280,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
       >
         <ResponsiveContainer width="100%" height="100%">
           <RadarChart 
-            data={validChartData} 
+            data={chartData} 
             margin={chartMargins}
             className="recharts-radar-chart"
           >
@@ -391,9 +327,9 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             minHeight: 'auto',
             height: 'auto',
             backgroundColor: 'white',
-            padding: '16px 16px 24px 16px', // Extra bottom padding to prevent cropping
+            padding: '16px 16px 24px 16px',
             borderRadius: '8px',
-            marginBottom: '8px' // Additional margin to ensure full visibility
+            marginBottom: '8px'
           }}
         >
           {/* Horizontal separator line */}

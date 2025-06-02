@@ -6,87 +6,115 @@ import { ResourceMapping } from '../resourceMapping';
  * Only leaders with current, working, and authoritative links should be included
  */
 export const LEADER_RESOURCES: Record<string, ResourceMapping> = {
-  // Leadership Development & Inspiration
-  'simon sinek': {
-    title: 'Simon Sinek',
-    url: 'https://simonsinek.com',
+  // Transformational & Empathetic Leadership
+  'satya nadella': {
+    title: 'Satya Nadella',
+    url: 'https://www.linkedin.com/in/satyanadella/',
     type: 'article'
   },
   
-  // Vulnerability & Courage Leadership
-  'brené brown': {
-    title: 'Brené Brown',
-    url: 'https://brenebrown.com',
+  // Collaborative & Inclusive Leadership
+  'mary barra': {
+    title: 'Mary Barra',
+    url: 'https://www.linkedin.com/in/mary-barra/',
     type: 'article'
   },
   
-  // Executive Coaching & Leadership Transitions
-  'marshall goldsmith': {
-    title: 'Marshall Goldsmith',
-    url: 'https://www.marshallgoldsmith.com',
+  // Values-Based & Learning-Oriented Leadership
+  'marc benioff': {
+    title: 'Marc Benioff',
+    url: 'https://www.linkedin.com/in/marcbenioff/',
     type: 'article'
   },
   
-  // Team Dynamics & Organizational Health
-  'patrick lencioni': {
-    title: 'Patrick Lencioni',
-    url: 'https://www.tablegroup.com/pat',
+  // Strategic & Empowering Leadership
+  'indra nooyi': {
+    title: 'Indra Nooyi',
+    url: 'https://www.linkedin.com/in/indranooyi/',
     type: 'article'
   },
   
-  // Leadership Research & Good to Great
-  'jim collins': {
-    title: 'Jim Collins',
-    url: 'https://www.jimcollins.com',
+  // "Founder Mode" & Humble Inquiry Leadership
+  'brian chesky': {
+    title: 'Brian Chesky',
+    url: 'https://www.linkedin.com/in/brianchesky/',
     type: 'article'
   },
   
-  // Situational Leadership
-  'ken blanchard': {
-    title: 'Ken Blanchard',
-    url: 'https://www.kenblanchard.com',
+  // Data-Driven & High-Performance Culture Leadership
+  'reed hastings': {
+    title: 'Reed Hastings',
+    url: 'https://www.linkedin.com/in/reedhastings/',
     type: 'article'
   },
   
-  // Principle-Centered Leadership
-  'stephen covey': {
-    title: 'Stephen Covey',
-    url: 'https://www.stephencovey.com',
+  // Servant Leadership & Financial Inclusion
+  'thasunda brown duckett': {
+    title: 'Thasunda Brown Duckett',
+    url: 'https://www.linkedin.com/in/thasunda-brown-duckett-22b15523/',
     type: 'article'
   },
   
-  // Leadership Development & Influence
-  'john maxwell': {
-    title: 'John Maxwell',
-    url: 'https://www.johnmaxwell.com',
+  // Sustainable & Mission-Driven Leadership
+  'paul polman': {
+    title: 'Paul Polman',
+    url: 'https://www.linkedin.com/in/paulpolman/',
     type: 'article'
   },
   
-  // Emotional Intelligence Leadership
-  'daniel goleman': {
-    title: 'Daniel Goleman',
-    url: 'https://www.danielgoleman.info',
+  // Direct & Crisis Management Leadership
+  'jamie dimon': {
+    title: 'Jamie Dimon',
+    url: 'https://www.linkedin.com/in/jamiedimon/',
     type: 'article'
   },
   
-  // Servant Leadership & Leadership Principles
-  'james kouzes': {
-    title: 'James Kouzes',
-    url: 'https://www.leadershipchallenge.com/about-the-authors-James-Kouzes.aspx',
+  // Technical Visionary & Innovation Leadership
+  'jensen huang': {
+    title: 'Jensen Huang',
+    url: 'https://www.linkedin.com/in/jenhsunhuang/',
     type: 'article'
   },
   
-  // Innovation & Change Leadership
-  'john kotter': {
-    title: 'John Kotter',
-    url: 'https://www.kotterinc.com/about/john-kotter',
+  // Principle-Based & "Why Culture" Leadership
+  'andy jassy': {
+    title: 'Andy Jassy',
+    url: 'https://www.linkedin.com/in/andy-jassy-8b1615/',
     type: 'article'
   },
   
-  // Strengths-Based Leadership
-  'tom rath': {
-    title: 'Tom Rath',
-    url: 'https://www.tomrath.org',
+  // Transparent, Creative, and Human-Centered
+  'stewart butterfield': {
+    title: 'Stewart Butterfield',
+    url: 'https://www.linkedin.com/in/butterfield/',
+    type: 'article'
+  },
+  
+  // Empathetic, Empowering, and Purpose-Driven
+  'whitney wolfe herd': {
+    title: 'Whitney Wolfe Herd',
+    url: 'https://en.wikipedia.org/wiki/Whitney_Wolfe_Herd',
+    type: 'article'
+  },
+  
+  // Tech-Forward, Ethical, and Strategic Transformation
+  'arvind krishna': {
+    title: 'Arvind Krishna',
+    url: 'https://www.linkedin.com/in/arvindkrishna/',
+    type: 'article'
+  },
+  
+  // Bold, Mission-Driven, Inclusion-Focused
+  'reshma saujani': {
+    title: 'Reshma Saujani',
+    url: 'https://www.linkedin.com/in/reshma-saujani/',
+    type: 'article'
+  },
+  
+  // Global Advocacy, Partnership-Driven, Narrative Empowerment
+  'elizabeth nyamayaro': {
+    title: 'Elizabeth Nyamayaro',
+    url: 'https://www.linkedin.com/in/enyamayaro/',
     type: 'article'
   }
 };

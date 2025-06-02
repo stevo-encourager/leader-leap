@@ -2,22 +2,27 @@
 import { ResourceMapping } from '../resourceMapping';
 
 export const TOOL_RESOURCES: Record<string, ResourceMapping> = {
-  // Personality and Behavioral Assessments
-  'disc assessment': {
-    title: 'DISC Assessment',
-    url: 'https://www.discprofile.com/',
+  // Strengths Assessment
+  'strengthsfinder 2.0': {
+    title: 'StrengthsFinder 2.0',
+    url: 'https://www.gallup.com/cliftonstrengths',
     type: 'tool'
   },
-  'mbti assessment': {
-    title: 'Myers-Briggs Type Indicator (MBTI)',
-    url: 'https://www.myersbriggs.org/',
+  'cliftonstrengths': {
+    title: 'StrengthsFinder 2.0',
+    url: 'https://www.gallup.com/cliftonstrengths',
     type: 'tool'
   },
 
-  // Strengths Assessment
-  'strengths finder 2.0': {
-    title: 'StrengthsFinder 2.0',
-    url: 'https://www.gallup.com/cliftonstrengths/en/253715/34-cliftonstrengths-themes.aspx',
+  // Behavioral Assessment
+  'the predictive index': {
+    title: 'The Predictive Index',
+    url: 'https://www.predictiveindex.com/',
+    type: 'tool'
+  },
+  'predictive index': {
+    title: 'The Predictive Index',
+    url: 'https://www.predictiveindex.com/',
     type: 'tool'
   }
 };

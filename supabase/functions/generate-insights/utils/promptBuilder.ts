@@ -1,3 +1,4 @@
+
 interface CategoryBreakdown {
   title: string;
   skillCount: number;
@@ -42,41 +43,53 @@ const buildValidatedLeadersList = (): string => {
   return `
 **VALIDATED INSPIRATIONAL LEADERS - USE ONLY THESE LEADERS:**
 
-**Leadership Development & Inspiration:**
-- Simon Sinek (Start With Why, leadership inspiration)
+**Transformational & Empathetic Leadership:**
+- Satya Nadella (Microsoft transformation, empathetic leadership)
 
-**Vulnerability & Courage Leadership:**
-- Brené Brown (Vulnerability, courage, leadership)
+**Collaborative & Inclusive Leadership:**
+- Mary Barra (Automotive transformation, inclusive culture)
 
-**Executive Coaching & Leadership Transitions:**
-- Marshall Goldsmith (Executive coaching, leadership transitions)
+**Values-Based & Learning-Oriented Leadership:**
+- Marc Benioff (Values-driven business, continuous learning)
 
-**Team Dynamics & Organizational Health:**
-- Patrick Lencioni (Team dynamics, organizational health)
+**Strategic & Empowering Leadership:**
+- Indra Nooyi (Strategic thinking, employee empowerment)
 
-**Leadership Research & Good to Great:**
-- Jim Collins (Good to Great, leadership research)
+**"Founder Mode" & Humble Inquiry Leadership:**
+- Brian Chesky (Scaling organizations, staying connected to mission)
 
-**Situational Leadership:**
-- Ken Blanchard (Situational Leadership)
+**Data-Driven & High-Performance Culture Leadership:**
+- Reed Hastings (Performance culture, data-driven decisions)
 
-**Principle-Centered Leadership:**
-- Stephen Covey (Principle-centered leadership)
+**Servant Leadership & Financial Inclusion:**
+- Thasunda Brown Duckett (Community impact, servant leadership)
 
-**Leadership Development & Influence:**
-- John Maxwell (Leadership development, influence)
+**Sustainable & Mission-Driven Leadership:**
+- Paul Polman (Sustainable business, long-term thinking)
 
-**Emotional Intelligence Leadership:**
-- Daniel Goleman (Emotional Intelligence, leadership)
+**Direct & Crisis Management Leadership:**
+- Jamie Dimon (Crisis leadership, direct communication)
 
-**Servant Leadership & Leadership Principles:**
-- James Kouzes (Servant Leadership, Leadership Challenge)
+**Technical Visionary & Innovation Leadership:**
+- Jensen Huang (Innovation leadership, technical vision)
 
-**Innovation & Change Leadership:**
-- John Kotter (Change management, leadership)
+**Principle-Based & "Why Culture" Leadership:**
+- Andy Jassy (Principle-centered decisions, cultural alignment)
 
-**Strengths-Based Leadership:**
-- Tom Rath (Strengths-based leadership)
+**Transparent, Creative, and Human-Centered:**
+- Stewart Butterfield (Transparent communication, creative leadership)
+
+**Empathetic, Empowering, and Purpose-Driven:**
+- Whitney Wolfe Herd (Purpose-driven innovation, empathetic leadership)
+
+**Tech-Forward, Ethical, and Strategic Transformation:**
+- Arvind Krishna (Ethical technology, transformation leadership)
+
+**Bold, Mission-Driven, Inclusion-Focused:**
+- Reshma Saujani (Bold advocacy, inclusion-focused leadership)
+
+**Global Advocacy, Partnership-Driven, Narrative Empowerment:**
+- Elizabeth Nyamayaro (Global impact, partnership building)
 `;
 };
 
@@ -86,11 +99,10 @@ const buildValidatedResourcesList = (): string => {
 **VALIDATED RESOURCE DATABASE - USE ONLY THESE RESOURCES:**
 
 **Time Management & Productivity:**
-- Eisenhower Matrix
+- The Eisenhower Matrix - Priority Management
 - Eisenhower Decision Matrix Guide
-- The Pomodoro Technique Official Site
+- The Pomodoro Technique
 - Getting Things Done (GTD) Methodology
-- Time Blocking Guide by Cal Newport
 
 **Goal Setting & Planning:**
 - SMART Goals Framework
@@ -98,36 +110,36 @@ const buildValidatedResourcesList = (): string => {
 - OKR Framework Guide
 
 **Communication & Feedback:**
-- SBI Feedback Model by Center for Creative Leadership
+- SBI Feedback Model
 - Radical Candor Framework
-- Nonviolent Communication by Marshall Rosenberg
+- What is Nonviolent Communication
 - Active Listening Techniques
 
 **Decision Making:**
-- Decision Making Frameworks
+- OODA Loop
 - DACI Decision Making Framework
-- RACI Matrix for Decision Making
+- RACI 'Responsibility Assignment Matrix'
 
 **Strategic Thinking:**
 - SWOT Analysis Framework
 - Design Thinking Process by IDEO
-- Scenario Planning for Strategic Thinking
+- Scenario Planning: Step by Step Guide
 
 **Emotional Intelligence:**
 - Emotional Intelligence by Daniel Goleman
-- EQ-i 2.0 Emotional Intelligence Assessment
+- 16 Personalities test (MBTI)
 
 **Trust & Relationship Building:**
 - The Speed of Trust by Stephen Covey
 - The Trust Equation
 
 **Delegation & Empowerment:**
-- Effective Delegation Framework
-- Situational Leadership Model
+- 7 Models for Delegation
+- Situational Leadership: What it is and how to build it
 
 **Performance Management:**
-- Performance Feedback Best Practices
-- Effective One-on-One Meetings
+- Performance management that puts people first
+- Effective One-on-One Meetings (listen)
 
 **Conflict Resolution:**
 - Thomas-Kilmann Conflict Resolution Model
@@ -135,28 +147,40 @@ const buildValidatedResourcesList = (): string => {
 
 **Change Management:**
 - ADKAR Change Management Model
-- Kotter's 8-Step Change Model
+- Kotter's 8-Step Change Process
 - Bridges Transition Model
 - Lewin's 3-Stage Change Model
 
 **Team Development:**
 - Tuckman's Team Development Model
-- Creating Effective Team Charters
-- Psychological Safety in Teams
+- Creating A Team Charter
+- Ways of Working & Guiding Principles (watch)
+- A Guide to Harnessing Psychological Safety
+
+**Team Communication:**
+- Why It's Necessary to Improve Team Communication
+- 3 Easy Steps to Staff Meetings That Don't Suck
 
 **Learning & Development:**
 - 70-20-10 Learning and Development Model
-- Growth Mindset by Carol Dweck
+- What is a Growth Mindset
 - Deliberate Practice Framework
 
 **Coaching & Mentoring:**
 - GROW Coaching Model
-- Effective Coaching Conversations
+- How to have a Coaching Conversation
+
+**Career Development:**
+- How to create a career development plan in 5 steps
+- Why It's ALWAYS A Good Idea To Build Your Personal Brand
+- Strategic Networking for Leaders
+
+**Problem Solving:**
+- The 5 Whys Technique (watch)
 
 **Assessment Tools:**
-- DISC Assessment
-- Myers-Briggs Type Indicator (MBTI)
 - StrengthsFinder 2.0
+- The Predictive Index
 
 **Leadership Books:**
 - Emotional Intelligence 2.0 by Travis Bradberry
@@ -166,13 +190,21 @@ const buildValidatedResourcesList = (): string => {
 - Dare to Lead by Brené Brown
 - The Leadership Challenge by James Kouzes
 - Primal Leadership by Daniel Goleman
-
-**Training & Courses:**
-- Crucial Conversations Training
-- Crucial Accountability Training
-- Emotional Intelligence Training
-- Harvard Business Review Leadership Courses
-- Center for Creative Leadership
+- Atomic Habits by James Clear
+- Getting Things Done by David Allen
+- Reinventing Organisations by Frederic Laloux
+- The Pyramid Principle by Barbara Minto
+- The Captain Class by Sam Walker
+- Leading Change by John Kotter
+- The Power of Habit by Charles Duhigg
+- Build, Excite, Equip by Nicola Graham
+- The 17 Indisputable Laws of Teamwork by John Maxwell
+- Thinking Fast and Slow by Daniel Kahneman
+- Getting To Yes by Roger Fisher and William Ury
+- Playing To Win by AG Lafley & Roger Martin
+- Human Skills by Elizabeth Nyamayaro
+- Radical Candor by Kim Scott
+- Nonviolent Communication by Marshall B. Rosenberg
 `;
 };
 

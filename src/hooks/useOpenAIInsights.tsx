@@ -14,216 +14,131 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
   const [insights, setInsights] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const hasCheckedExistingRef = useRef(false);
+  
+  // Use refs to track operation state and prevent duplicates
+  const isInitializedRef = useRef(false);
   const isGeneratingRef = useRef(false);
-  const insightsLoadedRef = useRef(false);
-  const [forceRegenerate, setForceRegenerate] = useState(false);
-  const [regenerateTrigger, setRegenerateTrigger] = useState(0);
-  const errorOccurredRef = useRef(false);
-
+  const hasLoadedInsightsRef = useRef(false);
+  const lastAssessmentIdRef = useRef<string | undefined>(undefined);
+  
   // Special test assessment ID that allows regeneration
   const TEST_ASSESSMENT_ID = 'f74470bc-3c48-4980-bc5f-17386a724d37';
   const isTestAssessment = assessmentId === TEST_ASSESSMENT_ID;
 
-  console.log('🔍 USEOPEN_AI_INSIGHTS HOOK INIT:', {
+  console.log('🔍 HOOK INIT:', {
     assessmentId,
     isTestAssessment,
-    forceRegenerate,
-    regenerateTrigger,
     categoriesLength: categories?.length || 0,
-    hasExistingInsights: !!insights,
+    hasInsights: !!insights,
     isLoading,
-    error: !!error
+    hasError: !!error,
+    isInitialized: isInitializedRef.current,
+    isGenerating: isGeneratingRef.current,
+    hasLoadedInsights: hasLoadedInsightsRef.current
   });
 
-  // CRITICAL SAFEGUARD: Check for existing insights first and NEVER regenerate if they exist (except for test assessment)
+  // Reset state when assessment ID changes
   useEffect(() => {
-    console.log('🔍 EFFECT TRIGGERED:', {
-      assessmentId,
-      regenerateTrigger,
-      forceRegenerate,
-      isTestAssessment,
-      categoriesLength: categories?.length || 0,
-      hasCheckedExistingRef: hasCheckedExistingRef.current,
-      isGeneratingRef: isGeneratingRef.current,
-      insightsLoadedRef: insightsLoadedRef.current,
-      errorOccurred: errorOccurredRef.current,
-      isLoading,
-      error: !!error
-    });
-
-    const checkForExistingInsights = async () => {
-      // Only proceed if we have valid data
-      if (!categories || categories.length === 0) {
-        console.log('🔍 NO CATEGORIES - Exiting early');
-        return;
-      }
-
-      // CRITICAL FIX: Don't retry if we just had an error unless explicitly forced
-      if (errorOccurredRef.current && !forceRegenerate) {
-        console.log('🔍 ERROR OCCURRED PREVIOUSLY - Skipping to prevent infinite loop');
-        return;
-      }
-
-      // CRITICAL FIX: For test assessment with force regenerate, bypass EVERYTHING and generate new insights
-      if (isTestAssessment && forceRegenerate) {
-        console.log('🔍 TEST ASSESSMENT FORCE REGENERATE - Bypassing all checks');
-        console.log('🔍 CLEARING ALL STATE FLAGS AND INSIGHTS');
-        
-        // Clear current insights and reset all flags
-        setInsights(null);
-        setError(null);
-        hasCheckedExistingRef.current = false;
-        isGeneratingRef.current = false;
-        insightsLoadedRef.current = false;
-        errorOccurredRef.current = false;
-        
-        console.log('🔍 CALLING GENERATE NEW INSIGHTS WITH FORCE=TRUE');
-        await generateNewInsights(true);
-        
-        // IMPORTANT: Reset forceRegenerate flag AFTER generation is complete
-        console.log('🔍 RESETTING FORCE REGENERATE FLAG TO FALSE');
-        setForceRegenerate(false);
-        return;
-      }
+    if (lastAssessmentIdRef.current !== assessmentId) {
+      console.log('🔍 ASSESSMENT ID CHANGED - RESETTING STATE:', {
+        from: lastAssessmentIdRef.current,
+        to: assessmentId
+      });
       
-      // CRITICAL PROTECTION: If we already have insights loaded and it's not a test assessment, NEVER check again
-      if (insightsLoadedRef.current && !isTestAssessment) {
-        console.log('🔍 INSIGHTS ALREADY LOADED (NON-TEST) - Preventing further operations');
-        return;
-      }
-      
-      // PROTECTION: Prevent multiple simultaneous checks (except for test assessment regeneration)
-      if ((hasCheckedExistingRef.current || isGeneratingRef.current) && !forceRegenerate) {
-        console.log('🔍 ALREADY CHECKED OR GENERATING - Preventing duplicate operation');
+      setInsights(null);
+      setError(null);
+      setIsLoading(false);
+      isInitializedRef.current = false;
+      isGeneratingRef.current = false;
+      hasLoadedInsightsRef.current = false;
+      lastAssessmentIdRef.current = assessmentId;
+    }
+  }, [assessmentId]);
+
+  // Main effect for loading insights
+  useEffect(() => {
+    const loadInsights = async () => {
+      // Only proceed if we have valid data and haven't initialized yet
+      if (!categories || categories.length === 0 || !assessmentId || assessmentId.trim() === '') {
+        console.log('🔍 MISSING REQUIRED DATA - Skipping load');
         return;
       }
 
-      hasCheckedExistingRef.current = true;
-      console.log('🔍 SET hasCheckedExistingRef TO TRUE');
+      // Prevent duplicate initialization
+      if (isInitializedRef.current) {
+        console.log('🔍 ALREADY INITIALIZED - Skipping duplicate load');
+        return;
+      }
+
+      // Prevent simultaneous operations
+      if (isGeneratingRef.current) {
+        console.log('🔍 OPERATION IN PROGRESS - Skipping duplicate load');
+        return;
+      }
+
+      console.log('🔍 STARTING INSIGHTS LOAD FOR:', assessmentId);
+      isInitializedRef.current = true;
 
       try {
-        if (assessmentId && assessmentId.trim() !== '') {
-          console.log('🔍 CHECKING DATABASE FOR EXISTING INSIGHTS:', assessmentId);
+        // First check for existing insights in database
+        console.log('🔍 CHECKING DATABASE FOR EXISTING INSIGHTS');
+        const { data: assessment, error: dbError } = await supabase
+          .from('assessment_results')
+          .select('ai_insights')
+          .eq('id', assessmentId)
+          .single();
+
+        if (dbError) {
+          console.error('🔍 DATABASE ERROR:', dbError);
+          // Continue to generate new insights if we can't check existing ones
+        } else if (assessment && 
+                   assessment.ai_insights && 
+                   assessment.ai_insights.trim() !== '' &&
+                   assessment.ai_insights.trim() !== 'null' &&
+                   assessment.ai_insights.trim() !== 'undefined') {
           
-          // For saved assessments, ALWAYS check database first with enhanced validation
-          const { data: assessment, error } = await supabase
-            .from('assessment_results')
-            .select('ai_insights')
-            .eq('id', assessmentId)
-            .single();
-
-          console.log('🔍 DATABASE QUERY RESULT:', { assessment, error });
-
-          if (error) {
-            console.error('🔍 ERROR CHECKING FOR EXISTING INSIGHTS:', error);
-            // Continue to generate new insights if we can't check existing ones
-          } else if (assessment && 
-                     assessment.ai_insights && 
-                     assessment.ai_insights.trim() !== '' &&
-                     assessment.ai_insights.trim() !== 'null' &&
-                     assessment.ai_insights.trim() !== 'undefined') {
-            
-            console.log('🔍 FOUND EXISTING INSIGHTS:', {
-              insightsLength: assessment.ai_insights.length,
-              isTestAssessment,
-              willUseExisting: true
-            });
-            
-            setInsights(assessment.ai_insights);
-            if (!isTestAssessment) {
-              insightsLoadedRef.current = true; // Mark as loaded to prevent future operations for non-test assessments
-              console.log('🔍 MARKED INSIGHTS AS PERMANENTLY LOADED (NON-TEST)');
-            }
-            return; // CRITICAL: Exit early - don't generate new insights
-          } else {
-            console.log('🔍 NO VALID EXISTING INSIGHTS FOUND');
-          }
+          console.log('🔍 FOUND EXISTING INSIGHTS - LOADING FROM DATABASE');
+          setInsights(assessment.ai_insights);
+          hasLoadedInsightsRef.current = true;
+          return; // Exit early - we have existing insights
         }
 
-        // Only generate new insights if none exist and we're not already generating
-        if (!isGeneratingRef.current && (!insightsLoadedRef.current || isTestAssessment)) {
-          console.log('🔍 GENERATING NEW INSIGHTS:', {
-            isGeneratingRef: isGeneratingRef.current,
-            insightsLoadedRef: insightsLoadedRef.current,
-            isTestAssessment
-          });
-          await generateNewInsights();
-        } else {
-          console.log('🔍 SKIPPING INSIGHTS GENERATION:', {
-            isGeneratingRef: isGeneratingRef.current,
-            insightsLoadedRef: insightsLoadedRef.current,
-            isTestAssessment
-          });
-        }
+        console.log('🔍 NO EXISTING INSIGHTS FOUND - GENERATING NEW');
+        await generateNewInsights();
         
       } catch (err) {
-        console.error('🔍 ERROR IN checkForExistingInsights:', err);
-        errorOccurredRef.current = true;
-        setError(err instanceof Error ? err.message : 'Failed to check for existing insights');
-        setIsLoading(false); // CRITICAL: Ensure loading is stopped on error
+        console.error('🔍 ERROR IN LOAD INSIGHTS:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load insights');
+        setIsLoading(false);
       }
     };
 
-    checkForExistingInsights();
-  }, [assessmentId, regenerateTrigger, forceRegenerate]);
+    loadInsights();
+  }, [assessmentId, categories, demographics, averageGap]);
 
-  const generateNewInsights = async (skipAllChecks = false) => {
-    console.log('🔍 GENERATE NEW INSIGHTS CALLED:', {
-      skipAllChecks,
-      isGeneratingRef: isGeneratingRef.current,
-      insightsLoadedRef: insightsLoadedRef.current,
-      isTestAssessment,
-      categoriesLength: categories?.length || 0,
-      currentlyLoading: isLoading
-    });
-
-    // PROTECTION: Prevent simultaneous generation
-    if (isGeneratingRef.current && !skipAllChecks) {
-      console.log('🔍 ALREADY GENERATING - Preventing duplicate generation');
+  const generateNewInsights = async () => {
+    // Prevent simultaneous generation
+    if (isGeneratingRef.current) {
+      console.log('🔍 GENERATION ALREADY IN PROGRESS - Skipping');
       return;
     }
 
-    // PROTECTION: Never generate if insights are already loaded (except for test assessment with force regenerate)
-    if (insightsLoadedRef.current && !isTestAssessment && !skipAllChecks) {
-      console.log('🔍 INSIGHTS ALREADY LOADED (NON-TEST) - Preventing regeneration');
-      return;
-    }
-
-    if (!categories || categories.length === 0) {
-      console.log('🔍 NO CATEGORIES FOR GENERATION - Exiting');
-      return;
-    }
-
-    console.log('🔍 STARTING INSIGHT GENERATION:', {
-      isTestAssessment,
-      skipAllChecks,
-      assessmentId
-    });
+    console.log('🔍 STARTING NEW INSIGHTS GENERATION');
     
-    // CRITICAL: Set generation flag and loading state at the start
+    // Set operation flags and loading state
     isGeneratingRef.current = true;
     setIsLoading(true);
     setError(null);
-    errorOccurredRef.current = false;
 
     try {
-      const forceRegenerateFlag = skipAllChecks || (isTestAssessment && forceRegenerate);
-      console.log('🔍 CALLING SUPABASE FUNCTION WITH:', {
-        categoriesLength: categories.length,
-        demographicsKeys: Object.keys(demographics),
-        averageGap,
-        assessmentId,
-        forceRegenerate: forceRegenerateFlag
-      });
-      
+      console.log('🔍 CALLING SUPABASE FUNCTION');
       const { data, error: functionError } = await supabase.functions.invoke('generate-insights', {
         body: {
           categories,
           demographics,
           averageGap,
           assessmentId,
-          forceRegenerate: forceRegenerateFlag
+          forceRegenerate: isTestAssessment // Only force regenerate for test assessment
         }
       });
 
@@ -231,83 +146,53 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
 
       if (functionError) {
         console.error('🔍 FUNCTION ERROR:', functionError);
-        errorOccurredRef.current = true;
         throw new Error(functionError.message);
       }
 
       if (data && data.insights) {
-        console.log('🔍 RECEIVED NEW INSIGHTS:', {
-          insightsLength: data.insights.length,
-          isTestAssessment
-        });
-        
+        console.log('🔍 SUCCESS - RECEIVED NEW INSIGHTS');
         setInsights(data.insights);
-        // Only mark as permanently loaded for non-test assessments
-        if (!isTestAssessment) {
-          insightsLoadedRef.current = true;
-          console.log('🔍 MARKED AS PERMANENTLY LOADED (NON-TEST)');
-        } else {
-          console.log('🔍 TEST ASSESSMENT - Not marking as permanently loaded');
-        }
+        hasLoadedInsightsRef.current = true;
+        setIsLoading(false);
       } else {
         console.error('🔍 NO INSIGHTS IN RESPONSE');
-        errorOccurredRef.current = true;
         throw new Error('No insights received from OpenAI');
       }
     } catch (err) {
       console.error('🔍 ERROR GENERATING INSIGHTS:', err);
-      errorOccurredRef.current = true;
       setError(err instanceof Error ? err.message : 'Failed to generate insights');
-    } finally {
-      // CRITICAL: Always stop loading and reset generation flag
       setIsLoading(false);
+    } finally {
+      // Always reset generation flag
       isGeneratingRef.current = false;
-      console.log('🔍 GENERATION COMPLETE - Reset loading and generation flags');
+      console.log('🔍 GENERATION COMPLETE - Reset flags');
     }
+  };
+
+  const regenerateInsights = () => {
+    console.log('🔍 MANUAL REGENERATE TRIGGERED');
+    
+    // Clear any previous error state
+    setError(null);
+    
+    // For test assessment, clear existing insights to force regeneration
+    if (isTestAssessment) {
+      console.log('🔍 TEST ASSESSMENT - Clearing existing insights for regeneration');
+      setInsights(null);
+      hasLoadedInsightsRef.current = false;
+    }
+    
+    // Reset initialization flag to allow regeneration
+    isInitializedRef.current = false;
+    
+    // Start generation
+    generateNewInsights();
   };
 
   return {
     insights,
     isLoading,
     error,
-    // Provide a manual regenerate function with special handling for test assessment
-    regenerateInsights: () => {
-      console.log('🔍 🚨 REGENERATE INSIGHTS BUTTON HANDLER CALLED - FIRST LINE OF FUNCTION!');
-      console.log('🔍 REGENERATE INSIGHTS BUTTON CLICKED:', {
-        isTestAssessment,
-        assessmentId,
-        currentInsights: !!insights,
-        currentForceRegenerate: forceRegenerate,
-        errorOccurred: errorOccurredRef.current,
-        currentlyLoading: isLoading
-      });
-      
-      // Clear previous error state when manually triggering regeneration
-      if (errorOccurredRef.current) {
-        console.log('🔍 CLEARING PREVIOUS ERROR STATE FOR MANUAL RETRY');
-        setError(null);
-        errorOccurredRef.current = false;
-      }
-      
-      if (isTestAssessment) {
-        console.log('🔍 TEST ASSESSMENT - Setting forceRegenerate=true');
-        // CRITICAL FIX: Set force regenerate flag to trigger immediate regeneration
-        setForceRegenerate(true);
-        console.log('🔍 FORCE REGENERATE STATE SET TO TRUE');
-        
-        setRegenerateTrigger(prev => {
-          const newValue = prev + 1;
-          console.log('🔍 REGENERATE TRIGGER INCREMENTED:', { from: prev, to: newValue });
-          return newValue;
-        });
-      } else {
-        console.log('🔍 NON-TEST ASSESSMENT - Manual regeneration for new assessments');
-        // Reset the loaded flag only for manual regeneration of non-test assessments
-        insightsLoadedRef.current = false;
-        hasCheckedExistingRef.current = false;
-        errorOccurredRef.current = false;
-        generateNewInsights();
-      }
-    }
+    regenerateInsights
   };
 };

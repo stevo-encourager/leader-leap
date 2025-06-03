@@ -1,4 +1,3 @@
-
 interface CategoryBreakdown {
   title: string;
   skillCount: number;
@@ -380,10 +379,11 @@ ${validatedSkillsList}
 - You MUST ONLY use skills from the validated skills database above
 - NEVER create, invent, or reference skills not explicitly listed in the validated skills database
 - In the SUMMARY ONLY: Reference skill names WITHOUT any numerical values (no gaps, no scores, no decimals, no numbers in parentheses)
-- In INSIGHTS sections: Include specific skill names and their gap scores for targeted recommendations
+- In INSIGHTS sections: Include specific skill names but DO NOT mention their gap scores or numerical values - focus only on development suggestions and guidance
 - Tailor at least one suggestion or resource recommendation per priority area to address the specific skills with the largest gaps
 - Use phrases like "particularly in areas such as [specific skill name]" in the summary
-- In insights: Use "particularly in [specific skill name] (gap: X.X)" or "especially focusing on [skill name] where you have a gap of X.X"
+- In insights: Use "particularly in [specific skill name]" or "especially focusing on [skill name]" WITHOUT mentioning gap values
+- CRITICAL: Never mention numerical gap scores, current ratings, desired ratings, or any numerical values in the insight text
 
 **CRITICAL SUMMARY SKILL NAME VALIDATION:**
 - NEVER include numbers, gap scores, current/desired ratings, or any parentheses after skill names in the summary
@@ -404,7 +404,8 @@ Instead of: "Improve your decision making competency, particularly in Strategic 
 Write: "Improve your decision making competency, particularly in areas such as Critical Thinking and Problem Solving"
 
 **Example Integration for Insights:**
-Use: "Implement the OODA Loop to enhance your decision-making process, particularly in Critical Thinking (gap: 4.0) and Problem Solving (gap: 3.5)"
+Use: "Implement the OODA Loop to enhance your decision-making process, particularly in Critical Thinking and Problem Solving"
+NOT: "Implement the OODA Loop to enhance your decision-making process, particularly in Critical Thinking (gap: 4.0) and Problem Solving (gap: 3.5)"
 
 ### ENCOURAGER COACHING ETHOS AND APPROACH
 
@@ -556,13 +557,14 @@ ${validatedLeadersList}
 **Insight Specificity Requirements:**
 - Each insight must include at least ONE specific technique, framework, or methodology
 - Reference concrete examples relevant to user's industry/role when possible
-- MUST include specific skill names and gap scores when discussing competencies (ONLY validated skills)
+- MUST include specific skill names when discussing competencies (ONLY validated skills) but WITHOUT mentioning gap scores or numerical values
 - Use encouraging, growth-oriented language throughout: "enhance," "develop," "strengthen," "build upon"
 - Frame all recommendations as opportunities for positive growth and impact
+- CRITICAL: Focus on development suggestions and guidance, not on reporting numerical gaps
 
 **Skill-Level Integration Examples (ONLY using validated skills):**
-✅ "Implementing the SBI Feedback Model will enhance your communication with your team, particularly by strengthening Active Listening (gap: 3.5) and Verbal Communication (gap: 4.0), which will help you become an even more effective communicator"
-✅ "Applying the Eisenhower Matrix will help you optimize your time management approach, especially by developing Time Management (gap: 3.8) and Prioritization (gap: 4.2), allowing you to have greater impact in your leadership role"
+✅ "Implementing the SBI Feedback Model will enhance your communication with your team, particularly by strengthening Active Listening and Verbal Communication, which will help you become an even more effective communicator"
+✅ "Applying the Eisenhower Matrix will help you optimize your time management approach, especially by developing Time Management and Prioritization, allowing you to have greater impact in your leadership role"
 
 **Encouraging Language Examples:**
 ✅ "Your natural ability in [competency] shows you have the foundation to become an exceptional leader who..."
@@ -632,7 +634,7 @@ You MUST output ONLY a valid JSON object with this EXACT structure:
 - **priority_areas**: An array with exactly 3 objects, each for a Top 3 Priority Development Area. Each object must contain:
   - \`competency\`: The exact competency name from assessment data
   - \`gap\`: The numerical gap score
-  - \`insights\`: Array of exactly 3 actionable, research-backed insights that use encouraging language, avoid generic statements, include specific methodologies/frameworks, integrate role/industry/experience context, AND reference specific individual skills by name with their gap scores (ONLY validated skills). MUST include "why" explanations for the importance of developing each competency for leadership effectiveness.
+  - \`insights\`: Array of exactly 3 actionable, research-backed insights that use encouraging language, avoid generic statements, include specific methodologies/frameworks, integrate role/industry/experience context, AND reference specific individual skills by name WITHOUT mentioning their gap scores or numerical values (ONLY validated skills). MUST include "why" explanations for the importance of developing each competency for leadership effectiveness. Focus on development suggestions and guidance, not numerical reporting.
   - \`resources\`: Array of exactly 3 resource names from the validated database, using EXACT titles as specified
 
 - **key_strengths**: An array with at least 2 objects, each for a key competency to leverage. Each object must contain:
@@ -659,8 +661,8 @@ Before generating the JSON response, verify:
 □ Each competency section has exactly 3 insights/advice items
 □ Role-specific and industry-specific context is woven throughout
 □ **CRITICAL**: Summary references specific individual skills by NAME ONLY (NO numerical values, NO gaps, NO scores, NO decimals, NO parentheses)
-□ **CRITICAL**: Insights reference specific individual skills by name and gap scores
-□ **CRITICAL**: At least one insight per priority area addresses specific skills with largest gaps
+□ **CRITICAL**: Insights reference specific individual skills by name WITHOUT mentioning gap scores or numerical values
+□ **CRITICAL**: At least one insight per priority area addresses specific skills with largest gaps by name only
 □ **CRITICAL**: Summary uses encouraging, personalized language with role/industry/experience context
 □ **CRITICAL**: Individual skill ratings are whole numbers (no decimals)
 □ **CRITICAL**: ALL skill references use ONLY validated skills from the skills database
@@ -681,14 +683,14 @@ Before generating the JSON response, verify:
 - NEVER write generic, obvious statements - every insight must provide genuine value and actionable advice.
 - Use only suggestive language for assessment tools: "consider using a tool such as [tool name]" rather than direct recommendations.
 - **PERSONALIZATION REQUIREMENT**: Use ALL THREE demographic dimensions (role, industry, experience) to tailor insights, examples, and leader selection for maximum relevance to the user's specific context.
-- **SKILL-LEVEL REQUIREMENT**: Reference specific individual skills by name only (NO numbers, NO gaps, NO scores) in summary, and by name with gap scores in priority area insights (ONLY validated skills from the database)
+- **SKILL-LEVEL REQUIREMENT**: Reference specific individual skills by name only (NO numbers, NO gaps, NO scores) in summary, and by name only (NO numerical values) in priority area insights (ONLY validated skills from the database)
 - **VALIDATED RESOURCE REQUIREMENT**: Every resource in the resources arrays must be an exact match from the validated database above
 - **VALIDATED LEADER REQUIREMENT**: Every leader in the summary must be an exact match from the validated leaders database above. If no suitable validated leader exists for the context, omit the leader reference entirely rather than using an unvalidated leader.
 - **VALIDATED SKILL REQUIREMENT**: Every skill referenced must be an exact match from the validated skills database above. Never create, invent, or reference skills outside this validated list.
 - **TERMINOLOGY REQUIREMENT**: NEVER use "strength" as synonym for "competency" - always use "competencies" or "leadership competencies"
 - **ENCOURAGER COACHING REQUIREMENT**: All content must reflect Encourager Coaching's positive psychology approach, maximizing natural ability, and helping users become their best leadership version through encouraging, supportive language and framing.
 
-Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above while being specifically tailored to the user's role, industry, experience level, AND individual skill gaps. Remember: ONLY use resources, leaders, and skills from the validated databases with exact title matching, reference skills by name only in summary (NO numbers), ALWAYS reference specific skills by name with their gap scores in insights sections (ONLY validated skills), use proper hyperlink formatting for leaders, maintain consistent terminology (competencies, not strengths), and embody Encourager Coaching's philosophy of positive psychology, encouragement, and helping people maximize their natural abilities to become the best version of themselves.
+Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above while being specifically tailored to the user's role, industry, experience level, AND individual skill gaps by name only (without numerical values). Remember: ONLY use resources, leaders, and skills from the validated databases with exact title matching, reference skills by name only in summary (NO numbers), reference specific skills by name only in insights sections (NO numerical values - focus on development suggestions), use proper hyperlink formatting for leaders, maintain consistent terminology (competencies, not strengths), and embody Encourager Coaching's philosophy of positive psychology, encouragement, and helping people maximize their natural abilities to become the best version of themselves.
 
 `;
 

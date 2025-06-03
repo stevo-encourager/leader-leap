@@ -273,7 +273,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({
               </div>
               <div className="space-y-4">
                 <div>
-                  <h5 className="text-slate-700 mb-3 font-montserrat">Key insights:</h5>
+                  <h5 className="text-slate-700 mb-3 font-montserrat">Suggestions:</h5>
                   <ul className="space-y-3">
                     {area.insights && Array.isArray(area.insights) && area.insights.map((insight, insightIndex) => (
                       <li key={insightIndex} className="flex items-start gap-3">

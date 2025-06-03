@@ -84,6 +84,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       
       // Set operation in progress BEFORE any async operations
       isOperationInProgressRef.current = true;
+      console.log('🔍 ⏳ LOADING STATE: Setting loading to TRUE - Starting operation');
       setIsLoading(true);
       setError(null);
 
@@ -105,11 +106,16 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
                    assessment.ai_insights.trim() !== 'null' &&
                    assessment.ai_insights.trim() !== 'undefined') {
           
-          console.log('🔍 FOUND EXISTING INSIGHTS - LOADING FROM DATABASE');
+          console.log('🔍 ✅ SUCCESS: Found existing insights - Setting results and stopping loading');
+          console.log('🔍 📄 INSIGHTS DATA:', assessment.ai_insights.substring(0, 200) + '...');
+          
           setInsights(assessment.ai_insights);
+          console.log('🔍 ⏳ LOADING STATE: Setting loading to FALSE - Found existing insights');
           setIsLoading(false);
           hasLoadedDataRef.current = true;
           isOperationInProgressRef.current = false;
+          
+          console.log('🔍 ✅ SUCCESS COMPLETE: Insights displayed, loading stopped');
           return; // Exit early - we have existing insights
         }
 
@@ -117,8 +123,9 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
         await generateNewInsights();
         
       } catch (err) {
-        console.error('🔍 ERROR IN LOAD OPERATION:', err);
+        console.error('🔍 ❌ ERROR IN LOAD OPERATION:', err);
         setError(err instanceof Error ? err.message : 'Failed to load insights');
+        console.log('🔍 ⏳ LOADING STATE: Setting loading to FALSE - Error occurred');
         setIsLoading(false);
         isOperationInProgressRef.current = false;
       }
@@ -148,23 +155,29 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       console.log('🔍 SUPABASE FUNCTION RESPONSE:', { data, functionError });
 
       if (functionError) {
-        console.error('🔍 FUNCTION ERROR:', functionError);
+        console.error('🔍 ❌ FUNCTION ERROR:', functionError);
         throw new Error(functionError.message);
       }
 
       if (data && data.insights) {
-        console.log('🔍 SUCCESS - RECEIVED NEW INSIGHTS');
+        console.log('🔍 ✅ SUCCESS: Received new insights from API');
+        console.log('🔍 📄 NEW INSIGHTS DATA:', data.insights.substring(0, 200) + '...');
+        
         setInsights(data.insights);
+        console.log('🔍 ⏳ LOADING STATE: Setting loading to FALSE - New insights received');
         setIsLoading(false);
         hasLoadedDataRef.current = true;
         isOperationInProgressRef.current = false;
+        
+        console.log('🔍 ✅ SUCCESS COMPLETE: New insights displayed, loading stopped');
       } else {
-        console.error('🔍 NO INSIGHTS IN RESPONSE');
+        console.error('🔍 ❌ NO INSIGHTS IN RESPONSE');
         throw new Error('No insights received from OpenAI');
       }
     } catch (err) {
-      console.error('🔍 ERROR GENERATING INSIGHTS:', err);
+      console.error('🔍 ❌ ERROR GENERATING INSIGHTS:', err);
       setError(err instanceof Error ? err.message : 'Failed to generate insights');
+      console.log('🔍 ⏳ LOADING STATE: Setting loading to FALSE - Generation error');
       setIsLoading(false);
       isOperationInProgressRef.current = false;
       // Do NOT set hasLoadedDataRef to true on error - allow retry
@@ -172,7 +185,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
   };
 
   const regenerateInsights = () => {
-    console.log('🔍 MANUAL REGENERATE TRIGGERED');
+    console.log('🔍 🔄 MANUAL REGENERATE TRIGGERED');
     
     // Prevent multiple regenerations
     if (isOperationInProgressRef.current) {
@@ -181,6 +194,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     }
 
     // Clear previous state
+    console.log('🔍 🔄 REGENERATE: Clearing previous error and insights');
     setError(null);
     setInsights(null);
     
@@ -190,6 +204,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     // Start new generation
     if (categories && categories.length > 0 && assessmentId) {
       isOperationInProgressRef.current = true;
+      console.log('🔍 ⏳ LOADING STATE: Setting loading to TRUE - Manual regeneration started');
       setIsLoading(true);
       generateNewInsights();
     }

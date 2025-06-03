@@ -259,21 +259,20 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     }
 
     debugLog('🔄 REGENERATE: Starting manual regeneration');
-    debugLog('🔄 REGENERATE: Current state before regeneration:', state);
     
-    // Clear existing insights and set loading state
+    // Clear existing insights and set loading state IMMEDIATELY
     updateState({
       insights: null,
       error: null,
       isLoading: true,
       isInitialized: false
-    }, 'Manual regeneration started');
+    }, 'Manual regeneration started - clearing old state');
     
     // Reset flags to allow new generation
     initializationCompleteRef.current = false;
     isOperationInProgressRef.current = true;
     
-    debugLog('🔄 REGENERATE: State cleared, starting new generation');
+    debugLog('🔄 REGENERATE: State cleared, calling generateNewInsights');
     
     // Start new generation
     try {
@@ -290,7 +289,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       isOperationInProgressRef.current = false;
       initializationCompleteRef.current = true;
     }
-  }, [categories, demographics, averageGap, assessmentId, isTestAssessment, updateState, state]);
+  }, [categories, demographics, averageGap, assessmentId, isTestAssessment, updateState]);
 
   return {
     insights: state.insights,

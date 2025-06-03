@@ -25,12 +25,21 @@ serve(async (req) => {
     const { openAIApiKey, supabaseUrl, supabaseServiceKey } = validateEnvironmentVariables();
     console.log('Environment variables validated successfully');
 
-    const requestBody = await req.json();
+    let requestBody: any;
+    try {
+      requestBody = await req.json();
+    } catch (e) {
+      return new Response(JSON.stringify({ error: "Invalid JSON in request body" }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     console.log('Request body received:', JSON.stringify(requestBody, null, 2));
 
     const { categories, demographics, averageGap, assessmentId } = requestBody;
 
-    // Validate required inputs
+    // Validate required inputs using Deno-compatible pattern
     if (!categories || !Array.isArray(categories) || categories.length === 0) {
       console.error('Missing or invalid categories in request body');
       return new Response(JSON.stringify({ 
@@ -51,10 +60,17 @@ serve(async (req) => {
       });
     }
 
-    if (!assessmentId || typeof assessmentId !== 'string' || assessmentId.trim() === '') {
-      console.error('Missing or invalid assessmentId in request body');
+    if (!assessmentId) {
+      return new Response(JSON.stringify({ error: "Missing assessmentId in request body" }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (typeof assessmentId !== 'string' || assessmentId.trim() === '') {
+      console.error('Invalid assessmentId in request body');
       return new Response(JSON.stringify({ 
-        error: "Missing or invalid 'assessmentId' string in request body. Assessment ID is required for insight generation." 
+        error: "Invalid 'assessmentId' in request body. Assessment ID must be a non-empty string." 
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

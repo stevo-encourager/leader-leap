@@ -18,8 +18,8 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
   // Use refs to prevent effect re-triggers and track state
   const currentAssessmentIdRef = useRef<string | undefined>(undefined);
   const isOperationInProgressRef = useRef(false);
-  const hasLoadedDataRef = useRef(false);
-  const hasErroredRef = useRef(false); // NEW: Track if we've errored to prevent retries
+  const hasSuccessfullyLoadedRef = useRef(false);
+  const hasErroredRef = useRef(false);
   
   // Special test assessment ID that allows regeneration
   const TEST_ASSESSMENT_ID = 'f74470bc-3c48-4980-bc5f-17386a724d37';
@@ -44,7 +44,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     hasError: !!error,
     currentAssessmentId: currentAssessmentIdRef.current,
     isOperationInProgress: isOperationInProgressRef.current,
-    hasLoadedData: hasLoadedDataRef.current,
+    hasSuccessfullyLoaded: hasSuccessfullyLoadedRef.current,
     hasErrored: hasErroredRef.current
   });
 
@@ -57,7 +57,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     });
 
     if (currentAssessmentIdRef.current !== assessmentId) {
-      debugLog('🔄 RESETTING STATE - Assessment ID changed');
+      debugLog('🔄 STATE RESET: Assessment ID changed, clearing all state');
       
       // Reset all state
       setInsights(null);
@@ -66,15 +66,15 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       
       // Reset refs
       isOperationInProgressRef.current = false;
-      hasLoadedDataRef.current = false;
-      hasErroredRef.current = false; // Reset error tracking
+      hasSuccessfullyLoadedRef.current = false;
+      hasErroredRef.current = false;
       currentAssessmentIdRef.current = assessmentId;
       
       debugLog('✅ STATE RESET COMPLETE');
     }
   }, [assessmentId]);
 
-  // Main data loading effect - only runs once per assessment ID
+  // Main data loading effect - only runs once per assessment ID unless manually triggered
   useEffect(() => {
     const loadInsights = async () => {
       // Guard: Only proceed if we have valid data
@@ -89,13 +89,13 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
         return;
       }
 
-      // Guard: Skip if we already loaded data for this assessment
-      if (hasLoadedDataRef.current && currentAssessmentIdRef.current === assessmentId) {
-        debugLog('❌ DATA ALREADY LOADED - Skipping duplicate load');
+      // Guard: Skip if we already successfully loaded data for this assessment
+      if (hasSuccessfullyLoadedRef.current && currentAssessmentIdRef.current === assessmentId) {
+        debugLog('❌ ALREADY SUCCESSFULLY LOADED - Skipping duplicate load');
         return;
       }
 
-      // NEW Guard: Skip if we already errored for this assessment (prevent auto-retry)
+      // Guard: Skip if we already errored for this assessment (prevent auto-retry)
       if (hasErroredRef.current && currentAssessmentIdRef.current === assessmentId) {
         debugLog('❌ ALREADY ERRORED - Skipping auto-retry (manual regeneration required)');
         return;
@@ -133,10 +133,10 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
           setInsights(assessment.ai_insights);
           debugLog('⏳ LOADING STATE TRANSITION: TRUE → FALSE (Found existing insights)');
           setIsLoading(false);
-          hasLoadedDataRef.current = true;
+          hasSuccessfullyLoadedRef.current = true;
           isOperationInProgressRef.current = false;
           
-          debugLog('✅ SUCCESS COMPLETE: Insights displayed, loading stopped');
+          debugLog('✅ SUCCESS COMPLETE: Insights displayed, loading stopped, marked as successfully loaded');
           return; // Exit early - we have existing insights
         }
 
@@ -149,13 +149,13 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
         debugLog('⏳ LOADING STATE TRANSITION: TRUE → FALSE (Error occurred)');
         setIsLoading(false);
         isOperationInProgressRef.current = false;
-        hasErroredRef.current = true; // Mark as errored to prevent auto-retry
+        hasErroredRef.current = true;
         debugLog('🛑 ERROR STATE STABLE: No auto-retry will occur');
       }
     };
 
-    // Only run if we haven't loaded data yet AND haven't errored for this assessment
-    if (!hasLoadedDataRef.current && !hasErroredRef.current && assessmentId && categories && categories.length > 0) {
+    // Only run if we haven't successfully loaded data yet AND haven't errored for this assessment
+    if (!hasSuccessfullyLoadedRef.current && !hasErroredRef.current && assessmentId && categories && categories.length > 0) {
       loadInsights();
     }
   }, [assessmentId]); // Only depend on assessmentId
@@ -189,10 +189,10 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
         setInsights(data.insights);
         debugLog('⏳ LOADING STATE TRANSITION: TRUE → FALSE (New insights received)');
         setIsLoading(false);
-        hasLoadedDataRef.current = true;
+        hasSuccessfullyLoadedRef.current = true; // Mark as successfully loaded
         isOperationInProgressRef.current = false;
         
-        debugLog('✅ SUCCESS COMPLETE: New insights displayed, loading stopped');
+        debugLog('✅ SUCCESS COMPLETE: New insights displayed, loading stopped, marked as successfully loaded');
       } else {
         debugLog('❌ ERROR STATE TRANSITION: No insights in API response');
         throw new Error('No insights received from OpenAI');
@@ -203,7 +203,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       debugLog('⏳ LOADING STATE TRANSITION: TRUE → FALSE (Generation error)');
       setIsLoading(false);
       isOperationInProgressRef.current = false;
-      hasErroredRef.current = true; // Mark as errored to prevent auto-retry
+      hasErroredRef.current = true;
       debugLog('🛑 ERROR STATE STABLE: Manual regeneration required');
     }
   };
@@ -218,13 +218,13 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     }
 
     // Clear previous state
-    debugLog('🔄 REGENERATE: Clearing previous error and insights');
+    debugLog('🔄 REGENERATE: Clearing previous state for fresh generation');
     setError(null);
     setInsights(null);
     
-    // Reset loaded flag and error flag to allow new generation
-    hasLoadedDataRef.current = false;
-    hasErroredRef.current = false; // Reset error tracking for manual retry
+    // Reset loaded and error flags to allow new generation
+    hasSuccessfullyLoadedRef.current = false;
+    hasErroredRef.current = false;
     
     // Start new generation
     if (categories && categories.length > 0 && assessmentId) {

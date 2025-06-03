@@ -9,11 +9,6 @@ import { getLatestAssessmentResults } from '@/services/assessment/fetchAssessmen
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { calculateAverageGap } from '@/utils/assessmentCalculations/averages';
 import AIInsights from '@/components/dashboard/AIInsights';
-import KeyInsights from '@/components/dashboard/KeyInsights';
-import { 
-  getTopStrengths,
-  getLowestSkills
-} from '@/utils/assessmentCalculations';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, Bot, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -135,8 +130,6 @@ const AITestPanel = () => {
 
   // Calculate metrics for insights
   const averageGap = calculateAverageGap(categories);
-  const strengths = getTopStrengths(categories, 5);
-  const lowestSkills = getLowestSkills(categories, 5);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -177,15 +170,6 @@ const AITestPanel = () => {
               assessmentId={undefined} // No assessment ID for test mode
             />
           </div>
-
-          {/* Key Insights Section - identical to live dashboard */}
-          <KeyInsights 
-            averageGap={averageGap}
-            strengths={strengths}
-            lowestSkills={lowestSkills}
-            categories={categories}
-            demographics={demographics}
-          />
         </div>
 
         {/* Test Panel Info */}

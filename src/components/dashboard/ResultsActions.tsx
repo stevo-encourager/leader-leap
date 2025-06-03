@@ -28,6 +28,16 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
   demographics = {},
   assessmentId
 }) => {
+  // CRITICAL DEBUG: Log all component render state at the very top
+  console.log('🔍 🚨 RESULTS ACTIONS COMPONENT RENDER - TOP OF FUNCTION:', {
+    assessmentId,
+    assessmentIdType: typeof assessmentId,
+    assessmentIdLength: assessmentId?.length || 0,
+    categories: categories?.length || 0,
+    demographics: Object.keys(demographics || {}),
+    propsReceived: { onBack: !!onBack, onRestart: !!onRestart, onSignup: !!onSignup }
+  });
+
   const { user } = useAuth();
   const [isDownloading, setIsDownloading] = useState(false);
   
@@ -35,14 +45,15 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
   const TEST_ASSESSMENT_ID = 'f74470bc-3c48-4980-bc5f-17386a724d37';
   const isTestAssessment = assessmentId === TEST_ASSESSMENT_ID;
   
-  // Add comprehensive debugging for button rendering
-  console.log('🔍 RESULTS ACTIONS RENDER DEBUG:', {
+  // CRITICAL DEBUG: Log the comparison logic immediately after definition
+  console.log('🔍 🚨 TEST ASSESSMENT CHECK:', {
     assessmentId,
     TEST_ASSESSMENT_ID,
     isTestAssessment,
-    buttonShouldRender: isTestAssessment
+    exactMatch: assessmentId === TEST_ASSESSMENT_ID,
+    stringComparison: String(assessmentId) === String(TEST_ASSESSMENT_ID)
   });
-  
+
   // Calculate average gap for insights hook
   const averageGap = categories.length > 0 ? calculateAverageGap(categories) : 0;
   
@@ -334,8 +345,13 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     return 'Download your complete assessment results as a professionally formatted PDF';
   };
 
-  // Add debug log right before rendering to confirm button should be visible
-  console.log('🔍 ABOUT TO RENDER BUTTONS - isTestAssessment:', isTestAssessment);
+  // CRITICAL DEBUG: Log right before rendering to confirm button should be visible
+  console.log('🔍 🚨 ABOUT TO RENDER BUTTONS - FINAL CHECK:', {
+    isTestAssessment,
+    assessmentId,
+    TEST_ASSESSMENT_ID,
+    willRenderRegenerateButton: isTestAssessment
+  });
 
   return (
     <div className="flex justify-between w-full">
@@ -365,7 +381,9 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
         )}
         {isTestAssessment && (
           <>
-            {console.log('🔍 RENDERING REGENERATE BUTTON - isTestAssessment is TRUE')}
+            {/* CRITICAL DEBUG: Log inside the conditional that renders the button */}
+            {console.log('🔍 🚨 RENDERING REGENERATE BUTTON - INSIDE CONDITIONAL!')}
+            {console.log('🔍 🚨 BUTTON RENDER STATE:', { isTestAssessment, insightsLoading })}
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>

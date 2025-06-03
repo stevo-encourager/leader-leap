@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ArrowLeft, Download, Plus, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -128,14 +127,18 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     return true;
   };
   
-  // Handle PDF download using React PDF
+  // Enhanced PDF download with better error handling and debugging
   const handleDownloadPDF = async () => {
+    console.log('=== PDF DOWNLOAD DEBUG START ===');
     console.log('ResultsActions: PDF download button clicked');
     console.log('ResultsActions: categories received:', categories?.length || 0);
     console.log('ResultsActions: demographics received:', demographics ? Object.keys(demographics) : 'none');
     console.log('ResultsActions: assessmentId for consistent insights:', assessmentId);
+    console.log('ResultsActions: insights ready:', areInsightsReadyForExport());
+    console.log('ResultsActions: insights length:', insights?.length || 0);
     
     if (!hasValidAssessmentData()) {
+      console.error('ResultsActions: PDF generation failed - no valid assessment data');
       toast({
         title: "Cannot Export PDF",
         description: "No completed assessment data available. Please complete the assessment with actual ratings first.",
@@ -145,6 +148,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     }
     
     if (!areInsightsReadyForExport()) {
+      console.error('ResultsActions: PDF generation failed - insights not ready');
       toast({
         title: "Please Wait",
         description: "AI insights are still being generated. Please wait a moment and try again.",
@@ -158,22 +162,24 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     try {
       console.log('ResultsActions: Starting PDF generation with React PDF');
       
-      // Capture the radar chart as PNG with detailed logging
-      console.log('ResultsActions: Attempting to capture radar chart...');
-      const chartImageDataUrl = await captureRadarChartAsPNG();
+      // Step 1: Capture the radar chart with enhanced error handling
+      console.log('ResultsActions: Step 1 - Attempting to capture radar chart...');
+      let chartImageDataUrl: string | null = null;
       
-      if (chartImageDataUrl) {
-        console.log('ResultsActions: Successfully captured radar chart, data length:', chartImageDataUrl.length);
-      } else {
-        console.warn('ResultsActions: Failed to capture radar chart, proceeding without it');
-        toast({
-          title: "Chart Capture Warning",
-          description: "Could not capture the radar chart. PDF will be generated without the chart visualization.",
-          variant: "default",
-        });
+      try {
+        chartImageDataUrl = await captureRadarChartAsPNG();
+        if (chartImageDataUrl) {
+          console.log('ResultsActions: Chart capture successful, data length:', chartImageDataUrl.length);
+        } else {
+          console.warn('ResultsActions: Chart capture returned null');
+        }
+      } catch (chartError) {
+        console.error('ResultsActions: Chart capture failed with error:', chartError);
+        // Continue without chart - don't fail the entire PDF generation
       }
       
-      // Generate PDF using React PDF
+      // Step 2: Generate PDF document
+      console.log('ResultsActions: Step 2 - Creating PDF document...');
       const pdfDoc = (
         <ReactPDFDocument
           categories={categories}
@@ -183,10 +189,17 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
         />
       );
       
-      console.log('ResultsActions: Generating PDF blob...');
+      // Step 3: Generate PDF blob
+      console.log('ResultsActions: Step 3 - Generating PDF blob...');
       const pdfBlob = await pdf(pdfDoc).toBlob();
+      console.log('ResultsActions: PDF blob generated successfully, size:', pdfBlob.size);
       
-      // Create download link
+      if (pdfBlob.size === 0) {
+        throw new Error('Generated PDF blob is empty');
+      }
+      
+      // Step 4: Create and trigger download
+      console.log('ResultsActions: Step 4 - Creating download link...');
       const url = URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
       link.href = url;
@@ -196,20 +209,40 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
       
+      console.log('ResultsActions: PDF download successful');
       toast({
         title: "Download Successful",
-        description: "Your Leader Leap assessment results have been downloaded as a PDF with proper formatting and pagination.",
+        description: "Your Leader Leap assessment results have been downloaded as a PDF.",
       });
       
     } catch (error) {
-      console.error('ResultsActions: Error during React PDF download:', error);
+      console.error('=== PDF GENERATION ERROR ===');
+      console.error('ResultsActions: Error during PDF generation:', error);
+      console.error('Error type:', typeof error);
+      console.error('Error message:', error instanceof Error ? error.message : 'Unknown error');
+      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+      
+      // More specific error messages based on error type
+      let errorMessage = "There was an error generating your PDF. Please try again.";
+      
+      if (error instanceof Error) {
+        if (error.message.includes('canvas')) {
+          errorMessage = "Chart rendering failed. Please ensure the assessment results are fully loaded and try again.";
+        } else if (error.message.includes('blob') || error.message.includes('empty')) {
+          errorMessage = "PDF generation failed - document was empty. Please refresh the page and try again.";
+        } else if (error.message.includes('memory') || error.message.includes('size')) {
+          errorMessage = "PDF generation failed due to memory constraints. Please try again or contact support.";
+        }
+      }
+      
       toast({
         title: "Download Failed", 
-        description: "There was an error generating your PDF. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
       setIsDownloading(false);
+      console.log('=== PDF DOWNLOAD DEBUG END ===');
     }
   };
 

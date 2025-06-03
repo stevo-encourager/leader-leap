@@ -2,7 +2,7 @@
 import html2canvas from 'html2canvas';
 
 /**
- * CRITICAL FOR PDF EXPORT: Enhanced radar chart capture logic
+ * CRITICAL FOR PDF EXPORT: Enhanced radar chart capture logic with improved error handling
  * 
  * This function is essential for PDF export functionality. It captures the radar chart
  * as a PNG image that gets embedded in the PDF. The primary selector used is:
@@ -14,6 +14,7 @@ import html2canvas from 'html2canvas';
  */
 export const captureRadarChartAsPNG = async (): Promise<string | null> => {
   return new Promise((resolve) => {
+    console.log('=== CHART CAPTURE DEBUG START ===');
     console.log('ChartCapture: Starting radar chart capture process...');
     
     // Wait for chart to fully render
@@ -57,6 +58,7 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
           rechartsWrappers: document.querySelectorAll('.recharts-wrapper').length,
           rechartsSurfaces: document.querySelectorAll('.recharts-surface').length
         });
+        console.log('=== CHART CAPTURE DEBUG END (FAILED) ===');
         resolve(null);
         return;
       }
@@ -92,14 +94,24 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
       
       // Ensure the container is visible
       if (radarContainer.offsetWidth === 0 || radarContainer.offsetHeight === 0) {
-        console.error('ChartCapture: Chart container has zero dimensions');
+        console.error('ChartCapture: Chart container has zero dimensions:', {
+          width: radarContainer.offsetWidth,
+          height: radarContainer.offsetHeight,
+          display: window.getComputedStyle(radarContainer).display,
+          visibility: window.getComputedStyle(radarContainer).visibility,
+          opacity: window.getComputedStyle(radarContainer).opacity
+        });
+        console.log('=== CHART CAPTURE DEBUG END (FAILED) ===');
         resolve(null);
         return;
       }
       
       try {
         // Wait a bit more for any animations to complete
+        console.log('ChartCapture: Waiting for animations to complete...');
         await new Promise(resolve => setTimeout(resolve, 500));
+        
+        console.log('ChartCapture: Starting html2canvas capture...');
         
         // Use html2canvas with settings optimized for chart capture
         const canvas = await html2canvas(radarContainer, {
@@ -129,21 +141,32 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
           selectorUsed: usedSelector
         });
         
+        if (canvas.width === 0 || canvas.height === 0) {
+          throw new Error('Generated canvas has zero dimensions');
+        }
+        
         // Convert to PNG data URL with high quality
+        console.log('ChartCapture: Converting canvas to PNG...');
         const pngDataUrl = canvas.toDataURL('image/png', 1.0);
         console.log('ChartCapture: PNG data URL generated, length:', pngDataUrl.length);
         
         // Validate that we have substantial image data
         if (pngDataUrl.length > 2000) {
           console.log('ChartCapture: Successfully captured radar chart for PDF');
+          console.log('=== CHART CAPTURE DEBUG END (SUCCESS) ===');
           resolve(pngDataUrl);
         } else {
           console.error('ChartCapture: Generated PNG seems too small, might be empty');
+          console.log('=== CHART CAPTURE DEBUG END (FAILED) ===');
           resolve(null);
         }
         
       } catch (error) {
         console.error('ChartCapture: Error capturing with html2canvas:', error);
+        console.error('Error type:', typeof error);
+        console.error('Error message:', error instanceof Error ? error.message : 'Unknown error');
+        console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+        console.log('=== CHART CAPTURE DEBUG END (ERROR) ===');
         resolve(null);
       }
     }, 2000); // Use 2000ms as in working version

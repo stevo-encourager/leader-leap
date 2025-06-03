@@ -19,6 +19,7 @@ const AITestPanel = () => {
   const { user, loading } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
   const [demographics, setDemographics] = useState<Demographics>({});
+  const [assessmentId, setAssessmentId] = useState<string | undefined>(undefined);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -54,8 +55,10 @@ const AITestPanel = () => {
 
       if (result.success && result.data) {
         console.log('AITestPanel: Successfully loaded assessment data');
+        console.log('AITestPanel: Assessment ID:', result.data.assessmentId);
         setCategories(result.data.categories);
         setDemographics(result.data.demographics);
+        setAssessmentId(result.data.assessmentId); // Set the actual assessment ID
       } else {
         console.error('AITestPanel: Failed to load assessment data:', result.error);
         setError(result.error || 'Failed to load assessment data');
@@ -149,7 +152,7 @@ const AITestPanel = () => {
               <div>
                 <h1 className="text-2xl font-bold text-yellow-800 font-playfair">AI Insights Test Panel</h1>
                 <p className="text-yellow-700 mt-1">
-                  Testing environment for AI insights generation • Latest assessment data loaded
+                  Testing environment for AI insights generation • Assessment ID: {assessmentId || 'Not available'}
                 </p>
               </div>
             </div>
@@ -167,7 +170,7 @@ const AITestPanel = () => {
               categories={categories}
               demographics={demographics}
               averageGap={averageGap}
-              assessmentId={undefined} // No assessment ID for test mode
+              assessmentId={assessmentId} // Pass the actual assessment ID from the loaded data
             />
           </div>
         </div>
@@ -176,9 +179,9 @@ const AITestPanel = () => {
         <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h3 className="text-blue-800 font-semibold mb-2">Test Panel Information</h3>
           <ul className="text-blue-700 text-sm space-y-1">
-            <li>• Using data from your latest completed assessment</li>
+            <li>• Using data from your latest completed assessment (ID: {assessmentId || 'N/A'})</li>
             <li>• Click "Regenerate Insights" to test prompt changes</li>
-            <li>• No data will be saved during testing</li>
+            <li>• Insights will be saved to the assessment if successful</li>
             <li>• Available only in development/staging environments</li>
           </ul>
         </div>

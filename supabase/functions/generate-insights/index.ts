@@ -29,6 +29,7 @@ serve(async (req) => {
     try {
       requestBody = await req.json();
     } catch (e) {
+      console.error('CRITICAL ERROR: Invalid JSON in request body:', e);
       return new Response(JSON.stringify({ error: "Invalid JSON in request body" }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -41,7 +42,7 @@ serve(async (req) => {
 
     // Validate required inputs using Deno-compatible pattern
     if (!categories || !Array.isArray(categories) || categories.length === 0) {
-      console.error('Missing or invalid categories in request body');
+      console.error('CRITICAL ERROR: Missing or invalid categories in request body');
       return new Response(JSON.stringify({ 
         error: "Missing or invalid 'categories' array in request body. Categories are required for insight generation." 
       }), {
@@ -51,7 +52,7 @@ serve(async (req) => {
     }
 
     if (typeof averageGap !== 'number') {
-      console.error('Missing or invalid averageGap in request body');
+      console.error('CRITICAL ERROR: Missing or invalid averageGap in request body');
       return new Response(JSON.stringify({ 
         error: "Missing or invalid 'averageGap' number in request body. Average gap is required for insight generation." 
       }), {
@@ -60,17 +61,11 @@ serve(async (req) => {
       });
     }
 
-    if (!assessmentId) {
-      return new Response(JSON.stringify({ error: "Missing assessmentId in request body" }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
-    if (typeof assessmentId !== 'string' || assessmentId.trim() === '') {
-      console.error('Invalid assessmentId in request body');
+    // UPDATED: Allow assessmentId to be undefined for test scenarios
+    if (assessmentId !== undefined && (typeof assessmentId !== 'string' || assessmentId.trim() === '')) {
+      console.error('CRITICAL ERROR: Invalid assessmentId in request body - must be string or undefined');
       return new Response(JSON.stringify({ 
-        error: "Invalid 'assessmentId' in request body. Assessment ID must be a non-empty string." 
+        error: "Invalid 'assessmentId' in request body. Assessment ID must be a non-empty string or undefined for test scenarios." 
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -81,20 +76,23 @@ serve(async (req) => {
       categoriesCount: categories.length,
       hasDemo: !!demographics,
       averageGap: averageGap,
-      assessmentId: assessmentId
+      assessmentId: assessmentId || 'undefined (test mode)'
     });
 
-    // CRITICAL FIRST CHECK: Always verify existing insights before ANY processing
-    console.log('CRITICAL SAFEGUARD: Checking for existing insights before any processing');
-    const existingInsights = await checkExistingInsights(assessmentId, supabaseUrl, supabaseServiceKey);
-    if (existingInsights) {
-      console.log('CRITICAL SAFEGUARD: Existing insights found - returning immediately without any generation');
-      return new Response(JSON.stringify({ insights: existingInsights }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    // CRITICAL FIRST CHECK: Only check for existing insights if we have an assessmentId
+    if (assessmentId) {
+      console.log('CRITICAL SAFEGUARD: Checking for existing insights before any processing');
+      const existingInsights = await checkExistingInsights(assessmentId, supabaseUrl, supabaseServiceKey);
+      if (existingInsights) {
+        console.log('CRITICAL SAFEGUARD: Existing insights found - returning immediately without any generation');
+        return new Response(JSON.stringify({ insights: existingInsights }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      console.log('CRITICAL SAFEGUARD: No existing insights confirmed - generating new insights (ONLY ONCE)');
+    } else {
+      console.log('TEST MODE: No assessmentId provided - generating insights for testing (will not be saved)');
     }
-
-    console.log('CRITICAL SAFEGUARD: No existing insights confirmed - generating new insights (ONLY ONCE)');
 
     // Build assessment data and prompt
     console.log('Building assessment data and prompt...');
@@ -205,9 +203,13 @@ serve(async (req) => {
     console.log('- Key strengths count:', parsedInsights.key_strengths ? parsedInsights.key_strengths.length : 0);
 
     // CRITICAL FINAL SAFEGUARD: Only save if we have a valid assessment ID and confirm no existing insights
-    console.log('CRITICAL FINAL SAFEGUARD: Attempting to save insights with final protection check');
-    await saveInsights(assessmentId, finalInsights, supabaseUrl, supabaseServiceKey);
-    console.log('Insights saved successfully');
+    if (assessmentId) {
+      console.log('CRITICAL FINAL SAFEGUARD: Attempting to save insights with final protection check');
+      await saveInsights(assessmentId, finalInsights, supabaseUrl, supabaseServiceKey);
+      console.log('Insights saved successfully');
+    } else {
+      console.log('TEST MODE: Insights generated successfully but not saved (no assessmentId)');
+    }
 
     console.log('=== GENERATE INSIGHTS FUNCTION SUCCESS ===');
 

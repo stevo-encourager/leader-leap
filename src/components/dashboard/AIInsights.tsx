@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Bot, AlertCircle, Target, TrendingUp, ExternalLink } from 'lucide-react';
 import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
@@ -46,7 +47,9 @@ const AIInsights: React.FC<AIInsightsProps> = ({
   const [debugInfo, setDebugInfo] = React.useState({
     lastBackendResponse: '',
     lastInsightsPreview: '',
-    regenerationCount: 0
+    regenerationCount: 0,
+    lastCallbackUpdate: '',
+    callbackInvocations: 0
   });
   
   const { insights, isLoading, error, regenerateInsights } = useOpenAIInsights({
@@ -71,23 +74,27 @@ const AIInsights: React.FC<AIInsightsProps> = ({
     }
   }, [insights]);
 
-  // Enhanced regenerate function with debug tracking
-  const handleRegenerateWithDebug = React.useCallback(async () => {
-    console.log('🔵 AIInsights: handleRegenerateWithDebug called');
+  // FIXED: Create a wrapper function that always calls the current regenerateInsights
+  // This prevents the callback from becoming stale
+  const handleRegenerateWrapper = React.useCallback(async () => {
+    console.log('🔵 AIInsights: handleRegenerateWrapper called - FRESH CALLBACK');
     
     const timestamp = new Date().toISOString().slice(11, 23);
     setDebugInfo(prev => ({
       ...prev,
       lastBackendResponse: `${timestamp} - Regeneration started`,
       lastInsightsPreview: 'Waiting for new insights...',
-      regenerationCount: prev.regenerationCount + 1
+      regenerationCount: prev.regenerationCount + 1,
+      callbackInvocations: prev.callbackInvocations + 1
     }));
 
+    // CRITICAL: Always call the CURRENT regenerateInsights function
+    // Don't store it in a variable - call it directly
     if (regenerateInsights) {
-      console.log('🔵 AIInsights: Calling regenerateInsights function');
+      console.log('🔵 AIInsights: Calling CURRENT regenerateInsights function');
       try {
         await regenerateInsights();
-        console.log('🔵 AIInsights: regenerateInsights completed');
+        console.log('🔵 AIInsights: regenerateInsights completed successfully');
       } catch (error) {
         console.error('🔵 AIInsights: regenerateInsights failed:', error);
         const errorTimestamp = new Date().toISOString().slice(11, 23);
@@ -100,15 +107,23 @@ const AIInsights: React.FC<AIInsightsProps> = ({
     } else {
       console.error('🔵 AIInsights: regenerateInsights function not available');
     }
-  }, [regenerateInsights]);
+  }, [regenerateInsights]); // CRITICAL: Depend on regenerateInsights so callback updates
 
-  // Provide the enhanced regenerate function to the parent component
+  // FIXED: Update callback reference every time regenerateInsights changes
   React.useEffect(() => {
-    if (onRegenerateCallback && handleRegenerateWithDebug) {
-      console.log('🔵 AIInsights: Setting enhanced regenerate callback for parent');
-      onRegenerateCallback(handleRegenerateWithDebug);
+    if (onRegenerateCallback) {
+      const timestamp = new Date().toISOString().slice(11, 23);
+      console.log('🔵 AIInsights: Updating callback reference for parent');
+      
+      setDebugInfo(prev => ({
+        ...prev,
+        lastCallbackUpdate: `${timestamp} - Callback updated`
+      }));
+      
+      // Always provide the current wrapper function
+      onRegenerateCallback(handleRegenerateWrapper);
     }
-  }, [onRegenerateCallback, handleRegenerateWithDebug]);
+  }, [onRegenerateCallback, handleRegenerateWrapper]); // Update when either changes
 
   // Log the assessment ID and insights status for debugging
   React.useEffect(() => {
@@ -364,16 +379,19 @@ const AIInsights: React.FC<AIInsightsProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* DEBUG INDICATOR - TEMPORARY FOR TROUBLESHOOTING */}
+      {/* ENHANCED DEBUG INDICATOR - TEMPORARY FOR TROUBLESHOOTING */}
       <div className="bg-red-50 border border-red-200 p-4 rounded-lg">
         <h4 className="font-bold text-red-800 mb-2">DEBUG INFO (Remove when fixed)</h4>
         <div className="text-sm text-red-700 space-y-1">
           <div><strong>Regeneration Count:</strong> {debugInfo.regenerationCount}</div>
+          <div><strong>Callback Invocations:</strong> {debugInfo.callbackInvocations}</div>
+          <div><strong>Last Callback Update:</strong> {debugInfo.lastCallbackUpdate || 'None'}</div>
           <div><strong>Last Backend Response:</strong> {debugInfo.lastBackendResponse || 'None'}</div>
           <div><strong>Latest Insights Preview:</strong> {debugInfo.lastInsightsPreview || 'None'}</div>
           <div><strong>Current Loading State:</strong> {isLoading ? 'LOADING' : 'NOT LOADING'}</div>
           <div><strong>Has Insights:</strong> {insights ? 'YES' : 'NO'}</div>
           <div><strong>Has Error:</strong> {error ? 'YES' : 'NO'}</div>
+          <div><strong>Has RegenerateInsights Function:</strong> {regenerateInsights ? 'YES' : 'NO'}</div>
         </div>
       </div>
 

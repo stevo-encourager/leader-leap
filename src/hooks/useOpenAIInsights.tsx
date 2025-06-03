@@ -182,7 +182,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     } else {
       debugLog('❌ SKIPPING INITIALIZATION - Conditions not met');
     }
-  }, [assessmentId, categories, updateState]); // Minimal dependencies
+  }, [assessmentId, categories, updateState]);
 
   const generateNewInsights = async () => {
     debugLog('🔄 STARTING NEW INSIGHTS GENERATION');
@@ -239,8 +239,8 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     }
   };
 
-  const regenerateInsights = useCallback(() => {
-    debugLog('🔄 MANUAL REGENERATE TRIGGERED');
+  const regenerateInsights = useCallback(async () => {
+    debugLog('🔄 REGENERATE INSIGHTS CALLED');
     
     // Prevent multiple regenerations
     if (isOperationInProgressRef.current) {
@@ -248,9 +248,20 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       return;
     }
 
+    // Validate we have required data
+    if (!categories || categories.length === 0 || !assessmentId) {
+      debugLog('❌ MISSING REQUIRED DATA FOR REGENERATION');
+      updateState({
+        error: 'Missing required data for regeneration',
+        isLoading: false
+      }, 'Regeneration validation failed');
+      return;
+    }
+
     debugLog('🔄 REGENERATE: Starting manual regeneration');
+    debugLog('🔄 REGENERATE: Current state before regeneration:', state);
     
-    // Reset state for regeneration
+    // Clear existing insights and set loading state
     updateState({
       insights: null,
       error: null,
@@ -260,13 +271,26 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     
     // Reset flags to allow new generation
     initializationCompleteRef.current = false;
+    isOperationInProgressRef.current = true;
+    
+    debugLog('🔄 REGENERATE: State cleared, starting new generation');
     
     // Start new generation
-    if (categories && categories.length > 0 && assessmentId) {
-      isOperationInProgressRef.current = true;
-      generateNewInsights();
+    try {
+      await generateNewInsights();
+      debugLog('✅ REGENERATE: Completed successfully');
+    } catch (error) {
+      debugLog('❌ REGENERATE: Failed with error:', error);
+      updateState({
+        error: error instanceof Error ? error.message : 'Regeneration failed',
+        isLoading: false,
+        isInitialized: true
+      }, 'Regeneration failed');
+      
+      isOperationInProgressRef.current = false;
+      initializationCompleteRef.current = true;
     }
-  }, [categories, assessmentId, updateState]);
+  }, [categories, demographics, averageGap, assessmentId, isTestAssessment, updateState, state]);
 
   return {
     insights: state.insights,

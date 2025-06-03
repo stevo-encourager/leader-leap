@@ -76,15 +76,20 @@ const AITestPanel = () => {
     }
   };
 
-  const handleRefreshInsights = () => {
+  const handleRefreshInsights = async () => {
     console.log('🔴 AITestPanel: Regenerate Insights button clicked - FIRST LINE OF HANDLER');
     console.log('🔴 AITestPanel: Current refreshKey before increment:', refreshKey);
-    console.log('🔴 AITestPanel: About to call regeneration callback');
+    console.log('🔴 AITestPanel: regenerateCallback available:', !!regenerateCallback);
     
     // Call the regenerateInsights function from the AIInsights component
     if (regenerateCallback) {
       console.log('🔴 AITestPanel: Calling regeneration callback');
-      regenerateCallback();
+      try {
+        await regenerateCallback();
+        console.log('🔴 AITestPanel: Regeneration callback completed successfully');
+      } catch (error) {
+        console.error('🔴 AITestPanel: Regeneration callback failed:', error);
+      }
     } else {
       console.log('🔴 AITestPanel: No regeneration callback available, forcing re-render');
       // Fallback: force a re-render to try again

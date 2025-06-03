@@ -60,12 +60,13 @@ const AIInsights: React.FC<AIInsightsProps> = ({
   // Log the assessment ID and insights status for debugging
   React.useEffect(() => {
     console.log('🔵 AIInsights: useEffect triggered - assessmentId:', assessmentId);
-    console.log('🔵 AIInsights: Insights available:', !!insights);
-    console.log('🔵 AIInsights: Loading state:', isLoading);
-    if (insights) {
-      console.log('🔵 AIInsights: Using insights from database for consistent display');
-    }
-  }, [assessmentId, insights, isLoading]);
+    console.log('🔵 AIInsights: Current state:', {
+      hasInsights: !!insights,
+      isLoading,
+      hasError: !!error,
+      insightsLength: insights?.length || 0
+    });
+  }, [assessmentId, insights, isLoading, error]);
 
   // Parse insights from JSON string
   const parseInsights = (insightsText: string): AIInsightsData | null => {

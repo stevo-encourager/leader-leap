@@ -19,6 +19,11 @@ export const RESOURCE_MAPPINGS: Record<string, ResourceMapping> = ALL_RESOURCE_M
  * Normalize resource text for mapping lookup
  */
 function normalizeResourceText(resource: string): string {
+  // Add null/undefined safety check
+  if (!resource || typeof resource !== 'string') {
+    return '';
+  }
+  
   return resource.toLowerCase()
     .replace(/['"'"]/g, '') // Remove quotes
     .replace(/\s+/g, ' ') // Normalize whitespace
@@ -29,7 +34,17 @@ function normalizeResourceText(resource: string): string {
  * Find the best matching resource mapping for a given resource text
  */
 export function findResourceMapping(resource: string): ResourceMapping | null {
+  // Add null/undefined safety check
+  if (!resource || typeof resource !== 'string') {
+    return null;
+  }
+
   const normalized = normalizeResourceText(resource);
+  
+  // Return null if normalization resulted in empty string
+  if (!normalized) {
+    return null;
+  }
   
   // Direct match
   if (RESOURCE_MAPPINGS[normalized]) {
@@ -54,6 +69,15 @@ export function generateResourceLink(resource: string): {
   url: string | null;
   hasValidLink: boolean;
 } {
+  // Enhanced null/undefined safety check
+  if (!resource || typeof resource !== 'string' || !resource.trim()) {
+    return {
+      title: 'No resource available',
+      url: null,
+      hasValidLink: false
+    };
+  }
+
   // Check if it's already a URL
   if (resource.startsWith('http')) {
     return {

@@ -223,18 +223,59 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
     console.log('ReactPDFDocument: Valid chart image data received, ready for PDF inclusion');
   }
 
+  // Enhanced parseInsights function with better error handling and null checks
   const parseInsights = (insightsText: string): AIInsightsData | null => {
     try {
+      // Add null/undefined check for insightsText
+      if (!insightsText || typeof insightsText !== 'string') {
+        console.log('ReactPDFDocument: Invalid insights text provided');
+        return null;
+      }
+
       const parsed = JSON.parse(insightsText);
+      
+      // Enhanced validation with null checks
+      if (!parsed || typeof parsed !== 'object') {
+        console.log('ReactPDFDocument: Parsed insights is not a valid object');
+        return null;
+      }
+
       if (!parsed.summary || !parsed.priority_areas || !parsed.key_strengths) {
+        console.log('ReactPDFDocument: Missing required properties in parsed insights');
         return null;
       }
+      
       if (!Array.isArray(parsed.priority_areas) || !Array.isArray(parsed.key_strengths)) {
+        console.log('ReactPDFDocument: Priority areas or key strengths are not arrays');
         return null;
       }
-      return parsed;
+
+      // Validate and clean priority areas
+      const cleanedPriorityAreas = parsed.priority_areas
+        .filter(area => area && typeof area === 'object')
+        .map(area => ({
+          competency: area.competency || 'Unknown Competency',
+          gap: typeof area.gap === 'number' ? area.gap : 0,
+          insights: Array.isArray(area.insights) ? area.insights.filter(insight => insight && typeof insight === 'string') : [],
+          resource: area.resource || ''
+        }));
+
+      // Validate and clean key strengths
+      const cleanedKeyStrengths = parsed.key_strengths
+        .filter(strength => strength && typeof strength === 'object')
+        .map(strength => ({
+          competency: strength.competency || 'Unknown Competency',
+          example: strength.example || '',
+          leverage_advice: Array.isArray(strength.leverage_advice) ? strength.leverage_advice.filter(advice => advice && typeof advice === 'string') : []
+        }));
+
+      return {
+        summary: parsed.summary || '',
+        priority_areas: cleanedPriorityAreas,
+        key_strengths: cleanedKeyStrengths
+      };
     } catch (error) {
-      console.error('Error parsing insights:', error);
+      console.error('ReactPDFDocument: Error parsing insights:', error);
       return null;
     }
   };
@@ -302,22 +343,43 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
               </View>
             )}
 
-            {/* Priority Development Areas */}
+            {/* Priority Development Areas with enhanced null checking */}
             {parsedInsights.priority_areas && parsedInsights.priority_areas.length > 0 && (
               <View>
                 <Text style={styles.subsectionTitle}>Top 3 Priority Development Areas</Text>
                 {parsedInsights.priority_areas.map((area, index) => {
-                  const resourceLink = generateResourceLink(area.resource);
+                  // Enhanced null checking for area and area.resource
+                  if (!area || typeof area !== 'object') {
+                    console.warn(`ReactPDFDocument: Invalid area at index ${index}`);
+                    return null;
+                  }
+
+                  // Safe resource link generation with null checks
+                  let resourceLink = { title: 'No resource available', url: null, hasValidLink: false };
+                  try {
+                    if (area.resource && typeof area.resource === 'string' && area.resource.trim()) {
+                      resourceLink = generateResourceLink(area.resource);
+                    }
+                  } catch (error) {
+                    console.warn(`ReactPDFDocument: Error generating resource link for area ${index}:`, error);
+                  }
+
                   return (
                     <View key={index} style={styles.priorityItem}>
                       <Text style={styles.boldText}>
-                        {index + 1}. {area.competency} (Gap: {area.gap.toFixed(1)})
+                        {index + 1}. {area.competency || 'Unknown Competency'} (Gap: {(area.gap || 0).toFixed(1)})
                       </Text>
                       <Text style={styles.boldText}>Key insights:</Text>
-                      {area.insights && Array.isArray(area.insights) && area.insights.map((insight, insightIndex) => (
-                        <Text key={insightIndex} style={styles.listItem}>• {insight}</Text>
-                      ))}
-                      {area.resource && (
+                      {area.insights && Array.isArray(area.insights) && area.insights.map((insight, insightIndex) => {
+                        // Additional safety check for insight
+                        if (!insight || typeof insight !== 'string') {
+                          return null;
+                        }
+                        return (
+                          <Text key={insightIndex} style={styles.listItem}>• {insight}</Text>
+                        );
+                      })}
+                      {resourceLink.title && (
                         <Text style={styles.text}>
                           <Text style={styles.boldText}>Recommended Resource:</Text> {resourceLink.title}
                         </Text>
@@ -338,16 +400,30 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
         {parsedInsights?.key_strengths && parsedInsights.key_strengths.length > 0 && (
           <View>
             <Text style={styles.sectionTitle}>Key Competencies to Leverage</Text>
-            {parsedInsights.key_strengths.map((strength, index) => (
-              <View key={index} style={styles.strengthItem}>
-                <Text style={styles.boldText}>Competency: {strength.competency}</Text>
-                <Text style={styles.text}>Existing Skill: {strength.example}</Text>
-                <Text style={styles.boldText}>How to leverage further:</Text>
-                {strength.leverage_advice && Array.isArray(strength.leverage_advice) && strength.leverage_advice.map((advice, adviceIndex) => (
-                  <Text key={adviceIndex} style={styles.listItem}>• {advice}</Text>
-                ))}
-              </View>
-            ))}
+            {parsedInsights.key_strengths.map((strength, index) => {
+              // Enhanced null checking for strength
+              if (!strength || typeof strength !== 'object') {
+                console.warn(`ReactPDFDocument: Invalid strength at index ${index}`);
+                return null;
+              }
+
+              return (
+                <View key={index} style={styles.strengthItem}>
+                  <Text style={styles.boldText}>Competency: {strength.competency || 'Unknown Competency'}</Text>
+                  <Text style={styles.text}>Existing Skill: {strength.example || 'No example provided'}</Text>
+                  <Text style={styles.boldText}>How to leverage further:</Text>
+                  {strength.leverage_advice && Array.isArray(strength.leverage_advice) && strength.leverage_advice.map((advice, adviceIndex) => {
+                    // Additional safety check for advice
+                    if (!advice || typeof advice !== 'string') {
+                      return null;
+                    }
+                    return (
+                      <Text key={adviceIndex} style={styles.listItem}>• {advice}</Text>
+                    );
+                  })}
+                </View>
+              );
+            })}
           </View>
         )}
 

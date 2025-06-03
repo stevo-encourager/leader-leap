@@ -11,7 +11,7 @@ import { calculateAverageGap } from '@/utils/assessmentCalculations/averages';
 import AIInsights from '@/components/dashboard/AIInsights';
 import KeyInsights from '@/components/dashboard/KeyInsights';
 import { 
-  getStrengths,
+  getTopStrengths,
   getLowestSkills
 } from '@/utils/assessmentCalculations';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -135,7 +135,7 @@ const AITestPanel = () => {
 
   // Calculate metrics for insights
   const averageGap = calculateAverageGap(categories);
-  const strengths = getStrengths(categories, 5);
+  const strengths = getTopStrengths(categories, 5);
   const lowestSkills = getLowestSkills(categories, 5);
 
   return (

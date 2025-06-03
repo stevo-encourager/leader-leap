@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ArrowLeft, Download, Plus, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -31,11 +32,15 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
   const { user } = useAuth();
   const [isDownloading, setIsDownloading] = useState(false);
   
+  // Special test assessment ID that allows regeneration
+  const TEST_ASSESSMENT_ID = 'f74470bc-3c48-4980-bc5f-17386a724d37';
+  const isTestAssessment = assessmentId === TEST_ASSESSMENT_ID;
+  
   // Calculate average gap for insights hook
   const averageGap = categories.length > 0 ? calculateAverageGap(categories) : 0;
   
   // Use the insights hook to check if insights are ready
-  const { insights, isLoading: insightsLoading, error: insightsError } = useOpenAIInsights({
+  const { insights, isLoading: insightsLoading, error: insightsError, regenerateInsights } = useOpenAIInsights({
     categories,
     demographics,
     averageGap,
@@ -257,6 +262,25 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     onRestart();
   };
 
+  // Handle regenerating insights
+  const handleRegenerateInsights = () => {
+    if (isTestAssessment) {
+      console.log('ResultsActions: Regenerating insights for test assessment');
+      toast({
+        title: "Regenerating Insights",
+        description: "Generating new AI insights for test assessment...",
+      });
+      regenerateInsights();
+    } else {
+      console.log('ResultsActions: Regeneration requested for non-test assessment - not allowed');
+      toast({
+        title: "Cannot Regenerate",
+        description: "Insights can only be regenerated for test assessments.",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Determine if PDF export should be disabled
   const isPDFExportDisabled = !hasValidAssessmentData() || !areInsightsReadyForExport() || isDownloading;
   
@@ -315,6 +339,26 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
               </TooltipTrigger>
               <TooltipContent side="top">
                 <p className="max-w-xs text-sm">Create an account to save your results and access them anytime</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+        {isTestAssessment && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  onClick={handleRegenerateInsights}
+                  disabled={insightsLoading}
+                  className="flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  {insightsLoading ? 'Regenerating...' : 'Regenerate Insights'}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p className="max-w-xs text-sm">Regenerate AI insights for this test assessment</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>

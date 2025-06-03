@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,6 +14,7 @@ import InvalidResultsMessage from '@/components/assessment/InvalidResultsMessage
 import { getLocalAssessmentData } from '@/services/assessment/manageAssessmentHistory';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
+import AIInsightsTestPanel from '@/components/testing/AIInsightsTestPanel';
 
 const Results = () => {
   const navigate = useNavigate();
@@ -301,6 +301,9 @@ const Results = () => {
     );
   }
 
+  // Add a simple check to show test panel in development
+  const showTestPanel = window.location.hostname === 'localhost' || window.location.search.includes('test=true');
+
   // Render the results page with available data
   console.log("Results page - Rendering ResultsDisplay with valid data and assessmentId:", assessmentId);
   
@@ -311,6 +314,13 @@ const Results = () => {
       </div>
       <main className="assessment-container max-w-5xl mx-auto px-4 py-8">
         <UserHeader />
+        
+        {/* Test Panel - Only show in development or with test=true parameter */}
+        {showTestPanel && (
+          <div className="mb-8">
+            <AIInsightsTestPanel />
+          </div>
+        )}
         
         {showAuthForm && (
           <AuthSection onClose={handleCloseAuthForm} />

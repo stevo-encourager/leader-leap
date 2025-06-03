@@ -61,80 +61,76 @@ export const formatSummaryIntoParagraphs = (summary: string): string => {
   return formatted;
 };
 
-// Simple function to sanitize JSON strings using only basic string replacement
+// Enhanced function to sanitize JSON strings by escaping control characters
 export const sanitizeJsonString = (jsonString: string): string => {
+  console.log('Starting JSON sanitization, original length:', jsonString.length);
+  
   try {
     // First attempt to parse - if it works, we're good
     JSON.parse(jsonString);
+    console.log('JSON parsing successful on first attempt');
     return jsonString;
   } catch (error) {
-    console.log('JSON parsing failed, attempting to sanitize:', error.message);
+    console.log('JSON parsing failed, attempting to sanitize control characters:', error.message);
     
-    // Use simple string replacement for common control characters
-    let sanitized = jsonString;
+    // Sanitize control characters using simple iteration through each character
+    let sanitized = '';
+    let insideString = false;
+    let escapeNext = false;
     
-    // Replace common control characters with their escaped equivalents
-    sanitized = sanitized.replace(/\u0000/g, '\\u0000');  // NULL
-    sanitized = sanitized.replace(/\u0001/g, '\\u0001');  // SOH
-    sanitized = sanitized.replace(/\u0002/g, '\\u0002');  // STX
-    sanitized = sanitized.replace(/\u0003/g, '\\u0003');  // ETX
-    sanitized = sanitized.replace(/\u0004/g, '\\u0004');  // EOT
-    sanitized = sanitized.replace(/\u0005/g, '\\u0005');  // ENQ
-    sanitized = sanitized.replace(/\u0006/g, '\\u0006');  // ACK
-    sanitized = sanitized.replace(/\u0007/g, '\\u0007');  // BEL
-    sanitized = sanitized.replace(/\u0008/g, '\\b');      // BS (backspace)
-    sanitized = sanitized.replace(/\u0009/g, '\\t');      // HT (tab)
-    sanitized = sanitized.replace(/\u000A/g, '\\n');      // LF (line feed)
-    sanitized = sanitized.replace(/\u000B/g, '\\u000B');  // VT
-    sanitized = sanitized.replace(/\u000C/g, '\\f');      // FF (form feed)
-    sanitized = sanitized.replace(/\u000D/g, '\\r');      // CR (carriage return)
-    sanitized = sanitized.replace(/\u000E/g, '\\u000E');  // SO
-    sanitized = sanitized.replace(/\u000F/g, '\\u000F');  // SI
-    sanitized = sanitized.replace(/\u0010/g, '\\u0010');  // DLE
-    sanitized = sanitized.replace(/\u0011/g, '\\u0011');  // DC1
-    sanitized = sanitized.replace(/\u0012/g, '\\u0012');  // DC2
-    sanitized = sanitized.replace(/\u0013/g, '\\u0013');  // DC3
-    sanitized = sanitized.replace(/\u0014/g, '\\u0014');  // DC4
-    sanitized = sanitized.replace(/\u0015/g, '\\u0015');  // NAK
-    sanitized = sanitized.replace(/\u0016/g, '\\u0016');  // SYN
-    sanitized = sanitized.replace(/\u0017/g, '\\u0017');  // ETB
-    sanitized = sanitized.replace(/\u0018/g, '\\u0018');  // CAN
-    sanitized = sanitized.replace(/\u0019/g, '\\u0019');  // EM
-    sanitized = sanitized.replace(/\u001A/g, '\\u001A');  // SUB
-    sanitized = sanitized.replace(/\u001B/g, '\\u001B');  // ESC
-    sanitized = sanitized.replace(/\u001C/g, '\\u001C');  // FS
-    sanitized = sanitized.replace(/\u001D/g, '\\u001D');  // GS
-    sanitized = sanitized.replace(/\u001E/g, '\\u001E');  // RS
-    sanitized = sanitized.replace(/\u001F/g, '\\u001F');  // US
-    
-    // Handle unescaped quotes by replacing quote characters preceded by non-backslash
-    // Split and rejoin to avoid regex lookahead/lookbehind
-    const parts = sanitized.split('');
-    for (let i = 1; i < parts.length; i++) {
-      if (parts[i] === '"' && parts[i - 1] !== '\\') {
-        parts[i] = '\\"';
+    for (let i = 0; i < jsonString.length; i++) {
+      const char = jsonString[i];
+      const charCode = char.charCodeAt(0);
+      
+      if (escapeNext) {
+        sanitized += char;
+        escapeNext = false;
+        continue;
       }
-    }
-    sanitized = parts.join('');
-    
-    // Handle unescaped backslashes - replace single backslashes that aren't escape sequences
-    let result = '';
-    for (let i = 0; i < sanitized.length; i++) {
-      const char = sanitized[i];
-      if (char === '\\' && i + 1 < sanitized.length) {
-        const nextChar = sanitized[i + 1];
-        if (nextChar !== '"' && nextChar !== '\\' && nextChar !== '/' && 
-            nextChar !== 'b' && nextChar !== 'f' && nextChar !== 'n' && 
-            nextChar !== 'r' && nextChar !== 't' && nextChar !== 'u') {
-          result += '\\\\';
-        } else {
-          result += char;
+      
+      if (char === '\\') {
+        sanitized += char;
+        escapeNext = true;
+        continue;
+      }
+      
+      if (char === '"' && !escapeNext) {
+        insideString = !insideString;
+        sanitized += char;
+        continue;
+      }
+      
+      // If we're inside a string and encounter a control character (0-31), escape it
+      if (insideString && charCode >= 0 && charCode <= 31) {
+        switch (charCode) {
+          case 8:
+            sanitized += '\\b';
+            break;
+          case 9:
+            sanitized += '\\t';
+            break;
+          case 10:
+            sanitized += '\\n';
+            break;
+          case 12:
+            sanitized += '\\f';
+            break;
+          case 13:
+            sanitized += '\\r';
+            break;
+          default:
+            // Convert to unicode escape sequence
+            const hex = charCode.toString(16).padStart(4, '0');
+            sanitized += `\\u${hex}`;
+            break;
         }
       } else {
-        result += char;
+        sanitized += char;
       }
     }
-    sanitized = result;
+    
+    console.log('Control character sanitization completed, new length:', sanitized.length);
+    console.log('Sanitized JSON sample (first 500 chars):', sanitized.substring(0, 500));
     
     // Try parsing again
     try {
@@ -143,7 +139,7 @@ export const sanitizeJsonString = (jsonString: string): string => {
       return sanitized;
     } catch (secondError) {
       console.error('JSON sanitization failed:', secondError.message);
-      console.error('Problematic JSON:', sanitized.substring(0, 1000) + '...');
+      console.error('Problematic JSON sample:', sanitized.substring(0, 1000));
       throw new Error(`Unable to parse JSON after sanitization: ${secondError.message}`);
     }
   }

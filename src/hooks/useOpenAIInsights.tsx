@@ -19,7 +19,8 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
   const insightsLoadedRef = useRef(false);
   const [forceRegenerate, setForceRegenerate] = useState(false);
   const [regenerateTrigger, setRegenerateTrigger] = useState(0);
-  const justRegeneratedRef = useRef(false); // Track if we just regenerated
+  const justRegeneratedRef = useRef(false);
+  const errorOccurredRef = useRef(false); // Track if error occurred to prevent loops
 
   // Special test assessment ID that allows regeneration
   const TEST_ASSESSMENT_ID = 'f74470bc-3c48-4980-bc5f-17386a724d37';
@@ -32,8 +33,18 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     regenerateTrigger,
     categoriesLength: categories?.length || 0,
     hasExistingInsights: !!insights,
-    justRegeneratedRef: justRegeneratedRef.current
+    justRegeneratedRef: justRegeneratedRef.current,
+    errorOccurred: errorOccurredRef.current
   });
+
+  // Reset error when starting a new regeneration attempt
+  useEffect(() => {
+    if (forceRegenerate && error) {
+      console.log('🔍 CLEARING ERROR STATE FOR NEW REGENERATION ATTEMPT');
+      setError(null);
+      errorOccurredRef.current = false;
+    }
+  }, [forceRegenerate, error]);
 
   // CRITICAL SAFEGUARD: Check for existing insights first and NEVER regenerate if they exist (except for test assessment)
   useEffect(() => {
@@ -46,13 +57,20 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       hasCheckedExistingRef: hasCheckedExistingRef.current,
       isGeneratingRef: isGeneratingRef.current,
       insightsLoadedRef: insightsLoadedRef.current,
-      justRegeneratedRef: justRegeneratedRef.current
+      justRegeneratedRef: justRegeneratedRef.current,
+      errorOccurred: errorOccurredRef.current
     });
 
     const checkForExistingInsights = async () => {
       // Only proceed if we have valid data
       if (!categories || categories.length === 0) {
         console.log('🔍 NO CATEGORIES - Exiting early');
+        return;
+      }
+
+      // CRITICAL FIX: Don't retry if we just had an error unless explicitly forced
+      if (errorOccurredRef.current && !forceRegenerate) {
+        console.log('🔍 ERROR OCCURRED PREVIOUSLY - Skipping to prevent infinite loop');
         return;
       }
 
@@ -76,6 +94,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
         isGeneratingRef.current = false; // Reset generation flag
         insightsLoadedRef.current = false; // Reset loaded flag
         justRegeneratedRef.current = true; // Mark that we're about to regenerate
+        errorOccurredRef.current = false; // Clear error state
         
         console.log('🔍 CALLING GENERATE NEW INSIGHTS WITH FORCE=TRUE');
         await generateNewInsights(true); // Pass true to indicate force regeneration
@@ -164,6 +183,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
         
       } catch (err) {
         console.error('🔍 ERROR IN checkForExistingInsights:', err);
+        errorOccurredRef.current = true; // Mark that error occurred
         setError(err instanceof Error ? err.message : 'Failed to check for existing insights');
       }
     };
@@ -206,6 +226,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     isGeneratingRef.current = true;
     setIsLoading(true);
     setError(null);
+    errorOccurredRef.current = false; // Clear error state when starting generation
 
     try {
       const forceRegenerateFlag = skipAllChecks || (isTestAssessment && forceRegenerate);
@@ -231,6 +252,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
 
       if (functionError) {
         console.error('🔍 FUNCTION ERROR:', functionError);
+        errorOccurredRef.current = true; // Mark error occurred
         throw new Error(functionError.message);
       }
 
@@ -254,10 +276,12 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
         console.log('🔍 RESET justRegeneratedRef TO FALSE AFTER SETTING NEW INSIGHTS');
       } else {
         console.error('🔍 NO INSIGHTS IN RESPONSE');
+        errorOccurredRef.current = true; // Mark error occurred
         throw new Error('No insights received from OpenAI');
       }
     } catch (err) {
       console.error('🔍 ERROR GENERATING INSIGHTS:', err);
+      errorOccurredRef.current = true; // Mark error occurred to prevent retry loops
       setError(err instanceof Error ? err.message : 'Failed to generate insights');
       // Reset justRegenerated flag on error too
       justRegeneratedRef.current = false;
@@ -279,8 +303,16 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
         isTestAssessment,
         assessmentId,
         currentInsights: !!insights,
-        currentForceRegenerate: forceRegenerate
+        currentForceRegenerate: forceRegenerate,
+        errorOccurred: errorOccurredRef.current
       });
+      
+      // Clear previous error state when manually triggering regeneration
+      if (errorOccurredRef.current) {
+        console.log('🔍 CLEARING PREVIOUS ERROR STATE FOR MANUAL RETRY');
+        setError(null);
+        errorOccurredRef.current = false;
+      }
       
       if (isTestAssessment) {
         console.log('🔍 TEST ASSESSMENT - Setting forceRegenerate=true');
@@ -298,6 +330,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
         // Reset the loaded flag only for manual regeneration of non-test assessments
         insightsLoadedRef.current = false;
         hasCheckedExistingRef.current = false;
+        errorOccurredRef.current = false; // Clear error state
         generateNewInsights();
       }
     }

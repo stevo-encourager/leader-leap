@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Bot, AlertCircle, Target, TrendingUp, ExternalLink } from 'lucide-react';
 import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
@@ -11,7 +10,7 @@ interface AIInsightsProps {
   demographics: Demographics;
   averageGap: number;
   assessmentId?: string;
-  onRegenerateCallback?: (callback: () => void) => void;
+  onRegenerateCallback?: (callback: () => Promise<void>) => void;
 }
 
 interface PriorityArea {
@@ -74,10 +73,11 @@ const AIInsights: React.FC<AIInsightsProps> = ({
     }
   }, [insights]);
 
-  // FIXED: Create a wrapper function that always calls the current regenerateInsights
-  // This prevents the callback from becoming stale
+  // FIXED: Create wrapper that calls regenerateInsights and updates debug info
   const handleRegenerateWrapper = React.useCallback(async () => {
     console.log('🔵 AIInsights: handleRegenerateWrapper called - FRESH CALLBACK');
+    console.log('🔵 AIInsights: regenerateInsights available:', !!regenerateInsights);
+    console.log('🔵 AIInsights: regenerateInsights type:', typeof regenerateInsights);
     
     const timestamp = new Date().toISOString().slice(11, 23);
     setDebugInfo(prev => ({
@@ -88,10 +88,9 @@ const AIInsights: React.FC<AIInsightsProps> = ({
       callbackInvocations: prev.callbackInvocations + 1
     }));
 
-    // CRITICAL: Always call the CURRENT regenerateInsights function
-    // Don't store it in a variable - call it directly
-    if (regenerateInsights) {
-      console.log('🔵 AIInsights: Calling CURRENT regenerateInsights function');
+    // CRITICAL: Call the regenerateInsights function directly
+    if (regenerateInsights && typeof regenerateInsights === 'function') {
+      console.log('🔵 AIInsights: Calling regenerateInsights function');
       try {
         await regenerateInsights();
         console.log('🔵 AIInsights: regenerateInsights completed successfully');
@@ -105,25 +104,29 @@ const AIInsights: React.FC<AIInsightsProps> = ({
         }));
       }
     } else {
-      console.error('🔵 AIInsights: regenerateInsights function not available');
+      console.error('🔵 AIInsights: regenerateInsights function not available or not a function');
+      console.error('🔵 AIInsights: regenerateInsights value:', regenerateInsights);
     }
-  }, [regenerateInsights]); // CRITICAL: Depend on regenerateInsights so callback updates
+  }, [regenerateInsights]);
 
-  // FIXED: Update callback reference every time regenerateInsights changes
+  // FIXED: Provide the wrapper function to parent component
   React.useEffect(() => {
-    if (onRegenerateCallback) {
+    if (onRegenerateCallback && typeof onRegenerateCallback === 'function') {
       const timestamp = new Date().toISOString().slice(11, 23);
-      console.log('🔵 AIInsights: Updating callback reference for parent');
+      console.log('🔵 AIInsights: Providing regeneration callback to parent');
+      console.log('🔵 AIInsights: handleRegenerateWrapper type:', typeof handleRegenerateWrapper);
       
       setDebugInfo(prev => ({
         ...prev,
-        lastCallbackUpdate: `${timestamp} - Callback updated`
+        lastCallbackUpdate: `${timestamp} - Callback provided to parent`
       }));
       
-      // Always provide the current wrapper function
+      // Provide the wrapper function to parent
       onRegenerateCallback(handleRegenerateWrapper);
+    } else {
+      console.log('🔵 AIInsights: No onRegenerateCallback provided or not a function');
     }
-  }, [onRegenerateCallback, handleRegenerateWrapper]); // Update when either changes
+  }, [onRegenerateCallback, handleRegenerateWrapper]);
 
   // Log the assessment ID and insights status for debugging
   React.useEffect(() => {

@@ -22,7 +22,9 @@ const AITestPanel = () => {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [regenerateCallback, setRegenerateCallback] = useState<(() => void) | null>(null);
+
+  // FIXED: Remove the regenerateCallback state - use direct reference instead
+  // This was causing the "f is not a function" error
 
   // FIXED: Use only the specific test assessment ID
   const TEST_ASSESSMENT_ID = 'f74470bc-3c48-4980-bc5f-17386a724d37';
@@ -76,28 +78,46 @@ const AITestPanel = () => {
     }
   };
 
+  // FIXED: Create a ref to store the regenerate function directly
+  const regenerateFunctionRef = React.useRef<(() => Promise<void>) | null>(null);
+
   const handleRefreshInsights = async () => {
     console.log('🔴 AITestPanel: Regenerate Insights button clicked - FIRST LINE OF HANDLER');
     console.log('🔴 AITestPanel: Current refreshKey before increment:', refreshKey);
-    console.log('🔴 AITestPanel: regenerateCallback available:', !!regenerateCallback);
+    console.log('🔴 AITestPanel: regenerateFunctionRef.current available:', !!regenerateFunctionRef.current);
+    console.log('🔴 AITestPanel: regenerateFunctionRef.current type:', typeof regenerateFunctionRef.current);
     
-    // Call the regenerateInsights function from the AIInsights component
-    if (regenerateCallback) {
-      console.log('🔴 AITestPanel: Calling regeneration callback');
+    // FIXED: Call the function directly from the ref
+    if (regenerateFunctionRef.current && typeof regenerateFunctionRef.current === 'function') {
+      console.log('🔴 AITestPanel: Calling regeneration function directly');
       try {
-        await regenerateCallback();
-        console.log('🔴 AITestPanel: Regeneration callback completed successfully');
+        await regenerateFunctionRef.current();
+        console.log('🔴 AITestPanel: Regeneration function completed successfully');
       } catch (error) {
-        console.error('🔴 AITestPanel: Regeneration callback failed:', error);
+        console.error('🔴 AITestPanel: Regeneration function failed:', error);
       }
     } else {
-      console.log('🔴 AITestPanel: No regeneration callback available, forcing re-render');
+      console.log('🔴 AITestPanel: No valid regeneration function available, forcing re-render');
       // Fallback: force a re-render to try again
       setRefreshKey(prev => prev + 1);
     }
     
     console.log('🔴 AITestPanel: handleRefreshInsights completed');
   };
+
+  // FIXED: Callback function that receives the regeneration function
+  const handleRegenerateCallback = React.useCallback((regenerateFunction: () => Promise<void>) => {
+    console.log('🔴 AITestPanel: Received regeneration callback, type:', typeof regenerateFunction);
+    console.log('🔴 AITestPanel: Is function?', typeof regenerateFunction === 'function');
+    
+    if (typeof regenerateFunction === 'function') {
+      regenerateFunctionRef.current = regenerateFunction;
+      console.log('🔴 AITestPanel: Stored regeneration function in ref');
+    } else {
+      console.error('🔴 AITestPanel: Received invalid regeneration callback - not a function');
+      regenerateFunctionRef.current = null;
+    }
+  }, []);
 
   // Wait for auth check
   if (loading) {
@@ -193,7 +213,7 @@ const AITestPanel = () => {
               demographics={demographics}
               averageGap={averageGap}
               assessmentId={TEST_ASSESSMENT_ID}
-              onRegenerateCallback={setRegenerateCallback}
+              onRegenerateCallback={handleRegenerateCallback}
             />
           </div>
         </div>

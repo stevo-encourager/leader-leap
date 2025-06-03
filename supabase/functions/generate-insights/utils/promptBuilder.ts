@@ -547,7 +547,28 @@ ${validatedLeadersList}
 
 **CRITICAL: You MUST ONLY use leaders from the validated database above. Do not reference any leader not explicitly listed.**
 
-**Format requirement for summary:** "Like [Leader Name](https://workinglink.com), who is known for [specific principle]..."
+**CRITICAL HYPERLINK FORMAT:** When mentioning the inspirational person in the summary, format it as a proper hyperlink with the leader's name as clickable text (NO URL visible):
+- Correct format: "Like [Leader Name](https://workinglink.com), who is known for [specific principle]..."
+- The URL should NOT be visible in the text - only the leader's name should appear as a clickable link
+- Example: "Like [Satya Nadella](https://workinglink.com), who is known for empathetic leadership..."
+
+### CRITICAL TERMINOLOGY CONSISTENCY
+
+**MANDATORY TERMINOLOGY RULES:**
+- NEVER use the word "strength" as a synonym for "competency"
+- ALWAYS refer to these as "competencies" or "leadership competencies"
+- ALWAYS refer to the items within competencies as "skills"
+- Use "competency" or "competencies" consistently throughout all content
+- Do NOT use terms like "strength areas," "strong suits," or "areas of strength"
+- Use "key competencies," "top competencies," or "competency areas" instead
+
+**Correct Terminology Examples:**
+✅ "Your key competencies in professional development..."
+✅ "These leadership competencies provide a foundation..."
+✅ "Your assessment highlights competencies in..."
+❌ "Your strengths in professional development..." 
+❌ "These strength areas provide a foundation..."
+❌ "Your assessment highlights strengths in..."
 
 ### CRITICAL: JSON Structure Requirements
 
@@ -575,9 +596,9 @@ You MUST output ONLY a valid JSON object with this EXACT structure:
 
 ### FIELD REQUIREMENTS
 
-- **summary**: Generate a professional, encouraging, and personalized assessment summary that is 6–8 sentences. Use the word "competencies" throughout (not "strengths"). Always refer to the person as "you" or "your" (never "the user" or "the user's"). MUST reference specific individual skills by NAME ONLY (NO numerical values, NO gaps, NO scores, NO decimals, NO parentheses with numbers) within the priority competencies. ONLY use skills from the validated skills database. Include natural references to their role, industry, and experience level. Use supportive, confidence-building language while avoiding repetition.
+- **summary**: Generate a professional, encouraging, and personalized assessment summary that is 6–8 sentences. Use the word "competencies" throughout (NEVER use "strengths" as a synonym). Always refer to the person as "you" or "your" (never "the user" or "the user's"). MUST reference specific individual skills by NAME ONLY (NO numerical values, NO gaps, NO scores, NO decimals, NO parentheses with numbers) within the priority competencies. ONLY use skills from the validated skills database. Include natural references to their role, industry, and experience level. Use supportive, confidence-building language while avoiding repetition.
 
-**CRITICAL FORMATTING FOR SUMMARY**: Structure the summary as TWO clear paragraphs that will be separated by post-processing. Use transition phrases like "However," "At the same time," "Additionally," or "Your results also" to start the second paragraph. MUST include industry and role-relevant inspirational leader with working link using format: "Like [Leader Name](https://workinglink.com), who is known for [specific principle]..."
+**CRITICAL FORMATTING FOR SUMMARY**: Structure the summary as TWO clear paragraphs that will be separated by post-processing. Use transition phrases like "However," "At the same time," "Additionally," or "Your results also" to start the second paragraph. MUST include industry and role-relevant inspirational leader with hyperlink using format: "Like [Leader Name](https://workinglink.com), who is known for [specific principle]..."
 
 - **priority_areas**: An array with exactly 3 objects, each for a Top 3 Priority Development Area. Each object must contain:
   - \`competency\`: The exact competency name from assessment data
@@ -587,8 +608,8 @@ You MUST output ONLY a valid JSON object with this EXACT structure:
 
 - **key_strengths**: An array with at least 2 objects, each for a key competency to leverage. Each object must contain:
   - \`competency\`: The exact competency name from assessment data
-  - \`example\`: Concrete example of how this strength manifests in their specific role/industry context, including reference to specific skills within the competency (ONLY validated skills)
-  - \`leverage_advice\`: Array of exactly 3 specific strategies for leveraging this strength that incorporate role/industry/experience context and reference individual skills where relevant (ONLY validated skills)
+  - \`example\`: Concrete example of how this competency manifests in their specific role/industry context, including reference to specific skills within the competency (ONLY validated skills)
+  - \`leverage_advice\`: Array of exactly 3 specific strategies for leveraging this competency that incorporate role/industry/experience context and reference individual skills where relevant (ONLY validated skills)
   - \`resources\`: Array of exactly 3 resource names from the validated database, using EXACT titles as specified
 
 ### PRE-OUTPUT VALIDATION CHECKLIST
@@ -600,6 +621,7 @@ Before generating the JSON response, verify:
 □ Resource names are used as specified in the database (exact titles only)
 □ Leader name matches EXACTLY with the validated leaders database
 □ Leader reference uses the exact name and principle from the database
+□ Leader hyperlink format is correct: [Leader Name](URL) with NO visible URL
 □ If no suitable validated leader exists for context, leader reference is omitted
 □ Summary includes verified leader with working link in correct format (only if validated leader found)
 □ All demographic context (role, industry, experience) is referenced appropriately
@@ -614,6 +636,8 @@ Before generating the JSON response, verify:
 □ **CRITICAL**: Individual skill ratings are whole numbers (no decimals)
 □ **CRITICAL**: ALL skill references use ONLY validated skills from the skills database
 □ **CRITICAL**: NO skills are invented, created, or referenced outside the validated skills database
+□ **CRITICAL**: NEVER use "strength" as synonym for "competency" - always use "competencies" or "leadership competencies"
+□ **CRITICAL**: Always refer to items within competencies as "skills"
 
 ### CRITICAL JSON RULES
 - Output MUST be valid JSON only. No text, markdown, or formatting before/after.
@@ -628,8 +652,9 @@ Before generating the JSON response, verify:
 - **VALIDATED RESOURCE REQUIREMENT**: Every resource in the resources arrays must be an exact match from the validated database above
 - **VALIDATED LEADER REQUIREMENT**: Every leader in the summary must be an exact match from the validated leaders database above. If no suitable validated leader exists for the context, omit the leader reference entirely rather than using an unvalidated leader.
 - **VALIDATED SKILL REQUIREMENT**: Every skill referenced must be an exact match from the validated skills database above. Never create, invent, or reference skills outside this validated list.
+- **TERMINOLOGY REQUIREMENT**: NEVER use "strength" as synonym for "competency" - always use "competencies" or "leadership competencies"
 
-Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above while being specifically tailored to the user's role, industry, experience level, AND individual skill gaps. Remember: ONLY use resources, leaders, and skills from the validated databases with exact title matching, reference skills by name only in summary (NO numbers), and ALWAYS reference specific skills by name with their gap scores in insights sections (ONLY validated skills).
+Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above while being specifically tailored to the user's role, industry, experience level, AND individual skill gaps. Remember: ONLY use resources, leaders, and skills from the validated databases with exact title matching, reference skills by name only in summary (NO numbers), ALWAYS reference specific skills by name with their gap scores in insights sections (ONLY validated skills), use proper hyperlink formatting for leaders, and maintain consistent terminology (competencies, not strengths).
 
 `;
 

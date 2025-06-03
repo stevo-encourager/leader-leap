@@ -2,7 +2,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import TestAccessButton from '@/components/testing/TestAccessButton';
 
 const Navigation = () => {
   const { user } = useAuth();
@@ -11,6 +10,11 @@ const Navigation = () => {
   const isActive = (path: string) => {
     return location.pathname === path;
   };
+
+  // Only show test panel link in development or localhost
+  const showTestPanel = window.location.hostname === 'localhost' || 
+                       window.location.hostname.includes('lovable.app') ||
+                       window.location.search.includes('dev=true');
 
   return (
     <nav className="bg-white border-b border-slate-200">
@@ -47,13 +51,23 @@ const Navigation = () => {
                 My Assessments
               </Link>
             )}
+
+            {showTestPanel && (
+              <Link 
+                to="/results?test=true" 
+                className={`text-sm font-medium transition-colors ${
+                  location.pathname === '/results' && location.search.includes('test=true')
+                    ? 'text-encourager border-b-2 border-encourager pb-1' 
+                    : 'text-slate-600 hover:text-encourager'
+                }`}
+              >
+                AI Test Panel
+              </Link>
+            )}
           </div>
         </div>
 
         <div className="flex items-center space-x-4">
-          {/* Test Access Button */}
-          <TestAccessButton />
-          
           {user ? (
             <div className="flex items-center space-x-4">
               <span className="text-sm text-slate-600">

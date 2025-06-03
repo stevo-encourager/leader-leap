@@ -175,128 +175,127 @@ const buildValidatedLeadersList = (): string => {
 `;
 };
 
-// Build the validated resources list for the prompt with type labeling
+// Build the validated resources list for the prompt with specific book labeling
 const buildValidatedResourcesList = (): string => {
   return `
 **VALIDATED RESOURCE DATABASE - USE ONLY THESE RESOURCES:**
 
 **Time Management & Productivity:**
-- The Eisenhower Matrix - Priority Management (Framework)
-- Eisenhower Decision Matrix Guide (Article)
-- The Pomodoro Technique (Framework)
-- Getting Things Done (GTD) Methodology (Framework)
+- The Eisenhower Matrix - Priority Management
+- Eisenhower Decision Matrix Guide
+- The Pomodoro Technique
+- Getting Things Done (GTD) Methodology
 
 **Goal Setting & Planning:**
-- SMART Goals Framework (Framework)
-- Objectives and Key Results (OKRs) (Framework)
-- OKR Framework Guide (Article)
+- SMART Goals Framework
+- Objectives and Key Results (OKRs)
+- OKR Framework Guide
 
 **Communication & Feedback:**
-- SBI Feedback Model (Framework)
-- Radical Candor Framework (Framework)
-- What is Nonviolent Communication (Article)
-- Active Listening Techniques (Article)
+- SBI Feedback Model
+- Radical Candor Framework
+- What is Nonviolent Communication
+- Active Listening Techniques
 
 **Decision Making:**
-- OODA Loop (Framework)
-- DACI Decision Making Framework (Framework)
-- RACI 'Responsibility Assignment Matrix' (Framework)
+- OODA Loop
+- DACI Decision Making Framework
+- RACI 'Responsibility Assignment Matrix'
 
 **Strategic Thinking:**
-- SWOT Analysis Framework (Framework)
-- Design Thinking Process by IDEO (Framework)
-- Scenario Planning: Step by Step Guide (Article)
+- SWOT Analysis Framework
+- Design Thinking Process by IDEO
+- Scenario Planning: Step by Step Guide
 
 **Emotional Intelligence:**
-- Emotional Intelligence by Daniel Goleman (Article)
-- 16 Personalities test (MBTI) (Tool)
+- Emotional Intelligence by Daniel Goleman
+- 16 Personalities test (MBTI)
 
 **Trust & Relationship Building:**
-- The Speed of Trust by Stephen Covey (Article)
-- The Trust Equation (Framework)
+- The Speed of Trust by Stephen Covey
+- The Trust Equation
 
 **Delegation & Empowerment:**
-- 7 Models for Delegation (Framework)
-- Situational Leadership: What it is and how to build it (Article)
+- 7 Models for Delegation
+- Situational Leadership: What it is and how to build it
 
 **Performance Management:**
-- Performance management that puts people first (Article)
-- Effective One-on-One Meetings (listen) (Article)
+- Performance management that puts people first
+- Effective One-on-One Meetings (listen)
 
 **Conflict Resolution:**
-- Thomas-Kilmann Conflict Resolution Model (Framework)
-- Getting to Yes - Interest-Based Negotiation (Framework)
+- Thomas-Kilmann Conflict Resolution Model
+- Getting to Yes - Interest-Based Negotiation
 
 **Change Management:**
-- ADKAR Change Management Model (Framework)
-- Kotter's 8-Step Change Process (Framework)
-- Bridges Transition Model (Framework)
-- Lewin's 3-Stage Change Model (Framework)
+- ADKAR Change Management Model
+- Kotter's 8-Step Change Process
+- Bridges Transition Model
+- Lewin's 3-Stage Change Model
 
 **Team Development:**
-- Tuckman's Team Development Model (Framework)
-- Creating A Team Charter (Article)
-- Ways of Working & Guiding Principles (watch) (Article)
-- A Guide to Harnessing Psychological Safety (Article)
+- Tuckman's Team Development Model
+- Creating A Team Charter
+- Ways of Working & Guiding Principles (watch)
+- A Guide to Harnessing Psychological Safety
 
 **Team Communication:**
-- Why It's Necessary to Improve Team Communication (Article)
-- 3 Easy Steps to Staff Meetings That Don't Suck (Article)
+- Why It's Necessary to Improve Team Communication
+- 3 Easy Steps to Staff Meetings That Don't Suck
 
 **Learning & Development:**
-- 70-20-10 Learning and Development Model (Framework)
-- What is a Growth Mindset (Article)
-- Deliberate Practice Framework (Framework)
+- 70-20-10 Learning and Development Model
+- What is a Growth Mindset
+- Deliberate Practice Framework
 
 **Coaching & Mentoring:**
-- GROW Coaching Model (Framework)
-- How to have a Coaching Conversation (Article)
+- GROW Coaching Model
+- How to have a Coaching Conversation
 
 **Career Development:**
-- How to create a career development plan in 5 steps (Article)
-- Why It's ALWAYS A Good Idea To Build Your Personal Brand (Article)
-- Strategic Networking for Leaders (Article)
+- How to create a career development plan in 5 steps
+- Why It's ALWAYS A Good Idea To Build Your Personal Brand
+- Strategic Networking for Leaders
 
 **Problem Solving:**
-- The 5 Whys Technique (watch) (Article)
+- The 5 Whys Technique (watch)
 
 **Assessment Tools:**
-- StrengthsFinder 2.0 (Tool)
-- The Predictive Index (Tool)
+- StrengthsFinder 2.0
+- The Predictive Index
 
 **Leadership Books:**
-- Emotional Intelligence 2.0 by Travis Bradberry (Book)
-- Crucial Conversations by Kerry Patterson (Book)
-- The 7 Habits of Highly Effective People by Stephen Covey (Book)
-- Good to Great by Jim Collins (Book)
-- Dare to Lead by Brené Brown (Book)
-- The Leadership Challenge by James Kouzes (Book)
-- Primal Leadership by Daniel Goleman (Book)
-- Atomic Habits by James Clear (Book)
-- Getting Things Done by David Allen (Book)
-- Reinventing Organisations by Frederic Laloux (Book)
-- The Pyramid Principle by Barbara Minto (Book)
-- The Captain Class by Sam Walker (Book)
-- Leading Change by John Kotter (Book)
-- The Power of Habit by Charles Duhigg (Book)
-- Build, Excite, Equip by Nicola Graham (Book)
-- The 17 Indisputable Laws of Teamwork by John Maxwell (Book)
-- Thinking Fast and Slow by Daniel Kahneman (Book)
-- Getting To Yes by Roger Fisher and William Ury (Book)
-- Playing To Win by AG Lafley & Roger Martin (Book)
-- Human Skills by Elizabeth Nyamayaro (Book)
-- Radical Candor by Kim Scott (Book)
-- Nonviolent Communication by Marshall B. Rosenberg (Book)
+- Emotional Intelligence 2.0 by Travis Bradberry (book recommendation)
+- Crucial Conversations by Kerry Patterson (book recommendation)
+- The 7 Habits of Highly Effective People by Stephen Covey (book recommendation)
+- Good to Great by Jim Collins (book recommendation)
+- Dare to Lead by Brené Brown (book recommendation)
+- The Leadership Challenge by James Kouzes (book recommendation)
+- Primal Leadership by Daniel Goleman (book recommendation)
+- Atomic Habits by James Clear (book recommendation)
+- Getting Things Done by David Allen (book recommendation)
+- Reinventing Organisations by Frederic Laloux (book recommendation)
+- The Pyramid Principle by Barbara Minto (book recommendation)
+- The Captain Class by Sam Walker (book recommendation)
+- Leading Change by John Kotter (book recommendation)
+- The Power of Habit by Charles Duhigg (book recommendation)
+- Build, Excite, Equip by Nicola Graham (book recommendation)
+- The 17 Indisputable Laws of Teamwork by John Maxwell (book recommendation)
+- Thinking Fast and Slow by Daniel Kahneman (book recommendation)
+- Getting To Yes by Roger Fisher and William Ury (book recommendation)
+- Playing To Win by AG Lafley & Roger Martin (book recommendation)
+- Human Skills by Elizabeth Nyamayaro (book recommendation)
+- Radical Candor by Kim Scott (book recommendation)
+- Nonviolent Communication by Marshall B. Rosenberg (book recommendation)
 
-**CRITICAL RESOURCE TYPE LABELING REQUIREMENT:**
-- When referencing any resource, you MUST include the resource type in parentheses immediately after the resource name
-- Example: "Emotional Intelligence 2.0 by Travis Bradberry (Book)" or "SWOT Analysis Framework (Framework)"
-- Resource types include: (Book), (Article), (Framework), (Tool)
-- This labeling is MANDATORY for ALL resource references
+**CRITICAL BOOK RECOMMENDATION LABELING:**
+- When referencing books, you MUST add "(book recommendation)" immediately after the book title
+- Example: "Emotional Intelligence 2.0 by Travis Bradberry (book recommendation)"
+- Other resources (frameworks, articles, tools) do NOT need any type labeling
+- This labeling is MANDATORY ONLY for book recommendations
 
 **MINIMUM BOOK RECOMMENDATION REQUIREMENT:**
 - Each competency section (both priority areas and key competencies) MUST include at least one book recommendation from the approved list above
-- Books are marked with (Book) in the resource type
 - If no book directly relates to the competency, select the most relevant book from the approved list
 - NEVER omit book recommendations - there must always be at least one book per section
 `;
@@ -533,15 +532,14 @@ ${validatedLeadersList}
 - If a framework or methodology you want to mention is not in the database, do not include it as a resource
 - Always use the exact resource title as specified in the database
 
-**MANDATORY RESOURCE TYPE LABELING:**
-- Every resource reference MUST include the resource type in parentheses immediately after the resource name
-- Examples: "Emotional Intelligence 2.0 by Travis Bradberry (Book)", "SWOT Analysis Framework (Framework)", "Active Listening Techniques (Article)"
-- Resource types include: (Book), (Article), (Framework), (Tool)
-- This labeling is MANDATORY and CANNOT be omitted
+**MANDATORY BOOK RECOMMENDATION LABELING:**
+- Every book reference MUST include "(book recommendation)" immediately after the book title
+- Examples: "Emotional Intelligence 2.0 by Travis Bradberry (book recommendation)", "Good to Great by Jim Collins (book recommendation)"
+- Other resources (frameworks, articles, tools) do NOT need any type labeling
+- This labeling is MANDATORY ONLY for book recommendations and CANNOT be omitted
 
 **MINIMUM BOOK RECOMMENDATION REQUIREMENT:**
 - Each competency section (both priority areas and key competencies) MUST include at least one book recommendation
-- Books are clearly marked with (Book) in the validated resource database
 - If no book directly relates to the competency, select the most relevant book from the approved list
 - NEVER omit book recommendations - there must always be at least one book per section
 - Priority should be given to books that most closely align with the competency being discussed
@@ -549,7 +547,7 @@ ${validatedLeadersList}
 **Resource Selection Process:**
 1. Identify the specific framework, tool, or methodology in your insight
 2. Find the EXACT matching resource name from the validated database
-3. Use only that exact name with proper type labeling in your resources array
+3. Use only that exact name (with book labeling for books only) in your resources array
 4. Ensure at least one book is included per section
 5. If no exact match exists, do not include a resource for that insight
 
@@ -662,13 +660,13 @@ You MUST output ONLY a valid JSON object with this EXACT structure:
   - \`competency\`: The exact competency name from assessment data
   - \`gap\`: The numerical gap score
   - \`insights\`: Array of exactly 3 actionable, research-backed insights that use encouraging language, avoid generic statements, include specific methodologies/frameworks, integrate role/industry/experience context, AND reference specific individual skills by name WITHOUT mentioning their gap scores or numerical values (ONLY validated skills). MUST include "why" explanations for the importance of developing each competency for leadership effectiveness. Focus on development suggestions and guidance, not numerical reporting.
-  - \`resources\`: Array of exactly 3 resource names from the validated database, using EXACT titles as specified WITH MANDATORY resource type labeling (Book), (Article), (Framework), (Tool). MUST include at least one book recommendation per competency.
+  - \`resources\`: Array of exactly 3 resource names from the validated database, using EXACT titles as specified. Books MUST include "(book recommendation)" labeling. Other resources do NOT need any type labeling. MUST include at least one book recommendation per competency.
 
 - **key_strengths**: An array with at least 2 objects, each for a key competency to leverage. Each object must contain:
   - \`competency\`: The exact competency name from assessment data
   - \`example\`: Encouraging example of how this competency manifests in their specific role/industry context, including reference to specific skills within the competency (ONLY validated skills). Must include positive reinforcement and suggestions about their leadership type.
   - \`leverage_advice\`: Array of exactly 3 specific strategies for leveraging this competency that incorporate role/industry/experience context, reference individual skills where relevant (ONLY validated skills), and include encouraging messaging about personal brand development and leadership confidence.
-  - \`resources\`: Array of exactly 3 resource names from the validated database, using EXACT titles as specified WITH MANDATORY resource type labeling (Book), (Article), (Framework), (Tool). MUST include at least one book recommendation per competency.
+  - \`resources\`: Array of exactly 3 resource names from the validated database, using EXACT titles as specified. Books MUST include "(book recommendation)" labeling. Other resources do NOT need any type labeling. MUST include at least one book recommendation per competency.
 
 ### PRE-OUTPUT VALIDATION CHECKLIST
 
@@ -677,8 +675,10 @@ Before generating the JSON response, verify:
 □ No custom or external resources are included
 □ Every framework mentioned has a corresponding validated resource
 □ Resource names are used as specified in the database (exact titles only)
-□ **CRITICAL**: ALL resource references include mandatory type labeling: (Book), (Article), (Framework), (Tool)
+□ **CRITICAL**: ALL book references include mandatory "(book recommendation)" labeling
+□ **CRITICAL**: Other resources (frameworks, articles, tools) do NOT have any type labeling
 □ **CRITICAL**: Each competency section includes at least one book recommendation from the approved list
+□ **CRITICAL**: Each competency section has exactly 3 resources (not 4)
 □ Leader name matches EXACTLY with the validated leaders database
 □ Leader reference uses the exact name and principle from the database
 □ Leader hyperlink format is correct: [Leader Name](URL) with NO visible URL
@@ -702,8 +702,9 @@ Before generating the JSON response, verify:
 □ **CRITICAL**: Priority areas include "why" explanations for competency importance
 □ **CRITICAL**: Key competencies include encouraging messaging about leadership type and personal brand
 □ **CRITICAL**: Encourager Coaching ethos is reflected throughout all content
-□ **CRITICAL**: Resource type labeling is present for ALL resource references
+□ **CRITICAL**: Book recommendation labeling is present for ALL book references
 □ **CRITICAL**: At least one book recommendation exists per competency section
+□ **CRITICAL**: Maximum of 3 resources per competency section
 
 ### CRITICAL JSON RULES
 - Output MUST be valid JSON only. No text, markdown, or formatting before/after.
@@ -715,14 +716,15 @@ Before generating the JSON response, verify:
 - Use only suggestive language for assessment tools: "consider using a tool such as [tool name]" rather than direct recommendations.
 - **PERSONALIZATION REQUIREMENT**: Use ALL THREE demographic dimensions (role, industry, experience) to tailor insights, examples, and leader selection for maximum relevance to the user's specific context.
 - **SKILL-LEVEL REQUIREMENT**: Reference specific individual skills by name only (NO numbers, NO gaps, NO scores) in summary, and by name only (NO numerical values) in priority area insights (ONLY validated skills from the database)
-- **VALIDATED RESOURCE REQUIREMENT**: Every resource in the resources arrays must be an exact match from the validated database above WITH mandatory type labeling
+- **VALIDATED RESOURCE REQUIREMENT**: Every resource in the resources arrays must be an exact match from the validated database above. Books must include "(book recommendation)" labeling. Other resources must NOT have any type labeling.
 - **MINIMUM BOOK REQUIREMENT**: Every competency section must include at least one book recommendation from the validated database
+- **MAXIMUM RESOURCE REQUIREMENT**: Every competency section must include exactly 3 resources (not 4)
 - **VALIDATED LEADER REQUIREMENT**: Every leader in the summary must be an exact match from the validated leaders database above. If no suitable validated leader exists for the context, omit the leader reference entirely rather than using an unvalidated leader.
 - **VALIDATED SKILL REQUIREMENT**: Every skill referenced must be an exact match from the validated skills database above. Never create, invent, or reference skills outside this validated list.
 - **TERMINOLOGY REQUIREMENT**: NEVER use "strength" as synonym for "competency" - always use "competencies" or "leadership competencies"
 - **ENCOURAGER COACHING REQUIREMENT**: All content must reflect Encourager Coaching's positive psychology approach, maximizing natural ability, and helping users become their best leadership version through encouraging, supportive language and framing.
 
-Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above while being specifically tailored to the user's role, industry, experience level, AND individual skill gaps by name only (without numerical values). Remember: ONLY use resources, leaders, and skills from the validated databases with exact title matching, include mandatory resource type labeling, ensure minimum book recommendations per section, reference skills by name only in summary (NO numbers), reference specific skills by name only in insights sections (NO numerical values - focus on development suggestions), use proper hyperlink formatting for leaders, maintain consistent terminology (competencies, not strengths), and embody Encourager Coaching's philosophy of positive psychology, encouragement, and helping people maximize their natural abilities to become the best version of themselves.
+Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above while being specifically tailored to the user's role, industry, experience level, AND individual skill gaps by name only (without numerical values). Remember: ONLY use resources, leaders, and skills from the validated databases with exact title matching, include mandatory "(book recommendation)" labeling for books only, ensure minimum book recommendations per section, limit to exactly 3 resources per section, reference skills by name only in summary (NO numbers), reference specific skills by name only in insights sections (NO numerical values - focus on development suggestions), use proper hyperlink formatting for leaders, maintain consistent terminology (competencies, not strengths), and embody Encourager Coaching's philosophy of positive psychology, encouragement, and helping people maximize their natural abilities to become the best version of themselves.
 
 `;
 

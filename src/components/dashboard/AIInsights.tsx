@@ -42,6 +42,13 @@ const AIInsights: React.FC<AIInsightsProps> = ({
 }) => {
   console.log('🔵 AIInsights: Component re-rendered with assessmentId:', assessmentId);
   
+  // Add debug state for tracking regeneration
+  const [debugInfo, setDebugInfo] = React.useState({
+    lastBackendResponse: '',
+    lastInsightsPreview: '',
+    regenerationCount: 0
+  });
+  
   const { insights, isLoading, error, regenerateInsights } = useOpenAIInsights({
     categories,
     demographics,
@@ -49,13 +56,59 @@ const AIInsights: React.FC<AIInsightsProps> = ({
     assessmentId
   });
 
-  // Provide the regenerate function to the parent component
+  // Track when insights change to update debug info
   React.useEffect(() => {
-    if (onRegenerateCallback && regenerateInsights) {
-      console.log('🔵 AIInsights: Setting regenerate callback for parent');
-      onRegenerateCallback(regenerateInsights);
+    if (insights && insights.length > 0) {
+      const timestamp = new Date().toISOString().slice(11, 23);
+      const preview = insights.substring(0, 100) + (insights.length > 100 ? '...' : '');
+      
+      console.log('🔵 AIInsights: Insights updated, setting debug info');
+      setDebugInfo(prev => ({
+        ...prev,
+        lastBackendResponse: `${timestamp} - Response received`,
+        lastInsightsPreview: preview
+      }));
     }
-  }, [onRegenerateCallback, regenerateInsights]);
+  }, [insights]);
+
+  // Enhanced regenerate function with debug tracking
+  const handleRegenerateWithDebug = React.useCallback(async () => {
+    console.log('🔵 AIInsights: handleRegenerateWithDebug called');
+    
+    const timestamp = new Date().toISOString().slice(11, 23);
+    setDebugInfo(prev => ({
+      ...prev,
+      lastBackendResponse: `${timestamp} - Regeneration started`,
+      lastInsightsPreview: 'Waiting for new insights...',
+      regenerationCount: prev.regenerationCount + 1
+    }));
+
+    if (regenerateInsights) {
+      console.log('🔵 AIInsights: Calling regenerateInsights function');
+      try {
+        await regenerateInsights();
+        console.log('🔵 AIInsights: regenerateInsights completed');
+      } catch (error) {
+        console.error('🔵 AIInsights: regenerateInsights failed:', error);
+        const errorTimestamp = new Date().toISOString().slice(11, 23);
+        setDebugInfo(prev => ({
+          ...prev,
+          lastBackendResponse: `${errorTimestamp} - Error: ${error}`,
+          lastInsightsPreview: 'Error occurred'
+        }));
+      }
+    } else {
+      console.error('🔵 AIInsights: regenerateInsights function not available');
+    }
+  }, [regenerateInsights]);
+
+  // Provide the enhanced regenerate function to the parent component
+  React.useEffect(() => {
+    if (onRegenerateCallback && handleRegenerateWithDebug) {
+      console.log('🔵 AIInsights: Setting enhanced regenerate callback for parent');
+      onRegenerateCallback(handleRegenerateWithDebug);
+    }
+  }, [onRegenerateCallback, handleRegenerateWithDebug]);
 
   // Log the assessment ID and insights status for debugging
   React.useEffect(() => {
@@ -311,6 +364,19 @@ const AIInsights: React.FC<AIInsightsProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* DEBUG INDICATOR - TEMPORARY FOR TROUBLESHOOTING */}
+      <div className="bg-red-50 border border-red-200 p-4 rounded-lg">
+        <h4 className="font-bold text-red-800 mb-2">DEBUG INFO (Remove when fixed)</h4>
+        <div className="text-sm text-red-700 space-y-1">
+          <div><strong>Regeneration Count:</strong> {debugInfo.regenerationCount}</div>
+          <div><strong>Last Backend Response:</strong> {debugInfo.lastBackendResponse || 'None'}</div>
+          <div><strong>Latest Insights Preview:</strong> {debugInfo.lastInsightsPreview || 'None'}</div>
+          <div><strong>Current Loading State:</strong> {isLoading ? 'LOADING' : 'NOT LOADING'}</div>
+          <div><strong>Has Insights:</strong> {insights ? 'YES' : 'NO'}</div>
+          <div><strong>Has Error:</strong> {error ? 'YES' : 'NO'}</div>
+        </div>
+      </div>
+
       {/* AI-Powered Insights Header */}
       <div className="bg-encourager/5 p-6 rounded-lg border border-encourager/20">
         <div className="flex items-center justify-between mb-6">

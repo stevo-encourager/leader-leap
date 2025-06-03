@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { normalizeCategories, normalizeDemographics } from '@/utils/dataNormalizer';
@@ -103,6 +102,66 @@ export const getLatestAssessmentResults = async (): Promise<FetchAssessmentResul
 
   } catch (error) {
     console.error("getLatestAssessmentResults - Unexpected error:", error);
+    return { success: false, error: "An unexpected error occurred while fetching assessment" };
+  }
+};
+
+// Function to fetch a specific assessment by ID (for test panel)
+export const getSpecificAssessmentResults = async (assessmentId: string): Promise<FetchAssessmentResult> => {
+  console.log(`getSpecificAssessmentResults - Fetching assessment: ${assessmentId}`);
+  
+  try {
+    // Fetch the specific assessment without user_id restriction for test purposes
+    const { data, error } = await supabase
+      .from('assessment_results')
+      .select('*')
+      .eq('id', assessmentId)
+      .eq('completed', true)
+      .limit(1);
+
+    if (error) {
+      console.error("getSpecificAssessmentResults - Database error:", error);
+      return { success: false, error: error.message };
+    }
+
+    if (!data || data.length === 0) {
+      console.log("getSpecificAssessmentResults - Assessment not found");
+      return { success: false, error: "Assessment not found" };
+    }
+
+    const assessment = data[0];
+    console.log("getSpecificAssessmentResults - Raw assessment data:", {
+      id: assessment.id,
+      categoriesType: typeof assessment.categories,
+      categoriesLength: Array.isArray(assessment.categories) ? assessment.categories.length : 'not array',
+      demographicsType: typeof assessment.demographics
+    });
+
+    // Validate and normalize the categories data
+    const rawCategories = assessment.categories;
+    if (!rawCategories || !Array.isArray(rawCategories)) {
+      console.error("getSpecificAssessmentResults - Invalid categories data:", rawCategories);
+      return { success: false, error: "Invalid assessment data format" };
+    }
+
+    // Normalize the data to ensure consistent format
+    const normalizedCategories = normalizeCategories(rawCategories);
+    const normalizedDemographics = normalizeDemographics(assessment.demographics);
+
+    console.log(`getSpecificAssessmentResults - Successfully normalized ${normalizedCategories.length} categories`);
+
+    const result: AssessmentResult = {
+      id: assessment.id,
+      categories: normalizedCategories,
+      demographics: normalizedDemographics,
+      created_at: assessment.created_at,
+      completed: assessment.completed
+    };
+
+    return { success: true, data: result };
+
+  } catch (error) {
+    console.error("getSpecificAssessmentResults - Unexpected error:", error);
     return { success: false, error: "An unexpected error occurred while fetching assessment" };
   }
 };

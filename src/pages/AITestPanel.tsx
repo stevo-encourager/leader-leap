@@ -55,10 +55,10 @@ const AITestPanel = () => {
 
       if (result.success && result.data) {
         console.log('AITestPanel: Successfully loaded assessment data');
-        console.log('AITestPanel: Assessment ID:', result.data.assessmentId);
+        console.log('AITestPanel: Assessment ID:', result.data.id);
         setCategories(result.data.categories);
         setDemographics(result.data.demographics);
-        setAssessmentId(result.data.assessmentId); // Set the actual assessment ID
+        setAssessmentId(result.data.id); // Use 'id' instead of 'assessmentId'
       } else {
         console.error('AITestPanel: Failed to load assessment data:', result.error);
         setError(result.error || 'Failed to load assessment data');
@@ -170,7 +170,7 @@ const AITestPanel = () => {
               categories={categories}
               demographics={demographics}
               averageGap={averageGap}
-              assessmentId={assessmentId} // Pass the actual assessment ID from the loaded data
+              assessmentId={assessmentId} // Now correctly using the 'id' from the assessment
             />
           </div>
         </div>

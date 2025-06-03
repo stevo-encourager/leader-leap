@@ -35,6 +35,14 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
   const TEST_ASSESSMENT_ID = 'f74470bc-3c48-4980-bc5f-17386a724d37';
   const isTestAssessment = assessmentId === TEST_ASSESSMENT_ID;
   
+  // Add comprehensive debugging for button rendering
+  console.log('🔍 RESULTS ACTIONS RENDER DEBUG:', {
+    assessmentId,
+    TEST_ASSESSMENT_ID,
+    isTestAssessment,
+    buttonShouldRender: isTestAssessment
+  });
+  
   // Calculate average gap for insights hook
   const averageGap = categories.length > 0 ? calculateAverageGap(categories) : 0;
   
@@ -45,7 +53,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     averageGap,
     assessmentId
   });
-  
+
   // Enhanced validation to check if we actually have assessment data
   const hasValidAssessmentData = () => {
     console.log('ResultsActions: Checking for valid assessment data...');
@@ -261,7 +269,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     onRestart();
   };
 
-  // Handle regenerating insights
+  // Handle regenerating insights with comprehensive debugging
   const handleRegenerateInsights = () => {
     console.log('🔍 🚨 HANDLE REGENERATE INSIGHTS CALLED - BUTTON CLICK HANDLER!');
     console.log('🔍 ResultsActions: Button clicked with:', {
@@ -326,6 +334,9 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     return 'Download your complete assessment results as a professionally formatted PDF';
   };
 
+  // Add debug log right before rendering to confirm button should be visible
+  console.log('🔍 ABOUT TO RENDER BUTTONS - isTestAssessment:', isTestAssessment);
+
   return (
     <div className="flex justify-between w-full">
       <Button variant="outline" onClick={onBack}>
@@ -353,29 +364,32 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
           </TooltipProvider>
         )}
         {isTestAssessment && (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  onClick={() => {
-                    console.log('🔍 🚨 BUTTON ONCLICK FIRED - VERY FIRST LINE!');
-                    console.log('🔍 Button onClick called, isTestAssessment:', isTestAssessment);
-                    console.log('🔍 About to call handleRegenerateInsights');
-                    handleRegenerateInsights();
-                  }}
-                  disabled={insightsLoading}
-                  className="flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  {insightsLoading ? 'Regenerating...' : 'Regenerate Insights'}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top">
-                <p className="max-w-xs text-sm">Regenerate AI insights for this test assessment</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+          <>
+            {console.log('🔍 RENDERING REGENERATE BUTTON - isTestAssessment is TRUE')}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      console.log('🔍 🚨 BUTTON ONCLICK FIRED - VERY FIRST LINE!');
+                      console.log('🔍 Button onClick called, isTestAssessment:', isTestAssessment);
+                      console.log('🔍 About to call handleRegenerateInsights');
+                      handleRegenerateInsights();
+                    }}
+                    disabled={insightsLoading}
+                    className="flex items-center gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    {insightsLoading ? 'Regenerating...' : 'Regenerate Insights'}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="top">
+                  <p className="max-w-xs text-sm">Regenerate AI insights for this test assessment</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </>
         )}
         <TooltipProvider>
           <Tooltip>

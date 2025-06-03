@@ -2,7 +2,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { validateEnvironmentVariables, validateInsightsStructure } from './utils/validation.ts';
-import { cleanJsonResponse, formatSummaryIntoParagraphs } from './utils/formatting.ts';
+import { cleanJsonResponse, formatSummaryIntoParagraphs, sanitizeJsonString } from './utils/formatting.ts';
 import { buildAssessmentData, buildPrompt } from './utils/promptBuilder.ts';
 import { callOpenAI } from './utils/openaiClient.ts';
 import { checkExistingInsights, saveInsights } from './utils/database.ts';
@@ -19,10 +19,21 @@ serve(async (req) => {
   }
 
   try {
+    console.log('=== GENERATE INSIGHTS FUNCTION START ===');
+    
     // Validate environment variables
     const { openAIApiKey, supabaseUrl, supabaseServiceKey } = validateEnvironmentVariables();
+    console.log('Environment variables validated successfully');
 
-    const { categories, demographics, averageGap, assessmentId } = await req.json();
+    const requestBody = await req.json();
+    console.log('Request body received:', {
+      categoriesCount: requestBody.categories?.length || 0,
+      hasDemo: !!requestBody.demographics,
+      averageGap: requestBody.averageGap,
+      assessmentId: requestBody.assessmentId
+    });
+
+    const { categories, demographics, averageGap, assessmentId } = requestBody;
 
     // CRITICAL FIRST CHECK: Always verify existing insights before ANY processing
     if (assessmentId && assessmentId.trim() !== '') {
@@ -41,56 +52,73 @@ serve(async (req) => {
     console.log('CRITICAL SAFEGUARD: No existing insights confirmed - generating new insights (ONLY ONCE)');
 
     // Build assessment data and prompt
+    console.log('Building assessment data and prompt...');
     const assessmentSummary = buildAssessmentData(categories, averageGap, demographics);
     const prompt = buildPrompt(assessmentSummary);
+    console.log('Prompt built successfully, length:', prompt.length);
 
     // Call OpenAI
+    console.log('Calling OpenAI API...');
     const rawInsights = await callOpenAI(prompt, openAIApiKey);
+    console.log('OpenAI API call successful, response length:', rawInsights.length);
 
     // Clean and parse the response
+    console.log('Cleaning JSON response...');
     const cleanedInsights = cleanJsonResponse(rawInsights);
-    console.log('Cleaned insights JSON:', cleanedInsights);
+    console.log('JSON cleaned, attempting sanitization...');
+    
+    const sanitizedInsights = sanitizeJsonString(cleanedInsights);
+    console.log('JSON sanitized successfully');
 
     let parsedInsights;
     try {
-      parsedInsights = JSON.parse(cleanedInsights);
+      console.log('Parsing sanitized JSON...');
+      parsedInsights = JSON.parse(sanitizedInsights);
+      console.log('JSON parsed successfully');
+      
+      console.log('Validating insights structure...');
       validateInsightsStructure(parsedInsights);
+      console.log('Insights structure validation passed');
 
       // POST-PROCESS THE SUMMARY: Apply enhanced paragraph formatting
       if (parsedInsights.summary) {
-        console.log('Original summary:', parsedInsights.summary);
-        
+        console.log('Applying summary formatting...');
         const formattedSummary = formatSummaryIntoParagraphs(parsedInsights.summary);
         parsedInsights.summary = formattedSummary;
-        
-        console.log('Enhanced formatted summary:', formattedSummary);
+        console.log('Summary formatting applied successfully');
       }
       
-      console.log('Successfully validated JSON structure and applied enhanced summary formatting');
     } catch (jsonError) {
-      console.error('Invalid JSON response from OpenAI after cleaning:', jsonError);
-      console.error('Cleaned response was:', cleanedInsights);
+      console.error('JSON parsing or validation failed:', jsonError.message);
+      console.error('Sanitized response sample:', sanitizedInsights.substring(0, 500) + '...');
       throw new Error(`OpenAI returned invalid JSON format: ${jsonError.message}`);
     }
 
     // Convert back to JSON string with enhanced formatted summary
     const finalInsights = JSON.stringify(parsedInsights);
+    console.log('Final insights prepared, length:', finalInsights.length);
 
     // CRITICAL FINAL SAFEGUARD: Only save if we have a valid assessment ID and confirm no existing insights
     if (assessmentId && assessmentId.trim() !== '') {
       console.log('CRITICAL FINAL SAFEGUARD: Attempting to save insights with final protection check');
       await saveInsights(assessmentId, finalInsights, supabaseUrl, supabaseServiceKey);
+      console.log('Insights saved successfully');
     } else {
       console.log('CRITICAL FINAL SAFEGUARD: No assessment ID - returning insights without saving');
     }
 
-    console.log('Successfully generated and processed insights with all critical safeguards in place');
+    console.log('=== GENERATE INSIGHTS FUNCTION SUCCESS ===');
 
     return new Response(JSON.stringify({ insights: finalInsights }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('Error in generate-insights function:', error);
+    console.error('=== GENERATE INSIGHTS FUNCTION ERROR ===');
+    console.error('Error details:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    });
     
     const errorMessage = error.message.includes('OpenAI') 
       ? 'Unable to generate insights due to AI service error. Please try again later.'

@@ -16,7 +16,7 @@ export const cleanJsonResponse = (response: string): string => {
   return cleaned.trim();
 };
 
-// Enhanced function to format summary into proper paragraphs
+// Enhanced function to format summary into proper paragraphs and fix JSON control characters
 export const formatSummaryIntoParagraphs = (summary: string): string => {
   if (!summary || summary.trim().length === 0) {
     return "";
@@ -59,4 +59,37 @@ export const formatSummaryIntoParagraphs = (summary: string): string => {
   
   console.log('Summary too short to split, returning as single paragraph');
   return formatted;
+};
+
+// New function to properly escape JSON control characters
+export const sanitizeJsonString = (jsonString: string): string => {
+  try {
+    // First attempt to parse - if it works, we're good
+    JSON.parse(jsonString);
+    return jsonString;
+  } catch (error) {
+    console.log('JSON parsing failed, attempting to sanitize:', error.message);
+    
+    // Clean up common control character issues in JSON strings
+    let sanitized = jsonString
+      // Fix unescaped newlines in string values
+      .replace(/(?<!\\)\\n(?!"|\\)/g, '\\\\n')
+      // Fix unescaped carriage returns
+      .replace(/(?<!\\)\\r(?!"|\\)/g, '\\\\r')
+      // Fix unescaped tabs
+      .replace(/(?<!\\)\\t(?!"|\\)/g, '\\\\t')
+      // Fix unescaped backslashes that aren't escape sequences
+      .replace(/\\(?!["\\/bfnrt])/g, '\\\\');
+    
+    // Try parsing again
+    try {
+      JSON.parse(sanitized);
+      console.log('JSON sanitization successful');
+      return sanitized;
+    } catch (secondError) {
+      console.error('JSON sanitization failed:', secondError.message);
+      console.error('Problematic JSON:', sanitized.substring(0, 1000) + '...');
+      throw new Error(`Unable to parse JSON after sanitization: ${secondError.message}`);
+    }
+  }
 };

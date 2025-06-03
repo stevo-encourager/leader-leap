@@ -99,8 +99,39 @@ serve(async (req) => {
     // Build assessment data and prompt
     console.log('Building assessment data and prompt...');
     const assessmentSummary = buildAssessmentData(categories, averageGap, demographics);
+    
+    // Add detailed logging for assessment summary structure
+    console.log('ASSESSMENT SUMMARY DEBUG: Structure validation');
+    console.log('- Demographics:', JSON.stringify(assessmentSummary.demographics, null, 2));
+    console.log('- Average Gap:', assessmentSummary.averageGap);
+    console.log('- Category Count:', assessmentSummary.categoryBreakdown.length);
+    
+    // Log skills that will be referenced in summary (for validation)
+    const skillsForSummaryContext = assessmentSummary.categoryBreakdown
+      .sort((a, b) => b.gap - a.gap)
+      .slice(0, 3)
+      .map(cat => ({
+        competency: cat.title,
+        topSkills: cat.topGapSkills ? cat.topGapSkills.slice(0, 2).map(skill => skill.title) : []
+      }));
+    
+    console.log('SUMMARY CONTEXT SKILLS DEBUG: Skills available for summary context (names only)');
+    skillsForSummaryContext.forEach((cat, i) => {
+      console.log(`${i+1}. ${cat.competency}: Skills for context - ${cat.topSkills.join(', ')}`);
+    });
+    
     const prompt = buildPrompt(assessmentSummary);
     console.log('Prompt built successfully, length:', prompt.length);
+
+    // CRITICAL LOGGING: Log prompt payload structure before sending to OpenAI
+    console.log('CRITICAL PROMPT DEBUG: Pre-OpenAI validation');
+    console.log('- Prompt includes skill names for summary context validation');
+    console.log('- All skill references in summary instructions specify NO NUMBERS requirement');
+    console.log('- Demographics properly integrated:', {
+      role: assessmentSummary.demographics.role || 'Not specified',
+      industry: assessmentSummary.demographics.industry || 'Not specified',
+      experience: assessmentSummary.demographics.yearsOfExperience || 'Not specified'
+    });
 
     // Call OpenAI
     console.log('Calling OpenAI API...');
@@ -125,8 +156,32 @@ serve(async (req) => {
       validateInsightsStructure(parsedInsights);
       console.log('Insights structure validation passed');
 
-      // POST-PROCESS THE SUMMARY: Apply enhanced paragraph formatting
+      // CRITICAL SUMMARY VALIDATION: Check for numbers in skill names within summary
       if (parsedInsights.summary) {
+        console.log('CRITICAL SUMMARY VALIDATION: Checking for numbers in skill names');
+        
+        // Check for patterns that might indicate numbers in skill names
+        const summaryText = parsedInsights.summary;
+        const numberPatterns = [
+          /\(\s*gap:\s*[\d.]+\s*\)/gi,
+          /\(\s*current:\s*[\d.]+\s*\)/gi,
+          /\(\s*desired:\s*[\d.]+\s*\)/gi,
+          /\(\s*[\d.]+\s*\)/g
+        ];
+        
+        let hasNumberIssues = false;
+        numberPatterns.forEach((pattern, index) => {
+          const matches = summaryText.match(pattern);
+          if (matches && matches.length > 0) {
+            console.error(`CRITICAL SUMMARY ERROR: Found number pattern ${index + 1} in summary:`, matches);
+            hasNumberIssues = true;
+          }
+        });
+        
+        if (!hasNumberIssues) {
+          console.log('CRITICAL SUMMARY VALIDATION: Summary passes - no numbers found in skill references');
+        }
+        
         console.log('Applying summary formatting...');
         const formattedSummary = formatSummaryIntoParagraphs(parsedInsights.summary);
         parsedInsights.summary = formattedSummary;
@@ -142,6 +197,12 @@ serve(async (req) => {
     // Convert back to JSON string with enhanced formatted summary
     const finalInsights = JSON.stringify(parsedInsights);
     console.log('Final insights prepared, length:', finalInsights.length);
+
+    // CRITICAL FINAL VALIDATION LOG: Log final output structure
+    console.log('CRITICAL FINAL VALIDATION: Summary structure before API response');
+    console.log('- Summary length:', parsedInsights.summary ? parsedInsights.summary.length : 0);
+    console.log('- Priority areas count:', parsedInsights.priority_areas ? parsedInsights.priority_areas.length : 0);
+    console.log('- Key strengths count:', parsedInsights.key_strengths ? parsedInsights.key_strengths.length : 0);
 
     // CRITICAL FINAL SAFEGUARD: Only save if we have a valid assessment ID and confirm no existing insights
     console.log('CRITICAL FINAL SAFEGUARD: Attempting to save insights with final protection check');

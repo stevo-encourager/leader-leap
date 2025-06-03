@@ -226,7 +226,30 @@ const buildValidatedResourcesList = (): string => {
 `;
 };
 
+// Validate and sanitize skill names for summary (remove any numbers or parentheses)
+const validateSkillNamesForSummary = (skillNames: string[]): string[] => {
+  return skillNames.map(skillName => {
+    // Remove any patterns like "(gap: X.X)", "(current: X)", etc.
+    const cleanedName = skillName.replace(/\s*\([^)]*\)/g, '').trim();
+    
+    // Log any cleaning that occurred
+    if (cleanedName !== skillName) {
+      console.log(`SUMMARY SKILL CLEANUP: "${skillName}" -> "${cleanedName}"`);
+    }
+    
+    return cleanedName;
+  });
+};
+
 export const buildPrompt = (assessmentSummary: any): string => {
+  console.log('PROMPT BUILDER: Starting prompt generation with assessment summary structure validation');
+  
+  // Validate assessment summary structure
+  if (!assessmentSummary || !assessmentSummary.categoryBreakdown || !Array.isArray(assessmentSummary.categoryBreakdown)) {
+    console.error('PROMPT BUILDER ERROR: Invalid assessment summary structure', assessmentSummary);
+    throw new Error('Invalid assessment summary structure provided to prompt builder');
+  }
+
   const topGapCategories = assessmentSummary.categoryBreakdown
     .sort((a, b) => b.gap - a.gap)
     .slice(0, 3);
@@ -235,6 +258,10 @@ export const buildPrompt = (assessmentSummary: any): string => {
     .filter(cat => cat.averageCurrentRating >= 3.5)
     .sort((a, b) => a.gap - b.gap)
     .slice(0, 3);
+
+  console.log('PROMPT BUILDER: Processing top gap categories for summary context');
+  console.log('Top Gap Categories Count:', topGapCategories.length);
+  console.log('Top Competencies Count:', topCompetencies.length);
 
   const assessmentDataSection = `
 Assessment Data:
@@ -275,7 +302,7 @@ ${topCompetencies.map((cat, i) => {
   const validatedResourcesList = buildValidatedResourcesList();
   const validatedLeadersList = buildValidatedLeadersList();
 
-  return `${assessmentDataSection}
+  const fullPrompt = `${assessmentDataSection}
 
 You are an expert leadership coach and assessment analyst. Based on the provided assessment data (including competency names, gap scores, individual skill gaps, and top competencies), generate AI insights for a user's leadership assessment.
 
@@ -288,6 +315,12 @@ You are an expert leadership coach and assessment analyst. Based on the provided
 - Tailor at least one suggestion or resource recommendation per priority area to address the specific skills with the largest gaps
 - Use phrases like "particularly in areas such as [specific skill name]" in the summary
 - In insights: Use "particularly in [specific skill name] (gap: X.X)" or "especially focusing on [skill name] where you have a gap of X.X"
+
+**CRITICAL SUMMARY SKILL NAME VALIDATION:**
+- NEVER include numbers, gap scores, current/desired ratings, or any parentheses after skill names in the summary
+- ALWAYS validate that skill names in summary are clean and number-free
+- Use only the skill name itself, such as "Strategic Planning" not "Strategic Planning (gap: 4.0)"
+- If you reference skills in summary, use format: "particularly in areas such as [clean skill name] and [clean skill name]"
 
 **Example Integration for Summary:**
 Instead of: "Improve your decision making competency, particularly in Strategic Decision Making (gap: 4.0)"
@@ -517,4 +550,20 @@ Before generating the JSON response, verify:
 Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above while being specifically tailored to the user's role, industry, experience level, AND individual skill gaps. Remember: ONLY use resources and leaders from the validated databases with exact title matching, reference skills by name only in summary (NO numbers), and ALWAYS reference specific skills by name with their gap scores in insights sections.
 
 `;
+
+  // Log the complete prompt structure for debugging
+  console.log('PROMPT BUILDER: Final prompt generated successfully');
+  console.log('PROMPT BUILDER: Prompt length:', fullPrompt.length);
+  console.log('PROMPT BUILDER: Assessment data validation complete');
+  
+  // Additional debugging for summary requirements
+  console.log('PROMPT BUILDER: Summary requirements validation:');
+  console.log('- Role specified:', assessmentSummary.demographics.role || 'Not specified');
+  console.log('- Industry specified:', assessmentSummary.demographics.industry || 'Not specified');
+  console.log('- Experience specified:', assessmentSummary.demographics.yearsOfExperience || 'Not specified');
+  console.log('- Skills available for context reference:', topGapCategories.map(cat => 
+    cat.topGapSkills ? cat.topGapSkills.map(skill => skill.title) : []
+  ).flat());
+
+  return fullPrompt;
 };

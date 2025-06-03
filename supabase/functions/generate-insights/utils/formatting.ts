@@ -1,4 +1,3 @@
-
 // Helper function to clean and extract JSON from OpenAI response
 export const cleanJsonResponse = (response: string): string => {
   let cleaned = response.trim();
@@ -61,7 +60,7 @@ export const formatSummaryIntoParagraphs = (summary: string): string => {
   return formatted;
 };
 
-// Fixed function to properly escape JSON control characters using compatible regex
+// Simplified function to properly escape JSON control characters using basic operations
 export const sanitizeJsonString = (jsonString: string): string => {
   try {
     // First attempt to parse - if it works, we're good
@@ -70,25 +69,51 @@ export const sanitizeJsonString = (jsonString: string): string => {
   } catch (error) {
     console.log('JSON parsing failed, attempting to sanitize:', error.message);
     
-    // Clean up common control character issues in JSON strings using simple, compatible regex
+    // Use basic string operations to fix common JSON issues
     let sanitized = jsonString;
     
-    // Fix unescaped newlines - find \n that aren't already escaped or at end of string values
-    sanitized = sanitized.replace(/\\n(?=(?:[^"]*"[^"]*")*[^"]*$)/g, '\\\\n');
+    // Replace control characters with their escaped equivalents
+    // Handle common control characters that cause JSON parsing issues
+    sanitized = sanitized
+      .replace(/\u0000/g, '\\u0000')  // NULL
+      .replace(/\u0001/g, '\\u0001')  // SOH
+      .replace(/\u0002/g, '\\u0002')  // STX
+      .replace(/\u0003/g, '\\u0003')  // ETX
+      .replace(/\u0004/g, '\\u0004')  // EOT
+      .replace(/\u0005/g, '\\u0005')  // ENQ
+      .replace(/\u0006/g, '\\u0006')  // ACK
+      .replace(/\u0007/g, '\\u0007')  // BEL
+      .replace(/\u0008/g, '\\b')      // BS (backspace)
+      .replace(/\u0009/g, '\\t')      // HT (tab)
+      .replace(/\u000A/g, '\\n')      // LF (line feed)
+      .replace(/\u000B/g, '\\u000B')  // VT
+      .replace(/\u000C/g, '\\f')      // FF (form feed)
+      .replace(/\u000D/g, '\\r')      // CR (carriage return)
+      .replace(/\u000E/g, '\\u000E')  // SO
+      .replace(/\u000F/g, '\\u000F')  // SI
+      .replace(/\u0010/g, '\\u0010')  // DLE
+      .replace(/\u0011/g, '\\u0011')  // DC1
+      .replace(/\u0012/g, '\\u0012')  // DC2
+      .replace(/\u0013/g, '\\u0013')  // DC3
+      .replace(/\u0014/g, '\\u0014')  // DC4
+      .replace(/\u0015/g, '\\u0015')  // NAK
+      .replace(/\u0016/g, '\\u0016')  // SYN
+      .replace(/\u0017/g, '\\u0017')  // ETB
+      .replace(/\u0018/g, '\\u0018')  // CAN
+      .replace(/\u0019/g, '\\u0019')  // EM
+      .replace(/\u001A/g, '\\u001A')  // SUB
+      .replace(/\u001B/g, '\\u001B')  // ESC
+      .replace(/\u001C/g, '\\u001C')  // FS
+      .replace(/\u001D/g, '\\u001D')  // GS
+      .replace(/\u001E/g, '\\u001E')  // RS
+      .replace(/\u001F/g, '\\u001F'); // US
     
-    // Fix unescaped carriage returns
-    sanitized = sanitized.replace(/\\r(?=(?:[^"]*"[^"]*")*[^"]*$)/g, '\\\\r');
+    // Fix unescaped quotes in JSON strings (basic approach)
+    // This is a simple pattern that should work everywhere
+    sanitized = sanitized.replace(/([^\\])"/g, '$1\\"');
     
-    // Fix unescaped tabs
-    sanitized = sanitized.replace(/\\t(?=(?:[^"]*"[^"]*")*[^"]*$)/g, '\\\\t');
-    
-    // Fix unescaped backslashes that aren't escape sequences - simple approach
-    // Split by quotes to work on string content only
-    const parts = sanitized.split('"');
-    for (let i = 1; i < parts.length; i += 2) { // Only process string content (odd indices)
-      parts[i] = parts[i].replace(/\\(?!["\\/bfnrt])/g, '\\\\');
-    }
-    sanitized = parts.join('"');
+    // Fix any remaining unescaped backslashes (simple pattern)
+    sanitized = sanitized.replace(/\\([^"\\\/bfnrt])/g, '\\\\$1');
     
     // Try parsing again
     try {

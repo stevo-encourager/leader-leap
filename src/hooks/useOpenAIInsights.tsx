@@ -67,7 +67,6 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
         console.log('🔍 TEST ASSESSMENT FORCE REGENERATE - Bypassing all checks');
         console.log('🔍 CLEARING ALL STATE FLAGS AND INSIGHTS');
         
-        setForceRegenerate(false); // Reset the flag
         setInsights(null); // Clear current insights
         hasCheckedExistingRef.current = false; // Reset to allow generation
         isGeneratingRef.current = false; // Reset generation flag
@@ -75,6 +74,10 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
         
         console.log('🔍 CALLING GENERATE NEW INSIGHTS WITH FORCE=TRUE');
         await generateNewInsights(true); // Pass true to indicate force regeneration
+        
+        // IMPORTANT: Reset forceRegenerate flag AFTER generation is complete
+        console.log('🔍 RESETTING FORCE REGENERATE FLAG TO FALSE');
+        setForceRegenerate(false);
         return;
       }
       
@@ -254,17 +257,24 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     error,
     // Provide a manual regenerate function with special handling for test assessment
     regenerateInsights: () => {
-      console.log('🔍 REGENERATE INSIGHTS CLICKED:', {
+      console.log('🔍 REGENERATE INSIGHTS BUTTON CLICKED:', {
         isTestAssessment,
         assessmentId,
-        currentInsights: !!insights
+        currentInsights: !!insights,
+        currentForceRegenerate: forceRegenerate
       });
       
       if (isTestAssessment) {
-        console.log('🔍 TEST ASSESSMENT - Setting forceRegenerate=true and triggering effect');
+        console.log('🔍 TEST ASSESSMENT - Setting forceRegenerate=true');
         // CRITICAL FIX: Set force regenerate flag to trigger immediate regeneration
         setForceRegenerate(true);
-        setRegenerateTrigger(prev => prev + 1); // Trigger effect re-run
+        console.log('🔍 FORCE REGENERATE STATE SET TO TRUE');
+        
+        setRegenerateTrigger(prev => {
+          const newValue = prev + 1;
+          console.log('🔍 REGENERATE TRIGGER INCREMENTED:', { from: prev, to: newValue });
+          return newValue;
+        });
       } else {
         console.log('🔍 NON-TEST ASSESSMENT - Manual regeneration for new assessments');
         // Reset the loaded flag only for manual regeneration of non-test assessments

@@ -1,7 +1,7 @@
+
 import React from 'react';
 import { Bot, AlertCircle, Target, TrendingUp, ExternalLink } from 'lucide-react';
 import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
-import { useTestInsights } from '@/hooks/useTestInsights';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { FormattedSummary } from '@/components/FormattedSummary';
 import { generateResourceLink } from '@/utils/resourceMapping';
@@ -11,7 +11,6 @@ interface AIInsightsProps {
   demographics: Demographics;
   averageGap: number;
   assessmentId?: string;
-  testInsights?: string | null; // Add support for test insights
 }
 
 interface PriorityArea {
@@ -34,38 +33,24 @@ interface AIInsightsData {
   key_strengths: KeyStrength[];
 }
 
-const AIInsights: React.FC<AIInsightsProps> = ({ 
-  categories, 
-  demographics, 
-  averageGap, 
-  assessmentId,
-  testInsights 
-}) => {
-  // Use regular insights or test insights
-  const regularInsights = useOpenAIInsights({
+const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, averageGap, assessmentId }) => {
+  const { insights, isLoading, error } = useOpenAIInsights({
     categories,
     demographics,
     averageGap,
     assessmentId
   });
 
-  const testInsightsHook = useTestInsights({ testInsights });
-
-  // Choose which insights to use
-  const { insights, isLoading, error } = testInsights ? testInsightsHook : regularInsights;
-
   // Log the assessment ID and insights status for debugging
   React.useEffect(() => {
     console.log('AIInsights: Rendering with assessmentId:', assessmentId);
-    console.log('AIInsights: Test mode:', !!testInsights);
     console.log('AIInsights: Insights available:', !!insights);
     console.log('AIInsights: Loading state:', isLoading);
     if (insights) {
-      console.log('AIInsights: Using insights from', testInsights ? 'test mode' : 'database for consistent display');
+      console.log('AIInsights: Using insights from database for consistent display');
     }
-  }, [assessmentId, insights, isLoading, testInsights]);
+  }, [assessmentId, insights, isLoading]);
 
-  // Parse insights from JSON string
   const parseInsights = (insightsText: string): AIInsightsData | null => {
     try {
       const parsed = JSON.parse(insightsText);
@@ -316,9 +301,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({
               <Bot className="text-encourager" size={24} strokeWidth={1.5} />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-encourager font-playfair">
-                AI-Powered Insights {testInsights && <span className="text-sm text-blue-600">(Test Mode)</span>}
-              </h2>
+              <h2 className="text-2xl font-bold text-encourager font-playfair">AI-Powered Insights</h2>
               <p className="text-sm text-slate-600 mt-1">
                 Personalized leadership development insights powered by EncouragerGPT
               </p>

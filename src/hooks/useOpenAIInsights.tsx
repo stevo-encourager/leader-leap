@@ -242,12 +242,10 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
   const regenerateInsights = useCallback(async () => {
     debugLog('🔄 REGENERATE INSIGHTS CALLED');
     
-    // Prevent multiple regenerations
-    if (isOperationInProgressRef.current) {
-      debugLog('❌ REGENERATION ALREADY IN PROGRESS - Skipping');
-      return;
-    }
-
+    // FIXED: Remove the operation in progress check for regeneration
+    // This was blocking subsequent regeneration attempts
+    debugLog('🔄 REGENERATE: Starting manual regeneration (bypassing operation check)');
+    
     // Validate we have required data
     if (!categories || categories.length === 0 || !assessmentId) {
       debugLog('❌ MISSING REQUIRED DATA FOR REGENERATION');
@@ -257,8 +255,9 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       }, 'Regeneration validation failed');
       return;
     }
-
-    debugLog('🔄 REGENERATE: Starting manual regeneration');
+    
+    // FIXED: Set operation flag AFTER validation to prevent blocking
+    isOperationInProgressRef.current = true;
     
     // Clear existing insights and set loading state IMMEDIATELY
     updateState({
@@ -270,7 +269,6 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     
     // Reset flags to allow new generation
     initializationCompleteRef.current = false;
-    isOperationInProgressRef.current = true;
     
     debugLog('🔄 REGENERATE: State cleared, calling generateNewInsights');
     
@@ -286,6 +284,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
         isInitialized: true
       }, 'Regeneration failed');
       
+      // CRITICAL: Always reset the operation flag on both success and failure
       isOperationInProgressRef.current = false;
       initializationCompleteRef.current = true;
     }

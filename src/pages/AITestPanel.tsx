@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import UserHeader from '@/components/auth/UserHeader';
 import Navigation from '@/components/layout/Navigation';
 import Footer from '@/components/layout/Footer';
-import { getLatestAssessmentResults } from '@/services/assessment/fetchAssessment';
+import { getSpecificAssessmentResults } from '@/services/assessment/fetchAssessment';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { calculateAverageGap } from '@/utils/assessmentCalculations/averages';
 import AIInsights from '@/components/dashboard/AIInsights';
@@ -19,11 +19,13 @@ const AITestPanel = () => {
   const { user, loading } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
   const [demographics, setDemographics] = useState<Demographics>({});
-  const [assessmentId, setAssessmentId] = useState<string | undefined>(undefined);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [regenerateCallback, setRegenerateCallback] = useState<(() => void) | null>(null);
+
+  // FIXED: Use only the specific test assessment ID
+  const TEST_ASSESSMENT_ID = 'f74470bc-3c48-4980-bc5f-17386a724d37';
 
   // Check if we're in development/staging (not production)
   const isDevelopment = import.meta.env.DEV || window.location.hostname !== 'your-production-domain.com';
@@ -44,32 +46,31 @@ const AITestPanel = () => {
       return;
     }
 
-    loadLatestAssessment();
+    loadTestAssessment();
   }, [user, loading, navigate, isDevelopment]);
 
-  const loadLatestAssessment = async () => {
+  const loadTestAssessment = async () => {
     if (!user) return;
 
     setIsLoadingData(true);
     setError(null);
 
     try {
-      console.log('AITestPanel: Loading latest assessment data');
-      const result = await getLatestAssessmentResults();
+      console.log('AITestPanel: Loading test assessment data for ID:', TEST_ASSESSMENT_ID);
+      const result = await getSpecificAssessmentResults(TEST_ASSESSMENT_ID);
 
       if (result.success && result.data) {
-        console.log('AITestPanel: Successfully loaded assessment data');
-        console.log('AITestPanel: Assessment ID:', result.data.id);
+        console.log('AITestPanel: Successfully loaded test assessment data');
+        console.log('AITestPanel: Test Assessment ID:', result.data.id);
         setCategories(result.data.categories);
         setDemographics(result.data.demographics);
-        setAssessmentId(result.data.id); // Use 'id' instead of 'assessmentId'
       } else {
-        console.error('AITestPanel: Failed to load assessment data:', result.error);
-        setError(result.error || 'Failed to load assessment data');
+        console.error('AITestPanel: Failed to load test assessment data:', result.error);
+        setError(result.error || 'Failed to load test assessment data');
       }
     } catch (err) {
-      console.error('AITestPanel: Error loading assessment:', err);
-      setError('An unexpected error occurred while loading assessment data');
+      console.error('AITestPanel: Error loading test assessment:', err);
+      setError('An unexpected error occurred while loading test assessment data');
     } finally {
       setIsLoadingData(false);
     }
@@ -131,7 +132,7 @@ const AITestPanel = () => {
           <Alert variant="destructive" className="mb-6">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              {error}. Please ensure you have completed at least one assessment.
+              {error}. Please ensure the test assessment exists and is accessible.
             </AlertDescription>
           </Alert>
           <div className="text-center">
@@ -168,7 +169,7 @@ const AITestPanel = () => {
               <div>
                 <h1 className="text-2xl font-bold text-yellow-800 font-playfair">AI Insights Test Panel</h1>
                 <p className="text-yellow-700 mt-1">
-                  Testing environment for AI insights generation • Assessment ID: {assessmentId || 'Not available'}
+                  Testing environment for AI insights generation • Test Assessment ID: {TEST_ASSESSMENT_ID}
                 </p>
               </div>
             </div>
@@ -186,7 +187,7 @@ const AITestPanel = () => {
               categories={categories}
               demographics={demographics}
               averageGap={averageGap}
-              assessmentId={assessmentId}
+              assessmentId={TEST_ASSESSMENT_ID}
               onRegenerateCallback={setRegenerateCallback}
             />
           </div>
@@ -196,9 +197,9 @@ const AITestPanel = () => {
         <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h3 className="text-blue-800 font-semibold mb-2">Test Panel Information</h3>
           <ul className="text-blue-700 text-sm space-y-1">
-            <li>• Using data from your latest completed assessment (ID: {assessmentId || 'N/A'})</li>
+            <li>• Using data from test assessment (ID: {TEST_ASSESSMENT_ID})</li>
             <li>• Click "Regenerate Insights" to test prompt changes</li>
-            <li>• Insights will be saved to the assessment if successful</li>
+            <li>• Insights will be saved to the test assessment if successful</li>
             <li>• Available only in development/staging environments</li>
           </ul>
         </div>

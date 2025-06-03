@@ -176,8 +176,9 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     regenerateInsights: () => {
       if (isTestAssessment) {
         console.log('TEST ASSESSMENT: Manual regeneration requested for test assessment - allowing');
-        // Reset flags for test assessment regeneration
+        // Reset flags for test assessment regeneration and clear current insights
         hasCheckedExistingRef.current = false;
+        setInsights(null); // Clear current insights to force regeneration
         generateNewInsights();
       } else {
         console.log('CRITICAL WARNING: Manual regeneration requested - this should only be used for new assessments');

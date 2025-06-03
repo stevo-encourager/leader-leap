@@ -1,3 +1,4 @@
+
 // Helper function to clean and extract JSON from OpenAI response
 export const cleanJsonResponse = (response: string): string => {
   let cleaned = response.trim();
@@ -60,7 +61,7 @@ export const formatSummaryIntoParagraphs = (summary: string): string => {
   return formatted;
 };
 
-// Simplified function to properly escape JSON control characters using basic operations
+// Simple function to sanitize JSON strings using only basic string replacement
 export const sanitizeJsonString = (jsonString: string): string => {
   try {
     // First attempt to parse - if it works, we're good
@@ -69,51 +70,71 @@ export const sanitizeJsonString = (jsonString: string): string => {
   } catch (error) {
     console.log('JSON parsing failed, attempting to sanitize:', error.message);
     
-    // Use basic string operations to fix common JSON issues
+    // Use simple string replacement for common control characters
     let sanitized = jsonString;
     
-    // Replace control characters with their escaped equivalents
-    // Handle common control characters that cause JSON parsing issues
-    sanitized = sanitized
-      .replace(/\u0000/g, '\\u0000')  // NULL
-      .replace(/\u0001/g, '\\u0001')  // SOH
-      .replace(/\u0002/g, '\\u0002')  // STX
-      .replace(/\u0003/g, '\\u0003')  // ETX
-      .replace(/\u0004/g, '\\u0004')  // EOT
-      .replace(/\u0005/g, '\\u0005')  // ENQ
-      .replace(/\u0006/g, '\\u0006')  // ACK
-      .replace(/\u0007/g, '\\u0007')  // BEL
-      .replace(/\u0008/g, '\\b')      // BS (backspace)
-      .replace(/\u0009/g, '\\t')      // HT (tab)
-      .replace(/\u000A/g, '\\n')      // LF (line feed)
-      .replace(/\u000B/g, '\\u000B')  // VT
-      .replace(/\u000C/g, '\\f')      // FF (form feed)
-      .replace(/\u000D/g, '\\r')      // CR (carriage return)
-      .replace(/\u000E/g, '\\u000E')  // SO
-      .replace(/\u000F/g, '\\u000F')  // SI
-      .replace(/\u0010/g, '\\u0010')  // DLE
-      .replace(/\u0011/g, '\\u0011')  // DC1
-      .replace(/\u0012/g, '\\u0012')  // DC2
-      .replace(/\u0013/g, '\\u0013')  // DC3
-      .replace(/\u0014/g, '\\u0014')  // DC4
-      .replace(/\u0015/g, '\\u0015')  // NAK
-      .replace(/\u0016/g, '\\u0016')  // SYN
-      .replace(/\u0017/g, '\\u0017')  // ETB
-      .replace(/\u0018/g, '\\u0018')  // CAN
-      .replace(/\u0019/g, '\\u0019')  // EM
-      .replace(/\u001A/g, '\\u001A')  // SUB
-      .replace(/\u001B/g, '\\u001B')  // ESC
-      .replace(/\u001C/g, '\\u001C')  // FS
-      .replace(/\u001D/g, '\\u001D')  // GS
-      .replace(/\u001E/g, '\\u001E')  // RS
-      .replace(/\u001F/g, '\\u001F'); // US
+    // Replace common control characters with their escaped equivalents
+    sanitized = sanitized.replace(/\u0000/g, '\\u0000');  // NULL
+    sanitized = sanitized.replace(/\u0001/g, '\\u0001');  // SOH
+    sanitized = sanitized.replace(/\u0002/g, '\\u0002');  // STX
+    sanitized = sanitized.replace(/\u0003/g, '\\u0003');  // ETX
+    sanitized = sanitized.replace(/\u0004/g, '\\u0004');  // EOT
+    sanitized = sanitized.replace(/\u0005/g, '\\u0005');  // ENQ
+    sanitized = sanitized.replace(/\u0006/g, '\\u0006');  // ACK
+    sanitized = sanitized.replace(/\u0007/g, '\\u0007');  // BEL
+    sanitized = sanitized.replace(/\u0008/g, '\\b');      // BS (backspace)
+    sanitized = sanitized.replace(/\u0009/g, '\\t');      // HT (tab)
+    sanitized = sanitized.replace(/\u000A/g, '\\n');      // LF (line feed)
+    sanitized = sanitized.replace(/\u000B/g, '\\u000B');  // VT
+    sanitized = sanitized.replace(/\u000C/g, '\\f');      // FF (form feed)
+    sanitized = sanitized.replace(/\u000D/g, '\\r');      // CR (carriage return)
+    sanitized = sanitized.replace(/\u000E/g, '\\u000E');  // SO
+    sanitized = sanitized.replace(/\u000F/g, '\\u000F');  // SI
+    sanitized = sanitized.replace(/\u0010/g, '\\u0010');  // DLE
+    sanitized = sanitized.replace(/\u0011/g, '\\u0011');  // DC1
+    sanitized = sanitized.replace(/\u0012/g, '\\u0012');  // DC2
+    sanitized = sanitized.replace(/\u0013/g, '\\u0013');  // DC3
+    sanitized = sanitized.replace(/\u0014/g, '\\u0014');  // DC4
+    sanitized = sanitized.replace(/\u0015/g, '\\u0015');  // NAK
+    sanitized = sanitized.replace(/\u0016/g, '\\u0016');  // SYN
+    sanitized = sanitized.replace(/\u0017/g, '\\u0017');  // ETB
+    sanitized = sanitized.replace(/\u0018/g, '\\u0018');  // CAN
+    sanitized = sanitized.replace(/\u0019/g, '\\u0019');  // EM
+    sanitized = sanitized.replace(/\u001A/g, '\\u001A');  // SUB
+    sanitized = sanitized.replace(/\u001B/g, '\\u001B');  // ESC
+    sanitized = sanitized.replace(/\u001C/g, '\\u001C');  // FS
+    sanitized = sanitized.replace(/\u001D/g, '\\u001D');  // GS
+    sanitized = sanitized.replace(/\u001E/g, '\\u001E');  // RS
+    sanitized = sanitized.replace(/\u001F/g, '\\u001F');  // US
     
-    // Fix unescaped quotes in JSON strings (basic approach)
-    // This is a simple pattern that should work everywhere
-    sanitized = sanitized.replace(/([^\\])"/g, '$1\\"');
+    // Handle unescaped quotes by replacing quote characters preceded by non-backslash
+    // Split and rejoin to avoid regex lookahead/lookbehind
+    const parts = sanitized.split('');
+    for (let i = 1; i < parts.length; i++) {
+      if (parts[i] === '"' && parts[i - 1] !== '\\') {
+        parts[i] = '\\"';
+      }
+    }
+    sanitized = parts.join('');
     
-    // Fix any remaining unescaped backslashes (simple pattern)
-    sanitized = sanitized.replace(/\\([^"\\\/bfnrt])/g, '\\\\$1');
+    // Handle unescaped backslashes - replace single backslashes that aren't escape sequences
+    let result = '';
+    for (let i = 0; i < sanitized.length; i++) {
+      const char = sanitized[i];
+      if (char === '\\' && i + 1 < sanitized.length) {
+        const nextChar = sanitized[i + 1];
+        if (nextChar !== '"' && nextChar !== '\\' && nextChar !== '/' && 
+            nextChar !== 'b' && nextChar !== 'f' && nextChar !== 'n' && 
+            nextChar !== 'r' && nextChar !== 't' && nextChar !== 'u') {
+          result += '\\\\';
+        } else {
+          result += char;
+        }
+      } else {
+        result += char;
+      }
+    }
+    sanitized = result;
     
     // Try parsing again
     try {

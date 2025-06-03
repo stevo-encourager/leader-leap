@@ -30,7 +30,7 @@ export const buildAssessmentData = (categories: any[], averageGap: number, demog
     // Calculate individual skill gaps and get top 2 largest gaps
     // FIXED: Ensure skill ratings are integers (no decimals for individual skills)
     const skillsWithGaps = validSkills.map(skill => ({
-      title: skill.title,
+      title: skill.title || skill.name,
       gap: skill.ratings.desired - skill.ratings.current,
       currentRating: Math.round(skill.ratings.current), // Ensure integer values
       desiredRating: Math.round(skill.ratings.desired)   // Ensure integer values
@@ -54,6 +54,70 @@ export const buildAssessmentData = (categories: any[], averageGap: number, demog
     demographics: demographics,
     categoryBreakdown: categoryBreakdown
   };
+};
+
+// Build the validated skills list for the prompt - ONLY THESE SKILLS CAN BE REFERENCED
+const buildValidatedSkillsList = (): string => {
+  return `
+**VALIDATED SKILLS DATABASE - REFERENCE ONLY THESE SKILLS:**
+
+**Strategic Thinking/Vision:**
+- Future Vision
+- Big Picture Thinking
+- Strategic Planning
+
+**Communication:**
+- Verbal Communication
+- Written & Visual Communication
+- Active Listening
+
+**Team Building/Management:**
+- Team Motivation
+- Team Development
+- Collaboration
+
+**Decision Making:**
+- Critical Thinking
+- Problem Solving
+- Decisiveness
+
+**Emotional Intelligence:**
+- Self-Awareness
+- Empathy
+- Relationship Management
+
+**Change Management:**
+- Adaptability
+- Change Leadership
+- Resilience
+
+**Conflict Resolution:**
+- Conflict Management
+- Negotiation
+- Mediation
+
+**Delegation and Empowerment:**
+- Task Delegation
+- Trust Building
+- Autonomy Support
+
+**Time/Priority Management:**
+- Time Management
+- Prioritization
+- Work-Life Balance
+
+**Professional Development:**
+- Continuous Learning
+- Feedback Reception
+- Career Planning
+
+**CRITICAL SKILL REFERENCE RULES:**
+- You MUST ONLY reference skills from this validated list above
+- NEVER create, invent, or reference skills not explicitly listed here
+- Each skill name you use must match EXACTLY as written in this database
+- If you want to reference a skill concept not in this list, do not mention any skill name at all
+- Every skill reference must be verifiable against this validated list
+`;
 };
 
 // Build the validated leaders list for the prompt
@@ -299,6 +363,7 @@ ${topCompetencies.map((cat, i) => {
 }).join('\n\n')}
 `;
 
+  const validatedSkillsList = buildValidatedSkillsList();
   const validatedResourcesList = buildValidatedResourcesList();
   const validatedLeadersList = buildValidatedLeadersList();
 
@@ -306,10 +371,14 @@ ${topCompetencies.map((cat, i) => {
 
 You are an expert leadership coach and assessment analyst. Based on the provided assessment data (including competency names, gap scores, individual skill gaps, and top competencies), generate AI insights for a user's leadership assessment.
 
+${validatedSkillsList}
+
 ### CRITICAL SKILL-LEVEL ANALYSIS REQUIREMENT
 
 **MANDATORY SKILL-LEVEL INTEGRATION:**
 - You MUST reference specific individual skills by name when discussing competencies
+- You MUST ONLY use skills from the validated skills database above
+- NEVER create, invent, or reference skills not explicitly listed in the validated skills database
 - In the SUMMARY ONLY: Reference skill names WITHOUT any numerical values (no gaps, no scores, no decimals, no numbers in parentheses)
 - In INSIGHTS sections: Include specific skill names and their gap scores for targeted recommendations
 - Tailor at least one suggestion or resource recommendation per priority area to address the specific skills with the largest gaps
@@ -321,13 +390,21 @@ You are an expert leadership coach and assessment analyst. Based on the provided
 - ALWAYS validate that skill names in summary are clean and number-free
 - Use only the skill name itself, such as "Strategic Planning" not "Strategic Planning (gap: 4.0)"
 - If you reference skills in summary, use format: "particularly in areas such as [clean skill name] and [clean skill name]"
+- EVERY skill name you reference must exist in the validated skills database above
+
+**CRITICAL SKILL VALIDATION RULES:**
+- Before referencing ANY skill, verify it exists EXACTLY in the validated skills database
+- If you want to mention a concept that doesn't match a validated skill name, do NOT reference any skill name
+- Use only the EXACT skill names as they appear in the validated database
+- Do NOT create variations, abbreviations, or alternative names for skills
+- If no validated skill matches your intended concept, reference only the competency name instead
 
 **Example Integration for Summary:**
 Instead of: "Improve your decision making competency, particularly in Strategic Decision Making (gap: 4.0)"
-Write: "Improve your decision making competency, particularly in areas such as Strategic Decision Making and Crisis Decision Making"
+Write: "Improve your decision making competency, particularly in areas such as Critical Thinking and Problem Solving"
 
 **Example Integration for Insights:**
-Use: "Implement the OODA Loop to enhance your decision-making process, particularly in Strategic Decision Making (gap: 4.0) and Crisis Decision Making (gap: 3.5)"
+Use: "Implement the OODA Loop to enhance your decision-making process, particularly in Critical Thinking (gap: 4.0) and Problem Solving (gap: 3.5)"
 
 ### ENHANCED SUMMARY PERSONALIZATION REQUIREMENTS
 
@@ -339,6 +416,7 @@ Use: "Implement the OODA Loop to enhance your decision-making process, particula
 - Avoid repetitive skill mentions or similar concepts
 - Highlight 1-2 key skill names per competency for context (names only, NO numbers, NO gap scores, NO parentheses with values)
 - Keep feedback clear, readable, and motivational
+- ONLY reference skills that exist in the validated skills database
 
 **Summary Personalization Examples:**
 - "As a [role] in [industry] with [X] years of experience, your assessment shows..."
@@ -358,7 +436,7 @@ Use: "Implement the OODA Loop to enhance your decision-making process, particula
 1. **Role Context**: How does this apply to their specific position?
 2. **Industry Relevance**: What industry-specific challenges does this address?
 3. **Experience Appropriate**: Is the complexity right for their level?
-4. **Skill-Specific**: Reference the individual skills with largest gaps by name and score
+4. **Skill-Specific**: Reference the individual skills with largest gaps by name and score (ONLY validated skills)
 
 **Role-Specific Guidelines:**
 - Individual Contributor: Focus on self-leadership, influence without authority, peer collaboration
@@ -448,20 +526,20 @@ ${validatedLeadersList}
 **Insight Specificity Requirements:**
 - Each insight must include at least ONE specific technique, framework, or methodology
 - Reference concrete examples relevant to user's industry/role when possible
-- MUST include specific skill names and gap scores when discussing competencies
+- MUST include specific skill names and gap scores when discussing competencies (ONLY validated skills)
 - Avoid these generic phrases: "focus on," "work on improving," "consider developing"
 - Instead use action-oriented language: "implement," "practice," "apply," "utilize"
 
-**Skill-Level Integration Examples:**
-✅ "Implement the SBI Feedback Model to enhance direct communication with your team, particularly focusing on Active Listening (gap: 3.5) and Difficult Conversations (gap: 4.0)"
-✅ "Apply the Eisenhower Matrix for time management, especially targeting Project Planning (gap: 3.8) and Priority Setting (gap: 4.2)"
+**Skill-Level Integration Examples (ONLY using validated skills):**
+✅ "Implement the SBI Feedback Model to enhance direct communication with your team, particularly focusing on Active Listening (gap: 3.5) and Verbal Communication (gap: 4.0)"
+✅ "Apply the Eisenhower Matrix for time management, especially targeting Time Management (gap: 3.8) and Prioritization (gap: 4.2)"
 
 **Forbidden Generic Statements:**
 ❌ "Focus on improving communication skills"
 ✅ "Implement the SBI Feedback Model to enhance direct communication with your [role-specific context], particularly in Active Listening (gap: 3.5) where you can practice giving full attention during team meetings"
 
 ❌ "Work on building trust with your team"
-✅ "Apply Speed of Trust behaviors by delivering results consistently, particularly focusing on Reliability (gap: 3.2) and Transparency (gap: 2.8) about [industry-specific challenges]"
+✅ "Apply Speed of Trust behaviors by delivering results consistently, particularly focusing on Trust Building (gap: 3.2) and Relationship Management (gap: 2.8) about [industry-specific challenges]"
 
 ### INSPIRATIONAL LEADER SELECTION
 
@@ -497,20 +575,20 @@ You MUST output ONLY a valid JSON object with this EXACT structure:
 
 ### FIELD REQUIREMENTS
 
-- **summary**: Generate a professional, encouraging, and personalized assessment summary that is 6–8 sentences. Use the word "competencies" throughout (not "strengths"). Always refer to the person as "you" or "your" (never "the user" or "the user's"). MUST reference specific individual skills by NAME ONLY (NO numerical values, NO gaps, NO scores, NO decimals, NO parentheses with numbers) within the priority competencies. Include natural references to their role, industry, and experience level. Use supportive, confidence-building language while avoiding repetition.
+- **summary**: Generate a professional, encouraging, and personalized assessment summary that is 6–8 sentences. Use the word "competencies" throughout (not "strengths"). Always refer to the person as "you" or "your" (never "the user" or "the user's"). MUST reference specific individual skills by NAME ONLY (NO numerical values, NO gaps, NO scores, NO decimals, NO parentheses with numbers) within the priority competencies. ONLY use skills from the validated skills database. Include natural references to their role, industry, and experience level. Use supportive, confidence-building language while avoiding repetition.
 
 **CRITICAL FORMATTING FOR SUMMARY**: Structure the summary as TWO clear paragraphs that will be separated by post-processing. Use transition phrases like "However," "At the same time," "Additionally," or "Your results also" to start the second paragraph. MUST include industry and role-relevant inspirational leader with working link using format: "Like [Leader Name](https://workinglink.com), who is known for [specific principle]..."
 
 - **priority_areas**: An array with exactly 3 objects, each for a Top 3 Priority Development Area. Each object must contain:
   - \`competency\`: The exact competency name from assessment data
   - \`gap\`: The numerical gap score
-  - \`insights\`: Array of exactly 3 actionable, research-backed insights that avoid generic statements, include specific methodologies/frameworks, integrate role/industry/experience context, AND reference specific individual skills by name with their gap scores
+  - \`insights\`: Array of exactly 3 actionable, research-backed insights that avoid generic statements, include specific methodologies/frameworks, integrate role/industry/experience context, AND reference specific individual skills by name with their gap scores (ONLY validated skills)
   - \`resources\`: Array of exactly 3 resource names from the validated database, using EXACT titles as specified
 
 - **key_strengths**: An array with at least 2 objects, each for a key competency to leverage. Each object must contain:
   - \`competency\`: The exact competency name from assessment data
-  - \`example\`: Concrete example of how this strength manifests in their specific role/industry context, including reference to specific skills within the competency
-  - \`leverage_advice\`: Array of exactly 3 specific strategies for leveraging this strength that incorporate role/industry/experience context and reference individual skills where relevant
+  - \`example\`: Concrete example of how this strength manifests in their specific role/industry context, including reference to specific skills within the competency (ONLY validated skills)
+  - \`leverage_advice\`: Array of exactly 3 specific strategies for leveraging this strength that incorporate role/industry/experience context and reference individual skills where relevant (ONLY validated skills)
   - \`resources\`: Array of exactly 3 resource names from the validated database, using EXACT titles as specified
 
 ### PRE-OUTPUT VALIDATION CHECKLIST
@@ -534,20 +612,24 @@ Before generating the JSON response, verify:
 □ **CRITICAL**: At least one insight per priority area addresses specific skills with largest gaps
 □ **CRITICAL**: Summary uses encouraging, personalized language with role/industry/experience context
 □ **CRITICAL**: Individual skill ratings are whole numbers (no decimals)
+□ **CRITICAL**: ALL skill references use ONLY validated skills from the skills database
+□ **CRITICAL**: NO skills are invented, created, or referenced outside the validated skills database
 
 ### CRITICAL JSON RULES
 - Output MUST be valid JSON only. No text, markdown, or formatting before/after.
 - The \`insights\` and \`leverage_advice\` fields must be arrays of strings ONLY.
 - All arrays must contain only the specified data types.
 - NEVER use resources not in the validated database - this is critical for link integrity
+- NEVER use skills not in the validated skills database - this is critical for assessment accuracy
 - NEVER write generic, obvious statements - every insight must provide genuine value and actionable advice.
 - Use only suggestive language for assessment tools: "consider using a tool such as [tool name]" rather than direct recommendations.
 - **PERSONALIZATION REQUIREMENT**: Use ALL THREE demographic dimensions (role, industry, experience) to tailor insights, examples, and leader selection for maximum relevance to the user's specific context.
-- **SKILL-LEVEL REQUIREMENT**: Reference specific individual skills by name only (NO numbers, NO gaps, NO scores) in summary, and by name with gap scores in priority area insights
+- **SKILL-LEVEL REQUIREMENT**: Reference specific individual skills by name only (NO numbers, NO gaps, NO scores) in summary, and by name with gap scores in priority area insights (ONLY validated skills from the database)
 - **VALIDATED RESOURCE REQUIREMENT**: Every resource in the resources arrays must be an exact match from the validated database above
 - **VALIDATED LEADER REQUIREMENT**: Every leader in the summary must be an exact match from the validated leaders database above. If no suitable validated leader exists for the context, omit the leader reference entirely rather than using an unvalidated leader.
+- **VALIDATED SKILL REQUIREMENT**: Every skill referenced must be an exact match from the validated skills database above. Never create, invent, or reference skills outside this validated list.
 
-Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above while being specifically tailored to the user's role, industry, experience level, AND individual skill gaps. Remember: ONLY use resources and leaders from the validated databases with exact title matching, reference skills by name only in summary (NO numbers), and ALWAYS reference specific skills by name with their gap scores in insights sections.
+Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above while being specifically tailored to the user's role, industry, experience level, AND individual skill gaps. Remember: ONLY use resources, leaders, and skills from the validated databases with exact title matching, reference skills by name only in summary (NO numbers), and ALWAYS reference specific skills by name with their gap scores in insights sections (ONLY validated skills).
 
 `;
 

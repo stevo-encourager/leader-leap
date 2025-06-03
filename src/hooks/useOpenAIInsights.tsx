@@ -35,6 +35,16 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     }
   };
 
+  // Enhanced insights setter with logging
+  const setInsightsWithLogging = (newInsights: string | null, reason: string) => {
+    const timestamp = new Date().toISOString().slice(11, 23);
+    console.log(`📝 [${timestamp}] INSIGHTS STATE CHANGE: ${reason}`);
+    console.log(`📝 [${timestamp}] Previous insights:`, insights ? 'SET' : 'NULL');
+    console.log(`📝 [${timestamp}] New insights:`, newInsights ? 'SET' : 'NULL');
+    console.log(`📝 [${timestamp}] New insights length:`, newInsights?.length || 0);
+    setInsights(newInsights);
+  };
+
   debugLog('HOOK RENDER:', {
     assessmentId,
     isTestAssessment,
@@ -50,7 +60,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
 
   // Reset all state when assessment ID changes
   useEffect(() => {
-    debugLog('ASSESSMENT ID EFFECT:', {
+    debugLog('ASSESSMENT ID EFFECT TRIGGERED:', {
       newAssessmentId: assessmentId,
       currentAssessmentId: currentAssessmentIdRef.current,
       willReset: currentAssessmentIdRef.current !== assessmentId
@@ -59,8 +69,8 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     if (currentAssessmentIdRef.current !== assessmentId) {
       debugLog('🔄 STATE RESET: Assessment ID changed, clearing all state');
       
-      // Reset all state
-      setInsights(null);
+      // Reset all state with logging
+      setInsightsWithLogging(null, 'Assessment ID changed - clearing previous insights');
       setError(null);
       setIsLoading(false);
       
@@ -91,7 +101,11 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
 
       // Guard: Skip if we already successfully loaded data for this assessment
       if (hasSuccessfullyLoadedRef.current && currentAssessmentIdRef.current === assessmentId) {
-        debugLog('❌ ALREADY SUCCESSFULLY LOADED - Skipping duplicate load');
+        debugLog('❌ ALREADY SUCCESSFULLY LOADED - Skipping duplicate load', {
+          hasSuccessfullyLoaded: hasSuccessfullyLoadedRef.current,
+          currentInsights: insights ? 'SET' : 'NULL',
+          insightsLength: insights?.length || 0
+        });
         return;
       }
 
@@ -130,13 +144,16 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
           debugLog('✅ SUCCESS STATE TRANSITION: Found existing insights');
           debugLog('📄 INSIGHTS DATA:', assessment.ai_insights.substring(0, 200) + '...');
           
-          setInsights(assessment.ai_insights);
+          // Set insights with detailed logging
+          setInsightsWithLogging(assessment.ai_insights, 'Found existing insights in database');
+          
           debugLog('⏳ LOADING STATE TRANSITION: TRUE → FALSE (Found existing insights)');
           setIsLoading(false);
           hasSuccessfullyLoadedRef.current = true;
           isOperationInProgressRef.current = false;
           
           debugLog('✅ SUCCESS COMPLETE: Insights displayed, loading stopped, marked as successfully loaded');
+          debugLog('🔒 STATE LOCKED: No further automatic changes should occur');
           return; // Exit early - we have existing insights
         }
 
@@ -154,9 +171,27 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       }
     };
 
-    // Only run if we haven't successfully loaded data yet AND haven't errored for this assessment
-    if (!hasSuccessfullyLoadedRef.current && !hasErroredRef.current && assessmentId && categories && categories.length > 0) {
+    // Enhanced guard conditions with detailed logging
+    const shouldLoad = !hasSuccessfullyLoadedRef.current && 
+                      !hasErroredRef.current && 
+                      assessmentId && 
+                      categories && 
+                      categories.length > 0;
+
+    debugLog('LOAD EFFECT DECISION:', {
+      shouldLoad,
+      hasSuccessfullyLoaded: hasSuccessfullyLoadedRef.current,
+      hasErrored: hasErroredRef.current,
+      hasAssessmentId: !!assessmentId,
+      hasCategoriesData: !!(categories && categories.length > 0),
+      currentInsights: insights ? 'SET' : 'NULL'
+    });
+
+    if (shouldLoad) {
+      debugLog('✅ PROCEEDING WITH LOAD OPERATION');
       loadInsights();
+    } else {
+      debugLog('❌ SKIPPING LOAD OPERATION - Conditions not met');
     }
   }, [assessmentId]); // Only depend on assessmentId
 
@@ -186,13 +221,16 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
         debugLog('✅ SUCCESS STATE TRANSITION: Received new insights from API');
         debugLog('📄 NEW INSIGHTS DATA:', data.insights.substring(0, 200) + '...');
         
-        setInsights(data.insights);
+        // Set insights with detailed logging
+        setInsightsWithLogging(data.insights, 'Generated new insights from API');
+        
         debugLog('⏳ LOADING STATE TRANSITION: TRUE → FALSE (New insights received)');
         setIsLoading(false);
         hasSuccessfullyLoadedRef.current = true; // Mark as successfully loaded
         isOperationInProgressRef.current = false;
         
         debugLog('✅ SUCCESS COMPLETE: New insights displayed, loading stopped, marked as successfully loaded');
+        debugLog('🔒 STATE LOCKED: No further automatic changes should occur');
       } else {
         debugLog('❌ ERROR STATE TRANSITION: No insights in API response');
         throw new Error('No insights received from OpenAI');
@@ -217,10 +255,10 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       return;
     }
 
-    // Clear previous state
+    // Clear previous state with logging
     debugLog('🔄 REGENERATE: Clearing previous state for fresh generation');
     setError(null);
-    setInsights(null);
+    setInsightsWithLogging(null, 'Manual regeneration - clearing previous insights');
     
     // Reset loaded and error flags to allow new generation
     hasSuccessfullyLoadedRef.current = false;
@@ -234,6 +272,19 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       generateNewInsights();
     }
   };
+
+  // Log current state on every render for debugging
+  useEffect(() => {
+    debugLog('CURRENT STATE SNAPSHOT:', {
+      insights: insights ? 'SET' : 'NULL',
+      insightsLength: insights?.length || 0,
+      isLoading,
+      error: error ? 'SET' : 'NULL',
+      hasSuccessfullyLoaded: hasSuccessfullyLoadedRef.current,
+      hasErrored: hasErroredRef.current,
+      isOperationInProgress: isOperationInProgressRef.current
+    });
+  });
 
   return {
     insights,

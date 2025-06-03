@@ -1,10 +1,15 @@
-
 interface CategoryBreakdown {
   title: string;
   skillCount: number;
   averageCurrentRating: number;
   averageDesiredRating: number;
   gap: number;
+  topGapSkills?: Array<{
+    title: string;
+    gap: number;
+    currentRating: number;
+    desiredRating: number;
+  }>;
 }
 
 export const buildAssessmentData = (categories: any[], averageGap: number, demographics: any) => {
@@ -21,12 +26,23 @@ export const buildAssessmentData = (categories: any[], averageGap: number, demog
     const desiredSum = validSkills.reduce((sum, skill) => sum + skill.ratings.desired, 0);
     const skillCount = validSkills.length || 1;
     
+    // Calculate individual skill gaps and get top 2 largest gaps
+    const skillsWithGaps = validSkills.map(skill => ({
+      title: skill.title,
+      gap: skill.ratings.desired - skill.ratings.current,
+      currentRating: skill.ratings.current,
+      desiredRating: skill.ratings.desired
+    })).sort((a, b) => b.gap - a.gap);
+    
+    const topGapSkills = skillsWithGaps.slice(0, 2);
+    
     return {
       title: cat.title,
       skillCount: skillCount,
       averageCurrentRating: currentSum / skillCount,
       averageDesiredRating: desiredSum / skillCount,
-      gap: (desiredSum / skillCount) - (currentSum / skillCount)
+      gap: (desiredSum / skillCount) - (currentSum / skillCount),
+      topGapSkills: topGapSkills
     };
   });
 
@@ -226,10 +242,32 @@ Assessment Data:
 - Industry: ${assessmentSummary.demographics.industry || 'Not specified'}
 
 Top 3 Categories by Gap (Priority Development Areas):
-${topGapCategories.map((cat, i) => `${i+1}. ${cat.title}: Gap ${cat.gap.toFixed(1)} (Current: ${cat.averageCurrentRating.toFixed(1)}, Desired: ${cat.averageDesiredRating.toFixed(1)})`).join('\n')}
+${topGapCategories.map((cat, i) => {
+  let categoryText = `${i+1}. ${cat.title}: Gap ${cat.gap.toFixed(1)} (Current: ${cat.averageCurrentRating.toFixed(1)}, Desired: ${cat.averageDesiredRating.toFixed(1)})`;
+  
+  if (cat.topGapSkills && cat.topGapSkills.length > 0) {
+    categoryText += `\n   Top individual skill gaps:`;
+    cat.topGapSkills.forEach((skill, skillIndex) => {
+      categoryText += `\n   - ${skill.title}: Gap ${skill.gap.toFixed(1)} (Current: ${skill.currentRating}, Desired: ${skill.desiredRating})`;
+    });
+  }
+  
+  return categoryText;
+}).join('\n\n')}
 
 Top Competency Areas (High Current Ratings, Low Gaps):
-${topCompetencies.map((cat, i) => `${i+1}. ${cat.title}: Current ${cat.averageCurrentRating.toFixed(1)}, Gap ${cat.gap.toFixed(1)}`).join('\n')}
+${topCompetencies.map((cat, i) => {
+  let categoryText = `${i+1}. ${cat.title}: Current ${cat.averageCurrentRating.toFixed(1)}, Gap ${cat.gap.toFixed(1)}`;
+  
+  if (cat.topGapSkills && cat.topGapSkills.length > 0) {
+    categoryText += `\n   Individual skills within this competency:`;
+    cat.topGapSkills.forEach((skill, skillIndex) => {
+      categoryText += `\n   - ${skill.title}: Gap ${skill.gap.toFixed(1)} (Current: ${skill.currentRating}, Desired: ${skill.desiredRating})`;
+    });
+  }
+  
+  return categoryText;
+}).join('\n\n')}
 `;
 
   const validatedResourcesList = buildValidatedResourcesList();
@@ -237,7 +275,19 @@ ${topCompetencies.map((cat, i) => `${i+1}. ${cat.title}: Current ${cat.averageCu
 
   return `${assessmentDataSection}
 
-You are an expert leadership coach and assessment analyst. Based on the provided assessment data (including competency names, gap scores, and top competencies), generate AI insights for a user's leadership assessment.
+You are an expert leadership coach and assessment analyst. Based on the provided assessment data (including competency names, gap scores, individual skill gaps, and top competencies), generate AI insights for a user's leadership assessment.
+
+### CRITICAL SKILL-LEVEL ANALYSIS REQUIREMENT
+
+**MANDATORY SKILL-LEVEL INTEGRATION:**
+- You MUST reference specific individual skills by name when discussing competencies
+- Include the specific skill names and their gap scores in your summary and insights
+- Tailor at least one suggestion or resource recommendation per priority area to address the specific skills with the largest gaps
+- Use phrases like "particularly in [specific skill name] (gap: X.X)" or "especially focusing on [skill name] where you have a gap of X.X"
+
+**Example Integration:**
+Instead of: "Improve your decision making competency"
+Write: "Improve your decision making competency, particularly in Strategic Decision Making (gap: 4.0) and Crisis Decision Making (gap: 3.5)"
 
 ### DEMOGRAPHIC CONTEXT FOR TAILORED INSIGHTS
 
@@ -252,6 +302,7 @@ You are an expert leadership coach and assessment analyst. Based on the provided
 1. **Role Context**: How does this apply to their specific position?
 2. **Industry Relevance**: What industry-specific challenges does this address?
 3. **Experience Appropriate**: Is the complexity right for their level?
+4. **Skill-Specific**: Reference the individual skills with largest gaps by name and score
 
 **Role-Specific Guidelines:**
 - Individual Contributor: Focus on self-leadership, influence without authority, peer collaboration
@@ -341,15 +392,20 @@ ${validatedLeadersList}
 **Insight Specificity Requirements:**
 - Each insight must include at least ONE specific technique, framework, or methodology
 - Reference concrete examples relevant to user's industry/role when possible
+- MUST include specific skill names and gap scores when discussing competencies
 - Avoid these generic phrases: "focus on," "work on improving," "consider developing"
 - Instead use action-oriented language: "implement," "practice," "apply," "utilize"
 
+**Skill-Level Integration Examples:**
+✅ "Implement the SBI Feedback Model to enhance direct communication with your team, particularly focusing on Active Listening (gap: 3.5) and Difficult Conversations (gap: 4.0)"
+✅ "Apply the Eisenhower Matrix for time management, especially targeting Project Planning (gap: 3.8) and Priority Setting (gap: 4.2)"
+
 **Forbidden Generic Statements:**
 ❌ "Focus on improving communication skills"
-✅ "Implement the SBI Feedback Model to enhance direct communication with your [role-specific context]"
+✅ "Implement the SBI Feedback Model to enhance direct communication with your [role-specific context], particularly in Active Listening (gap: 3.5) where you can practice giving full attention during team meetings"
 
 ❌ "Work on building trust with your team"
-✅ "Apply Speed of Trust behaviors by delivering results consistently and communicating transparently about [industry-specific challenges]"
+✅ "Apply Speed of Trust behaviors by delivering results consistently, particularly focusing on Reliability (gap: 3.2) and Transparency (gap: 2.8) about [industry-specific challenges]"
 
 ### INSPIRATIONAL LEADER SELECTION
 
@@ -385,20 +441,20 @@ You MUST output ONLY a valid JSON object with this EXACT structure:
 
 ### FIELD REQUIREMENTS
 
-- **summary**: Generate a professional, concise, and impactful assessment summary that is 6–8 sentences. Use the word "competencies" throughout (not "strengths"). Always refer to the person as "you" or "your" (never "the user" or "the user's"). 
+- **summary**: Generate a professional, concise, and impactful assessment summary that is 6–8 sentences. Use the word "competencies" throughout (not "strengths"). Always refer to the person as "you" or "your" (never "the user" or "the user's"). MUST reference specific individual skills by name and their gap scores within the priority competencies.
 
 **CRITICAL FORMATTING FOR SUMMARY**: Structure the summary as TWO clear paragraphs that will be separated by post-processing. Use transition phrases like "However," "At the same time," "Additionally," or "Your results also" to start the second paragraph. MUST include industry and role-relevant inspirational leader with working link using format: "Like [Leader Name](https://workinglink.com), who is known for [specific principle]..."
 
 - **priority_areas**: An array with exactly 3 objects, each for a Top 3 Priority Development Area. Each object must contain:
   - \`competency\`: The exact competency name from assessment data
   - \`gap\`: The numerical gap score
-  - \`insights\`: Array of exactly 3 actionable, research-backed insights that avoid generic statements, include specific methodologies/frameworks, and integrate role/industry/experience context
+  - \`insights\`: Array of exactly 3 actionable, research-backed insights that avoid generic statements, include specific methodologies/frameworks, integrate role/industry/experience context, AND reference specific individual skills by name with their gap scores
   - \`resources\`: Array of exactly 3 resource names from the validated database, using EXACT titles as specified
 
 - **key_strengths**: An array with at least 2 objects, each for a key competency to leverage. Each object must contain:
   - \`competency\`: The exact competency name from assessment data
-  - \`example\`: Concrete example of how this strength manifests in their specific role/industry context
-  - \`leverage_advice\`: Array of exactly 3 specific strategies for leveraging this strength that incorporate role/industry/experience context
+  - \`example\`: Concrete example of how this strength manifests in their specific role/industry context, including reference to specific skills within the competency
+  - \`leverage_advice\`: Array of exactly 3 specific strategies for leveraging this strength that incorporate role/industry/experience context and reference individual skills where relevant
   - \`resources\`: Array of exactly 3 resource names from the validated database, using EXACT titles as specified
 
 ### PRE-OUTPUT VALIDATION CHECKLIST
@@ -417,6 +473,8 @@ Before generating the JSON response, verify:
 □ All competency names match exactly from assessment data
 □ Each competency section has exactly 3 insights/advice items
 □ Role-specific and industry-specific context is woven throughout
+□ **CRITICAL**: Summary and insights reference specific individual skills by name and gap scores
+□ **CRITICAL**: At least one insight per priority area addresses specific skills with largest gaps
 
 ### CRITICAL JSON RULES
 - Output MUST be valid JSON only. No text, markdown, or formatting before/after.
@@ -426,8 +484,9 @@ Before generating the JSON response, verify:
 - NEVER write generic, obvious statements - every insight must provide genuine value and actionable advice.
 - Use only suggestive language for assessment tools: "consider using a tool such as [tool name]" rather than direct recommendations.
 - **PERSONALIZATION REQUIREMENT**: Use ALL THREE demographic dimensions (role, industry, experience) to tailor insights, examples, and leader selection for maximum relevance to the user's specific context.
+- **SKILL-LEVEL REQUIREMENT**: Reference specific individual skills by name and gap scores in summary and priority area insights
 - **VALIDATED RESOURCE REQUIREMENT**: Every resource in the resources arrays must be an exact match from the validated database above
 - **VALIDATED LEADER REQUIREMENT**: Every leader in the summary must be an exact match from the validated leaders database above. If no suitable validated leader exists for the context, omit the leader reference entirely rather than using an unvalidated leader.
 
-Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above while being specifically tailored to the user's role, industry, and experience level. Remember: ONLY use resources and leaders from the validated databases with exact title matching.`;
+Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above while being specifically tailored to the user's role, industry, experience level, AND individual skill gaps. Remember: ONLY use resources and leaders from the validated databases with exact title matching, and ALWAYS reference specific skills by name with their gap scores.`;
 };

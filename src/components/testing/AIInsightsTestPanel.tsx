@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -72,7 +71,7 @@ const SAMPLE_ASSESSMENT_DATA = {
 
 const AIInsightsTestPanel: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedInsights, setGeneratedInsights] = useState<string | null>(null);
+  const [testInsights, setTestInsights] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [testNotes, setTestNotes] = useState('');
 
@@ -94,7 +93,7 @@ const AIInsightsTestPanel: React.FC = () => {
   const generateTestInsights = async () => {
     setIsGenerating(true);
     setError(null);
-    setGeneratedInsights(null);
+    setTestInsights(null);
 
     try {
       console.log('AIInsightsTestPanel: Starting test insights generation (NO SAVING)');
@@ -116,7 +115,7 @@ const AIInsightsTestPanel: React.FC = () => {
       }
 
       if (data && data.insights) {
-        setGeneratedInsights(data.insights);
+        setTestInsights(data.insights);
         console.log('AIInsightsTestPanel: Successfully generated test insights (NOT SAVED)');
         
         toast({
@@ -141,7 +140,7 @@ const AIInsightsTestPanel: React.FC = () => {
   };
 
   const clearResults = () => {
-    setGeneratedInsights(null);
+    setTestInsights(null);
     setError(null);
     setTestNotes('');
   };
@@ -220,11 +219,11 @@ const AIInsightsTestPanel: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Generated Insights Display */}
-      {generatedInsights && (
+      {/* Generated Insights Display using the actual AIInsights component */}
+      {testInsights && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-slate-800">Generated Test Insights:</h3>
+            <h3 className="text-lg font-semibold text-slate-800">Generated Test Insights (Live Dashboard Format):</h3>
             {testNotes && (
               <div className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">
                 Notes: {testNotes}
@@ -232,71 +231,15 @@ const AIInsightsTestPanel: React.FC = () => {
             )}
           </div>
           
-          {/* Display the AI Insights component with generated data */}
-          <div className="border rounded-lg p-4 bg-white">
-            <div className="prose max-w-none">
-              {(() => {
-                try {
-                  const insights = JSON.parse(generatedInsights);
-                  return (
-                    <div className="space-y-6">
-                      {/* Summary */}
-                      {insights.summary && (
-                        <div>
-                          <h4 className="text-lg font-semibold mb-3">Summary</h4>
-                          <div className="text-gray-700 leading-relaxed">
-                            {insights.summary.split('\n\n').map((paragraph: string, index: number) => (
-                              <p key={index} className="mb-3">{paragraph}</p>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* Priority Areas */}
-                      {insights.priority_areas && insights.priority_areas.length > 0 && (
-                        <div>
-                          <h4 className="text-lg font-semibold mb-3">Priority Areas for Development</h4>
-                          <div className="space-y-4">
-                            {insights.priority_areas.map((area: any, index: number) => (
-                              <div key={index} className="border-l-4 border-blue-400 pl-4">
-                                <h5 className="font-medium text-blue-700">{area.competency} (Gap: {area.gap})</h5>
-                                <ul className="list-disc list-inside mt-2 space-y-1">
-                                  {area.insights.map((insight: string, i: number) => (
-                                    <li key={i} className="text-sm text-gray-600">{insight}</li>
-                                  ))}
-                                </ul>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                      
-                      {/* Key Strengths */}
-                      {insights.key_strengths && insights.key_strengths.length > 0 && (
-                        <div>
-                          <h4 className="text-lg font-semibold mb-3">Key Strengths to Leverage</h4>
-                          <div className="space-y-4">
-                            {insights.key_strengths.map((strength: any, index: number) => (
-                              <div key={index} className="border-l-4 border-green-400 pl-4">
-                                <h5 className="font-medium text-green-700">{strength.competency}</h5>
-                                <p className="text-sm text-gray-600 mt-1">{strength.example}</p>
-                                <ul className="list-disc list-inside mt-2 space-y-1">
-                                  {strength.leverage_advice.map((advice: string, i: number) => (
-                                    <li key={i} className="text-sm text-gray-600">{advice}</li>
-                                  ))}
-                                </ul>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                } catch (e) {
-                  return <pre className="whitespace-pre-wrap text-sm">{generatedInsights}</pre>;
-                }
-              })()}
-            </div>
+          {/* Use the actual AIInsights component with test insights */}
+          <div className="border rounded-lg bg-white">
+            <AIInsights
+              categories={SAMPLE_ASSESSMENT_DATA.categories}
+              demographics={SAMPLE_ASSESSMENT_DATA.demographics}
+              averageGap={calculateAverageGap(SAMPLE_ASSESSMENT_DATA.categories)}
+              assessmentId={undefined}
+              testInsights={testInsights}
+            />
           </div>
         </div>
       )}

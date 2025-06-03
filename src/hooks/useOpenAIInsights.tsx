@@ -43,10 +43,12 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       console.log('TEST ASSESSMENT CHECK: Is test assessment?', isTestAssessment);
       console.log('FORCE REGENERATE: Force regenerate flag?', forceRegenerate);
       
-      // CRITICAL FIX: For test assessment with force regenerate, skip database check entirely and generate immediately
+      // CRITICAL FIX: For test assessment with force regenerate, skip ALL checks and generate immediately
       if (isTestAssessment && forceRegenerate) {
-        console.log('TEST ASSESSMENT: Force regenerate is TRUE - skipping database check and generating new insights immediately');
+        console.log('TEST ASSESSMENT: Force regenerate is TRUE - bypassing ALL checks and generating new insights immediately');
         setForceRegenerate(false); // Reset the flag
+        hasCheckedExistingRef.current = false; // Reset to allow generation
+        isGeneratingRef.current = false; // Reset generation flag
         await generateNewInsights();
         return;
       }

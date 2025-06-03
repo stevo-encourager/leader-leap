@@ -1,3 +1,4 @@
+
 interface CategoryBreakdown {
   title: string;
   skillCount: number;
@@ -282,7 +283,7 @@ You are an expert leadership coach and assessment analyst. Based on the provided
 
 **MANDATORY SKILL-LEVEL INTEGRATION:**
 - You MUST reference specific individual skills by name when discussing competencies
-- In the SUMMARY ONLY: Reference skill names without any numerical values (no gaps, no scores, no decimals)
+- In the SUMMARY ONLY: Reference skill names WITHOUT any numerical values (no gaps, no scores, no decimals, no numbers in parentheses)
 - In INSIGHTS sections: Include specific skill names and their gap scores for targeted recommendations
 - Tailor at least one suggestion or resource recommendation per priority area to address the specific skills with the largest gaps
 - Use phrases like "particularly in areas such as [specific skill name]" in the summary
@@ -303,7 +304,7 @@ Use: "Implement the OODA Loop to enhance your decision-making process, particula
 - Acknowledge their experience level (${assessmentSummary.demographics.yearsOfExperience || 'current'} years) appropriately
 - Use encouraging, supportive language that builds confidence
 - Avoid repetitive skill mentions or similar concepts
-- Highlight 1-2 key skill names per competency for context (names only, no numbers)
+- Highlight 1-2 key skill names per competency for context (names only, NO numbers, NO gap scores, NO parentheses with values)
 - Keep feedback clear, readable, and motivational
 
 **Summary Personalization Examples:**
@@ -463,7 +464,7 @@ You MUST output ONLY a valid JSON object with this EXACT structure:
 
 ### FIELD REQUIREMENTS
 
-- **summary**: Generate a professional, encouraging, and personalized assessment summary that is 6–8 sentences. Use the word "competencies" throughout (not "strengths"). Always refer to the person as "you" or "your" (never "the user" or "the user's"). MUST reference specific individual skills by NAME ONLY (no numerical values, gaps, or scores) within the priority competencies. Include natural references to their role, industry, and experience level. Use supportive, confidence-building language while avoiding repetition.
+- **summary**: Generate a professional, encouraging, and personalized assessment summary that is 6–8 sentences. Use the word "competencies" throughout (not "strengths"). Always refer to the person as "you" or "your" (never "the user" or "the user's"). MUST reference specific individual skills by NAME ONLY (NO numerical values, NO gaps, NO scores, NO decimals, NO parentheses with numbers) within the priority competencies. Include natural references to their role, industry, and experience level. Use supportive, confidence-building language while avoiding repetition.
 
 **CRITICAL FORMATTING FOR SUMMARY**: Structure the summary as TWO clear paragraphs that will be separated by post-processing. Use transition phrases like "However," "At the same time," "Additionally," or "Your results also" to start the second paragraph. MUST include industry and role-relevant inspirational leader with working link using format: "Like [Leader Name](https://workinglink.com), who is known for [specific principle]..."
 
@@ -495,7 +496,7 @@ Before generating the JSON response, verify:
 □ All competency names match exactly from assessment data
 □ Each competency section has exactly 3 insights/advice items
 □ Role-specific and industry-specific context is woven throughout
-□ **CRITICAL**: Summary references specific individual skills by NAME ONLY (no numerical values)
+□ **CRITICAL**: Summary references specific individual skills by NAME ONLY (NO numerical values, NO gaps, NO scores, NO decimals, NO parentheses)
 □ **CRITICAL**: Insights reference specific individual skills by name and gap scores
 □ **CRITICAL**: At least one insight per priority area addresses specific skills with largest gaps
 □ **CRITICAL**: Summary uses encouraging, personalized language with role/industry/experience context
@@ -509,8 +510,11 @@ Before generating the JSON response, verify:
 - NEVER write generic, obvious statements - every insight must provide genuine value and actionable advice.
 - Use only suggestive language for assessment tools: "consider using a tool such as [tool name]" rather than direct recommendations.
 - **PERSONALIZATION REQUIREMENT**: Use ALL THREE demographic dimensions (role, industry, experience) to tailor insights, examples, and leader selection for maximum relevance to the user's specific context.
-- **SKILL-LEVEL REQUIREMENT**: Reference specific individual skills by name only (no numbers) in summary, and by name with gap scores in priority area insights
+- **SKILL-LEVEL REQUIREMENT**: Reference specific individual skills by name only (NO numbers, NO gaps, NO scores) in summary, and by name with gap scores in priority area insights
 - **VALIDATED RESOURCE REQUIREMENT**: Every resource in the resources arrays must be an exact match from the validated database above
 - **VALIDATED LEADER REQUIREMENT**: Every leader in the summary must be an exact match from the validated leaders database above. If no suitable validated leader exists for the context, omit the leader reference entirely rather than using an unvalidated leader.
 
-Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above while being specifically tailored to the user's role, industry, experience level, AND individual skill gaps. Remember: ONLY use resources and leaders from the validated databases with exact title matching, reference skills by name only in summary (no numbers), and ALWAYS reference specific skills by name with their gap scores in insights sections.
+Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above while being specifically tailored to the user's role, industry, experience level, AND individual skill gaps. Remember: ONLY use resources and leaders from the validated databases with exact title matching, reference skills by name only in summary (NO numbers), and ALWAYS reference specific skills by name with their gap scores in insights sections.
+
+`;
+};

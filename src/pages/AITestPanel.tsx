@@ -87,7 +87,6 @@ const AITestPanel = () => {
   };
 
   const handleRefreshInsights = () => {
-    console.log('🔍 🚨 BUTTON CLICK HANDLER - handleRefreshInsights CALLED - FIRST LINE OF FUNCTION!');
     console.log('AITestPanel: Refreshing insights by incrementing key');
     setRefreshKey(prev => prev + 1);
   };

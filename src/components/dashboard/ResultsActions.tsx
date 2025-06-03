@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ArrowLeft, Download, Plus, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -57,12 +58,20 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
   // Calculate average gap for insights hook
   const averageGap = categories.length > 0 ? calculateAverageGap(categories) : 0;
   
-  // Use the insights hook to check if insights are ready
+  // Use the insights hook DIRECTLY to get regenerateInsights function
   const { insights, isLoading: insightsLoading, error: insightsError, regenerateInsights } = useOpenAIInsights({
     categories,
     demographics,
     averageGap,
     assessmentId
+  });
+
+  // CRITICAL DEBUG: Log insights hook state
+  console.log('🔍 🚨 INSIGHTS HOOK STATE:', {
+    hasInsights: !!insights,
+    insightsLoading,
+    hasRegenerateFunction: !!regenerateInsights,
+    regenerateFunctionType: typeof regenerateInsights
   });
 
   // Enhanced validation to check if we actually have assessment data
@@ -280,12 +289,13 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     onRestart();
   };
 
-  // Handle regenerating insights with comprehensive debugging
-  const handleRegenerateInsights = () => {
+  // FIXED: Direct regeneration handler - no callback chain needed
+  const handleRegenerateInsights = async () => {
     console.log('🔍 🚨 HANDLE REGENERATE INSIGHTS CALLED - BUTTON CLICK HANDLER!');
-    console.log('🔍 ResultsActions: Button clicked with:', {
+    console.log('🔍 ResultsActions: Direct button click with:', {
       isTestAssessment,
       assessmentId,
+      hasRegenerateFunction: !!regenerateInsights,
       regenerateInsights: typeof regenerateInsights
     });
     
@@ -296,9 +306,27 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
         description: "Generating new AI insights for test assessment...",
       });
       
-      console.log('🔍 ResultsActions: About to call regenerateInsights()');
-      regenerateInsights();
-      console.log('🔍 ResultsActions: Called regenerateInsights() - function executed');
+      if (regenerateInsights) {
+        console.log('🔍 ResultsActions: About to call regenerateInsights() DIRECTLY');
+        try {
+          await regenerateInsights();
+          console.log('🔍 ResultsActions: Direct regenerateInsights() completed successfully');
+        } catch (error) {
+          console.error('🔍 ResultsActions: Direct regenerateInsights() failed:', error);
+          toast({
+            title: "Regeneration Failed",
+            description: "Failed to regenerate insights. Please try again.",
+            variant: "destructive",
+          });
+        }
+      } else {
+        console.error('🔍 ResultsActions: regenerateInsights function not available');
+        toast({
+          title: "Cannot Regenerate",
+          description: "Regeneration function not available. Please refresh the page.",
+          variant: "destructive",
+        });
+      }
     } else {
       console.log('🔍 ResultsActions: Regeneration requested for non-test assessment - not allowed');
       toast({
@@ -392,7 +420,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
                     onClick={() => {
                       console.log('🔍 🚨 BUTTON ONCLICK FIRED - VERY FIRST LINE!');
                       console.log('🔍 Button onClick called, isTestAssessment:', isTestAssessment);
-                      console.log('🔍 About to call handleRegenerateInsights');
+                      console.log('🔍 About to call handleRegenerateInsights DIRECTLY');
                       handleRegenerateInsights();
                     }}
                     disabled={insightsLoading}

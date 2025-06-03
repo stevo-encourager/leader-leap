@@ -10,6 +10,7 @@ interface AIInsightsProps {
   demographics: Demographics;
   averageGap: number;
   assessmentId?: string;
+  onRegenerateCallback?: (callback: () => void) => void;
 }
 
 interface PriorityArea {
@@ -32,15 +33,29 @@ interface AIInsightsData {
   key_strengths: KeyStrength[];
 }
 
-const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, averageGap, assessmentId }) => {
+const AIInsights: React.FC<AIInsightsProps> = ({ 
+  categories, 
+  demographics, 
+  averageGap, 
+  assessmentId,
+  onRegenerateCallback 
+}) => {
   console.log('🔵 AIInsights: Component re-rendered with assessmentId:', assessmentId);
   
-  const { insights, isLoading, error } = useOpenAIInsights({
+  const { insights, isLoading, error, regenerateInsights } = useOpenAIInsights({
     categories,
     demographics,
     averageGap,
     assessmentId
   });
+
+  // Provide the regenerate function to the parent component
+  React.useEffect(() => {
+    if (onRegenerateCallback && regenerateInsights) {
+      console.log('🔵 AIInsights: Setting regenerate callback for parent');
+      onRegenerateCallback(regenerateInsights);
+    }
+  }, [onRegenerateCallback, regenerateInsights]);
 
   // Log the assessment ID and insights status for debugging
   React.useEffect(() => {
@@ -52,6 +67,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
     }
   }, [assessmentId, insights, isLoading]);
 
+  // Parse insights from JSON string
   const parseInsights = (insightsText: string): AIInsightsData | null => {
     try {
       const parsed = JSON.parse(insightsText);

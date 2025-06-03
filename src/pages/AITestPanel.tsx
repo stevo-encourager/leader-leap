@@ -13,7 +13,6 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, Bot, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AssessmentLoading from '@/components/assessment/AssessmentLoading';
-import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
 
 const AITestPanel = () => {
   const navigate = useNavigate();
@@ -24,20 +23,13 @@ const AITestPanel = () => {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [regenerateCallback, setRegenerateCallback] = useState<(() => void) | null>(null);
 
   // Check if we're in development/staging (not production)
   const isDevelopment = import.meta.env.DEV || window.location.hostname !== 'your-production-domain.com';
 
   // Calculate metrics for insights
   const averageGap = calculateAverageGap(categories);
-
-  // Get the regenerateInsights function from the hook
-  const { regenerateInsights } = useOpenAIInsights({
-    categories,
-    demographics,
-    averageGap,
-    assessmentId
-  });
 
   useEffect(() => {
     // Redirect to home if not in development/staging
@@ -86,17 +78,18 @@ const AITestPanel = () => {
   const handleRefreshInsights = () => {
     console.log('🔴 AITestPanel: Regenerate Insights button clicked - FIRST LINE OF HANDLER');
     console.log('🔴 AITestPanel: Current refreshKey before increment:', refreshKey);
-    console.log('🔴 AITestPanel: About to call regenerateInsights from hook');
+    console.log('🔴 AITestPanel: About to call regeneration callback');
     
-    // Call the regenerateInsights function from the hook to force regeneration
-    regenerateInsights();
+    // Call the regenerateInsights function from the AIInsights component
+    if (regenerateCallback) {
+      console.log('🔴 AITestPanel: Calling regeneration callback');
+      regenerateCallback();
+    } else {
+      console.log('🔴 AITestPanel: No regeneration callback available, forcing re-render');
+      // Fallback: force a re-render to try again
+      setRefreshKey(prev => prev + 1);
+    }
     
-    console.log('🔴 AITestPanel: Called regenerateInsights, now incrementing refreshKey');
-    setRefreshKey(prev => {
-      const newValue = prev + 1;
-      console.log('🔴 AITestPanel: refreshKey incremented from', prev, 'to', newValue);
-      return newValue;
-    });
     console.log('🔴 AITestPanel: handleRefreshInsights completed');
   };
 
@@ -193,7 +186,8 @@ const AITestPanel = () => {
               categories={categories}
               demographics={demographics}
               averageGap={averageGap}
-              assessmentId={assessmentId} // Now correctly using the 'id' from the assessment
+              assessmentId={assessmentId}
+              onRegenerateCallback={setRegenerateCallback}
             />
           </div>
         </div>

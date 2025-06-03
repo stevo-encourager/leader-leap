@@ -24,50 +24,78 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
   const TEST_ASSESSMENT_ID = 'f74470bc-3c48-4980-bc5f-17386a724d37';
   const isTestAssessment = assessmentId === TEST_ASSESSMENT_ID;
 
+  console.log('🔍 USEOPEN_AI_INSIGHTS HOOK INIT:', {
+    assessmentId,
+    isTestAssessment,
+    forceRegenerate,
+    regenerateTrigger,
+    categoriesLength: categories?.length || 0,
+    hasExistingInsights: !!insights
+  });
+
   // CRITICAL SAFEGUARD: Check for existing insights first and NEVER regenerate if they exist (except for test assessment)
   useEffect(() => {
+    console.log('🔍 EFFECT TRIGGERED:', {
+      assessmentId,
+      regenerateTrigger,
+      forceRegenerate,
+      isTestAssessment,
+      categoriesLength: categories?.length || 0,
+      hasCheckedExistingRef: hasCheckedExistingRef.current,
+      isGeneratingRef: isGeneratingRef.current,
+      insightsLoadedRef: insightsLoadedRef.current
+    });
+
     const checkForExistingInsights = async () => {
       // Only proceed if we have valid data
       if (!categories || categories.length === 0) {
-        console.log('useOpenAIInsights: No categories available for insights');
+        console.log('🔍 NO CATEGORIES - Exiting early');
         return;
       }
 
-      console.log('CRITICAL SAFEGUARD: Checking for existing insights for assessment:', assessmentId);
-      console.log('TEST ASSESSMENT CHECK: Is test assessment?', isTestAssessment);
-      console.log('FORCE REGENERATE: Force regenerate flag?', forceRegenerate);
+      console.log('🔍 STARTING INSIGHTS CHECK:', {
+        assessmentId,
+        isTestAssessment,
+        forceRegenerate,
+        hasCheckedExistingRef: hasCheckedExistingRef.current,
+        isGeneratingRef: isGeneratingRef.current,
+        insightsLoadedRef: insightsLoadedRef.current
+      });
       
       // CRITICAL FIX: For test assessment with force regenerate, bypass EVERYTHING and generate new insights
       if (isTestAssessment && forceRegenerate) {
-        console.log('TEST ASSESSMENT: Force regenerate is TRUE - bypassing ALL checks and generating new insights immediately');
+        console.log('🔍 TEST ASSESSMENT FORCE REGENERATE - Bypassing all checks');
+        console.log('🔍 CLEARING ALL STATE FLAGS AND INSIGHTS');
+        
         setForceRegenerate(false); // Reset the flag
         setInsights(null); // Clear current insights
         hasCheckedExistingRef.current = false; // Reset to allow generation
         isGeneratingRef.current = false; // Reset generation flag
         insightsLoadedRef.current = false; // Reset loaded flag
         
-        // Generate new insights immediately without any database checks
+        console.log('🔍 CALLING GENERATE NEW INSIGHTS WITH FORCE=TRUE');
         await generateNewInsights(true); // Pass true to indicate force regeneration
         return;
       }
       
       // CRITICAL PROTECTION: If we already have insights loaded and it's not a test assessment, NEVER check again
       if (insightsLoadedRef.current && !isTestAssessment) {
-        console.log('CRITICAL PROTECTION: Insights already loaded - preventing any further operations');
+        console.log('🔍 INSIGHTS ALREADY LOADED (NON-TEST) - Preventing further operations');
         return;
       }
       
       // PROTECTION: Prevent multiple simultaneous checks (except for test assessment regeneration)
       if ((hasCheckedExistingRef.current || isGeneratingRef.current) && !forceRegenerate) {
-        console.log('CRITICAL PROTECTION: Already checked or generating - preventing duplicate operation');
+        console.log('🔍 ALREADY CHECKED OR GENERATING - Preventing duplicate operation');
         return;
       }
       
       hasCheckedExistingRef.current = true;
+      console.log('🔍 SET hasCheckedExistingRef TO TRUE');
 
       try {
         if (assessmentId && assessmentId.trim() !== '') {
-          console.log('CRITICAL SAFEGUARD: Checking database for existing insights');
+          console.log('🔍 CHECKING DATABASE FOR EXISTING INSIGHTS:', assessmentId);
           
           // For saved assessments, ALWAYS check database first with enhanced validation
           const { data: assessment, error } = await supabase
@@ -76,8 +104,10 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
             .eq('id', assessmentId)
             .single();
 
+          console.log('🔍 DATABASE QUERY RESULT:', { assessment, error });
+
           if (error) {
-            console.error('useOpenAIInsights: Error checking for existing insights:', error);
+            console.error('🔍 ERROR CHECKING FOR EXISTING INSIGHTS:', error);
             // Continue to generate new insights if we can't check existing ones
           } else if (assessment && 
                      assessment.ai_insights && 
@@ -85,27 +115,41 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
                      assessment.ai_insights.trim() !== 'null' &&
                      assessment.ai_insights.trim() !== 'undefined') {
             
-            console.log('CRITICAL PROTECTION: Found existing insights - using saved version - NEVER regenerating');
-            console.log('CRITICAL PROTECTION: Insights length:', assessment.ai_insights.length);
+            console.log('🔍 FOUND EXISTING INSIGHTS:', {
+              insightsLength: assessment.ai_insights.length,
+              isTestAssessment,
+              willUseExisting: true
+            });
+            
             setInsights(assessment.ai_insights);
             if (!isTestAssessment) {
               insightsLoadedRef.current = true; // Mark as loaded to prevent future operations for non-test assessments
+              console.log('🔍 MARKED INSIGHTS AS PERMANENTLY LOADED (NON-TEST)');
             }
             return; // CRITICAL: Exit early - don't generate new insights
+          } else {
+            console.log('🔍 NO VALID EXISTING INSIGHTS FOUND');
           }
         }
 
         // Only generate new insights if none exist and we're not already generating
         if (!isGeneratingRef.current && (!insightsLoadedRef.current || isTestAssessment)) {
-          console.log('CRITICAL SAFEGUARD: No existing insights found, generating new ones (ONLY ONCE)');
-          if (isTestAssessment) {
-            console.log('TEST ASSESSMENT: Generating insights for test assessment (regeneration allowed)');
-          }
+          console.log('🔍 GENERATING NEW INSIGHTS:', {
+            isGeneratingRef: isGeneratingRef.current,
+            insightsLoadedRef: insightsLoadedRef.current,
+            isTestAssessment
+          });
           await generateNewInsights();
+        } else {
+          console.log('🔍 SKIPPING INSIGHTS GENERATION:', {
+            isGeneratingRef: isGeneratingRef.current,
+            insightsLoadedRef: insightsLoadedRef.current,
+            isTestAssessment
+          });
         }
         
       } catch (err) {
-        console.error('useOpenAIInsights: Error in checkForExistingInsights:', err);
+        console.error('🔍 ERROR IN checkForExistingInsights:', err);
         setError(err instanceof Error ? err.message : 'Failed to check for existing insights');
       }
     };
@@ -114,38 +158,50 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
   }, [assessmentId, regenerateTrigger, forceRegenerate]); // CRITICAL: Include forceRegenerate in dependencies
 
   const generateNewInsights = async (skipAllChecks = false) => {
+    console.log('🔍 GENERATE NEW INSIGHTS CALLED:', {
+      skipAllChecks,
+      isGeneratingRef: isGeneratingRef.current,
+      insightsLoadedRef: insightsLoadedRef.current,
+      isTestAssessment,
+      categoriesLength: categories?.length || 0
+    });
+
     // PROTECTION: Prevent simultaneous generation
     if (isGeneratingRef.current && !skipAllChecks) {
-      console.log('CRITICAL PROTECTION: Already generating insights - preventing duplicate generation');
+      console.log('🔍 ALREADY GENERATING - Preventing duplicate generation');
       return;
     }
 
     // PROTECTION: Never generate if insights are already loaded (except for test assessment with force regenerate)
     if (insightsLoadedRef.current && !isTestAssessment && !skipAllChecks) {
-      console.log('CRITICAL PROTECTION: Insights already loaded - preventing regeneration');
+      console.log('🔍 INSIGHTS ALREADY LOADED (NON-TEST) - Preventing regeneration');
       return;
     }
 
     if (!categories || categories.length === 0) {
-      console.log('useOpenAIInsights: No categories available for insights generation');
+      console.log('🔍 NO CATEGORIES FOR GENERATION - Exiting');
       return;
     }
 
-    console.log('CRITICAL SAFEGUARD: Starting insight generation with protection flags');
-    if (isTestAssessment) {
-      console.log('TEST ASSESSMENT: Generating insights for test assessment');
-    }
-    if (skipAllChecks) {
-      console.log('FORCE REGENERATION: Skipping all checks and generating new insights');
-    }
+    console.log('🔍 STARTING INSIGHT GENERATION:', {
+      isTestAssessment,
+      skipAllChecks,
+      assessmentId
+    });
     
     isGeneratingRef.current = true;
     setIsLoading(true);
     setError(null);
 
     try {
-      console.log('useOpenAIInsights: Calling generate-insights function with assessmentId:', assessmentId);
-      console.log('FRONTEND FORCE REGENERATE: Sending forceRegenerate flag:', skipAllChecks || (isTestAssessment && forceRegenerate));
+      const forceRegenerateFlag = skipAllChecks || (isTestAssessment && forceRegenerate);
+      console.log('🔍 CALLING SUPABASE FUNCTION WITH:', {
+        categoriesLength: categories.length,
+        demographicsKeys: Object.keys(demographics),
+        averageGap,
+        assessmentId,
+        forceRegenerate: forceRegenerateFlag
+      });
       
       const { data, error: functionError } = await supabase.functions.invoke('generate-insights', {
         body: {
@@ -153,35 +209,42 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
           demographics,
           averageGap,
           assessmentId,
-          forceRegenerate: skipAllChecks || (isTestAssessment && forceRegenerate) // CRITICAL: Send true when forcing regeneration
+          forceRegenerate: forceRegenerateFlag
         }
       });
 
+      console.log('🔍 SUPABASE FUNCTION RESPONSE:', { data, functionError });
+
       if (functionError) {
+        console.error('🔍 FUNCTION ERROR:', functionError);
         throw new Error(functionError.message);
       }
 
       if (data && data.insights) {
+        console.log('🔍 RECEIVED NEW INSIGHTS:', {
+          insightsLength: data.insights.length,
+          isTestAssessment
+        });
+        
         setInsights(data.insights);
         // Only mark as permanently loaded for non-test assessments
         if (!isTestAssessment) {
           insightsLoadedRef.current = true; // Mark as loaded to prevent future operations
-        }
-        console.log('CRITICAL SUCCESS: Successfully received and stored AI insights');
-        if (isTestAssessment) {
-          console.log('TEST ASSESSMENT: Insights generated for test assessment (can be regenerated)');
+          console.log('🔍 MARKED AS PERMANENTLY LOADED (NON-TEST)');
         } else {
-          console.log('PRODUCTION ASSESSMENT: Insights generated permanently');
+          console.log('🔍 TEST ASSESSMENT - Not marking as permanently loaded');
         }
       } else {
+        console.error('🔍 NO INSIGHTS IN RESPONSE');
         throw new Error('No insights received from OpenAI');
       }
     } catch (err) {
-      console.error('useOpenAIInsights: Error generating insights:', err);
+      console.error('🔍 ERROR GENERATING INSIGHTS:', err);
       setError(err instanceof Error ? err.message : 'Failed to generate insights');
     } finally {
       setIsLoading(false);
       isGeneratingRef.current = false;
+      console.log('🔍 GENERATION COMPLETE - Reset isGeneratingRef');
     }
   };
 
@@ -191,13 +254,19 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     error,
     // Provide a manual regenerate function with special handling for test assessment
     regenerateInsights: () => {
+      console.log('🔍 REGENERATE INSIGHTS CLICKED:', {
+        isTestAssessment,
+        assessmentId,
+        currentInsights: !!insights
+      });
+      
       if (isTestAssessment) {
-        console.log('TEST ASSESSMENT: Manual regeneration requested for test assessment - allowing');
+        console.log('🔍 TEST ASSESSMENT - Setting forceRegenerate=true and triggering effect');
         // CRITICAL FIX: Set force regenerate flag to trigger immediate regeneration
         setForceRegenerate(true);
         setRegenerateTrigger(prev => prev + 1); // Trigger effect re-run
       } else {
-        console.log('CRITICAL WARNING: Manual regeneration requested - this should only be used for new assessments');
+        console.log('🔍 NON-TEST ASSESSMENT - Manual regeneration for new assessments');
         // Reset the loaded flag only for manual regeneration of non-test assessments
         insightsLoadedRef.current = false;
         hasCheckedExistingRef.current = false;

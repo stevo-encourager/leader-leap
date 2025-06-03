@@ -8,30 +8,39 @@ export const checkExistingInsights = async (assessmentId: string, supabaseUrl: s
   const TEST_ASSESSMENT_ID = 'f74470bc-3c48-4980-bc5f-17386a724d37';
   const isTestAssessment = assessmentId === TEST_ASSESSMENT_ID;
   
-  console.log('CRITICAL CHECK: Verifying existing insights for assessment:', assessmentId);
-  console.log('TEST ASSESSMENT CHECK: Is test assessment?', isTestAssessment);
-  console.log('FORCE REGENERATE PARAM: Force regenerate requested?', forceRegenerate);
+  console.log('🔍 DATABASE CHECK EXISTING INSIGHTS:', {
+    assessmentId,
+    isTestAssessment,
+    forceRegenerate
+  });
   
   // DOUBLE CHECK: First verify we have a valid assessment ID
   if (!assessmentId || assessmentId.trim() === '') {
-    console.log('CRITICAL CHECK: No assessment ID provided - cannot check for existing insights');
+    console.log('🔍 NO ASSESSMENT ID - Cannot check for existing insights');
     return null;
   }
   
   // CRITICAL FIX: For test assessment with force regenerate, skip database check entirely
   if (isTestAssessment && forceRegenerate) {
-    console.log('TEST ASSESSMENT: Force regenerate requested - skipping database check to allow new generation');
+    console.log('🔍 TEST ASSESSMENT + FORCE REGENERATE - Skipping database check to force new generation');
     return null; // Return null to force new generation
   }
   
+  console.log('🔍 QUERYING DATABASE FOR EXISTING INSIGHTS...');
   const { data: existingAssessment, error: fetchError } = await supabase
     .from('assessment_results')
     .select('ai_insights')
     .eq('id', assessmentId)
     .single();
 
+  console.log('🔍 DATABASE QUERY RESULT:', {
+    existingAssessment,
+    fetchError,
+    hasInsights: !!existingAssessment?.ai_insights
+  });
+
   if (fetchError) {
-    console.error('CRITICAL CHECK: Error fetching existing assessment:', fetchError);
+    console.error('🔍 ERROR FETCHING EXISTING ASSESSMENT:', fetchError);
     throw new Error('Could not check for existing insights');
   }
 
@@ -42,18 +51,16 @@ export const checkExistingInsights = async (assessmentId: string, supabaseUrl: s
       existingAssessment.ai_insights.trim() !== 'null' &&
       existingAssessment.ai_insights.trim() !== 'undefined') {
     
-    // SPECIAL CASE: For test assessment without force regenerate, return existing
-    if (isTestAssessment) {
-      console.log('TEST ASSESSMENT: Found existing insights but no force regenerate - returning existing');
-      return existingAssessment.ai_insights;
-    } else {
-      console.log('CRITICAL PROTECTION: Found existing insights - ABSOLUTELY NEVER regenerating');
-      console.log('CRITICAL PROTECTION: Returning saved insights to prevent any overwriting');
-      return existingAssessment.ai_insights;
-    }
+    console.log('🔍 FOUND VALID EXISTING INSIGHTS:', {
+      insightsLength: existingAssessment.ai_insights.length,
+      isTestAssessment,
+      willReturnExisting: true
+    });
+    
+    return existingAssessment.ai_insights;
   }
 
-  console.log('CRITICAL CHECK: No existing insights found - proceeding with generation (ONLY ONCE)');
+  console.log('🔍 NO EXISTING INSIGHTS FOUND - Proceeding with generation');
   return null;
 };
 
@@ -69,41 +76,38 @@ export const saveInsights = async (
   const TEST_ASSESSMENT_ID = 'f74470bc-3c48-4980-bc5f-17386a724d37';
   const isTestAssessment = assessmentId === TEST_ASSESSMENT_ID;
   
-  console.log('FINAL PROTECTION: Double-checking before saving insights for assessment:', assessmentId);
-  console.log('TEST ASSESSMENT SAVE: Is test assessment?', isTestAssessment);
+  console.log('🔍 SAVING INSIGHTS:', {
+    assessmentId,
+    isTestAssessment,
+    insightsLength: insights.length
+  });
   
   // DOUBLE CHECK: Verify we're not overwriting existing insights (except for test assessment)
   if (!isTestAssessment) {
+    console.log('🔍 NON-TEST ASSESSMENT - Checking for existing insights before save');
     const existingCheck = await checkExistingInsights(assessmentId, supabaseUrl, supabaseServiceKey);
     if (existingCheck) {
-      console.log('FINAL PROTECTION: Insights already exist - ABORTING save to prevent overwrite');
+      console.log('🔍 EXISTING INSIGHTS FOUND - ABORTING save to prevent overwrite');
       throw new Error('Insights already exist for this assessment - will not overwrite');
     }
   } else {
-    console.log('TEST ASSESSMENT SAVE: Allowing save/overwrite for test assessment');
+    console.log('🔍 TEST ASSESSMENT - Allowing save/overwrite');
   }
   
-  console.log('FINAL PROTECTION: Confirmed no existing insights or test assessment - proceeding with save');
-  console.log('SAVING: New insights for assessment:', assessmentId);
-  if (isTestAssessment) {
-    console.log('TEST ASSESSMENT: Saving insights (can be overwritten in future)');
-  } else {
-    console.log('PRODUCTION ASSESSMENT: Saving insights (will NEVER be regenerated)');
-  }
-  
+  console.log('🔍 UPDATING DATABASE WITH NEW INSIGHTS...');
   const { error: updateError } = await supabase
     .from('assessment_results')
     .update({ ai_insights: insights })
     .eq('id', assessmentId);
 
   if (updateError) {
-    console.error('SAVE ERROR: Failed to save insights to database:', updateError);
+    console.error('🔍 SAVE ERROR:', updateError);
     throw new Error('Failed to save insights to database');
   } else {
-    if (isTestAssessment) {
-      console.log('SAVE SUCCESS: Test assessment insights saved - can be regenerated');
-    } else {
-      console.log('SAVE SUCCESS: Insights permanently saved - will be reused forever');
-    }
+    console.log('🔍 SAVE SUCCESS:', {
+      assessmentId,
+      isTestAssessment,
+      message: isTestAssessment ? 'Test assessment insights saved (can be regenerated)' : 'Insights permanently saved'
+    });
   }
 };

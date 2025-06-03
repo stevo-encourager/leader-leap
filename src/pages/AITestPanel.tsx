@@ -13,6 +13,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, Bot, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AssessmentLoading from '@/components/assessment/AssessmentLoading';
+import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
 
 const AITestPanel = () => {
   const navigate = useNavigate();
@@ -26,6 +27,17 @@ const AITestPanel = () => {
 
   // Check if we're in development/staging (not production)
   const isDevelopment = import.meta.env.DEV || window.location.hostname !== 'your-production-domain.com';
+
+  // Calculate metrics for insights
+  const averageGap = calculateAverageGap(categories);
+
+  // Get the regenerateInsights function from the hook
+  const { regenerateInsights } = useOpenAIInsights({
+    categories,
+    demographics,
+    averageGap,
+    assessmentId
+  });
 
   useEffect(() => {
     // Redirect to home if not in development/staging
@@ -74,7 +86,12 @@ const AITestPanel = () => {
   const handleRefreshInsights = () => {
     console.log('🔴 AITestPanel: Regenerate Insights button clicked - FIRST LINE OF HANDLER');
     console.log('🔴 AITestPanel: Current refreshKey before increment:', refreshKey);
-    console.log('🔴 AITestPanel: About to increment refreshKey');
+    console.log('🔴 AITestPanel: About to call regenerateInsights from hook');
+    
+    // Call the regenerateInsights function from the hook to force regeneration
+    regenerateInsights();
+    
+    console.log('🔴 AITestPanel: Called regenerateInsights, now incrementing refreshKey');
     setRefreshKey(prev => {
       const newValue = prev + 1;
       console.log('🔴 AITestPanel: refreshKey incremented from', prev, 'to', newValue);
@@ -137,9 +154,6 @@ const AITestPanel = () => {
       </div>
     );
   }
-
-  // Calculate metrics for insights
-  const averageGap = calculateAverageGap(categories);
 
   console.log('🔴 AITestPanel: Rendering with refreshKey:', refreshKey);
 

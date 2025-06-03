@@ -264,15 +264,25 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
 
   // Handle regenerating insights
   const handleRegenerateInsights = () => {
+    console.log('🔍 🚨 HANDLE REGENERATE INSIGHTS CALLED - BUTTON CLICK HANDLER!');
+    console.log('🔍 ResultsActions: Button clicked with:', {
+      isTestAssessment,
+      assessmentId,
+      regenerateInsights: typeof regenerateInsights
+    });
+    
     if (isTestAssessment) {
-      console.log('ResultsActions: Regenerating insights for test assessment');
+      console.log('🔍 ResultsActions: Regenerating insights for test assessment');
       toast({
         title: "Regenerating Insights",
         description: "Generating new AI insights for test assessment...",
       });
+      
+      console.log('🔍 ResultsActions: About to call regenerateInsights()');
       regenerateInsights();
+      console.log('🔍 ResultsActions: Called regenerateInsights() - function executed');
     } else {
-      console.log('ResultsActions: Regeneration requested for non-test assessment - not allowed');
+      console.log('🔍 ResultsActions: Regeneration requested for non-test assessment - not allowed');
       toast({
         title: "Cannot Regenerate",
         description: "Insights can only be regenerated for test assessments.",

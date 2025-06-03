@@ -257,6 +257,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     error,
     // Provide a manual regenerate function with special handling for test assessment
     regenerateInsights: () => {
+      console.log('🔍 🚨 REGENERATE INSIGHTS BUTTON HANDLER CALLED - FIRST LINE OF FUNCTION!');
       console.log('🔍 REGENERATE INSIGHTS BUTTON CLICKED:', {
         isTestAssessment,
         assessmentId,

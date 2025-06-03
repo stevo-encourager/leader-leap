@@ -17,6 +17,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
   const hasCheckedExistingRef = useRef(false);
   const isGeneratingRef = useRef(false);
   const insightsLoadedRef = useRef(false);
+  const forceRegenerateRef = useRef(false); // NEW: Flag to force regeneration for test assessment
 
   // Special test assessment ID that allows regeneration
   const TEST_ASSESSMENT_ID = 'f74470bc-3c48-4980-bc5f-17386a724d37';
@@ -32,7 +33,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       }
 
       // PROTECTION: Prevent multiple simultaneous checks (except for test assessment regeneration)
-      if ((hasCheckedExistingRef.current || isGeneratingRef.current) && !isTestAssessment) {
+      if ((hasCheckedExistingRef.current || isGeneratingRef.current) && !isTestAssessment && !forceRegenerateRef.current) {
         console.log('CRITICAL PROTECTION: Already checked or generating - preventing duplicate operation');
         return;
       }
@@ -45,6 +46,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
 
       console.log('CRITICAL SAFEGUARD: Checking for existing insights for assessment:', assessmentId);
       console.log('TEST ASSESSMENT CHECK: Is test assessment?', isTestAssessment);
+      console.log('FORCE REGENERATE: Force regenerate flag?', forceRegenerateRef.current);
       hasCheckedExistingRef.current = true;
 
       try {
@@ -67,11 +69,15 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
                      assessment.ai_insights.trim() !== 'null' &&
                      assessment.ai_insights.trim() !== 'undefined') {
             
-            // SPECIAL CASE: For test assessment, log but don't prevent regeneration
-            if (isTestAssessment) {
-              console.log('TEST ASSESSMENT: Found existing insights but allowing regeneration for test assessment');
+            // SPECIAL CASE: For test assessment with force regenerate flag, skip existing insights
+            if (isTestAssessment && forceRegenerateRef.current) {
+              console.log('TEST ASSESSMENT: Found existing insights but force regenerate flag is set - generating new insights');
+              forceRegenerateRef.current = false; // Reset the flag
+              await generateNewInsights();
+              return;
+            } else if (isTestAssessment) {
+              console.log('TEST ASSESSMENT: Found existing insights but no force regenerate - using existing');
               setInsights(assessment.ai_insights);
-              // Don't set insightsLoadedRef to true for test assessment to allow regeneration
               return;
             } else {
               console.log('CRITICAL PROTECTION: Found existing insights - using saved version - NEVER regenerating');
@@ -109,7 +115,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     }
 
     // PROTECTION: Never generate if insights are already loaded (except for test assessment)
-    if (insightsLoadedRef.current && !isTestAssessment) {
+    if (insightsLoadedRef.current && !isTestAssessment && !forceRegenerateRef.current) {
       console.log('CRITICAL PROTECTION: Insights already loaded - preventing regeneration');
       return;
     }
@@ -176,10 +182,11 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     regenerateInsights: () => {
       if (isTestAssessment) {
         console.log('TEST ASSESSMENT: Manual regeneration requested for test assessment - allowing');
-        // Reset flags for test assessment regeneration and clear current insights
-        hasCheckedExistingRef.current = false;
-        setInsights(null); // Clear current insights to force regeneration
-        generateNewInsights();
+        // Set force regenerate flag and clear current insights for test assessment
+        forceRegenerateRef.current = true;
+        hasCheckedExistingRef.current = false; // Reset to allow effect to run again
+        setInsights(null); // Clear current insights to show loading state
+        // Trigger the effect to run again which will detect the force regenerate flag
       } else {
         console.log('CRITICAL WARNING: Manual regeneration requested - this should only be used for new assessments');
         // Reset the loaded flag only for manual regeneration of non-test assessments

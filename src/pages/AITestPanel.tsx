@@ -72,8 +72,15 @@ const AITestPanel = () => {
   };
 
   const handleRefreshInsights = () => {
-    console.log('AITestPanel: Refreshing insights by incrementing key');
-    setRefreshKey(prev => prev + 1);
+    console.log('🔴 AITestPanel: Regenerate Insights button clicked - FIRST LINE OF HANDLER');
+    console.log('🔴 AITestPanel: Current refreshKey before increment:', refreshKey);
+    console.log('🔴 AITestPanel: About to increment refreshKey');
+    setRefreshKey(prev => {
+      const newValue = prev + 1;
+      console.log('🔴 AITestPanel: refreshKey incremented from', prev, 'to', newValue);
+      return newValue;
+    });
+    console.log('🔴 AITestPanel: handleRefreshInsights completed');
   };
 
   // Wait for auth check
@@ -133,6 +140,8 @@ const AITestPanel = () => {
 
   // Calculate metrics for insights
   const averageGap = calculateAverageGap(categories);
+
+  console.log('🔴 AITestPanel: Rendering with refreshKey:', refreshKey);
 
   return (
     <div className="min-h-screen bg-slate-50">

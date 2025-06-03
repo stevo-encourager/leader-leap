@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Bot, AlertCircle, Target, TrendingUp, ExternalLink } from 'lucide-react';
 import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
@@ -34,6 +33,8 @@ interface AIInsightsData {
 }
 
 const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, averageGap, assessmentId }) => {
+  console.log('🔵 AIInsights: Component re-rendered with assessmentId:', assessmentId);
+  
   const { insights, isLoading, error } = useOpenAIInsights({
     categories,
     demographics,
@@ -43,11 +44,11 @@ const AIInsights: React.FC<AIInsightsProps> = ({ categories, demographics, avera
 
   // Log the assessment ID and insights status for debugging
   React.useEffect(() => {
-    console.log('AIInsights: Rendering with assessmentId:', assessmentId);
-    console.log('AIInsights: Insights available:', !!insights);
-    console.log('AIInsights: Loading state:', isLoading);
+    console.log('🔵 AIInsights: useEffect triggered - assessmentId:', assessmentId);
+    console.log('🔵 AIInsights: Insights available:', !!insights);
+    console.log('🔵 AIInsights: Loading state:', isLoading);
     if (insights) {
-      console.log('AIInsights: Using insights from database for consistent display');
+      console.log('🔵 AIInsights: Using insights from database for consistent display');
     }
   }, [assessmentId, insights, isLoading]);
 

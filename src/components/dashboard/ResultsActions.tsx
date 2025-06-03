@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ArrowLeft, Download, Plus, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -359,7 +358,12 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
               <TooltipTrigger asChild>
                 <Button 
                   variant="outline" 
-                  onClick={handleRegenerateInsights}
+                  onClick={() => {
+                    console.log('🔍 🚨 BUTTON ONCLICK FIRED - VERY FIRST LINE!');
+                    console.log('🔍 Button onClick called, isTestAssessment:', isTestAssessment);
+                    console.log('🔍 About to call handleRegenerateInsights');
+                    handleRegenerateInsights();
+                  }}
                   disabled={insightsLoading}
                   className="flex items-center gap-2"
                 >

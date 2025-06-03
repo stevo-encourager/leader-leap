@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
 import { Category, Demographics } from '@/utils/assessmentTypes';
@@ -394,7 +393,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
               </View>
             )}
 
-            {/* Priority Development Areas with enhanced resource display */}
+            {/* Priority Development Areas with updated resource display */}
             {parsedInsights.priority_areas && parsedInsights.priority_areas.length > 0 && (
               <View>
                 <Text style={styles.subsectionTitle}>Top 3 Priority Development Areas</Text>
@@ -433,22 +432,13 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
                         );
                       })}
                       
-                      {/* Enhanced Resource Display */}
+                      {/* Updated Resource Display - only show names as clickable links */}
                       <Text style={styles.boldText}>Recommended Resources:</Text>
                       {formattedResources.length > 0 ? (
                         formattedResources.map((resource, resourceIndex) => (
-                          <View key={resourceIndex}>
-                            {resource.url ? (
-                              <Text style={styles.linkText}>{resource.name}</Text>
-                            ) : (
-                              <Text style={styles.text}>{resource.name}</Text>
-                            )}
-                            {resource.url && (
-                              <Text style={[styles.text, { fontSize: 10, color: '#64748b' }]}>
-                                {resource.url}
-                              </Text>
-                            )}
-                          </View>
+                          <Text key={resourceIndex} style={styles.linkText}>
+                            {resource.name}
+                          </Text>
                         ))
                       ) : (
                         <Text style={styles.text}>No specific resource mapping available</Text>
@@ -494,23 +484,14 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
                     );
                   })}
                   
-                  {/* Enhanced Resource Display for Strengths */}
+                  {/* Updated Resource Display for Strengths - only show names as clickable links */}
                   {formattedResources.length > 0 && (
                     <View>
                       <Text style={styles.boldText}>Recommended Resources:</Text>
                       {formattedResources.map((resource, resourceIndex) => (
-                        <View key={resourceIndex}>
-                          {resource.url ? (
-                            <Text style={styles.linkText}>{resource.name}</Text>
-                          ) : (
-                            <Text style={styles.text}>{resource.name}</Text>
-                          )}
-                          {resource.url && (
-                            <Text style={[styles.text, { fontSize: 10, color: '#64748b' }]}>
-                              {resource.url}
-                            </Text>
-                          )}
-                        </View>
+                        <Text key={resourceIndex} style={styles.linkText}>
+                          {resource.name}
+                        </Text>
                       ))}
                     </View>
                   )}

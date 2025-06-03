@@ -27,12 +27,6 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
   // CRITICAL SAFEGUARD: Check for existing insights first and NEVER regenerate if they exist (except for test assessment)
   useEffect(() => {
     const checkForExistingInsights = async () => {
-      // CRITICAL PROTECTION: If we already have insights loaded and it's not a test assessment, NEVER check again
-      if (insightsLoadedRef.current && !isTestAssessment) {
-        console.log('CRITICAL PROTECTION: Insights already loaded - preventing any further operations');
-        return;
-      }
-
       // Only proceed if we have valid data
       if (!categories || categories.length === 0) {
         console.log('useOpenAIInsights: No categories available for insights');
@@ -43,13 +37,23 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       console.log('TEST ASSESSMENT CHECK: Is test assessment?', isTestAssessment);
       console.log('FORCE REGENERATE: Force regenerate flag?', forceRegenerate);
       
-      // CRITICAL FIX: For test assessment with force regenerate, skip ALL checks and generate immediately
+      // CRITICAL FIX: For test assessment with force regenerate, bypass EVERYTHING and generate new insights
       if (isTestAssessment && forceRegenerate) {
         console.log('TEST ASSESSMENT: Force regenerate is TRUE - bypassing ALL checks and generating new insights immediately');
         setForceRegenerate(false); // Reset the flag
+        setInsights(null); // Clear current insights
         hasCheckedExistingRef.current = false; // Reset to allow generation
         isGeneratingRef.current = false; // Reset generation flag
-        await generateNewInsights();
+        insightsLoadedRef.current = false; // Reset loaded flag
+        
+        // Generate new insights immediately without any database checks
+        await generateNewInsights(true); // Pass true to indicate force regeneration
+        return;
+      }
+      
+      // CRITICAL PROTECTION: If we already have insights loaded and it's not a test assessment, NEVER check again
+      if (insightsLoadedRef.current && !isTestAssessment) {
+        console.log('CRITICAL PROTECTION: Insights already loaded - preventing any further operations');
         return;
       }
       
@@ -109,15 +113,15 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     checkForExistingInsights();
   }, [assessmentId, regenerateTrigger, forceRegenerate]); // CRITICAL: Include forceRegenerate in dependencies
 
-  const generateNewInsights = async () => {
+  const generateNewInsights = async (skipAllChecks = false) => {
     // PROTECTION: Prevent simultaneous generation
-    if (isGeneratingRef.current) {
+    if (isGeneratingRef.current && !skipAllChecks) {
       console.log('CRITICAL PROTECTION: Already generating insights - preventing duplicate generation');
       return;
     }
 
     // PROTECTION: Never generate if insights are already loaded (except for test assessment with force regenerate)
-    if (insightsLoadedRef.current && !isTestAssessment && !forceRegenerate) {
+    if (insightsLoadedRef.current && !isTestAssessment && !skipAllChecks) {
       console.log('CRITICAL PROTECTION: Insights already loaded - preventing regeneration');
       return;
     }
@@ -131,6 +135,9 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     if (isTestAssessment) {
       console.log('TEST ASSESSMENT: Generating insights for test assessment');
     }
+    if (skipAllChecks) {
+      console.log('FORCE REGENERATION: Skipping all checks and generating new insights');
+    }
     
     isGeneratingRef.current = true;
     setIsLoading(true);
@@ -138,7 +145,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
 
     try {
       console.log('useOpenAIInsights: Calling generate-insights function with assessmentId:', assessmentId);
-      console.log('FRONTEND FORCE REGENERATE: Sending forceRegenerate flag:', forceRegenerate);
+      console.log('FRONTEND FORCE REGENERATE: Sending forceRegenerate flag:', skipAllChecks || (isTestAssessment && forceRegenerate));
       
       const { data, error: functionError } = await supabase.functions.invoke('generate-insights', {
         body: {
@@ -146,7 +153,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
           demographics,
           averageGap,
           assessmentId,
-          forceRegenerate: forceRegenerate || (isTestAssessment && regenerateTrigger > 0) // CRITICAL: Ensure force regenerate for test assessment
+          forceRegenerate: skipAllChecks || (isTestAssessment && forceRegenerate) // CRITICAL: Send true when forcing regeneration
         }
       });
 
@@ -186,10 +193,8 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     regenerateInsights: () => {
       if (isTestAssessment) {
         console.log('TEST ASSESSMENT: Manual regeneration requested for test assessment - allowing');
-        // CRITICAL FIX: Clear current insights and force regeneration
-        setInsights(null); // Clear current insights to show loading state
-        setForceRegenerate(true); // This will trigger the effect to regenerate
-        hasCheckedExistingRef.current = false; // Reset to allow effect to run again
+        // CRITICAL FIX: Set force regenerate flag to trigger immediate regeneration
+        setForceRegenerate(true);
         setRegenerateTrigger(prev => prev + 1); // Trigger effect re-run
       } else {
         console.log('CRITICAL WARNING: Manual regeneration requested - this should only be used for new assessments');

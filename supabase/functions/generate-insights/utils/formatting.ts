@@ -61,7 +61,7 @@ export const formatSummaryIntoParagraphs = (summary: string): string => {
   return formatted;
 };
 
-// New function to properly escape JSON control characters
+// Fixed function to properly escape JSON control characters using compatible regex
 export const sanitizeJsonString = (jsonString: string): string => {
   try {
     // First attempt to parse - if it works, we're good
@@ -70,16 +70,25 @@ export const sanitizeJsonString = (jsonString: string): string => {
   } catch (error) {
     console.log('JSON parsing failed, attempting to sanitize:', error.message);
     
-    // Clean up common control character issues in JSON strings
-    let sanitized = jsonString
-      // Fix unescaped newlines in string values
-      .replace(/(?<!\\)\\n(?!"|\\)/g, '\\\\n')
-      // Fix unescaped carriage returns
-      .replace(/(?<!\\)\\r(?!"|\\)/g, '\\\\r')
-      // Fix unescaped tabs
-      .replace(/(?<!\\)\\t(?!"|\\)/g, '\\\\t')
-      // Fix unescaped backslashes that aren't escape sequences
-      .replace(/\\(?!["\\/bfnrt])/g, '\\\\');
+    // Clean up common control character issues in JSON strings using simple, compatible regex
+    let sanitized = jsonString;
+    
+    // Fix unescaped newlines - find \n that aren't already escaped or at end of string values
+    sanitized = sanitized.replace(/\\n(?=(?:[^"]*"[^"]*")*[^"]*$)/g, '\\\\n');
+    
+    // Fix unescaped carriage returns
+    sanitized = sanitized.replace(/\\r(?=(?:[^"]*"[^"]*")*[^"]*$)/g, '\\\\r');
+    
+    // Fix unescaped tabs
+    sanitized = sanitized.replace(/\\t(?=(?:[^"]*"[^"]*")*[^"]*$)/g, '\\\\t');
+    
+    // Fix unescaped backslashes that aren't escape sequences - simple approach
+    // Split by quotes to work on string content only
+    const parts = sanitized.split('"');
+    for (let i = 1; i < parts.length; i += 2) { // Only process string content (odd indices)
+      parts[i] = parts[i].replace(/\\(?!["\\/bfnrt])/g, '\\\\');
+    }
+    sanitized = parts.join('"');
     
     // Try parsing again
     try {

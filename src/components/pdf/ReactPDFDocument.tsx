@@ -170,13 +170,15 @@ interface PriorityArea {
   competency: string;
   gap: number;
   insights: string[];
-  resource: string;
+  resource?: string; // Legacy field for backward compatibility
+  resources?: string[]; // New field for multiple resources
 }
 
 interface KeyStrength {
   competency: string;
   example: string;
   leverage_advice: string[];
+  resources?: string[]; // New field for multiple resources
 }
 
 interface AIInsightsData {
@@ -250,23 +252,25 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
         return null;
       }
 
-      // Validate and clean priority areas
+      // Validate and clean priority areas with enhanced resource handling
       const cleanedPriorityAreas = parsed.priority_areas
         .filter(area => area && typeof area === 'object')
         .map(area => ({
           competency: area.competency || 'Unknown Competency',
           gap: typeof area.gap === 'number' ? area.gap : 0,
           insights: Array.isArray(area.insights) ? area.insights.filter(insight => insight && typeof insight === 'string') : [],
-          resource: area.resource || ''
+          resource: area.resource || '', // Legacy field
+          resources: area.resources || (area.resource ? [area.resource] : []) // Handle both old and new formats
         }));
 
-      // Validate and clean key strengths
+      // Validate and clean key strengths with enhanced resource handling
       const cleanedKeyStrengths = parsed.key_strengths
         .filter(strength => strength && typeof strength === 'object')
         .map(strength => ({
           competency: strength.competency || 'Unknown Competency',
           example: strength.example || '',
-          leverage_advice: Array.isArray(strength.leverage_advice) ? strength.leverage_advice.filter(advice => advice && typeof advice === 'string') : []
+          leverage_advice: Array.isArray(strength.leverage_advice) ? strength.leverage_advice.filter(advice => advice && typeof advice === 'string') : [],
+          resources: strength.resources || []
         }));
 
       return {
@@ -278,6 +282,53 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
       console.error('ReactPDFDocument: Error parsing insights:', error);
       return null;
     }
+  };
+
+  // Enhanced function to parse resources from markdown format and generate working links
+  const parseAndFormatResources = (resources: string[]): Array<{name: string, url: string | null}> => {
+    if (!resources || !Array.isArray(resources)) {
+      return [];
+    }
+
+    const formattedResources: Array<{name: string, url: string | null}> = [];
+    
+    resources.forEach(resource => {
+      if (!resource || typeof resource !== 'string') {
+        return;
+      }
+
+      // Check if it's in markdown format [Name](url)
+      const markdownMatch = resource.match(/\[([^\]]+)\]\(([^)]+)\)/);
+      if (markdownMatch) {
+        const name = markdownMatch[1];
+        const url = markdownMatch[2];
+        
+        // Only add if URL is valid (starts with http/https)
+        if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+          formattedResources.push({ name, url });
+        } else {
+          // Add with name but no valid URL
+          formattedResources.push({ name, url: null });
+        }
+      } else {
+        // Try to get a working link from resource mapping
+        const resourceLink = generateResourceLink(resource);
+        if (resourceLink.hasValidLink && resourceLink.url) {
+          formattedResources.push({ 
+            name: resourceLink.title, 
+            url: resourceLink.url 
+          });
+        } else {
+          // Add the resource title even if no valid link is found
+          formattedResources.push({ 
+            name: resourceLink.title || resource, 
+            url: null 
+          });
+        }
+      }
+    });
+    
+    return formattedResources;
   };
 
   const parsedInsights = insights ? parseInsights(insights) : null;
@@ -343,26 +394,28 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
               </View>
             )}
 
-            {/* Priority Development Areas with enhanced null checking */}
+            {/* Priority Development Areas with enhanced resource display */}
             {parsedInsights.priority_areas && parsedInsights.priority_areas.length > 0 && (
               <View>
                 <Text style={styles.subsectionTitle}>Top 3 Priority Development Areas</Text>
                 {parsedInsights.priority_areas.map((area, index) => {
-                  // Enhanced null checking for area and area.resource
+                  // Enhanced null checking for area
                   if (!area || typeof area !== 'object') {
                     console.warn(`ReactPDFDocument: Invalid area at index ${index}`);
                     return null;
                   }
 
-                  // Safe resource link generation with null checks
-                  let resourceLink = { title: 'No resource available', url: null, hasValidLink: false };
-                  try {
-                    if (area.resource && typeof area.resource === 'string' && area.resource.trim()) {
-                      resourceLink = generateResourceLink(area.resource);
-                    }
-                  } catch (error) {
-                    console.warn(`ReactPDFDocument: Error generating resource link for area ${index}:`, error);
+                  // Get all available resources (both legacy and new format)
+                  const allResources = [];
+                  if (area.resource && typeof area.resource === 'string' && area.resource.trim()) {
+                    allResources.push(area.resource);
                   }
+                  if (area.resources && Array.isArray(area.resources)) {
+                    allResources.push(...area.resources.filter(r => r && typeof r === 'string' && r.trim()));
+                  }
+
+                  // Parse and format resources
+                  const formattedResources = parseAndFormatResources(allResources);
 
                   return (
                     <View key={index} style={styles.priorityItem}>
@@ -379,10 +432,26 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
                           <Text key={insightIndex} style={styles.listItem}>• {insight}</Text>
                         );
                       })}
-                      {resourceLink.title && (
-                        <Text style={styles.text}>
-                          <Text style={styles.boldText}>Recommended Resource:</Text> {resourceLink.title}
-                        </Text>
+                      
+                      {/* Enhanced Resource Display */}
+                      <Text style={styles.boldText}>Recommended Resources:</Text>
+                      {formattedResources.length > 0 ? (
+                        formattedResources.map((resource, resourceIndex) => (
+                          <View key={resourceIndex}>
+                            {resource.url ? (
+                              <Text style={styles.linkText}>{resource.name}</Text>
+                            ) : (
+                              <Text style={styles.text}>{resource.name}</Text>
+                            )}
+                            {resource.url && (
+                              <Text style={[styles.text, { fontSize: 10, color: '#64748b' }]}>
+                                {resource.url}
+                              </Text>
+                            )}
+                          </View>
+                        ))
+                      ) : (
+                        <Text style={styles.text}>No specific resource mapping available</Text>
                       )}
                     </View>
                   );
@@ -407,6 +476,9 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
                 return null;
               }
 
+              // Parse and format resources for strengths
+              const formattedResources = parseAndFormatResources(strength.resources || []);
+
               return (
                 <View key={index} style={styles.strengthItem}>
                   <Text style={styles.boldText}>Competency: {strength.competency || 'Unknown Competency'}</Text>
@@ -421,6 +493,27 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
                       <Text key={adviceIndex} style={styles.listItem}>• {advice}</Text>
                     );
                   })}
+                  
+                  {/* Enhanced Resource Display for Strengths */}
+                  {formattedResources.length > 0 && (
+                    <View>
+                      <Text style={styles.boldText}>Recommended Resources:</Text>
+                      {formattedResources.map((resource, resourceIndex) => (
+                        <View key={resourceIndex}>
+                          {resource.url ? (
+                            <Text style={styles.linkText}>{resource.name}</Text>
+                          ) : (
+                            <Text style={styles.text}>{resource.name}</Text>
+                          )}
+                          {resource.url && (
+                            <Text style={[styles.text, { fontSize: 10, color: '#64748b' }]}>
+                              {resource.url}
+                            </Text>
+                          )}
+                        </View>
+                      ))}
+                    </View>
+                  )}
                 </View>
               );
             })}

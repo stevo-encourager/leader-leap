@@ -15,9 +15,6 @@ import { Button } from '@/components/ui/button';
 import AssessmentLoading from '@/components/assessment/AssessmentLoading';
 
 const AITestPanel = () => {
-  // CRITICAL DEBUG: Log at the very top of AITestPanel
-  console.log('🔍 🚨 AI TEST PANEL - COMPONENT RENDER START');
-
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
@@ -26,18 +23,6 @@ const AITestPanel = () => {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
-
-  // CRITICAL DEBUG: Log state values
-  console.log('🔍 🚨 AI TEST PANEL - STATE VALUES:', {
-    user: !!user,
-    loading,
-    categories: categories?.length || 0,
-    demographics: Object.keys(demographics || {}),
-    assessmentId,
-    isLoadingData,
-    error,
-    refreshKey
-  });
 
   // Check if we're in development/staging (not production)
   const isDevelopment = import.meta.env.DEV || window.location.hostname !== 'your-production-domain.com';
@@ -91,30 +76,18 @@ const AITestPanel = () => {
     setRefreshKey(prev => prev + 1);
   };
 
-  // CRITICAL DEBUG: Log before any early returns
-  console.log('🔍 🚨 AI TEST PANEL - BEFORE EARLY RETURNS:', {
-    loading,
-    user: !!user,
-    isDevelopment,
-    isLoadingData,
-    error
-  });
-
   // Wait for auth check
   if (loading) {
-    console.log('🔍 🚨 AI TEST PANEL - RETURNING LOADING STATE');
     return <AssessmentLoading />;
   }
 
   // Redirect if not authenticated or not in dev/staging
   if (!user || !isDevelopment) {
-    console.log('🔍 🚨 AI TEST PANEL - RETURNING NULL (NO USER OR NOT DEV)');
     return null;
   }
 
   // Show loading while fetching data
   if (isLoadingData) {
-    console.log('🔍 🚨 AI TEST PANEL - RETURNING LOADING DATA STATE');
     return (
       <div className="min-h-screen bg-slate-50">
         <div className="max-w-5xl mx-auto px-4 py-2">
@@ -131,7 +104,6 @@ const AITestPanel = () => {
 
   // Show error state
   if (error) {
-    console.log('🔍 🚨 AI TEST PANEL - RETURNING ERROR STATE');
     return (
       <div className="min-h-screen bg-slate-50">
         <div className="max-w-5xl mx-auto px-4 py-2">
@@ -161,17 +133,6 @@ const AITestPanel = () => {
 
   // Calculate metrics for insights
   const averageGap = calculateAverageGap(categories);
-
-  // CRITICAL DEBUG: Log before main render
-  console.log('🔍 🚨 AI TEST PANEL - ABOUT TO RENDER MAIN CONTENT:', {
-    categories: categories?.length || 0,
-    demographics: Object.keys(demographics || {}),
-    assessmentId,
-    averageGap
-  });
-
-  console.log('🔍 🚨 AI TEST PANEL - NOTE: This page only renders AIInsights, NOT ResultsActions!');
-  console.log('🔍 🚨 AI TEST PANEL - ResultsActions is only on the main Results page, not the test panel!');
 
   return (
     <div className="min-h-screen bg-slate-50">

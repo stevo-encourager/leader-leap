@@ -38,7 +38,7 @@ serve(async (req) => {
 
     console.log('Request body received:', JSON.stringify(requestBody, null, 2));
 
-    const { categories, demographics, averageGap, assessmentId } = requestBody;
+    const { categories, demographics, averageGap, assessmentId, forceRegenerate } = requestBody;
 
     // Validate required inputs using Deno-compatible pattern
     if (!categories || !Array.isArray(categories) || categories.length === 0) {
@@ -76,20 +76,24 @@ serve(async (req) => {
       categoriesCount: categories.length,
       hasDemo: !!demographics,
       averageGap: averageGap,
-      assessmentId: assessmentId || 'undefined (test mode)'
+      assessmentId: assessmentId || 'undefined (test mode)',
+      forceRegenerate: forceRegenerate
     });
 
     // CRITICAL FIRST CHECK: Only check for existing insights if we have an assessmentId
     if (assessmentId) {
       console.log('CRITICAL SAFEGUARD: Checking for existing insights before any processing');
-      const existingInsights = await checkExistingInsights(assessmentId, supabaseUrl, supabaseServiceKey);
+      console.log('FORCE REGENERATE BACKEND: Force regenerate flag from frontend?', forceRegenerate);
+      
+      // Pass the forceRegenerate flag to the database check
+      const existingInsights = await checkExistingInsights(assessmentId, supabaseUrl, supabaseServiceKey, forceRegenerate);
       if (existingInsights) {
         console.log('CRITICAL SAFEGUARD: Existing insights found - returning immediately without any generation');
         return new Response(JSON.stringify({ insights: existingInsights }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      console.log('CRITICAL SAFEGUARD: No existing insights confirmed - generating new insights (ONLY ONCE)');
+      console.log('CRITICAL SAFEGUARD: No existing insights confirmed or force regenerate - generating new insights (ONLY ONCE)');
     } else {
       console.log('TEST MODE: No assessmentId provided - generating insights for testing (will not be saved)');
     }

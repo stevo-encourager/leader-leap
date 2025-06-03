@@ -1,7 +1,7 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-export const checkExistingInsights = async (assessmentId: string, supabaseUrl: string, supabaseServiceKey: string): Promise<string | null> => {
+export const checkExistingInsights = async (assessmentId: string, supabaseUrl: string, supabaseServiceKey: string, forceRegenerate?: boolean): Promise<string | null> => {
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
   
   // Special test assessment ID that allows regeneration
@@ -10,11 +10,18 @@ export const checkExistingInsights = async (assessmentId: string, supabaseUrl: s
   
   console.log('CRITICAL CHECK: Verifying existing insights for assessment:', assessmentId);
   console.log('TEST ASSESSMENT CHECK: Is test assessment?', isTestAssessment);
+  console.log('FORCE REGENERATE PARAM: Force regenerate requested?', forceRegenerate);
   
   // DOUBLE CHECK: First verify we have a valid assessment ID
   if (!assessmentId || assessmentId.trim() === '') {
     console.log('CRITICAL CHECK: No assessment ID provided - cannot check for existing insights');
     return null;
+  }
+  
+  // CRITICAL FIX: For test assessment with force regenerate, skip database check entirely
+  if (isTestAssessment && forceRegenerate) {
+    console.log('TEST ASSESSMENT: Force regenerate requested - skipping database check to allow new generation');
+    return null; // Return null to force new generation
   }
   
   const { data: existingAssessment, error: fetchError } = await supabase
@@ -35,10 +42,10 @@ export const checkExistingInsights = async (assessmentId: string, supabaseUrl: s
       existingAssessment.ai_insights.trim() !== 'null' &&
       existingAssessment.ai_insights.trim() !== 'undefined') {
     
-    // SPECIAL CASE: For test assessment, allow regeneration
+    // SPECIAL CASE: For test assessment without force regenerate, return existing
     if (isTestAssessment) {
-      console.log('TEST ASSESSMENT: Found existing insights but allowing regeneration for test assessment');
-      return null; // Return null to allow regeneration
+      console.log('TEST ASSESSMENT: Found existing insights but no force regenerate - returning existing');
+      return existingAssessment.ai_insights;
     } else {
       console.log('CRITICAL PROTECTION: Found existing insights - ABSOLUTELY NEVER regenerating');
       console.log('CRITICAL PROTECTION: Returning saved insights to prevent any overwriting');

@@ -140,13 +140,15 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
 
     try {
       console.log('useOpenAIInsights: Calling generate-insights function with assessmentId:', assessmentId);
+      console.log('FRONTEND FORCE REGENERATE: Sending forceRegenerate flag:', forceRegenerate);
       
       const { data, error: functionError } = await supabase.functions.invoke('generate-insights', {
         body: {
           categories,
           demographics,
           averageGap,
-          assessmentId
+          assessmentId,
+          forceRegenerate: forceRegenerate // CRITICAL: Pass the force regenerate flag to backend
         }
       });
 

@@ -19,6 +19,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
   const insightsLoadedRef = useRef(false);
   const [forceRegenerate, setForceRegenerate] = useState(false);
   const [regenerateTrigger, setRegenerateTrigger] = useState(0);
+  const justRegeneratedRef = useRef(false); // Track if we just regenerated
 
   // Special test assessment ID that allows regeneration
   const TEST_ASSESSMENT_ID = 'f74470bc-3c48-4980-bc5f-17386a724d37';
@@ -30,7 +31,8 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     forceRegenerate,
     regenerateTrigger,
     categoriesLength: categories?.length || 0,
-    hasExistingInsights: !!insights
+    hasExistingInsights: !!insights,
+    justRegeneratedRef: justRegeneratedRef.current
   });
 
   // CRITICAL SAFEGUARD: Check for existing insights first and NEVER regenerate if they exist (except for test assessment)
@@ -43,7 +45,8 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       categoriesLength: categories?.length || 0,
       hasCheckedExistingRef: hasCheckedExistingRef.current,
       isGeneratingRef: isGeneratingRef.current,
-      insightsLoadedRef: insightsLoadedRef.current
+      insightsLoadedRef: insightsLoadedRef.current,
+      justRegeneratedRef: justRegeneratedRef.current
     });
 
     const checkForExistingInsights = async () => {
@@ -59,7 +62,8 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
         forceRegenerate,
         hasCheckedExistingRef: hasCheckedExistingRef.current,
         isGeneratingRef: isGeneratingRef.current,
-        insightsLoadedRef: insightsLoadedRef.current
+        insightsLoadedRef: insightsLoadedRef.current,
+        justRegeneratedRef: justRegeneratedRef.current
       });
       
       // CRITICAL FIX: For test assessment with force regenerate, bypass EVERYTHING and generate new insights
@@ -71,6 +75,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
         hasCheckedExistingRef.current = false; // Reset to allow generation
         isGeneratingRef.current = false; // Reset generation flag
         insightsLoadedRef.current = false; // Reset loaded flag
+        justRegeneratedRef.current = true; // Mark that we're about to regenerate
         
         console.log('🔍 CALLING GENERATE NEW INSIGHTS WITH FORCE=TRUE');
         await generateNewInsights(true); // Pass true to indicate force regeneration
@@ -90,6 +95,12 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       // PROTECTION: Prevent multiple simultaneous checks (except for test assessment regeneration)
       if ((hasCheckedExistingRef.current || isGeneratingRef.current) && !forceRegenerate) {
         console.log('🔍 ALREADY CHECKED OR GENERATING - Preventing duplicate operation');
+        return;
+      }
+
+      // IMPORTANT: If we just regenerated, don't check database - wait for the new insights to be set
+      if (justRegeneratedRef.current) {
+        console.log('🔍 JUST REGENERATED - Skipping database check to use fresh insights');
         return;
       }
       
@@ -237,6 +248,10 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
         } else {
           console.log('🔍 TEST ASSESSMENT - Not marking as permanently loaded');
         }
+        
+        // Reset the justRegenerated flag after successfully setting new insights
+        justRegeneratedRef.current = false;
+        console.log('🔍 RESET justRegeneratedRef TO FALSE AFTER SETTING NEW INSIGHTS');
       } else {
         console.error('🔍 NO INSIGHTS IN RESPONSE');
         throw new Error('No insights received from OpenAI');
@@ -244,6 +259,8 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     } catch (err) {
       console.error('🔍 ERROR GENERATING INSIGHTS:', err);
       setError(err instanceof Error ? err.message : 'Failed to generate insights');
+      // Reset justRegenerated flag on error too
+      justRegeneratedRef.current = false;
     } finally {
       setIsLoading(false);
       isGeneratingRef.current = false;

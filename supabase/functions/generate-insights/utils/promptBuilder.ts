@@ -1,4 +1,64 @@
 
+// Build assessment data structure from categories
+export function buildAssessmentData(categories: any[], averageGap: number, demographics: any = {}) {
+  const categoryBreakdown = categories.map(category => ({
+    title: category.title,
+    averageCurrentRating: category.skills.reduce((sum: number, skill: any) => sum + (skill.ratings?.current || 0), 0) / category.skills.length,
+    averageDesiredRating: category.skills.reduce((sum: number, skill: any) => sum + (skill.ratings?.desired || 0), 0) / category.skills.length,
+    gap: category.skills.reduce((sum: number, skill: any) => {
+      const current = skill.ratings?.current || 0;
+      const desired = skill.ratings?.desired || 0;
+      return sum + (desired - current);
+    }, 0) / category.skills.length
+  }));
+
+  return {
+    averageGap,
+    demographics: demographics || {},
+    categoryBreakdown
+  };
+}
+
+// Build top gap categories and top competencies
+export function buildTopCategories(categories: any[]) {
+  // Calculate gaps and sort for top gap categories
+  const categoriesWithGaps = categories.map(category => {
+    const skills = category.skills || [];
+    const averageCurrentRating = skills.reduce((sum: number, skill: any) => sum + (skill.ratings?.current || 0), 0) / skills.length;
+    const averageDesiredRating = skills.reduce((sum: number, skill: any) => sum + (skill.ratings?.desired || 0), 0) / skills.length;
+    const gap = averageDesiredRating - averageCurrentRating;
+    
+    // Get top gap skills within this category
+    const skillsWithGaps = skills.map((skill: any) => ({
+      title: skill.title,
+      currentRating: skill.ratings?.current || 0,
+      desiredRating: skill.ratings?.desired || 0,
+      gap: (skill.ratings?.desired || 0) - (skill.ratings?.current || 0)
+    })).sort((a: any, b: any) => b.gap - a.gap).slice(0, 3);
+
+    return {
+      title: category.title,
+      averageCurrentRating,
+      averageDesiredRating,
+      gap,
+      topGapSkills: skillsWithGaps
+    };
+  });
+
+  // Top 3 categories by gap (priority development areas)
+  const topGapCategories = categoriesWithGaps
+    .sort((a, b) => b.gap - a.gap)
+    .slice(0, 3);
+
+  // Top competencies (high current ratings, low gaps)
+  const topCompetencies = categoriesWithGaps
+    .filter(cat => cat.averageCurrentRating >= 3.0) // Only high performers
+    .sort((a, b) => a.gap - b.gap) // Sort by smallest gap first
+    .slice(0, 3);
+
+  return { topGapCategories, topCompetencies };
+}
+
 export function buildPrompt(assessmentSummary: any, topGapCategories: any[], topCompetencies: any[]): string {
   return `
 Assessment Data:
@@ -9,31 +69,31 @@ Assessment Data:
 
 Top 3 Categories by Gap (Priority Development Areas):
 ${topGapCategories.map((cat, i) => {
-  let categoryText = `${i+1}. ${cat.title}: Gap ${cat.gap.toFixed(1)} (Current: ${cat.averageCurrentRating.toFixed(1)}, Desired: ${cat.averageDesiredRating.toFixed(1)})`;
+  let categoryText = \`\${i+1}. \${cat.title}: Gap \${cat.gap.toFixed(1)} (Current: \${cat.averageCurrentRating.toFixed(1)}, Desired: \${cat.averageDesiredRating.toFixed(1)})\`;
   
   if (cat.topGapSkills && cat.topGapSkills.length > 0) {
-    categoryText += `\n   Top individual skill gaps:`;
+    categoryText += \`\\n   Top individual skill gaps:\`;
     cat.topGapSkills.forEach((skill, skillIndex) => {
-      categoryText += `\n   - ${skill.title}: Gap ${skill.gap.toFixed(1)} (Current: ${skill.currentRating}, Desired: ${skill.desiredRating})`;
+      categoryText += \`\\n   - \${skill.title}: Gap \${skill.gap.toFixed(1)} (Current: \${skill.currentRating}, Desired: \${skill.desiredRating})\`;
     });
   }
   
   return categoryText;
-}).join('\n\n')}
+}).join('\\n\\n')}
 
 Top Competency Areas (High Current Ratings, Low Gaps):
 ${topCompetencies.map((cat, i) => {
-  let categoryText = `${i+1}. ${cat.title}: Current ${cat.averageCurrentRating.toFixed(1)}, Gap ${cat.gap.toFixed(1)}`;
+  let categoryText = \`\${i+1}. \${cat.title}: Current \${cat.averageCurrentRating.toFixed(1)}, Gap \${cat.gap.toFixed(1)}\`;
   
   if (cat.topGapSkills && cat.topGapSkills.length > 0) {
-    categoryText += `\n   Individual skills within this competency:`;
+    categoryText += \`\\n   Individual skills within this competency:\`;
     cat.topGapSkills.forEach((skill, skillIndex) => {
-      categoryText += `\n   - ${skill.title}: Gap ${skill.gap.toFixed(1)} (Current: ${skill.currentRating}, Desired: ${skill.desiredRating})`;
+      categoryText += \`\\n   - \${skill.title}: Gap \${skill.gap.toFixed(1)} (Current: \${skill.currentRating}, Desired: \${skill.desiredRating})\`;
     });
   }
   
   return categoryText;
-}).join('\n\n')}
+}).join('\\n\\n')}
 
 # LEADERSHIP ASSESSMENT AI INSIGHTS GENERATOR
 
@@ -93,105 +153,108 @@ You are an expert leadership coach and assessment analyst for Encourager Coachin
 **CRITICAL RULE: ONLY use resources from this exact list with exact titles. Books MUST include "(book recommendation)" - other resources need NO labeling.**
 
 **Frameworks & Models:**
-- The Eisenhower Matrix - Priority Management (Framework)
-- Eisenhower Decision Matrix Guide (Article)
-- The Pomodoro Technique (Framework)
-- Getting Things Done (GTD) Methodology (Framework)
-- SMART Goals Framework (Framework)
-- Objectives and Key Results (OKRs) (Framework)
-- OKR Framework Guide (Article)
-- SBI Feedback Model (Framework)
-- Radical Candor Framework (Framework)
-- What is Nonviolent Communication (Article)
-- Active Listening Techniques (Article)
-- OODA Loop (Framework)
-- DACI Decision Making Framework (Framework)
-- RACI 'Responsibility Assignment Matrix' (Framework)
-- SWOT Analysis Framework (Framework)
-- Design Thinking Process by IDEO (Framework)
-- Scenario Planning: Step by Step Guide (Article)
-- 16 Personalities test (MBTI) (Assessment)
-- The Speed of Trust by Stephen Covey (Framework)
-- The Trust Equation (Framework)
-- 7 Models for Delegation (Framework)
-- Situational Leadership: What it is and how to build it (Article)
-- Performance management that puts people first (Article)
-- Effective One-on-One Meetings (listen) (Audio)
-- Thomas-Kilmann Conflict Resolution Model (Framework)
-- Getting to Yes - Interest-Based Negotiation (Framework)
-- ADKAR Change Management Model (Framework)
-- Kotter's 8-Step Change Process (Framework)
-- Bridges Transition Model (Framework)
-- Lewin's 3-Stage Change Model (Framework)
-- Tuckman's Team Development Model (Framework)
-- Creating A Team Charter (Article)
-- Ways of Working & Guiding Principles (watch) (Video)
-- A Guide to Harnessing Psychological Safety (Article)
-- Why It's Necessary to Improve Team Communication (Article)
-- 3 Easy Steps to Staff Meetings That Don't Suck (Article)
-- 70-20-10 Learning and Development Model (Framework)
-- What is a Growth Mindset (Article)
-- Deliberate Practice Framework (Framework)
-- GROW Coaching Model (Framework)
-- How to have a Coaching Conversation (Article)
-- How to create a career development plan in 5 steps (Article)
-- Why It's ALWAYS A Good Idea To Build Your Personal Brand (Article)
-- Strategic Networking for Leaders (Article)
-- The 5 Whys Technique (watch) (Video)
-- StrengthsFinder 2.0 (Assessment)
-- The Predictive Index (Assessment)
+- [The Eisenhower Matrix - Priority Management](https://www.eisenhower.me/eisenhower-matrix/)
+- [Eisenhower Decision Matrix Guide](https://www.eisenhower.me/eisenhower-matrix/)
+- [The Pomodoro Technique](https://www.techtarget.com/whatis/definition/pomodoro-technique)
+- [Getting Things Done (GTD) Methodology](https://gettingthingsdone.com/what-is-gtd/)
+- [SMART Goals Framework](https://corporatefinanceinstitute.com/resources/management/smart-goal/)
+- [Objectives and Key Results (OKRs)](https://www.whatmatters.com/faqs/okr-meaning-definition-example/)
+- [OKR Framework Guide](https://www.atlassian.com/agile/agile-at-scale/okr)
+- [SBI Feedback Model](https://www.ccl.org/articles/leading-effectively-articles/closing-the-gap-between-intent-vs-impact-sbii/)
+- [Radical Candor Framework](https://www.radicalcandor.com/our-approach/)
+- [What is Nonviolent Communication](https://positivepsychology.com/non-violent-communication/)
+- [Active Listening Techniques](https://www.mindtools.com/CommSkll/ActiveListening.htm)
+- [OODA Loop](https://thedecisionlab.com/reference-guide/computer-science/the-ooda-loop)
+- [DACI Decision Making Framework](https://www.atlassian.com/team-playbook/plays/daci)
+- [RACI 'Responsibility Assignment Matrix'](https://www.teamgantt.com/blog/raci-chart-definition-tips-and-example)
+- [SWOT Analysis Framework](https://www.mindtools.com/pages/article/newTMC_05.htm)
+- [Design Thinking Process by IDEO](https://designthinking.ideo.com/)
+- [Scenario Planning: Step by Step Guide](https://www.professionalacademy.com/blogs/a-step-by-step-guide-to-scenario-planning/)
+- [Emotional Intelligence by Daniel Goleman](https://www.danielgoleman.info/topics/emotional-intelligence/)
+- [16 Personalities test (MBTI)](https://www.16personalities.com/free-personality-test)
+- [The Speed of Trust by Stephen Covey](https://www.speedoftrust.com/)
+- [The Trust Equation](https://trustedadvisor.com/why-trust-matters/understanding-trust/understanding-the-trust-equation)
+- [7 Models for Delegation](https://blog.hptbydts.com/7-models-for-delegation)
+- [Situational Leadership: What it is and how to build it](https://www.betterup.com/blog/situational-leadership-examples)
+- [Performance management that puts people first](https://www.mckinsey.com/capabilities/people-and-organizational-performance/our-insights/in-the-spotlight-performance-management-that-puts-people-first)
+- [Effective One-on-One Meetings (listen)](https://www.manager-tools.com/2005/07/the-single-most-effective-management-tool-part-1)
+- [Thomas-Kilmann Conflict Resolution Model](https://www.mtdtraining.com/blog/thomas-kilmann-conflict-management-model.htm)
+- [Getting to Yes - Interest-Based Negotiation](https://www.uhab.org/resource/successful-conflict-resolution-getting-to-yes/)
+- [ADKAR Change Management Model](https://www.prosci.com/methodology/adkar)
+- [Kotter's 8-Step Change Process](https://www.kotterinc.com/8-steps-process-for-leading-change/)
+- [Bridges Transition Model](https://wmbridges.com/about/what-is-transition/)
+- [Lewin's 3-Stage Change Model](https://uk.indeed.com/career-advice/career-development/lewins-change-model)
+- [Tuckman's Team Development Model](https://www.thecoachingtoolscompany.com/get-your-team-performing-beautifully-with-this-powerful-group-development-model/)
+- [Creating A Team Charter](https://miro.com/organizational-chart/what-is-a-team-charter/#how-to-make-a-team-charter)
+- [Ways of Working & Guiding Principles (watch)](https://www.youtube.com/watch?v=aZ-yZSNd3l4)
+- [A Guide to Harnessing Psychological Safety](https://www.encouragercoaching.com/post/unshackling-potential-a-guide-to-harnessing-psychological-safety)
+- [Why It's Necessary to Improve Team Communication](https://www.apu.apus.edu/area-of-study/business-and-management/resources/why-it-is-necessary-to-improve-team-communication/)
+- [3 Easy Steps to Staff Meetings That Don't Suck](https://www.radicalcandor.com/blog/effective-staff-meetings/)
+- [70-20-10 Learning and Development Model](https://www.ccl.org/articles/leading-effectively-articles/70-20-10-rule/)
+- [What is a Growth Mindset](https://www.renaissance.com/edword/growth-mindset/)
+- [Deliberate Practice Framework](https://jamesclear.com/deliberate-practice-theory)
+- [GROW Coaching Model](https://www.coachingcultureatwork.com/the-grow-model/)
+- [How to have a Coaching Conversation](https://www.ccl.org/articles/leading-effectively-articles/how-to-have-a-coaching-conversation/)
+- [How to create a career development plan in 5 steps](https://uk.indeed.com/career-advice/career-development/how-to-create-a-career-development-plan)
+- [Why It's ALWAYS A Good Idea To Build Your Personal Brand](https://www.linkedin.com/pulse/why-its-always-good-idea-build-your-personal-brand-gary-vaynerchuk-95k3c/)
+- [Strategic Networking for Leaders](https://hbr.org/2016/05/learn-to-love-networking)
+- [The 5 Whys Technique (watch)](https://www.youtube.com/watch?v=wLHLWNzYNAU)
 
 **Book Recommendations (MUST include the "(book recommendation)" label):**
-- Emotional Intelligence 2.0 by Travis Bradberry (book recommendation)
-- Crucial Conversations by Kerry Patterson (book recommendation)
-- The 7 Habits of Highly Effective People by Stephen Covey (book recommendation)
-- Good to Great by Jim Collins (book recommendation)
-- Dare to Lead by Brené Brown (book recommendation)
-- The Leadership Challenge by James Kouzes (book recommendation)
-- Primal Leadership by Daniel Goleman (book recommendation)
-- Atomic Habits by James Clear (book recommendation)
-- Getting Things Done by David Allen (book recommendation)
-- Reinventing Organisations by Frederic Laloux (book recommendation)
-- The Pyramid Principle by Barbara Minto (book recommendation)
-- The Captain Class by Sam Walker (book recommendation)
-- Leading Change by John Kotter (book recommendation)
-- The Power of Habit by Charles Duhigg (book recommendation)
-- Build, Excite, Equip by Nicola Graham (book recommendation)
-- The 17 Indisputable Laws of Teamwork by John Maxwell (book recommendation)
-- Thinking Fast and Slow by Daniel Kahneman (book recommendation)
-- Getting To Yes by Roger Fisher and William Ury (book recommendation)
-- Playing To Win by AG Lafley & Roger Martin (book recommendation)
-- Human Skills by Elizabeth Nyamayaro (book recommendation)
-- Radical Candor by Kim Scott (book recommendation)
-- Nonviolent Communication by Marshall B. Rosenberg (book recommendation)
+- [Emotional Intelligence 2.0 by Travis Bradberry](https://amzn.to/45zVPDo) (book recommendation)
+- [Crucial Conversations by Kerry Patterson](https://amzn.to/4koOyLq) (book recommendation)
+- [The 7 Habits of Highly Effective People by Stephen Covey](https://amzn.to/4kn4Sw0) (book recommendation)
+- [Good to Great by Jim Collins](https://amzn.to/4jBi3s9) (book recommendation)
+- [Dare to Lead by Brené Brown](https://amzn.to/454pepe) (book recommendation)
+- [The Leadership Challenge by James Kouzes](https://amzn.to/3HhFyct) (book recommendation)
+- [Primal Leadership by Daniel Goleman](https://amzn.to/43MFg4V) (book recommendation)
+- [Atomic Habits by James Clear](https://amzn.to/4mNWBTM) (book recommendation)
+- [Getting Things Done by David Allen](https://amzn.to/3Zcige4) (book recommendation)
+- [Reinventing Organisations by Frederic Laloux](https://amzn.to/45AG8fa) (book recommendation)
+- [The Pyramid Principle by Barbara Minto](https://amzn.to/3Zc2YWN) (book recommendation)
+- [The Captain Class by Sam Walker](https://amzn.to/43t4vKE) (book recommendation)
+- [Leading Change by John Kotter](https://amzn.to/3Hgp9oD) (book recommendation)
+- [The Power of Habit by Charles Duhigg](https://amzn.to/3FErMzX) (book recommendation)
+- [Build, Excite, Equip by Nicola Graham](https://amzn.to/3Swn0aI) (book recommendation)
+- [The 17 Indisputable Laws of Teamwork by John Maxwell](https://amzn.to/3ZI7QTy) (book recommendation)
+- [Thinking Fast and Slow by Daniel Kahneman](https://amzn.to/3HnnOMD) (book recommendation)
+- [Getting To Yes by Roger Fisher and William Ury](https://amzn.to/4mIcT08) (book recommendation)
+- [Playing To Win by AG Lafley & Roger Martin](https://amzn.to/4kLsXfW) (book recommendation)
+- [Human Skills by Elizabeth Nyamayaro](https://amzn.to/3HA3g3s) (book recommendation)
+- [Radical Candor by Kim Scott](https://amzn.to/3HkG2hT) (book recommendation)
+- [Nonviolent Communication by Marshall B. Rosenberg](https://amzn.to/3T1gWXQ) (book recommendation)
+
+**Assessment Tools:**
+- [StrengthsFinder 2.0](https://www.gallup.com/cliftonstrengths)
+- [The Predictive Index](https://www.predictiveindex.com)
 
 ## VALIDATED INSPIRATIONAL LEADERS DATABASE
 
 **CRITICAL RULE: ONLY use leaders from this exact list. Format as hyperlink: [Leader Name](https://workinglink.com)**
 
-- [Satya Nadella](https://workinglink.com) — Transformational & Empathetic Leadership
-- [Mary Barra](https://workinglink.com) — Collaborative & Inclusive Leadership
-- [Marc Benioff](https://workinglink.com) — Values-Based & Learning-Oriented Leadership
-- [Indra Nooyi](https://workinglink.com) — Strategic & Empowering Leadership
-- [Brian Chesky](https://workinglink.com) — "Founder Mode" & Humble Inquiry Leadership
-- [Reed Hastings](https://workinglink.com) — Data-Driven & High-Performance Culture Leadership
-- [Thasunda Brown Duckett](https://workinglink.com) — Servant Leadership & Financial Inclusion
-- [Paul Polman](https://workinglink.com) — Sustainable & Mission-Driven Leadership
-- [Jamie Dimon](https://workinglink.com) — Direct & Crisis Management Leadership
-- [Jensen Huang](https://workinglink.com) — Technical Visionary & Innovation Leadership
-- [Andy Jassy](https://workinglink.com) — Principle-Based & "Why Culture" Leadership
-- [Stewart Butterfield](https://workinglink.com) — Transparent, Creative, and Human-Centered
-- [Whitney Wolfe Herd](https://workinglink.com) — Empathetic, Empowering, and Purpose-Driven
-- [Arvind Krishna](https://workinglink.com) — Tech-Forward, Ethical, and Strategic Transformation
-- [Reshma Saujani](https://workinglink.com) — Bold, Mission-Driven, Inclusion-Focused
-- [Elizabeth Nyamayaro](https://workinglink.com) — Global Advocacy, Partnership-Driven, Narrative Empowerment
+- [Satya Nadella](https://www.linkedin.com/in/satyanadella/) — Transformational & Empathetic Leadership
+- [Mary Barra](https://www.linkedin.com/in/mary-barra/) — Collaborative & Inclusive Leadership
+- [Marc Benioff](https://www.linkedin.com/in/marcbenioff/) — Values-Based & Learning-Oriented Leadership
+- [Indra Nooyi](https://www.linkedin.com/in/indranooyi/) — Strategic & Empowering Leadership
+- [Brian Chesky](https://www.linkedin.com/in/brianchesky/) — "Founder Mode" & Humble Inquiry Leadership
+- [Reed Hastings](https://www.linkedin.com/in/reedhastings/) — Data-Driven & High-Performance Culture Leadership
+- [Thasunda Brown Duckett](https://www.linkedin.com/in/thasunda-brown-duckett-22b15523/) — Servant Leadership & Financial Inclusion
+- [Paul Polman](https://www.linkedin.com/in/paulpolman/) — Sustainable & Mission-Driven Leadership
+- [Jamie Dimon](https://www.linkedin.com/in/jamiedimon/) — Direct & Crisis Management Leadership
+- [Jensen Huang](https://www.linkedin.com/in/jenhsunhuang/) — Technical Visionary & Innovation Leadership
+- [Andy Jassy](https://www.linkedin.com/in/andy-jassy-8b1615/) — Principle-Based & "Why Culture" Leadership
+- [Stewart Butterfield](https://www.linkedin.com/in/butterfield/) — Transparent, Creative, and Human-Centered
+- [Whitney Wolfe Herd](https://en.wikipedia.org/wiki/Whitney_Wolfe_Herd) — Empathetic, Empowering, and Purpose-Driven
+- [Arvind Krishna](https://www.linkedin.com/in/arvindkrishna/) — Tech-Forward, Ethical, and Strategic Transformation
+- [Reshma Saujani](https://www.linkedin.com/in/reshma-saujani/) — Bold, Mission-Driven, Inclusion-Focused
+- [Elizabeth Nyamayaro](https://www.linkedin.com/in/enyamayaro/) — Global Advocacy, Partnership-Driven, Narrative Empowerment
 
 ## PERSONALIZATION REQUIREMENTS
 
 **Demographic Integration:**
-- Role: ${assessmentSummary.demographics.role || 'leadership role'}
-- Industry: ${assessmentSummary.demographics.industry || 'your industry'}
-- Experience: ${assessmentSummary.demographics.yearsOfExperience || 'current'} years
+- Role: \${assessmentSummary.demographics.role || 'leadership role'}
+- Industry: \${assessmentSummary.demographics.industry || 'your industry'}
+- Experience: \${assessmentSummary.demographics.yearsOfExperience || 'current'} years
 
 **Role-Specific Context Guidelines:**
 - Individual Contributor: Self-leadership, influence without authority, peer collaboration
@@ -211,18 +274,6 @@ You are an expert leadership coach and assessment analyst for Encourager Coachin
 - 13-20 years: Senior leadership mastery, mentoring others, industry influence
 - 20+ years: Legacy leadership, wisdom sharing, transformational impact
 
-## RESOURCE TYPE LABELING REQUIREMENTS
-
-**MANDATORY MINIMUM:** At least one "(book recommendation)" per competency section.
-
-**Resource Type Labels (EXACT format required):**
-- Books: "Title by Author (book recommendation)"
-- Frameworks: "Title (Framework)"
-- Articles: "Title (Article)"
-- Videos: "Title (Video)" or "Title (watch)"
-- Audio: "Title (Audio)" or "Title (listen)"
-- Assessments: "Title (Assessment)"
-
 ## CRITICAL SKILL INTEGRATION RULES
 
 **Summary:**
@@ -237,7 +288,7 @@ You are an expert leadership coach and assessment analyst for Encourager Coachin
 
 Generate ONLY valid JSON with this EXACT structure:
 
-\`\`\`json
+\\\`\\\`\\\`json
 {
   "summary": "string",
   "priority_areas": [
@@ -257,7 +308,7 @@ Generate ONLY valid JSON with this EXACT structure:
     }
   ]
 }
-\`\`\`
+\\\`\\\`\\\`
 
 ## FINAL VALIDATION CHECKLIST
 

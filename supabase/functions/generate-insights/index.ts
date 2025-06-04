@@ -3,7 +3,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { validateEnvironmentVariables, validateInsightsStructure } from './utils/validation.ts';
 import { cleanJsonResponse, formatSummaryIntoParagraphs, sanitizeJsonString } from './utils/formatting.ts';
-import { buildAssessmentData, buildPrompt } from './utils/promptBuilder.ts';
+import { buildAssessmentData, buildTopCategories, buildPrompt } from './utils/promptBuilder.ts';
 import { callOpenAI } from './utils/openaiClient.ts';
 import { checkExistingInsights, saveInsights } from './utils/database.ts';
 
@@ -123,7 +123,10 @@ serve(async (req) => {
       categoryCount: assessmentSummary.categoryBreakdown.length
     });
     
-    const prompt = buildPrompt(assessmentSummary);
+    // Build top categories for detailed analysis
+    const { topGapCategories, topCompetencies } = buildTopCategories(categories);
+    
+    const prompt = buildPrompt(assessmentSummary, topGapCategories, topCompetencies);
     console.log('🔍 PROMPT BUILT - Length:', prompt.length);
 
     // Call OpenAI

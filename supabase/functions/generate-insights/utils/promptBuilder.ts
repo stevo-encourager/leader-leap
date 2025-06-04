@@ -60,7 +60,7 @@ export function buildTopCategories(categories: any[]) {
 }
 
 export function buildPrompt(assessmentSummary: any, topGapCategories: any[], topCompetencies: any[]): string {
-  return `
+  const prompt = `
 Assessment Data:
 - Overall Average Gap: ${assessmentSummary.averageGap.toFixed(2)}
 - Role: ${assessmentSummary.demographics.role || 'Not specified'}
@@ -324,4 +324,15 @@ Before output, verify:
 - Leader hyperlink format correct.
 - Valid JSON structure only.
 `;
+
+  console.log('🔍 BUILT COMPREHENSIVE PROMPT:');
+  console.log('🔍 Total prompt length:', prompt.length);
+  console.log('🔍 Contains VALIDATED SKILLS DATABASE:', prompt.includes('VALIDATED SKILLS DATABASE'));
+  console.log('🔍 Contains VALIDATED RESOURCES DATABASE:', prompt.includes('VALIDATED RESOURCES DATABASE'));
+  console.log('🔍 Contains VALIDATED INSPIRATIONAL LEADERS DATABASE:', prompt.includes('VALIDATED INSPIRATIONAL LEADERS DATABASE'));
+  console.log('🔍 Contains SUMMARY FORMATTING rules:', prompt.includes('SUMMARY FORMATTING'));
+  console.log('🔍 Contains JSON OUTPUT REQUIREMENTS:', prompt.includes('JSON OUTPUT REQUIREMENTS'));
+  console.log('🔍 Contains FINAL VALIDATION CHECKLIST:', prompt.includes('FINAL VALIDATION CHECKLIST'));
+
+  return prompt;
 }

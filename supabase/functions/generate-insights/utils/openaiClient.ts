@@ -1,5 +1,13 @@
 
 export const callOpenAI = async (prompt: string, openAIApiKey: string): Promise<string> => {
+  console.log('🔍 FULL PROMPT BEING SENT TO OPENAI:');
+  console.log('🔍 Prompt length:', prompt.length);
+  console.log('🔍 First 500 characters:', prompt.substring(0, 500));
+  console.log('🔍 Contains validated skills database:', prompt.includes('VALIDATED SKILLS DATABASE'));
+  console.log('🔍 Contains validated resources database:', prompt.includes('VALIDATED RESOURCES DATABASE'));
+  console.log('🔍 Contains validated leaders database:', prompt.includes('VALIDATED INSPIRATIONAL LEADERS DATABASE'));
+  console.log('🔍 Contains summary formatting instructions:', prompt.includes('SUMMARY FORMATTING'));
+  
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {

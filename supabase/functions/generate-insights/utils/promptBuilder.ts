@@ -1,4 +1,3 @@
-
 import { AssessmentSummary } from './types.ts';
 import { VALIDATED_SKILLS } from './skills.ts';
 import { VALIDATED_RESOURCES } from './resources.ts';
@@ -30,14 +29,21 @@ VALIDATED LEADERS DATABASE:
 The following leaders are validated and can be referenced:
 ${VALIDATED_LEADERS.join(', ')}
 
-BOOK RECOMMENDATIONS REQUIREMENTS:
-- MANDATORY: Each "Top 3 Priority Development Areas" section MUST include exactly ONE book from the validated resources list
-- MANDATORY: The "Key Competencies to Leverage" section MUST include exactly ONE book from the validated resources list  
-- NO MORE than one book per section - do not exceed this limit
-- Books MUST be labeled with "(book recommendation)" at the end of the title
-- Books MUST come from the VALIDATED_RESOURCES list only
-- Choose books that are most relevant to the specific competency being discussed
-- Ensure different books are used across sections when possible
+BOOK RECOMMENDATIONS REQUIREMENTS - CRITICAL:
+- MANDATORY: Each "priority_areas" item MUST include exactly ONE book from the validated resources list
+- MANDATORY: Each "key_strengths" item MUST include exactly ONE book from the validated resources list  
+- ABSOLUTE LIMIT: Never include more than one book per section item
+- LABELING REQUIREMENT: Books MUST be labeled with "(book recommendation)" at the end of the title
+- SOURCE REQUIREMENT: Books MUST come from the VALIDATED_RESOURCES list only
+- RELEVANCE: Choose books that are most relevant to the specific competency being discussed
+- UNIQUENESS: Ensure different books are used across different items when possible
+
+VALIDATION CHECKLIST:
+✓ Each priority_areas item has exactly 1 book with "(book recommendation)" label
+✓ Each key_strengths item has exactly 1 book with "(book recommendation)" label
+✓ No item has more than 1 book recommendation
+✓ All books come from VALIDATED_RESOURCES list
+✓ All book titles end with "(book recommendation)"
 
 PERSONALIZATION LOGIC:
 ${assessmentSummary.demographics.role ? `- Role: ${assessmentSummary.demographics.role}` : ''}
@@ -96,14 +102,22 @@ Generate a JSON response with this exact structure:
   ]
 }
 
+BOOK RECOMMENDATION EXAMPLES FROM VALIDATED LIST:
+- "Emotional Intelligence 2.0 by Travis Bradberry (book recommendation)"
+- "Crucial Conversations by Kerry Patterson (book recommendation)"
+- "The 7 Habits of Highly Effective People by Stephen Covey (book recommendation)"
+- "Good to Great by Jim Collins (book recommendation)"
+- "Dare to Lead by Brené Brown (book recommendation)"
+
 VALIDATION REQUIREMENTS:
 - priority_areas: exactly 3 items
 - key_strengths: exactly 2-3 items  
 - Each priority area must have 2-4 actionable insights
 - Each key strength must have 2-3 leverage advice items
+- Each priority_areas item must have exactly 1 book recommendation
+- Each key_strengths item must have exactly 1 book recommendation
 - All resources must come from validated lists
 - Book recommendations must be labeled with "(book recommendation)"
-- Each section (priority_areas and key_strengths) must contain exactly one book
 - Use validated skills names when referencing specific competencies
 - Reference validated leaders when providing examples or quotes
 

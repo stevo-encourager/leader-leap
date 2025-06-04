@@ -249,6 +249,24 @@ You are an expert leadership coach and assessment analyst for Encourager Coachin
 - [Reshma Saujani](https://www.linkedin.com/in/reshma-saujani/) — Bold, Mission-Driven, Inclusion-Focused
 - [Elizabeth Nyamayaro](https://www.linkedin.com/in/enyamayaro/) — Global Advocacy, Partnership-Driven, Narrative Empowerment
 
+## SUMMARY FORMATTING
+
+**CRITICAL REQUIREMENT: Structure summaries to be split into exactly 2 paragraphs using transition phrases.**
+
+Use these transition phrases to create natural paragraph breaks:
+- "However,", "At the same time,", "Additionally,", "Furthermore,", "Moreover,"
+- "Nevertheless,", "On the other hand,", "Meanwhile,", "In contrast,", "Similarly,"
+- "Consequently,", "Therefore,", "Thus,", "As a result,", "In addition,"
+- "Your results also", "Your assessment also", "These results", "This assessment"
+- "Conversely,", "Nonetheless,", "Likewise,", "Subsequently,", "Alternatively,"
+
+**Formatting Rules:**
+- First paragraph: Focus on growth opportunities and development areas
+- Second paragraph: Celebrate existing competencies and leadership foundation
+- Use transition phrases like "Meanwhile," or "Additionally," to split paragraphs
+- Each paragraph should be substantial (minimum 30 words)
+- Connect both paragraphs to create a cohesive, encouraging narrative
+
 ## PERSONALIZATION REQUIREMENTS
 
 **Demographic Integration:**
@@ -323,6 +341,7 @@ Before output, verify:
 - Role/industry/experience context integrated.
 - Leader hyperlink format correct.
 - Valid JSON structure only.
+- Summary formatted into exactly 2 paragraphs using transition phrases.
 `;
 
   console.log('🔍 BUILT COMPREHENSIVE PROMPT:');

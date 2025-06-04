@@ -126,37 +126,72 @@ serve(async (req) => {
     const prompt = buildPrompt(assessmentSummary);
     console.log('🔍 PROMPT BUILT - Length:', prompt.length);
 
-    // Call OpenAI
-    console.log('🔍 CALLING OPENAI API...');
-    const rawInsights = await callOpenAI(prompt, openAIApiKey);
-    console.log('🔍 OPENAI RESPONSE RECEIVED - Length:', rawInsights.length);
+    // ENHANCED: Retry logic for validation failures
+    const MAX_RETRIES = 3;
+    let attempt = 1;
+    let finalInsights: string | null = null;
 
-    // Clean and parse the response
-    console.log('🔍 CLEANING AND PARSING JSON RESPONSE...');
-    const cleanedInsights = cleanJsonResponse(rawInsights);
-    const sanitizedInsights = sanitizeJsonString(cleanedInsights);
-
-    let parsedInsights;
-    try {
-      parsedInsights = JSON.parse(sanitizedInsights);
-      console.log('🔍 JSON PARSED SUCCESSFULLY');
+    while (attempt <= MAX_RETRIES && !finalInsights) {
+      console.log(`🔍 GENERATION ATTEMPT ${attempt}/${MAX_RETRIES}`);
       
-      validateInsightsStructure(parsedInsights);
-      console.log('🔍 INSIGHTS STRUCTURE VALIDATION PASSED');
+      try {
+        // Call OpenAI
+        console.log('🔍 CALLING OPENAI API...');
+        const rawInsights = await callOpenAI(prompt, openAIApiKey);
+        console.log('🔍 OPENAI RESPONSE RECEIVED - Length:', rawInsights.length);
 
-      if (parsedInsights.summary) {
-        const formattedSummary = formatSummaryIntoParagraphs(parsedInsights.summary);
-        parsedInsights.summary = formattedSummary;
-        console.log('🔍 SUMMARY FORMATTING APPLIED');
+        // Clean and parse the response
+        console.log('🔍 CLEANING AND PARSING JSON RESPONSE...');
+        const cleanedInsights = cleanJsonResponse(rawInsights);
+        const sanitizedInsights = sanitizeJsonString(cleanedInsights);
+
+        let parsedInsights;
+        try {
+          parsedInsights = JSON.parse(sanitizedInsights);
+          console.log('🔍 JSON PARSED SUCCESSFULLY');
+          
+          // CRITICAL: Enhanced validation with detailed logging
+          console.log(`🔍 STARTING VALIDATION ATTEMPT ${attempt}/${MAX_RETRIES}`);
+          validateInsightsStructure(parsedInsights);
+          console.log(`✅ VALIDATION PASSED ON ATTEMPT ${attempt}/${MAX_RETRIES}`);
+
+          if (parsedInsights.summary) {
+            const formattedSummary = formatSummaryIntoParagraphs(parsedInsights.summary);
+            parsedInsights.summary = formattedSummary;
+            console.log('🔍 SUMMARY FORMATTING APPLIED');
+          }
+          
+          // If we reach here, validation passed
+          finalInsights = JSON.stringify(parsedInsights);
+          console.log(`✅ INSIGHTS GENERATION SUCCESSFUL ON ATTEMPT ${attempt}/${MAX_RETRIES}`);
+          
+        } catch (jsonError) {
+          console.error(`❌ JSON PARSING FAILED ON ATTEMPT ${attempt}/${MAX_RETRIES}:`, jsonError.message);
+          if (attempt === MAX_RETRIES) {
+            throw new Error(`OpenAI returned invalid JSON format after ${MAX_RETRIES} attempts: ${jsonError.message}`);
+          }
+        }
+        
+      } catch (validationError) {
+        console.error(`❌ VALIDATION FAILED ON ATTEMPT ${attempt}/${MAX_RETRIES}:`, validationError.message);
+        
+        if (attempt === MAX_RETRIES) {
+          console.error(`❌ CRITICAL: All ${MAX_RETRIES} attempts failed validation. Final error: ${validationError.message}`);
+          throw new Error(`Generated insights failed validation after ${MAX_RETRIES} attempts. Last error: ${validationError.message}`);
+        }
+        
+        console.log(`🔄 RETRYING GENERATION - Attempt ${attempt + 1}/${MAX_RETRIES}`);
+        attempt++;
+        
+        // Brief delay before retry
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
-      
-    } catch (jsonError) {
-      console.error('🔍 JSON PARSING/VALIDATION FAILED:', jsonError.message);
-      throw new Error(`OpenAI returned invalid JSON format: ${jsonError.message}`);
     }
 
-    // Convert back to JSON string with enhanced formatted summary
-    const finalInsights = JSON.stringify(parsedInsights);
+    if (!finalInsights) {
+      throw new Error('Failed to generate valid insights after all retry attempts');
+    }
+
     console.log('🔍 FINAL INSIGHTS PREPARED - Length:', finalInsights.length);
 
     // CRITICAL FINAL SAFEGUARD: Only save if we have a valid assessment ID
@@ -185,6 +220,8 @@ serve(async (req) => {
       ? 'Unable to generate insights due to AI service error. Please try again later.'
       : error.message.includes('already exist')
       ? 'Insights already exist for this assessment and cannot be regenerated.'
+      : error.message.includes('validation')
+      ? `Insights generation failed validation requirements: ${error.message}`
       : 'An unexpected error occurred while generating insights. Please try again.';
     
     return new Response(JSON.stringify({ error: errorMessage }), {

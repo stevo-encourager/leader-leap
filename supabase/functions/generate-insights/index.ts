@@ -3,24 +3,19 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { validateEnvironmentVariables, validateInsightsStructure } from './utils/validation.ts';
 import { cleanJsonResponse, formatSummaryIntoParagraphs, sanitizeJsonString } from './utils/formatting.ts';
-import { buildAssessmentData, buildTopCategories, buildPrompt } from './utils/promptBuilder.ts';
+import { buildAssessmentData, buildPrompt } from './utils/promptBuilder.ts';
 import { callOpenAI } from './utils/openaiClient.ts';
 import { checkExistingInsights, saveInsights } from './utils/database.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-  'Access-Control-Max-Age': '86400',
 };
 
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { 
-      status: 200,
-      headers: corsHeaders 
-    });
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
@@ -128,10 +123,7 @@ serve(async (req) => {
       categoryCount: assessmentSummary.categoryBreakdown.length
     });
     
-    // Build top categories for detailed analysis
-    const { topGapCategories, topCompetencies } = buildTopCategories(categories);
-    
-    const prompt = buildPrompt(assessmentSummary, topGapCategories, topCompetencies);
+    const prompt = buildPrompt(assessmentSummary);
     console.log('🔍 PROMPT BUILT - Length:', prompt.length);
 
     // Call OpenAI

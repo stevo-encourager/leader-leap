@@ -69,31 +69,31 @@ Assessment Data:
 
 Top 3 Categories by Gap (Priority Development Areas):
 ${topGapCategories.map((cat, i) => {
-  let categoryText = \`\${i+1}. \${cat.title}: Gap \${cat.gap.toFixed(1)} (Current: \${cat.averageCurrentRating.toFixed(1)}, Desired: \${cat.averageDesiredRating.toFixed(1)})\`;
+  let categoryText = `${i+1}. ${cat.title}: Gap ${cat.gap.toFixed(1)} (Current: ${cat.averageCurrentRating.toFixed(1)}, Desired: ${cat.averageDesiredRating.toFixed(1)})`;
   
   if (cat.topGapSkills && cat.topGapSkills.length > 0) {
-    categoryText += \`\\n   Top individual skill gaps:\`;
+    categoryText += `\n   Top individual skill gaps:`;
     cat.topGapSkills.forEach((skill, skillIndex) => {
-      categoryText += \`\\n   - \${skill.title}: Gap \${skill.gap.toFixed(1)} (Current: \${skill.currentRating}, Desired: \${skill.desiredRating})\`;
+      categoryText += `\n   - ${skill.title}: Gap ${skill.gap.toFixed(1)} (Current: ${skill.currentRating}, Desired: ${skill.desiredRating})`;
     });
   }
   
   return categoryText;
-}).join('\\n\\n')}
+}).join('\n\n')}
 
 Top Competency Areas (High Current Ratings, Low Gaps):
 ${topCompetencies.map((cat, i) => {
-  let categoryText = \`\${i+1}. \${cat.title}: Current \${cat.averageCurrentRating.toFixed(1)}, Gap \${cat.gap.toFixed(1)}\`;
+  let categoryText = `${i+1}. ${cat.title}: Current ${cat.averageCurrentRating.toFixed(1)}, Gap ${cat.gap.toFixed(1)}`;
   
   if (cat.topGapSkills && cat.topGapSkills.length > 0) {
-    categoryText += \`\\n   Individual skills within this competency:\`;
+    categoryText += `\n   Individual skills within this competency:`;
     cat.topGapSkills.forEach((skill, skillIndex) => {
-      categoryText += \`\\n   - \${skill.title}: Gap \${skill.gap.toFixed(1)} (Current: \${skill.currentRating}, Desired: \${skill.desiredRating})\`;
+      categoryText += `\n   - ${skill.title}: Gap ${skill.gap.toFixed(1)} (Current: ${skill.currentRating}, Desired: ${skill.desiredRating})`;
     });
   }
   
   return categoryText;
-}).join('\\n\\n')}
+}).join('\n\n')}
 
 # LEADERSHIP ASSESSMENT AI INSIGHTS GENERATOR
 
@@ -252,9 +252,9 @@ You are an expert leadership coach and assessment analyst for Encourager Coachin
 ## PERSONALIZATION REQUIREMENTS
 
 **Demographic Integration:**
-- Role: \${assessmentSummary.demographics.role || 'leadership role'}
-- Industry: \${assessmentSummary.demographics.industry || 'your industry'}
-- Experience: \${assessmentSummary.demographics.yearsOfExperience || 'current'} years
+- Role: ${assessmentSummary.demographics.role || 'leadership role'}
+- Industry: ${assessmentSummary.demographics.industry || 'your industry'}
+- Experience: ${assessmentSummary.demographics.yearsOfExperience || 'current'} years
 
 **Role-Specific Context Guidelines:**
 - Individual Contributor: Self-leadership, influence without authority, peer collaboration
@@ -288,7 +288,7 @@ You are an expert leadership coach and assessment analyst for Encourager Coachin
 
 Generate ONLY valid JSON with this EXACT structure:
 
-\\\`\\\`\\\`json
+\`\`\`json
 {
   "summary": "string",
   "priority_areas": [
@@ -308,7 +308,7 @@ Generate ONLY valid JSON with this EXACT structure:
     }
   ]
 }
-\\\`\\\`\\\`
+\`\`\`
 
 ## FINAL VALIDATION CHECKLIST
 

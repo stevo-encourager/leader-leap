@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Bot, AlertCircle, Target, TrendingUp, ExternalLink } from 'lucide-react';
 import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
@@ -44,8 +45,24 @@ const AIInsights: React.FC<AIInsightsProps> = ({
 }) => {
   console.log('🔵 AIInsights: Component re-rendered with assessmentId:', assessmentId);
   
-  // FIXED: Add detailed logging of the data being sent to Edge Function with correct property names
-  React.useEffect(() => {
+  // Add debug state for tracking regeneration
+  const [debugInfo, setDebugInfo] = React.useState({
+    lastBackendResponse: '',
+    lastInsightsPreview: '',
+    regenerationCount: 0,
+    lastCallbackUpdate: '',
+    callbackInvocations: 0
+  });
+  
+  const { insights, isLoading, error, regenerateInsights } = useOpenAIInsights({
+    categories,
+    demographics,
+    averageGap,
+    assessmentId
+  });
+
+  // Helper function to log assessment data that gets sent to the Edge Function
+  const logAssessmentData = React.useCallback(() => {
     if (categories && demographics) {
       console.log('🔍 ASSESSMENT DATA BEING SENT TO EDGE FUNCTION:');
       console.log('📊 Categories:', JSON.stringify(categories, null, 2));
@@ -83,22 +100,6 @@ const AIInsights: React.FC<AIInsightsProps> = ({
       console.log('📦 EXACT ASSESSMENT DATA OBJECT SENT TO EDGE FUNCTION:', JSON.stringify(assessmentData, null, 2));
     }
   }, [categories, demographics, averageGap, assessmentId]);
-  
-  // Add debug state for tracking regeneration
-  const [debugInfo, setDebugInfo] = React.useState({
-    lastBackendResponse: '',
-    lastInsightsPreview: '',
-    regenerationCount: 0,
-    lastCallbackUpdate: '',
-    callbackInvocations: 0
-  });
-  
-  const { insights, isLoading, error, regenerateInsights } = useOpenAIInsights({
-    categories,
-    demographics,
-    averageGap,
-    assessmentId
-  });
 
   // Track when insights change to update debug info
   React.useEffect(() => {
@@ -120,6 +121,9 @@ const AIInsights: React.FC<AIInsightsProps> = ({
     console.log('🔵 AIInsights: handleRegenerateWrapper called - FRESH CALLBACK');
     console.log('🔵 AIInsights: regenerateInsights available:', !!regenerateInsights);
     console.log('🔵 AIInsights: regenerateInsights type:', typeof regenerateInsights);
+    
+    // CRITICAL: Log assessment data BEFORE regeneration
+    logAssessmentData();
     
     const timestamp = new Date().toISOString().slice(11, 23);
     setDebugInfo(prev => ({
@@ -148,7 +152,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({
       console.error('🔵 AIInsights: regenerateInsights function not available or not a function');
       console.error('🔵 AIInsights: regenerateInsights value:', regenerateInsights);
     }
-  }, [regenerateInsights]);
+  }, [regenerateInsights, logAssessmentData]);
 
   // Provide the wrapper function to parent component
   React.useEffect(() => {

@@ -57,12 +57,12 @@ const AIInsights: React.FC<AIInsightsProps> = ({
       const assessmentData = {
         categories: categories.map(category => ({
           title: category.title,
-          gap: category.gap,
+          averageGap: category.averageGap || 0, // Use correct property name
         })),
         demographics: {
           role: demographics?.role || null,
           industry: demographics?.industry || null,
-          experience: demographics?.experience || null,
+          yearsExperience: demographics?.yearsExperience || null, // Use correct property name
           teamSize: demographics?.teamSize || null,
         },
         averageGap: averageGap,

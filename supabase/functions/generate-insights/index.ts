@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
@@ -272,6 +271,8 @@ const callOpenAI = async (prompt: string, openAIApiKey: string): Promise<string>
 };
 
 const buildPrompt = (assessmentSummary: any): string => {
+  console.log('🔍 PROMPT BUILDER: Building prompt with assessment data:', JSON.stringify(assessmentSummary, null, 2));
+  
   const prompt = `
 You are EncouragerGPT, an AI leadership development coach specializing in personalized assessment analysis and development recommendations.
 
@@ -281,25 +282,57 @@ CRITICAL INSTRUCTIONS:
 - Include specific, actionable advice
 - Reference validated resources from the provided databases
 - Personalize based on demographic information
+- USE THE EXACT CATEGORY TITLES AND GAP VALUES PROVIDED BELOW
 
-ASSESSMENT DATA:
+ASSESSMENT DATA RECEIVED:
 ${JSON.stringify(assessmentSummary, null, 2)}
 
+CATEGORY BREAKDOWN WITH ACTUAL GAPS:
+${assessmentSummary.categoryBreakdown.map((cat: any, index: number) => 
+  `${index + 1}. "${cat.title}" - Gap: ${cat.gap.toFixed(2)}`
+).join('\n')}
+
+DEMOGRAPHICS INFORMATION:
+- Role: ${assessmentSummary.demographics.role || 'Not provided'}
+- Industry: ${assessmentSummary.demographics.industry || 'Not provided'}  
+- Experience: ${assessmentSummary.demographics.experience || 'Not provided'}
+- Team Size: ${assessmentSummary.demographics.teamSize || 'Not provided'}
+
+AVERAGE GAP: ${assessmentSummary.averageGap}
+
 VALIDATION REQUIREMENTS:
-- priority_areas: exactly 3 items
-- key_strengths: exactly 2-3 items  
+- priority_areas: exactly 3 items (USE THE HIGHEST GAP CATEGORIES FROM THE DATA ABOVE)
+- key_strengths: exactly 2-3 items (USE THE LOWEST GAP CATEGORIES FROM THE DATA ABOVE)
 - Each priority area must have 2-4 actionable insights
 - Each key strength must have 2-3 leverage advice items
+- MUST use the exact category titles as provided in the assessment data
+- MUST use the actual gap values from the assessment data
+
+PERSONALIZATION LOGIC:
+${assessmentSummary.demographics.role ? `- Role-specific advice for: ${assessmentSummary.demographics.role}` : '- Generic leadership advice (no role specified)'}
+${assessmentSummary.demographics.industry ? `- Industry-specific examples for: ${assessmentSummary.demographics.industry}` : '- General industry examples (no industry specified)'}
+${assessmentSummary.demographics.experience ? `- Experience-level appropriate for: ${assessmentSummary.demographics.experience}` : '- General experience level advice (no experience specified)'}
+${assessmentSummary.demographics.teamSize ? `- Team-size considerations for: ${assessmentSummary.demographics.teamSize}` : '- General team considerations (no team size specified)'}
+
+PRIORITY AREAS SELECTION RULES:
+- SELECT THE TOP 3 CATEGORIES WITH THE HIGHEST GAPS from the category breakdown above
+- Use the EXACT category titles as provided
+- Use the EXACT gap values as provided
+
+KEY STRENGTHS SELECTION RULES:
+- SELECT 2-3 CATEGORIES WITH THE LOWEST GAPS from the category breakdown above
+- Use the EXACT category titles as provided
+- Focus on categories with gaps below 1.0 as true strengths
 
 OUTPUT STRUCTURE:
 Generate a JSON response with this exact structure:
 
 {
-  "summary": "Two-paragraph personalized summary of assessment results with transition phrases",
+  "summary": "Two-paragraph personalized summary referencing the actual assessment data and demographics",
   "priority_areas": [
     {
-      "competency": "Competency name from assessment",
-      "gap": numerical_gap_value,
+      "competency": "EXACT category title from assessment data",
+      "gap": actual_gap_value_from_data,
       "insights": [
         "Specific actionable insight 1",
         "Specific actionable insight 2", 
@@ -314,7 +347,7 @@ Generate a JSON response with this exact structure:
   ],
   "key_strengths": [
     {
-      "competency": "Strength competency name",
+      "competency": "EXACT category title from assessment data",
       "example": "Specific example of how this strength manifests",
       "leverage_advice": [
         "Specific advice 1 for leveraging this strength",
@@ -328,8 +361,15 @@ Generate a JSON response with this exact structure:
   ]
 }
 
+CRITICAL REMINDER: 
+- Use ONLY the category titles exactly as they appear in the assessment data
+- Use ONLY the gap values exactly as they appear in the assessment data
+- Base recommendations on the actual demographic information provided (or note when missing)
+- Select priority areas from the highest gaps and strengths from the lowest gaps
+
 Generate the JSON response now.`;
 
+  console.log('🔍 PROMPT BUILDER: Completed prompt construction, length:', prompt.length);
   return prompt;
 };
 
@@ -338,12 +378,16 @@ const buildAssessmentData = (
   averageGap: number,
   demographics: any
 ): any => {
+  console.log('🔍 BUILD ASSESSMENT DATA: Input categories:', JSON.stringify(categories, null, 2));
+  console.log('🔍 BUILD ASSESSMENT DATA: Input demographics:', JSON.stringify(demographics, null, 2));
+  console.log('🔍 BUILD ASSESSMENT DATA: Input averageGap:', averageGap);
+
   const categoryBreakdown = categories.map((category: any) => ({
     title: category.title,
     gap: category.gap,
   }));
 
-  return {
+  const assessmentData = {
     demographics: {
       role: demographics?.role || null,
       industry: demographics?.industry || null,
@@ -353,6 +397,9 @@ const buildAssessmentData = (
     averageGap: averageGap,
     categoryBreakdown: categoryBreakdown,
   };
+
+  console.log('🔍 BUILD ASSESSMENT DATA: Final assessment data:', JSON.stringify(assessmentData, null, 2));
+  return assessmentData;
 };
 
 const checkExistingInsights = async (
@@ -538,14 +585,15 @@ serve(async (req) => {
       console.log('🔍 TEST MODE: No assessmentId provided - generating insights for testing');
     }
 
-    // Build assessment data and prompt
+    // Build assessment data and prompt with enhanced logging
     console.log('🔍 BUILDING ASSESSMENT DATA AND PROMPT...');
     const assessmentSummary = buildAssessmentData(categories, averageGap, demographics);
     
     console.log('🔍 ASSESSMENT SUMMARY BUILT:', {
       demographicsKeys: Object.keys(assessmentSummary.demographics),
       averageGap: assessmentSummary.averageGap,
-      categoryCount: assessmentSummary.categoryBreakdown.length
+      categoryCount: assessmentSummary.categoryBreakdown.length,
+      topCategories: assessmentSummary.categoryBreakdown.slice(0, 3).map(cat => `${cat.title}: ${cat.gap}`)
     });
     
     const prompt = buildPrompt(assessmentSummary);

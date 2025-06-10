@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Bot, AlertCircle, Target, TrendingUp, ExternalLink } from 'lucide-react';
 import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
@@ -54,12 +53,24 @@ const AIInsights: React.FC<AIInsightsProps> = ({
       console.log('📈 Average Gap:', averageGap);
       console.log('🆔 Assessment ID:', assessmentId);
       
-      // Build the exact same assessment data that gets sent to the Edge Function
-      const assessmentData = {
-        categories: categories.map(category => ({
+      // Calculate category gaps and build the exact same assessment data that gets sent to the Edge Function
+      const categoriesWithGaps = categories.map(category => {
+        // Calculate the category gap from its skills
+        const categoryGap = category.skills.reduce((sum, skill) => {
+          if (skill.ratings && typeof skill.ratings.current === 'number' && typeof skill.ratings.desired === 'number') {
+            return sum + (skill.ratings.desired - skill.ratings.current);
+          }
+          return sum;
+        }, 0) / Math.max(category.skills.length, 1);
+        
+        return {
           title: category.title,
-          gap: category.averageGap || 0, // Use the correct property name that exists
-        })),
+          gap: categoryGap || 0,
+        };
+      });
+      
+      const assessmentData = {
+        categories: categoriesWithGaps,
         demographics: {
           role: demographics?.role || null,
           industry: demographics?.industry || null,

@@ -44,6 +44,34 @@ const AIInsights: React.FC<AIInsightsProps> = ({
 }) => {
   console.log('🔵 AIInsights: Component re-rendered with assessmentId:', assessmentId);
   
+  // NEW: Add detailed logging of the data being sent to Edge Function
+  React.useEffect(() => {
+    if (categories && demographics) {
+      console.log('🔍 ASSESSMENT DATA BEING SENT TO EDGE FUNCTION:');
+      console.log('📊 Categories:', JSON.stringify(categories, null, 2));
+      console.log('👤 Demographics:', JSON.stringify(demographics, null, 2));
+      console.log('📈 Average Gap:', averageGap);
+      console.log('🆔 Assessment ID:', assessmentId);
+      
+      // Build the exact same assessment data that gets sent to the Edge Function
+      const assessmentData = {
+        categories: categories.map(category => ({
+          title: category.title,
+          gap: category.gap,
+        })),
+        demographics: {
+          role: demographics?.role || null,
+          industry: demographics?.industry || null,
+          experience: demographics?.experience || null,
+          teamSize: demographics?.teamSize || null,
+        },
+        averageGap: averageGap,
+      };
+      
+      console.log('📦 EXACT ASSESSMENT DATA OBJECT SENT TO EDGE FUNCTION:', JSON.stringify(assessmentData, null, 2));
+    }
+  }, [categories, demographics, averageGap, assessmentId]);
+  
   // Add debug state for tracking regeneration
   const [debugInfo, setDebugInfo] = React.useState({
     lastBackendResponse: '',

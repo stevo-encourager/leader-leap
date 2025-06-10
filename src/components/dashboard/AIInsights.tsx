@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Bot, AlertCircle, Target, TrendingUp, ExternalLink } from 'lucide-react';
 import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
@@ -44,7 +45,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({
 }) => {
   console.log('🔵 AIInsights: Component re-rendered with assessmentId:', assessmentId);
   
-  // NEW: Add detailed logging of the data being sent to Edge Function
+  // FIXED: Add detailed logging of the data being sent to Edge Function with correct property names
   React.useEffect(() => {
     if (categories && demographics) {
       console.log('🔍 ASSESSMENT DATA BEING SENT TO EDGE FUNCTION:');
@@ -57,12 +58,12 @@ const AIInsights: React.FC<AIInsightsProps> = ({
       const assessmentData = {
         categories: categories.map(category => ({
           title: category.title,
-          averageGap: category.averageGap || 0, // Use correct property name
+          gap: category.averageGap || 0, // Use the correct property name that exists
         })),
         demographics: {
           role: demographics?.role || null,
           industry: demographics?.industry || null,
-          yearsExperience: demographics?.yearsExperience || null, // Use correct property name
+          experience: demographics?.yearsOfExperience || null, // Use the correct property name that exists
           teamSize: demographics?.teamSize || null,
         },
         averageGap: averageGap,

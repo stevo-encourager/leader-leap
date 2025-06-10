@@ -14,7 +14,7 @@ export const checkExistingInsights = async (
 
   // CRITICAL FIX: If forceRegenerate is true, always return null to generate new insights
   if (forceRegenerate) {
-    console.log('🔍 DATABASE: forceRegenerate=true - Skipping existing insights check');
+    console.log('🔍 DATABASE: forceRegenerate=true - Skipping existing insights check and forcing new generation');
     return null;
   }
 

@@ -41,7 +41,8 @@ serve(async (req) => {
       hasDemo: !!requestBody.demographics,
       averageGap: requestBody.averageGap,
       assessmentId: requestBody.assessmentId || 'undefined (test mode)',
-      forceRegenerate: requestBody.forceRegenerate
+      forceRegenerate: requestBody.forceRegenerate,
+      forceRegenerateType: typeof requestBody.forceRegenerate
     });
 
     const { categories, demographics, averageGap, assessmentId, forceRegenerate } = requestBody;
@@ -83,14 +84,16 @@ serve(async (req) => {
       hasDemo: !!demographics,
       averageGap: averageGap,
       assessmentId: assessmentId || 'undefined (test mode)',
-      forceRegenerate: forceRegenerate
+      forceRegenerate: forceRegenerate,
+      willForceRegenerate: !!forceRegenerate
     });
 
     // Check for existing insights only if we have an assessmentId
     if (assessmentId) {
-      console.log('🔍 CHECKING FOR EXISTING INSIGHTS:', {
+      console.log('🔍 CHECKING FOR EXISTING INSIGHTS WITH FORCE FLAG:', {
         assessmentId,
-        forceRegenerate
+        forceRegenerate,
+        willBypassExistingCheck: !!forceRegenerate
       });
       
       const existingInsights = await checkExistingInsights(assessmentId, supabaseUrl, supabaseServiceKey, forceRegenerate);
@@ -98,7 +101,8 @@ serve(async (req) => {
       console.log('🔍 DATABASE CHECK RESULT:', {
         hasExistingInsights: !!existingInsights,
         existingInsightsLength: existingInsights?.length || 0,
-        willReturnExisting: !!existingInsights
+        willReturnExisting: !!existingInsights,
+        forceRegenerateFlag: forceRegenerate
       });
       
       if (existingInsights) {
@@ -131,7 +135,7 @@ serve(async (req) => {
     let finalInsights: string | null = null;
 
     while (attempt <= MAX_RETRIES && !finalInsights) {
-      console.log(`🔍 GENERATION ATTEMPT ${attempt}/${MAX_RETRIES}`);
+      console.log(`🔍 GENERATION ATTEMPT ${attempt}/${MAX_RETRIES} ${forceRegenerate ? '(FORCE REGENERATE)' : ''}`);
       
       try {
         // Call OpenAI
@@ -160,7 +164,7 @@ serve(async (req) => {
           }
           
           finalInsights = JSON.stringify(parsedInsights);
-          console.log(`✅ INSIGHTS GENERATION SUCCESSFUL ON ATTEMPT ${attempt}/${MAX_RETRIES}`);
+          console.log(`✅ INSIGHTS GENERATION SUCCESSFUL ON ATTEMPT ${attempt}/${MAX_RETRIES} ${forceRegenerate ? '(FORCED)' : ''}`);
           
         } catch (jsonError) {
           console.error(`❌ JSON PARSING FAILED ON ATTEMPT ${attempt}/${MAX_RETRIES}:`, jsonError.message);
@@ -193,9 +197,9 @@ serve(async (req) => {
 
     // Save insights only if we have a valid assessment ID
     if (assessmentId) {
-      console.log('🔍 SAVING INSIGHTS TO DATABASE:', assessmentId);
+      console.log(`🔍 SAVING ${forceRegenerate ? 'REGENERATED' : 'NEW'} INSIGHTS TO DATABASE:`, assessmentId);
       await saveInsights(assessmentId, finalInsights, supabaseUrl, supabaseServiceKey);
-      console.log('🔍 INSIGHTS SAVED SUCCESSFULLY');
+      console.log(`🔍 ${forceRegenerate ? 'REGENERATED' : 'NEW'} INSIGHTS SAVED SUCCESSFULLY`);
     } else {
       console.log('🔍 TEST MODE: Insights generated but not saved (no assessmentId)');
     }

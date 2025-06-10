@@ -12,7 +12,7 @@ export const checkExistingInsights = async (
     forceRegenerate
   });
 
-  // CRITICAL: If forceRegenerate is true, always return null to generate new insights
+  // CRITICAL FIX: If forceRegenerate is true, always return null to generate new insights
   if (forceRegenerate) {
     console.log('🔍 DATABASE: forceRegenerate=true - Skipping existing insights check');
     return null;
@@ -38,11 +38,11 @@ export const checkExistingInsights = async (
         assessment.ai_insights.trim() !== 'null' &&
         assessment.ai_insights.trim() !== 'undefined') {
       
-      console.log('🔍 DATABASE: Found existing insights, returning saved version - NEVER regenerating');
+      console.log('🔍 DATABASE: Found existing insights, returning saved version');
       return assessment.ai_insights;
     }
 
-    console.log('🔍 DATABASE: No existing insights found - generating new insights (ONLY ONCE)');
+    console.log('🔍 DATABASE: No existing insights found - generating new insights');
     return null;
     
   } catch (error) {

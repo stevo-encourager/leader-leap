@@ -46,7 +46,7 @@ serve(async (req) => {
 
     const { categories, demographics, averageGap, assessmentId, forceRegenerate } = requestBody;
 
-    // Validate required inputs using Deno-compatible pattern
+    // Validate required inputs
     if (!categories || !Array.isArray(categories) || categories.length === 0) {
       console.error('🔍 CRITICAL ERROR: Missing or invalid categories in request body');
       return new Response(JSON.stringify({ 
@@ -67,7 +67,7 @@ serve(async (req) => {
       });
     }
 
-    // UPDATED: Allow assessmentId to be undefined for test scenarios
+    // Allow assessmentId to be undefined for test scenarios
     if (assessmentId !== undefined && (typeof assessmentId !== 'string' || assessmentId.trim() === '')) {
       console.error('🔍 CRITICAL ERROR: Invalid assessmentId in request body - must be string or undefined');
       return new Response(JSON.stringify({ 
@@ -86,14 +86,13 @@ serve(async (req) => {
       forceRegenerate: forceRegenerate
     });
 
-    // CRITICAL FIRST CHECK: Only check for existing insights if we have an assessmentId
+    // Check for existing insights only if we have an assessmentId
     if (assessmentId) {
       console.log('🔍 CHECKING FOR EXISTING INSIGHTS:', {
         assessmentId,
         forceRegenerate
       });
       
-      // Pass the forceRegenerate flag to the database check
       const existingInsights = await checkExistingInsights(assessmentId, supabaseUrl, supabaseServiceKey, forceRegenerate);
       
       console.log('🔍 DATABASE CHECK RESULT:', {
@@ -126,7 +125,7 @@ serve(async (req) => {
     const prompt = buildPrompt(assessmentSummary);
     console.log('🔍 PROMPT BUILT - Length:', prompt.length);
 
-    // ENHANCED: Retry logic for validation failures
+    // Retry logic for validation failures
     const MAX_RETRIES = 3;
     let attempt = 1;
     let finalInsights: string | null = null;
@@ -150,7 +149,6 @@ serve(async (req) => {
           parsedInsights = JSON.parse(sanitizedInsights);
           console.log('🔍 JSON PARSED SUCCESSFULLY');
           
-          // CRITICAL: Enhanced validation with detailed logging
           console.log(`🔍 STARTING VALIDATION ATTEMPT ${attempt}/${MAX_RETRIES}`);
           validateInsightsStructure(parsedInsights);
           console.log(`✅ VALIDATION PASSED ON ATTEMPT ${attempt}/${MAX_RETRIES}`);
@@ -161,7 +159,6 @@ serve(async (req) => {
             console.log('🔍 SUMMARY FORMATTING APPLIED');
           }
           
-          // If we reach here, validation passed
           finalInsights = JSON.stringify(parsedInsights);
           console.log(`✅ INSIGHTS GENERATION SUCCESSFUL ON ATTEMPT ${attempt}/${MAX_RETRIES}`);
           
@@ -194,7 +191,7 @@ serve(async (req) => {
 
     console.log('🔍 FINAL INSIGHTS PREPARED - Length:', finalInsights.length);
 
-    // CRITICAL FINAL SAFEGUARD: Only save if we have a valid assessment ID
+    // Save insights only if we have a valid assessment ID
     if (assessmentId) {
       console.log('🔍 SAVING INSIGHTS TO DATABASE:', assessmentId);
       await saveInsights(assessmentId, finalInsights, supabaseUrl, supabaseServiceKey);

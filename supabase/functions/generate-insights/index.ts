@@ -1,17 +1,439 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { validateEnvironmentVariables, validateInsightsStructure } from './utils/validation.ts';
-import { cleanJsonResponse, formatSummaryIntoParagraphs, sanitizeJsonString } from './utils/formatting.ts';
-import { buildAssessmentData, buildPrompt } from './utils/promptBuilder.ts';
-import { callOpenAI } from './utils/openaiClient.ts';
-import { checkExistingInsights, saveInsights } from './utils/database.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Consolidated utility functions
+
+const validateEnvironmentVariables = () => {
+  const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+  const supabaseUrl = Deno.env.get('SUPABASE_URL');
+  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+  if (!openAIApiKey) {
+    throw new Error('OpenAI API key not configured');
+  }
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('Supabase configuration not complete');
+  }
+
+  return { openAIApiKey, supabaseUrl, supabaseServiceKey };
+};
+
+const validateInsightsStructure = (insights: any): void => {
+  console.log('🔍 VALIDATION: Starting comprehensive insights validation');
+  
+  if (!insights.summary || !insights.priority_areas || !insights.key_strengths) {
+    throw new Error('Invalid JSON structure - missing required fields: summary, priority_areas, or key_strengths');
+  }
+  
+  if (!Array.isArray(insights.priority_areas) || !Array.isArray(insights.key_strengths)) {
+    throw new Error('Invalid JSON structure - priority_areas and key_strengths must be arrays');
+  }
+
+  if (insights.priority_areas.length !== 3) {
+    throw new Error('Invalid JSON structure - priority_areas must have exactly 3 items');
+  }
+
+  if (insights.key_strengths.length < 2) {
+    throw new Error('Invalid JSON structure - key_strengths must have at least 2 items');
+  }
+
+  // Validate priority areas structure
+  for (const [index, area] of insights.priority_areas.entries()) {
+    if (!area.competency || !area.insights || !Array.isArray(area.insights)) {
+      throw new Error(`Invalid priority area structure at index ${index} - must have competency and insights array`);
+    }
+    
+    if (area.insights.length < 2 || area.insights.length > 5) {
+      throw new Error(`Invalid priority area structure at index ${index} - insights array must have 2-5 items, found ${area.insights.length}`);
+    }
+    
+    for (const insight of area.insights) {
+      if (typeof insight !== 'string') {
+        throw new Error(`Invalid priority area structure at index ${index} - insights array must contain only strings`);
+      }
+    }
+    
+    if (typeof area.gap !== 'number') {
+      throw new Error(`Invalid priority area structure at index ${index} - gap must be a number`);
+    }
+
+    if (!area.resources && area.resource) {
+      area.resources = [area.resource];
+    }
+    
+    if (!area.resources || !Array.isArray(area.resources)) {
+      throw new Error(`Invalid priority area structure at index ${index} - resources must be an array`);
+    }
+  }
+
+  // Validate key strengths structure
+  for (const [index, strength] of insights.key_strengths.entries()) {
+    if (!strength.competency || !strength.example || !strength.leverage_advice || !Array.isArray(strength.leverage_advice)) {
+      throw new Error(`Invalid key strength structure at index ${index} - must have competency, example, and leverage_advice array`);
+    }
+    
+    if (strength.leverage_advice.length < 2 || strength.leverage_advice.length > 5) {
+      throw new Error(`Invalid key strength structure at index ${index} - leverage_advice array must have 2-5 items, found ${strength.leverage_advice.length}`);
+    }
+    
+    for (const advice of strength.leverage_advice) {
+      if (typeof advice !== 'string') {
+        throw new Error(`Invalid key strength structure at index ${index} - leverage_advice array must contain only strings`);
+      }
+    }
+
+    if (!strength.resources || !Array.isArray(strength.resources)) {
+      throw new Error(`Invalid key strength structure at index ${index} - resources must be an array`);
+    }
+  }
+
+  console.log('✅ VALIDATION: Structure validation COMPLETE - insights are compliant');
+};
+
+const cleanJsonResponse = (response: string): string => {
+  let cleaned = response.trim();
+  
+  if (cleaned.startsWith('```json')) {
+    cleaned = cleaned.substring(7);
+  }
+  
+  if (cleaned.endsWith('```')) {
+    cleaned = cleaned.substring(0, cleaned.length - 3);
+  }
+  
+  cleaned = cleaned.replace(/^```[\w]*\n?/, '').replace(/\n?```$/, '');
+  
+  return cleaned.trim();
+};
+
+const formatSummaryIntoParagraphs = (summary: string): string => {
+  if (!summary || summary.trim().length === 0) {
+    return "";
+  }
+
+  let formatted = summary.replace(/\s+/g, ' ').trim();
+  
+  const transitionPhrases = [
+    'However,', 'At the same time,', 'Additionally,', 'Furthermore,', 'Moreover,',
+    'Nevertheless,', 'On the other hand,', 'Meanwhile,', 'In contrast,', 'Similarly,',
+    'Consequently,', 'Therefore,', 'Thus,', 'As a result,', 'In addition,',
+    'Your results also', 'Your assessment also', 'These results', 'This assessment',
+    'Conversely,', 'Nonetheless,', 'Likewise,', 'Subsequently,', 'Alternatively,'
+  ];
+  
+  for (const phrase of transitionPhrases) {
+    const phraseIndex = formatted.indexOf(phrase);
+    if (phraseIndex > 50) {
+      const firstPart = formatted.substring(0, phraseIndex).trim();
+      const secondPart = formatted.substring(phraseIndex).trim();
+      
+      if (firstPart.length > 30 && secondPart.length > 30) {
+        console.log(`Split summary using transition phrase: "${phrase}"`);
+        return `${firstPart}\n\n${secondPart}`;
+      }
+    }
+  }
+  
+  const sentences = formatted.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
+  
+  if (sentences.length >= 4) {
+    const midPoint = Math.ceil(sentences.length * 0.6);
+    const firstParagraph = sentences.slice(0, midPoint).join(' ').trim();
+    const secondParagraph = sentences.slice(midPoint).join(' ').trim();
+    
+    console.log(`Split summary by sentence count: ${sentences.length} sentences, split at ${midPoint}`);
+    return `${firstParagraph}\n\n${secondParagraph}`;
+  }
+  
+  console.log('Summary too short to split, returning as single paragraph');
+  return formatted;
+};
+
+const sanitizeJsonString = (jsonString: string): string => {
+  console.log('Starting JSON sanitization, original length:', jsonString.length);
+  
+  try {
+    JSON.parse(jsonString);
+    console.log('JSON parsing successful on first attempt');
+    return jsonString;
+  } catch (error) {
+    console.log('JSON parsing failed, attempting to sanitize control characters:', error.message);
+    
+    let sanitized = '';
+    let insideString = false;
+    let escapeNext = false;
+    
+    for (let i = 0; i < jsonString.length; i++) {
+      const char = jsonString[i];
+      const charCode = char.charCodeAt(0);
+      
+      if (escapeNext) {
+        sanitized += char;
+        escapeNext = false;
+        continue;
+      }
+      
+      if (char === '\\') {
+        sanitized += char;
+        escapeNext = true;
+        continue;
+      }
+      
+      if (char === '"' && !escapeNext) {
+        insideString = !insideString;
+        sanitized += char;
+        continue;
+      }
+      
+      if (insideString && charCode >= 0 && charCode <= 31) {
+        switch (charCode) {
+          case 8:
+            sanitized += '\\b';
+            break;
+          case 9:
+            sanitized += '\\t';
+            break;
+          case 10:
+            sanitized += '\\n';
+            break;
+          case 12:
+            sanitized += '\\f';
+            break;
+          case 13:
+            sanitized += '\\r';
+            break;
+          default:
+            const hex = charCode.toString(16).padStart(4, '0');
+            sanitized += `\\u${hex}`;
+            break;
+        }
+      } else {
+        sanitized += char;
+      }
+    }
+    
+    console.log('Control character sanitization completed, new length:', sanitized.length);
+    
+    try {
+      JSON.parse(sanitized);
+      console.log('JSON sanitization successful');
+      return sanitized;
+    } catch (secondError) {
+      console.error('JSON sanitization failed:', secondError.message);
+      throw new Error(`Unable to parse JSON after sanitization: ${secondError.message}`);
+    }
+  }
+};
+
+const callOpenAI = async (prompt: string, openAIApiKey: string): Promise<string> => {
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${openAIApiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      messages: [
+        { 
+          role: 'system', 
+          content: 'You are an expert leadership coach and assessment analyst with deep knowledge of research-backed leadership development strategies. You MUST respond with valid JSON only, no additional text or formatting. Follow the exact JSON structure specified in the user prompt. CRITICAL RULES: 1) The insights array in priority_areas must contain EXACTLY 3 actionable insights (strings only, never objects). 2) The leverage_advice array in key_strengths must contain EXACTLY 3 actionable pieces of advice (strings only). 3) Never mix resource titles into insights arrays - keep resources separate in the resource field. 4) Use the word "competencies" throughout your response instead of "strengths". 5) Always refer to the person as "you" or "your" (never "the user" or "the user\'s"). 6) Structure your summary to be easily split into paragraphs using transition phrases. 7) When recommending resources, use the exact titles provided in the prompt for consistency with our resource mapping system. 8) Every insight and advice must be actionable, specific, and research-backed with concrete techniques or frameworks.'
+        },
+        { role: 'user', content: prompt }
+      ],
+      temperature: 0.1,
+      max_tokens: 3000
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`OpenAI API error: ${response.status} - ${errorText}`);
+    throw new Error(`OpenAI API error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  const rawInsights = data.choices[0].message.content.trim();
+  
+  if (!rawInsights) {
+    throw new Error('Empty response from OpenAI API');
+  }
+
+  console.log('Raw OpenAI response:', rawInsights);
+  return rawInsights;
+};
+
+const buildPrompt = (assessmentSummary: any): string => {
+  const prompt = `
+You are EncouragerGPT, an AI leadership development coach specializing in personalized assessment analysis and development recommendations.
+
+CRITICAL INSTRUCTIONS:
+- Generate insights in VALID JSON format only
+- Follow the exact structure provided
+- Include specific, actionable advice
+- Reference validated resources from the provided databases
+- Personalize based on demographic information
+
+ASSESSMENT DATA:
+${JSON.stringify(assessmentSummary, null, 2)}
+
+VALIDATION REQUIREMENTS:
+- priority_areas: exactly 3 items
+- key_strengths: exactly 2-3 items  
+- Each priority area must have 2-4 actionable insights
+- Each key strength must have 2-3 leverage advice items
+
+OUTPUT STRUCTURE:
+Generate a JSON response with this exact structure:
+
+{
+  "summary": "Two-paragraph personalized summary of assessment results with transition phrases",
+  "priority_areas": [
+    {
+      "competency": "Competency name from assessment",
+      "gap": numerical_gap_value,
+      "insights": [
+        "Specific actionable insight 1",
+        "Specific actionable insight 2", 
+        "Specific actionable insight 3"
+      ],
+      "resources": [
+        "Resource 1",
+        "Resource 2",
+        "Resource 3"
+      ]
+    }
+  ],
+  "key_strengths": [
+    {
+      "competency": "Strength competency name",
+      "example": "Specific example of how this strength manifests",
+      "leverage_advice": [
+        "Specific advice 1 for leveraging this strength",
+        "Specific advice 2 for leveraging this strength"
+      ],
+      "resources": [
+        "Resource 1",
+        "Resource 2"
+      ]
+    }
+  ]
+}
+
+Generate the JSON response now.`;
+
+  return prompt;
+};
+
+const buildAssessmentData = (
+  categories: any[],
+  averageGap: number,
+  demographics: any
+): any => {
+  const categoryBreakdown = categories.map((category: any) => ({
+    title: category.title,
+    gap: category.gap,
+  }));
+
+  return {
+    demographics: {
+      role: demographics?.role || null,
+      industry: demographics?.industry || null,
+      experience: demographics?.experience || null,
+      teamSize: demographics?.teamSize || null,
+    },
+    averageGap: averageGap,
+    categoryBreakdown: categoryBreakdown,
+  };
+};
+
+const checkExistingInsights = async (
+  assessmentId: string, 
+  supabaseUrl: string, 
+  supabaseServiceKey: string,
+  forceRegenerate: boolean = false
+): Promise<string | null> => {
+  console.log('🔍 DATABASE: Checking for existing insights:', {
+    assessmentId,
+    forceRegenerate
+  });
+
+  // CRITICAL FIX: If forceRegenerate is true, always return null to generate new insights
+  if (forceRegenerate) {
+    console.log('🔍 DATABASE: forceRegenerate=true - Skipping existing insights check and forcing new generation');
+    return null;
+  }
+
+  try {
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    
+    const { data: assessment, error } = await supabase
+      .from('assessment_results')
+      .select('ai_insights')
+      .eq('id', assessmentId)
+      .single();
+
+    if (error) {
+      console.log('🔍 DATABASE: Error checking for existing insights:', error);
+      return null;
+    }
+
+    if (assessment && 
+        assessment.ai_insights && 
+        assessment.ai_insights.trim() !== '' &&
+        assessment.ai_insights.trim() !== 'null' &&
+        assessment.ai_insights.trim() !== 'undefined') {
+      
+      console.log('🔍 DATABASE: Found existing insights, returning saved version');
+      return assessment.ai_insights;
+    }
+
+    console.log('🔍 DATABASE: No existing insights found - generating new insights');
+    return null;
+    
+  } catch (error) {
+    console.error('🔍 DATABASE: Error in checkExistingInsights:', error);
+    return null;
+  }
+};
+
+const saveInsights = async (
+  assessmentId: string, 
+  insights: string, 
+  supabaseUrl: string, 
+  supabaseServiceKey: string
+): Promise<void> => {
+  console.log('🔍 DATABASE: Saving insights for assessment:', assessmentId);
+  
+  try {
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    
+    const { error } = await supabase
+      .from('assessment_results')
+      .update({ ai_insights: insights })
+      .eq('id', assessmentId);
+
+    if (error) {
+      console.error('🔍 DATABASE: Error saving insights:', error);
+      throw new Error(`Failed to save insights: ${error.message}`);
+    }
+
+    console.log('🔍 DATABASE: Successfully saved insights');
+  } catch (error) {
+    console.error('🔍 DATABASE: Error in saveInsights:', error);
+    throw error;
+  }
+};
+
+// Main function
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {

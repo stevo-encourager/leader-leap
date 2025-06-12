@@ -458,11 +458,15 @@ const buildAssessmentData = (
   console.log('🔍 BUILD ASSESSMENT DATA: Input averageGap:', averageGap);
   console.log('🔍 BUILD ASSESSMENT DATA: Input demographics keys:', Object.keys(demographics || {}));
 
-  // Use the gap values that are already calculated and sent from the frontend
-  const categoryBreakdown = categories.map((category: any) => ({
-    title: category.title,
-    gap: category.gap || 0, // Use the gap from the frontend data, fallback to 0
-  }));
+  // CRITICAL FIX: Use the gap values that are already calculated and sent from the frontend
+  // DO NOT recalculate or default to 0 - this was causing all gaps to be 0
+  const categoryBreakdown = categories.map((category: any) => {
+    console.log('🔍 BUILD ASSESSMENT DATA: Processing category:', category.title, 'with gap:', category.gap);
+    return {
+      title: category.title,
+      gap: category.gap, // Use the exact gap value sent from frontend
+    };
+  });
 
   const assessmentData = {
     demographics: {
@@ -477,7 +481,7 @@ const buildAssessmentData = (
 
   console.log('🔍 BUILD ASSESSMENT DATA: Final assessment data created');
   console.log('🔍 BUILD ASSESSMENT DATA: Category breakdown count:', categoryBreakdown.length);
-  console.log('🔍 BUILD ASSESSMENT DATA: Sample categories:', categoryBreakdown.slice(0, 3));
+  console.log('🔍 BUILD ASSESSMENT DATA: Sample categories with actual gaps:', categoryBreakdown.slice(0, 3));
   return assessmentData;
 };
 

@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
@@ -382,9 +383,10 @@ const buildAssessmentData = (
   console.log('🔍 BUILD ASSESSMENT DATA: Input demographics:', JSON.stringify(demographics, null, 2));
   console.log('🔍 BUILD ASSESSMENT DATA: Input averageGap:', averageGap);
 
+  // FIXED: Use the gap values that are already calculated and sent from the frontend
   const categoryBreakdown = categories.map((category: any) => ({
     title: category.title,
-    gap: category.gap,
+    gap: category.gap || 0, // Use the gap from the frontend data, fallback to 0
   }));
 
   const assessmentData = {

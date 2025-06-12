@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
@@ -458,10 +457,21 @@ const buildAssessmentData = (
   console.log('🔍 BUILD ASSESSMENT DATA: Input averageGap:', averageGap);
   console.log('🔍 BUILD ASSESSMENT DATA: Input demographics keys:', Object.keys(demographics || {}));
 
-  // CRITICAL FIX: Use the gap values that are already calculated and sent from the frontend
-  // DO NOT recalculate or default to 0 - this was causing all gaps to be 0
+  // CRITICAL FIX: Safely process categories with proper error handling
   const categoryBreakdown = categories.map((category: any) => {
     console.log('🔍 BUILD ASSESSMENT DATA: Processing category:', category.title, 'with gap:', category.gap);
+    
+    // Validate that we have the required data
+    if (!category.title) {
+      console.error('🔍 BUILD ASSESSMENT DATA: Category missing title:', category);
+      throw new Error('Category missing title');
+    }
+    
+    if (typeof category.gap !== 'number' || isNaN(category.gap)) {
+      console.error('🔍 BUILD ASSESSMENT DATA: Invalid gap value for category:', category.title, 'gap:', category.gap);
+      throw new Error(`Invalid gap value for category ${category.title}: ${category.gap}`);
+    }
+    
     return {
       title: category.title,
       gap: category.gap, // Use the exact gap value sent from frontend
@@ -599,7 +609,7 @@ serve(async (req) => {
 
     const { categories, demographics, averageGap, assessmentId, forceRegenerate } = requestBody;
 
-    // Validate required inputs
+    // Enhanced validation with better error messages
     if (!categories || !Array.isArray(categories) || categories.length === 0) {
       console.error('🔍 CRITICAL ERROR: Missing or invalid categories in request body');
       return new Response(JSON.stringify({ 
@@ -610,8 +620,22 @@ serve(async (req) => {
       });
     }
 
-    if (typeof averageGap !== 'number') {
-      console.error('🔍 CRITICAL ERROR: Missing or invalid averageGap in request body');
+    // Validate each category has required fields
+    for (let i = 0; i < categories.length; i++) {
+      const category = categories[i];
+      if (!category.title || typeof category.gap !== 'number' || isNaN(category.gap)) {
+        console.error('🔍 CRITICAL ERROR: Invalid category at index', i, ':', category);
+        return new Response(JSON.stringify({ 
+          error: `Invalid category at index ${i}. Each category must have a title (string) and gap (number).` 
+        }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
+
+    if (typeof averageGap !== 'number' || isNaN(averageGap)) {
+      console.error('🔍 CRITICAL ERROR: Missing or invalid averageGap in request body:', averageGap);
       return new Response(JSON.stringify({ 
         error: "Missing or invalid 'averageGap' number in request body. Average gap is required for insight generation." 
       }), {
@@ -670,7 +694,19 @@ serve(async (req) => {
 
     // Build assessment data and prompt with enhanced logging
     console.log('🔍 BUILDING ASSESSMENT DATA AND PROMPT...');
-    const assessmentSummary = buildAssessmentData(categories, averageGap, demographics);
+    
+    let assessmentSummary;
+    try {
+      assessmentSummary = buildAssessmentData(categories, averageGap, demographics);
+    } catch (error) {
+      console.error('🔍 CRITICAL ERROR: Failed to build assessment data:', error);
+      return new Response(JSON.stringify({ 
+        error: `Failed to process assessment data: ${error.message}` 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
     
     console.log('🔍 ASSESSMENT SUMMARY BUILT:', {
       demographicsKeys: Object.keys(assessmentSummary.demographics),

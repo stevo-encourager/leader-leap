@@ -1,3 +1,4 @@
+
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
@@ -233,53 +234,71 @@ const sanitizeJsonString = (jsonString: string): string => {
 };
 
 const callOpenAI = async (prompt: string, openAIApiKey: string): Promise<string> => {
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${openAIApiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o',
-      messages: [
-        { 
-          role: 'system', 
-          content: 'You are an expert leadership coach and assessment analyst with deep knowledge of research-backed leadership development strategies. You MUST respond with valid JSON only, no additional text or formatting. Follow the exact JSON structure specified in the user prompt. CRITICAL RULES: 1) The insights array in priority_areas must contain EXACTLY 3 actionable insights (strings only, never objects). 2) The leverage_advice array in key_strengths must contain EXACTLY 3 actionable pieces of advice (strings only). 3) Never mix resource titles into insights arrays - keep resources separate in the resource field. 4) Use the word "competencies" throughout your response instead of "strengths". 5) Always refer to the person as "you" or "your" (never "the user" or "the user\'s"). 6) Structure your summary to be easily split into paragraphs using transition phrases. 7) When recommending resources, use the exact titles provided in the prompt for consistency with our resource mapping system. 8) Every insight and advice must be actionable, specific, and research-backed with concrete techniques or frameworks.'
-        },
-        { role: 'user', content: prompt }
-      ],
-      temperature: 0.1,
-      max_tokens: 3000
-    }),
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error(`OpenAI API error: ${response.status} - ${errorText}`);
-    throw new Error(`OpenAI API error: ${response.status}`);
-  }
-
-  const data = await response.json();
-  const rawInsights = data.choices[0].message.content.trim();
+  console.log('🔍 CALLING OPENAI API...');
+  console.log('🔍 PROMPT LENGTH:', prompt.length);
+  console.log('🔍 PROMPT PREVIEW:', prompt.substring(0, 500) + '...');
   
-  if (!rawInsights) {
-    throw new Error('Empty response from OpenAI API');
-  }
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [
+          { 
+            role: 'system', 
+            content: 'You are an expert leadership coach and assessment analyst with deep knowledge of research-backed leadership development strategies. You MUST respond with valid JSON only, no additional text or formatting. Follow the exact JSON structure specified in the user prompt. CRITICAL RULES: 1) The insights array in priority_areas must contain EXACTLY 3 actionable insights (strings only, never objects). 2) The leverage_advice array in key_strengths must contain EXACTLY 3 actionable pieces of advice (strings only). 3) Never mix resource titles into insights arrays - keep resources separate in the resource field. 4) Use the word "competencies" throughout your response instead of "strengths". 5) Always refer to the person as "you" or "your" (never "the user" or "the user\'s"). 6) Structure your summary to be easily split into paragraphs using transition phrases. 7) When recommending resources, use the exact titles provided in the prompt for consistency with our resource mapping system. 8) Every insight and advice must be actionable, specific, and research-backed with concrete techniques or frameworks.'
+          },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.1,
+        max_tokens: 3000
+      }),
+    });
 
-  console.log('Raw OpenAI response:', rawInsights);
-  return rawInsights;
+    console.log('🔍 OPENAI RESPONSE STATUS:', response.status);
+    console.log('🔍 OPENAI RESPONSE OK:', response.ok);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`OpenAI API error: ${response.status} - ${errorText}`);
+      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log('🔍 OPENAI RESPONSE DATA STRUCTURE:', Object.keys(data));
+    console.log('🔍 OPENAI CHOICES LENGTH:', data.choices?.length || 0);
+    
+    const rawInsights = data.choices[0].message.content.trim();
+    
+    if (!rawInsights) {
+      throw new Error('Empty response from OpenAI API');
+    }
+
+    console.log('🔍 RAW OPENAI RESPONSE LENGTH:', rawInsights.length);
+    console.log('🔍 RAW OPENAI RESPONSE PREVIEW:', rawInsights.substring(0, 200) + '...');
+    return rawInsights;
+  } catch (error) {
+    console.error('🔍 OPENAI API CALL FAILED:', error);
+    throw error;
+  }
 };
 
 const buildPrompt = (assessmentSummary: any): string => {
-  console.log('🔍 PROMPT BUILDER: Building prompt with assessment data:', JSON.stringify(assessmentSummary, null, 2));
+  console.log('🔍 PROMPT BUILDER: Building prompt with assessment data');
+  console.log('🔍 PROMPT BUILDER: Categories count:', assessmentSummary.categoryBreakdown?.length || 0);
+  console.log('🔍 PROMPT BUILDER: Average gap:', assessmentSummary.averageGap);
   
   // Sort categories by gap to identify highest and lowest gaps
   const sortedByGap = [...assessmentSummary.categoryBreakdown].sort((a, b) => b.gap - a.gap);
   const highestGapCategories = sortedByGap.slice(0, 3);
   const lowestGapCategories = sortedByGap.slice(-3).reverse();
   
-  console.log('🔍 PROMPT BUILDER: Highest gap categories:', highestGapCategories);
-  console.log('🔍 PROMPT BUILDER: Lowest gap categories:', lowestGapCategories);
+  console.log('🔍 PROMPT BUILDER: Highest gap categories:', highestGapCategories.map(c => `${c.title}: ${c.gap}`));
+  console.log('🔍 PROMPT BUILDER: Lowest gap categories:', lowestGapCategories.map(c => `${c.title}: ${c.gap}`));
   
   const prompt = `
 You are EncouragerGPT, an AI leadership development coach specializing in personalized assessment analysis and development recommendations.
@@ -435,11 +454,11 @@ const buildAssessmentData = (
   averageGap: number,
   demographics: any
 ): any => {
-  console.log('🔍 BUILD ASSESSMENT DATA: Input categories:', JSON.stringify(categories, null, 2));
-  console.log('🔍 BUILD ASSESSMENT DATA: Input demographics:', JSON.stringify(demographics, null, 2));
+  console.log('🔍 BUILD ASSESSMENT DATA: Input categories count:', categories?.length || 0);
   console.log('🔍 BUILD ASSESSMENT DATA: Input averageGap:', averageGap);
+  console.log('🔍 BUILD ASSESSMENT DATA: Input demographics keys:', Object.keys(demographics || {}));
 
-  // FIXED: Use the gap values that are already calculated and sent from the frontend
+  // Use the gap values that are already calculated and sent from the frontend
   const categoryBreakdown = categories.map((category: any) => ({
     title: category.title,
     gap: category.gap || 0, // Use the gap from the frontend data, fallback to 0
@@ -456,7 +475,9 @@ const buildAssessmentData = (
     categoryBreakdown: categoryBreakdown,
   };
 
-  console.log('🔍 BUILD ASSESSMENT DATA: Final assessment data:', JSON.stringify(assessmentData, null, 2));
+  console.log('🔍 BUILD ASSESSMENT DATA: Final assessment data created');
+  console.log('🔍 BUILD ASSESSMENT DATA: Category breakdown count:', categoryBreakdown.length);
+  console.log('🔍 BUILD ASSESSMENT DATA: Sample categories:', categoryBreakdown.slice(0, 3));
   return assessmentData;
 };
 
@@ -667,7 +688,6 @@ serve(async (req) => {
       
       try {
         // Call OpenAI
-        console.log('🔍 CALLING OPENAI API...');
         const rawInsights = await callOpenAI(prompt, openAIApiKey);
         console.log('🔍 OPENAI RESPONSE RECEIVED - Length:', rawInsights.length);
 

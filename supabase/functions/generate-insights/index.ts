@@ -457,9 +457,9 @@ const buildAssessmentData = (
   console.log('🔍 BUILD ASSESSMENT DATA: Input averageGap:', averageGap);
   console.log('🔍 BUILD ASSESSMENT DATA: Input demographics keys:', Object.keys(demographics || {}));
 
-  // CRITICAL FIX: Safely process categories with proper error handling
+  // Process full category objects to extract gaps
   const categoryBreakdown = categories.map((category: any) => {
-    console.log('🔍 BUILD ASSESSMENT DATA: Processing category:', category.title, 'with gap:', category.gap);
+    console.log('🔍 BUILD ASSESSMENT DATA: Processing category:', category.title);
     
     // Validate that we have the required data
     if (!category.title) {
@@ -467,14 +467,45 @@ const buildAssessmentData = (
       throw new Error('Category missing title');
     }
     
-    if (typeof category.gap !== 'number' || isNaN(category.gap)) {
-      console.error('🔍 BUILD ASSESSMENT DATA: Invalid gap value for category:', category.title, 'gap:', category.gap);
-      throw new Error(`Invalid gap value for category ${category.title}: ${category.gap}`);
+    // If gap is already calculated and provided, use it
+    if (typeof category.gap === 'number' && !isNaN(category.gap)) {
+      console.log('🔍 BUILD ASSESSMENT DATA: Using pre-calculated gap:', category.gap);
+      return {
+        title: category.title,
+        gap: category.gap,
+      };
     }
+    
+    // Otherwise, calculate gap from skills
+    if (!category.skills || !Array.isArray(category.skills)) {
+      console.error('🔍 BUILD ASSESSMENT DATA: Category missing skills array:', category.title);
+      throw new Error(`Category ${category.title} missing skills array`);
+    }
+    
+    // Calculate average gap for this category
+    let totalGap = 0;
+    let skillCount = 0;
+    
+    for (const skill of category.skills) {
+      if (skill.ratings && typeof skill.ratings.current === 'number' && typeof skill.ratings.desired === 'number') {
+        const skillGap = skill.ratings.desired - skill.ratings.current;
+        totalGap += skillGap;
+        skillCount++;
+        console.log(`🔍 BUILD ASSESSMENT DATA: Skill ${skill.name}: current=${skill.ratings.current}, desired=${skill.ratings.desired}, gap=${skillGap}`);
+      }
+    }
+    
+    if (skillCount === 0) {
+      console.error('🔍 BUILD ASSESSMENT DATA: No valid skills found for category:', category.title);
+      throw new Error(`No valid skills found for category ${category.title}`);
+    }
+    
+    const categoryGap = totalGap / skillCount;
+    console.log(`🔍 BUILD ASSESSMENT DATA: Category ${category.title} final gap: ${categoryGap}`);
     
     return {
       title: category.title,
-      gap: category.gap, // Use the exact gap value sent from frontend
+      gap: categoryGap,
     };
   });
 
@@ -491,7 +522,7 @@ const buildAssessmentData = (
 
   console.log('🔍 BUILD ASSESSMENT DATA: Final assessment data created');
   console.log('🔍 BUILD ASSESSMENT DATA: Category breakdown count:', categoryBreakdown.length);
-  console.log('🔍 BUILD ASSESSMENT DATA: Sample categories with actual gaps:', categoryBreakdown.slice(0, 3));
+  console.log('🔍 BUILD ASSESSMENT DATA: Sample categories with calculated gaps:', categoryBreakdown.slice(0, 3));
   return assessmentData;
 };
 
@@ -609,7 +640,7 @@ serve(async (req) => {
 
     const { categories, demographics, averageGap, assessmentId, forceRegenerate } = requestBody;
 
-    // Enhanced validation with better error messages
+    // Basic validation - categories should be array of objects with title
     if (!categories || !Array.isArray(categories) || categories.length === 0) {
       console.error('🔍 CRITICAL ERROR: Missing or invalid categories in request body');
       return new Response(JSON.stringify({ 
@@ -620,13 +651,13 @@ serve(async (req) => {
       });
     }
 
-    // Validate each category has required fields
+    // Validate each category has a title (gap will be calculated or extracted)
     for (let i = 0; i < categories.length; i++) {
       const category = categories[i];
-      if (!category.title || typeof category.gap !== 'number' || isNaN(category.gap)) {
-        console.error('🔍 CRITICAL ERROR: Invalid category at index', i, ':', category);
+      if (!category.title) {
+        console.error('🔍 CRITICAL ERROR: Category missing title at index', i, ':', category);
         return new Response(JSON.stringify({ 
-          error: `Invalid category at index ${i}. Each category must have a title (string) and gap (number).` 
+          error: `Invalid category at index ${i}. Each category must have a title.` 
         }), {
           status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },

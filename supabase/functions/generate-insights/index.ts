@@ -233,9 +233,30 @@ const sanitizeJsonString = (jsonString: string): string => {
 };
 
 const callOpenAI = async (prompt: string, openAIApiKey: string): Promise<string> => {
-  console.log('🔍 CALLING OPENAI API...');
+  console.log('🔍 ===== OPENAI API CALL DEBUGGING =====');
   console.log('🔍 PROMPT LENGTH:', prompt.length);
-  console.log('🔍 PROMPT PREVIEW:', prompt.substring(0, 500) + '...');
+  console.log('🔍 FULL PROMPT BEING SENT TO OPENAI:');
+  console.log('🔍 ======================================');
+  console.log(prompt);
+  console.log('🔍 ======================================');
+  
+  const requestBody = {
+    model: 'gpt-4o',
+    messages: [
+      { 
+        role: 'system', 
+        content: 'You are an expert leadership coach and assessment analyst with deep knowledge of research-backed leadership development strategies. You MUST respond with valid JSON only, no additional text or formatting. Follow the exact JSON structure specified in the user prompt. CRITICAL RULES: 1) The insights array in priority_areas must contain EXACTLY 3 actionable insights (strings only, never objects). 2) The leverage_advice array in key_strengths must contain EXACTLY 3 actionable pieces of advice (strings only). 3) Never mix resource titles into insights arrays - keep resources separate in the resource field. 4) Use the word "competencies" throughout your response instead of "strengths". 5) Always refer to the person as "you" or "your" (never "the user" or "the user\'s"). 6) Structure your summary to be easily split into paragraphs using transition phrases. 7) When recommending resources, use the exact titles provided in the prompt for consistency with our resource mapping system. 8) Every insight and advice must be actionable, specific, and research-backed with concrete techniques or frameworks.'
+      },
+      { role: 'user', content: prompt }
+    ],
+    temperature: 0.1,
+    max_tokens: 3000
+  };
+
+  console.log('🔍 REQUEST BODY TO OPENAI:');
+  console.log('🔍 ========================');
+  console.log(JSON.stringify(requestBody, null, 2));
+  console.log('🔍 ========================');
   
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -244,18 +265,7 @@ const callOpenAI = async (prompt: string, openAIApiKey: string): Promise<string>
         'Authorization': `Bearer ${openAIApiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [
-          { 
-            role: 'system', 
-            content: 'You are an expert leadership coach and assessment analyst with deep knowledge of research-backed leadership development strategies. You MUST respond with valid JSON only, no additional text or formatting. Follow the exact JSON structure specified in the user prompt. CRITICAL RULES: 1) The insights array in priority_areas must contain EXACTLY 3 actionable insights (strings only, never objects). 2) The leverage_advice array in key_strengths must contain EXACTLY 3 actionable pieces of advice (strings only). 3) Never mix resource titles into insights arrays - keep resources separate in the resource field. 4) Use the word "competencies" throughout your response instead of "strengths". 5) Always refer to the person as "you" or "your" (never "the user" or "the user\'s"). 6) Structure your summary to be easily split into paragraphs using transition phrases. 7) When recommending resources, use the exact titles provided in the prompt for consistency with our resource mapping system. 8) Every insight and advice must be actionable, specific, and research-backed with concrete techniques or frameworks.'
-          },
-          { role: 'user', content: prompt }
-        ],
-        temperature: 0.1,
-        max_tokens: 3000
-      }),
+      body: JSON.stringify(requestBody),
     });
 
     console.log('🔍 OPENAI RESPONSE STATUS:', response.status);
@@ -273,12 +283,17 @@ const callOpenAI = async (prompt: string, openAIApiKey: string): Promise<string>
     
     const rawInsights = data.choices[0].message.content.trim();
     
+    console.log('🔍 ===== RAW OPENAI RESPONSE =====');
+    console.log('🔍 RAW RESPONSE LENGTH:', rawInsights.length);
+    console.log('🔍 COMPLETE RAW RESPONSE FROM OPENAI:');
+    console.log('🔍 ==================================');
+    console.log(rawInsights);
+    console.log('🔍 ==================================');
+    
     if (!rawInsights) {
       throw new Error('Empty response from OpenAI API');
     }
 
-    console.log('🔍 RAW OPENAI RESPONSE LENGTH:', rawInsights.length);
-    console.log('🔍 RAW OPENAI RESPONSE PREVIEW:', rawInsights.substring(0, 200) + '...');
     return rawInsights;
   } catch (error) {
     console.error('🔍 OPENAI API CALL FAILED:', error);
@@ -287,22 +302,28 @@ const callOpenAI = async (prompt: string, openAIApiKey: string): Promise<string>
 };
 
 const buildPrompt = (assessmentSummary: any): string => {
-  console.log('🔍 PROMPT BUILDER: Building prompt with assessment data');
-  console.log('🔍 PROMPT BUILDER: Categories count:', assessmentSummary.categoryBreakdown?.length || 0);
-  console.log('🔍 PROMPT BUILDER: Average gap:', assessmentSummary.averageGap);
+  console.log('🔍 ===== PROMPT CONSTRUCTION DEBUGGING =====');
+  console.log('🔍 ASSESSMENT SUMMARY INPUT TO PROMPT BUILDER:');
+  console.log('🔍 =============================================');
+  console.log(JSON.stringify(assessmentSummary, null, 2));
+  console.log('🔍 =============================================');
   
   // Sort categories by gap to identify highest and lowest gaps
   const sortedByGap = [...assessmentSummary.categoryBreakdown].sort((a, b) => b.gap - a.gap);
   const highestGapCategories = sortedByGap.slice(0, 3);
   const lowestGapCategories = sortedByGap.slice(-3).reverse();
   
-  console.log('🔍 PROMPT BUILDER: Highest gap categories:', highestGapCategories.map(c => `${c.title}: ${c.gap}`));
-  console.log('🔍 PROMPT BUILDER: Lowest gap categories:', lowestGapCategories.map(c => `${c.title}: ${c.gap}`));
+  console.log('🔍 SORTED CATEGORIES BY GAP:');
+  console.log('🔍 Highest gap categories:', highestGapCategories.map(c => `${c.title}: ${c.gap}`));
+  console.log('🔍 Lowest gap categories:', lowestGapCategories.map(c => `${c.title}: ${c.gap}`));
   
   const prompt = `
+### INSTRUCTIONS FOR ENCOURAGERGPT
+
 You are EncouragerGPT, an AI leadership development coach specializing in personalized assessment analysis and development recommendations.
 
-CRITICAL INSTRUCTIONS FOR DATA USAGE:
+### CRITICAL DATA USAGE RULES
+
 - You MUST use the EXACT category titles and gap values provided below
 - You MUST select priority areas from the HIGHEST gap categories listed
 - You MUST select key strengths from the LOWEST gap categories listed
@@ -310,10 +331,12 @@ CRITICAL INSTRUCTIONS FOR DATA USAGE:
 - Include specific, actionable advice
 - Personalize based on the demographic information provided
 
-ASSESSMENT RESULTS TO ANALYZE:
+### ASSESSMENT RESULTS TO ANALYZE
+
 Average Gap Across All Categories: ${assessmentSummary.averageGap.toFixed(2)}
 
-CATEGORY BREAKDOWN (SORTED BY GAP SIZE):
+### CATEGORY BREAKDOWN (SORTED BY GAP SIZE)
+
 HIGHEST GAPS (Development Priorities):
 ${highestGapCategories.map((cat, index) => 
   `${index + 1}. "${cat.title}" - Gap: ${cat.gap.toFixed(2)}`
@@ -329,13 +352,15 @@ ${assessmentSummary.categoryBreakdown.map((cat, index) =>
   `${index + 1}. "${cat.title}" - Gap: ${cat.gap.toFixed(2)}`
 ).join('\n')}
 
-DEMOGRAPHICS INFORMATION:
+### DEMOGRAPHICS INFORMATION
+
 - Role: ${assessmentSummary.demographics.role || 'Not provided'}
 - Industry: ${assessmentSummary.demographics.industry || 'Not provided'}  
 - Experience: ${assessmentSummary.demographics.experience || 'Not provided'}
 - Team Size: ${assessmentSummary.demographics.teamSize || 'Not provided'}
 
-MANDATORY SELECTION RULES:
+### MANDATORY SELECTION RULES
+
 PRIORITY AREAS: You MUST select the 3 categories with the HIGHEST gaps from the data above:
 1. "${highestGapCategories[0]?.title}" (Gap: ${highestGapCategories[0]?.gap.toFixed(2)})
 2. "${highestGapCategories[1]?.title}" (Gap: ${highestGapCategories[1]?.gap.toFixed(2)})
@@ -345,20 +370,23 @@ KEY STRENGTHS: You MUST select 2-3 categories with the LOWEST gaps from the data
 1. "${lowestGapCategories[0]?.title}" (Gap: ${lowestGapCategories[0]?.gap.toFixed(2)})
 2. "${lowestGapCategories[1]?.title}" (Gap: ${lowestGapCategories[1]?.gap.toFixed(2)})
 
-PERSONALIZATION REQUIREMENTS:
+### PERSONALIZATION REQUIREMENTS
+
 ${assessmentSummary.demographics.role ? `- Provide role-specific advice for: ${assessmentSummary.demographics.role}` : '- Use general leadership advice (no role specified)'}
 ${assessmentSummary.demographics.industry ? `- Include industry-specific examples for: ${assessmentSummary.demographics.industry}` : '- Use general industry examples (no industry specified)'}
 ${assessmentSummary.demographics.experience ? `- Tailor complexity for experience level: ${assessmentSummary.demographics.experience}` : '- Use general experience level advice (no experience specified)'}
 ${assessmentSummary.demographics.teamSize ? `- Consider team size of: ${assessmentSummary.demographics.teamSize}` : '- Use general team considerations (no team size specified)'}
 
-SUMMARY REQUIREMENTS:
+### SUMMARY REQUIREMENTS
+
 Create a two-paragraph summary that:
 - References the actual average gap of ${assessmentSummary.averageGap.toFixed(2)}
 - Mentions specific category strengths and development areas by name
 - Uses transition phrases like "Additionally, your assessment reveals..." or "Furthermore, the data suggests..."
 - Acknowledges missing demographic information when applicable
 
-OUTPUT STRUCTURE:
+### OUTPUT FORMAT
+
 Generate a JSON response with this exact structure:
 
 {
@@ -435,7 +463,8 @@ Generate a JSON response with this exact structure:
   ]
 }
 
-VALIDATION REQUIREMENTS:
+### VALIDATION REQUIREMENTS
+
 - Use ONLY the exact category titles provided above
 - Use ONLY the exact gap values provided above
 - Reference the specific assessment data in your summary
@@ -444,7 +473,17 @@ VALIDATION REQUIREMENTS:
 
 Generate the JSON response now using the specific assessment data provided above.`;
 
-  console.log('🔍 PROMPT BUILDER: Completed prompt construction, length:', prompt.length);
+  console.log('🔍 FINAL PROMPT CONSTRUCTED - Length:', prompt.length);
+  console.log('🔍 PROMPT SECTIONS VERIFICATION:');
+  console.log('🔍 - Contains Instructions section:', prompt.includes('### INSTRUCTIONS FOR ENCOURAGERGPT'));
+  console.log('🔍 - Contains Data Usage Rules:', prompt.includes('### CRITICAL DATA USAGE RULES'));
+  console.log('🔍 - Contains Assessment Results:', prompt.includes('### ASSESSMENT RESULTS TO ANALYZE'));
+  console.log('🔍 - Contains Category Breakdown:', prompt.includes('### CATEGORY BREAKDOWN'));
+  console.log('🔍 - Contains Demographics:', prompt.includes('### DEMOGRAPHICS INFORMATION'));
+  console.log('🔍 - Contains Mandatory Selection Rules:', prompt.includes('### MANDATORY SELECTION RULES'));
+  console.log('🔍 - Contains Output Format:', prompt.includes('### OUTPUT FORMAT'));
+  console.log('🔍 - Contains Validation Requirements:', prompt.includes('### VALIDATION REQUIREMENTS'));
+  
   return prompt;
 };
 
@@ -612,7 +651,9 @@ serve(async (req) => {
   }
 
   try {
-    console.log('🔍 === GENERATE INSIGHTS FUNCTION START ===');
+    console.log('🔍 ===== GENERATE INSIGHTS FUNCTION START =====');
+    console.log('🔍 REQUEST METHOD:', req.method);
+    console.log('🔍 REQUEST URL:', req.url);
     
     // Validate environment variables
     const { openAIApiKey, supabaseUrl, supabaseServiceKey } = validateEnvironmentVariables();
@@ -629,7 +670,13 @@ serve(async (req) => {
       });
     }
 
-    console.log('🔍 REQUEST BODY RECEIVED:', {
+    console.log('🔍 ===== REQUEST BODY ANALYSIS =====');
+    console.log('🔍 RAW REQUEST BODY RECEIVED:');
+    console.log('🔍 ===================================');
+    console.log(JSON.stringify(requestBody, null, 2));
+    console.log('🔍 ===================================');
+    
+    console.log('🔍 REQUEST BODY SUMMARY:', {
       categoriesLength: requestBody.categories?.length || 0,
       hasDemo: !!requestBody.demographics,
       averageGap: requestBody.averageGap,
@@ -724,7 +771,7 @@ serve(async (req) => {
     }
 
     // Build assessment data and prompt with enhanced logging
-    console.log('🔍 BUILDING ASSESSMENT DATA AND PROMPT...');
+    console.log('🔍 ===== DATA PROCESSING PHASE =====');
     
     let assessmentSummary;
     try {
@@ -739,15 +786,13 @@ serve(async (req) => {
       });
     }
     
-    console.log('🔍 ASSESSMENT SUMMARY BUILT:', {
-      demographicsKeys: Object.keys(assessmentSummary.demographics),
-      averageGap: assessmentSummary.averageGap,
-      categoryCount: assessmentSummary.categoryBreakdown.length,
-      topCategories: assessmentSummary.categoryBreakdown.slice(0, 3).map(cat => `${cat.title}: ${cat.gap}`)
-    });
+    console.log('🔍 ===== ASSESSMENT SUMMARY CREATED =====');
+    console.log('🔍 FINAL ASSESSMENT SUMMARY:');
+    console.log('🔍 =====================================');
+    console.log(JSON.stringify(assessmentSummary, null, 2));
+    console.log('🔍 =====================================');
     
     const prompt = buildPrompt(assessmentSummary);
-    console.log('🔍 PROMPT BUILT - Length:', prompt.length);
 
     // Retry logic for validation failures
     const MAX_RETRIES = 3;
@@ -755,22 +800,30 @@ serve(async (req) => {
     let finalInsights: string | null = null;
 
     while (attempt <= MAX_RETRIES && !finalInsights) {
-      console.log(`🔍 GENERATION ATTEMPT ${attempt}/${MAX_RETRIES} ${forceRegenerate ? '(FORCE REGENERATE)' : ''}`);
+      console.log(`🔍 ===== GENERATION ATTEMPT ${attempt}/${MAX_RETRIES} =====`);
+      console.log(`🔍 ATTEMPT ${attempt} ${forceRegenerate ? '(FORCE REGENERATE)' : '(NORMAL GENERATION)'}`);
       
       try {
-        // Call OpenAI
+        // Call OpenAI with enhanced logging
         const rawInsights = await callOpenAI(prompt, openAIApiKey);
-        console.log('🔍 OPENAI RESPONSE RECEIVED - Length:', rawInsights.length);
 
-        // Clean and parse the response
-        console.log('🔍 CLEANING AND PARSING JSON RESPONSE...');
+        // Clean and parse the response with enhanced logging
+        console.log('🔍 ===== RESPONSE PROCESSING PHASE =====');
+        console.log('🔍 CLEANING JSON RESPONSE...');
         const cleanedInsights = cleanJsonResponse(rawInsights);
+        console.log('🔍 CLEANED RESPONSE LENGTH:', cleanedInsights.length);
+        console.log('🔍 CLEANED RESPONSE PREVIEW:', cleanedInsights.substring(0, 200) + '...');
+        
+        console.log('🔍 SANITIZING JSON...');
         const sanitizedInsights = sanitizeJsonString(cleanedInsights);
+        console.log('🔍 SANITIZED RESPONSE LENGTH:', sanitizedInsights.length);
 
         let parsedInsights;
         try {
+          console.log('🔍 PARSING JSON...');
           parsedInsights = JSON.parse(sanitizedInsights);
           console.log('🔍 JSON PARSED SUCCESSFULLY');
+          console.log('🔍 PARSED INSIGHTS STRUCTURE:', Object.keys(parsedInsights));
           
           console.log(`🔍 STARTING VALIDATION ATTEMPT ${attempt}/${MAX_RETRIES}`);
           validateInsightsStructure(parsedInsights);
@@ -784,9 +837,11 @@ serve(async (req) => {
           
           finalInsights = JSON.stringify(parsedInsights);
           console.log(`✅ INSIGHTS GENERATION SUCCESSFUL ON ATTEMPT ${attempt}/${MAX_RETRIES} ${forceRegenerate ? '(FORCED)' : ''}`);
+          console.log('🔍 FINAL INSIGHTS LENGTH:', finalInsights.length);
           
         } catch (jsonError) {
           console.error(`❌ JSON PARSING FAILED ON ATTEMPT ${attempt}/${MAX_RETRIES}:`, jsonError.message);
+          console.error('❌ PROBLEMATIC JSON:', sanitizedInsights.substring(0, 500) + '...');
           if (attempt === MAX_RETRIES) {
             throw new Error(`OpenAI returned invalid JSON format after ${MAX_RETRIES} attempts: ${jsonError.message}`);
           }
@@ -812,7 +867,9 @@ serve(async (req) => {
       throw new Error('Failed to generate valid insights after all retry attempts');
     }
 
-    console.log('🔍 FINAL INSIGHTS PREPARED - Length:', finalInsights.length);
+    console.log('🔍 ===== FINAL INSIGHTS PREPARED =====');
+    console.log('🔍 FINAL INSIGHTS LENGTH:', finalInsights.length);
+    console.log('🔍 FINAL INSIGHTS PREVIEW:', finalInsights.substring(0, 300) + '...');
 
     // Save insights only if we have a valid assessment ID
     if (assessmentId) {
@@ -823,13 +880,13 @@ serve(async (req) => {
       console.log('🔍 TEST MODE: Insights generated but not saved (no assessmentId)');
     }
 
-    console.log('🔍 === GENERATE INSIGHTS FUNCTION SUCCESS ===');
+    console.log('🔍 ===== GENERATE INSIGHTS FUNCTION SUCCESS =====');
 
     return new Response(JSON.stringify({ insights: finalInsights }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    console.error('🔍 === GENERATE INSIGHTS FUNCTION ERROR ===');
+    console.error('🔍 ===== GENERATE INSIGHTS FUNCTION ERROR =====');
     console.error('🔍 Error details:', {
       name: error.name,
       message: error.message,

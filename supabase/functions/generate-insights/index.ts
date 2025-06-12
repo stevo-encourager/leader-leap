@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
@@ -274,22 +273,41 @@ const callOpenAI = async (prompt: string, openAIApiKey: string): Promise<string>
 const buildPrompt = (assessmentSummary: any): string => {
   console.log('🔍 PROMPT BUILDER: Building prompt with assessment data:', JSON.stringify(assessmentSummary, null, 2));
   
+  // Sort categories by gap to identify highest and lowest gaps
+  const sortedByGap = [...assessmentSummary.categoryBreakdown].sort((a, b) => b.gap - a.gap);
+  const highestGapCategories = sortedByGap.slice(0, 3);
+  const lowestGapCategories = sortedByGap.slice(-3).reverse();
+  
+  console.log('🔍 PROMPT BUILDER: Highest gap categories:', highestGapCategories);
+  console.log('🔍 PROMPT BUILDER: Lowest gap categories:', lowestGapCategories);
+  
   const prompt = `
 You are EncouragerGPT, an AI leadership development coach specializing in personalized assessment analysis and development recommendations.
 
-CRITICAL INSTRUCTIONS:
+CRITICAL INSTRUCTIONS FOR DATA USAGE:
+- You MUST use the EXACT category titles and gap values provided below
+- You MUST select priority areas from the HIGHEST gap categories listed
+- You MUST select key strengths from the LOWEST gap categories listed
 - Generate insights in VALID JSON format only
-- Follow the exact structure provided
 - Include specific, actionable advice
-- Reference validated resources from the provided databases
-- Personalize based on demographic information
-- USE THE EXACT CATEGORY TITLES AND GAP VALUES PROVIDED BELOW
+- Personalize based on the demographic information provided
 
-ASSESSMENT DATA RECEIVED:
-${JSON.stringify(assessmentSummary, null, 2)}
+ASSESSMENT RESULTS TO ANALYZE:
+Average Gap Across All Categories: ${assessmentSummary.averageGap.toFixed(2)}
 
-CATEGORY BREAKDOWN WITH ACTUAL GAPS:
-${assessmentSummary.categoryBreakdown.map((cat: any, index: number) => 
+CATEGORY BREAKDOWN (SORTED BY GAP SIZE):
+HIGHEST GAPS (Development Priorities):
+${highestGapCategories.map((cat, index) => 
+  `${index + 1}. "${cat.title}" - Gap: ${cat.gap.toFixed(2)}`
+).join('\n')}
+
+LOWEST GAPS (Key Strengths):
+${lowestGapCategories.map((cat, index) => 
+  `${index + 1}. "${cat.title}" - Gap: ${cat.gap.toFixed(2)}`
+).join('\n')}
+
+ALL CATEGORIES FOR REFERENCE:
+${assessmentSummary.categoryBreakdown.map((cat, index) => 
   `${index + 1}. "${cat.title}" - Gap: ${cat.gap.toFixed(2)}`
 ).join('\n')}
 
@@ -299,45 +317,70 @@ DEMOGRAPHICS INFORMATION:
 - Experience: ${assessmentSummary.demographics.experience || 'Not provided'}
 - Team Size: ${assessmentSummary.demographics.teamSize || 'Not provided'}
 
-AVERAGE GAP: ${assessmentSummary.averageGap}
+MANDATORY SELECTION RULES:
+PRIORITY AREAS: You MUST select the 3 categories with the HIGHEST gaps from the data above:
+1. "${highestGapCategories[0]?.title}" (Gap: ${highestGapCategories[0]?.gap.toFixed(2)})
+2. "${highestGapCategories[1]?.title}" (Gap: ${highestGapCategories[1]?.gap.toFixed(2)})
+3. "${highestGapCategories[2]?.title}" (Gap: ${highestGapCategories[2]?.gap.toFixed(2)})
 
-VALIDATION REQUIREMENTS:
-- priority_areas: exactly 3 items (USE THE HIGHEST GAP CATEGORIES FROM THE DATA ABOVE)
-- key_strengths: exactly 2-3 items (USE THE LOWEST GAP CATEGORIES FROM THE DATA ABOVE)
-- Each priority area must have 2-4 actionable insights
-- Each key strength must have 2-3 leverage advice items
-- MUST use the exact category titles as provided in the assessment data
-- MUST use the actual gap values from the assessment data
+KEY STRENGTHS: You MUST select 2-3 categories with the LOWEST gaps from the data above:
+1. "${lowestGapCategories[0]?.title}" (Gap: ${lowestGapCategories[0]?.gap.toFixed(2)})
+2. "${lowestGapCategories[1]?.title}" (Gap: ${lowestGapCategories[1]?.gap.toFixed(2)})
 
-PERSONALIZATION LOGIC:
-${assessmentSummary.demographics.role ? `- Role-specific advice for: ${assessmentSummary.demographics.role}` : '- Generic leadership advice (no role specified)'}
-${assessmentSummary.demographics.industry ? `- Industry-specific examples for: ${assessmentSummary.demographics.industry}` : '- General industry examples (no industry specified)'}
-${assessmentSummary.demographics.experience ? `- Experience-level appropriate for: ${assessmentSummary.demographics.experience}` : '- General experience level advice (no experience specified)'}
-${assessmentSummary.demographics.teamSize ? `- Team-size considerations for: ${assessmentSummary.demographics.teamSize}` : '- General team considerations (no team size specified)'}
+PERSONALIZATION REQUIREMENTS:
+${assessmentSummary.demographics.role ? `- Provide role-specific advice for: ${assessmentSummary.demographics.role}` : '- Use general leadership advice (no role specified)'}
+${assessmentSummary.demographics.industry ? `- Include industry-specific examples for: ${assessmentSummary.demographics.industry}` : '- Use general industry examples (no industry specified)'}
+${assessmentSummary.demographics.experience ? `- Tailor complexity for experience level: ${assessmentSummary.demographics.experience}` : '- Use general experience level advice (no experience specified)'}
+${assessmentSummary.demographics.teamSize ? `- Consider team size of: ${assessmentSummary.demographics.teamSize}` : '- Use general team considerations (no team size specified)'}
 
-PRIORITY AREAS SELECTION RULES:
-- SELECT THE TOP 3 CATEGORIES WITH THE HIGHEST GAPS from the category breakdown above
-- Use the EXACT category titles as provided
-- Use the EXACT gap values as provided
-
-KEY STRENGTHS SELECTION RULES:
-- SELECT 2-3 CATEGORIES WITH THE LOWEST GAPS from the category breakdown above
-- Use the EXACT category titles as provided
-- Focus on categories with gaps below 1.0 as true strengths
+SUMMARY REQUIREMENTS:
+Create a two-paragraph summary that:
+- References the actual average gap of ${assessmentSummary.averageGap.toFixed(2)}
+- Mentions specific category strengths and development areas by name
+- Uses transition phrases like "Additionally, your assessment reveals..." or "Furthermore, the data suggests..."
+- Acknowledges missing demographic information when applicable
 
 OUTPUT STRUCTURE:
 Generate a JSON response with this exact structure:
 
 {
-  "summary": "Two-paragraph personalized summary referencing the actual assessment data and demographics",
+  "summary": "Two-paragraph personalized summary referencing the specific assessment data and gaps",
   "priority_areas": [
     {
-      "competency": "EXACT category title from assessment data",
-      "gap": actual_gap_value_from_data,
+      "competency": "${highestGapCategories[0]?.title}",
+      "gap": ${highestGapCategories[0]?.gap},
       "insights": [
-        "Specific actionable insight 1",
-        "Specific actionable insight 2", 
-        "Specific actionable insight 3"
+        "Specific actionable insight 1 for this competency",
+        "Specific actionable insight 2 for this competency", 
+        "Specific actionable insight 3 for this competency"
+      ],
+      "resources": [
+        "Resource 1",
+        "Resource 2",
+        "Resource 3"
+      ]
+    },
+    {
+      "competency": "${highestGapCategories[1]?.title}",
+      "gap": ${highestGapCategories[1]?.gap},
+      "insights": [
+        "Specific actionable insight 1 for this competency",
+        "Specific actionable insight 2 for this competency", 
+        "Specific actionable insight 3 for this competency"
+      ],
+      "resources": [
+        "Resource 1",
+        "Resource 2",
+        "Resource 3"
+      ]
+    },
+    {
+      "competency": "${highestGapCategories[2]?.title}",
+      "gap": ${highestGapCategories[2]?.gap},
+      "insights": [
+        "Specific actionable insight 1 for this competency",
+        "Specific actionable insight 2 for this competency", 
+        "Specific actionable insight 3 for this competency"
       ],
       "resources": [
         "Resource 1",
@@ -348,8 +391,20 @@ Generate a JSON response with this exact structure:
   ],
   "key_strengths": [
     {
-      "competency": "EXACT category title from assessment data",
-      "example": "Specific example of how this strength manifests",
+      "competency": "${lowestGapCategories[0]?.title}",
+      "example": "Specific example of how this strength manifests based on the low gap of ${lowestGapCategories[0]?.gap.toFixed(2)}",
+      "leverage_advice": [
+        "Specific advice 1 for leveraging this strength",
+        "Specific advice 2 for leveraging this strength"
+      ],
+      "resources": [
+        "Resource 1",
+        "Resource 2"
+      ]
+    },
+    {
+      "competency": "${lowestGapCategories[1]?.title}",
+      "example": "Specific example of how this strength manifests based on the low gap of ${lowestGapCategories[1]?.gap.toFixed(2)}",
       "leverage_advice": [
         "Specific advice 1 for leveraging this strength",
         "Specific advice 2 for leveraging this strength"
@@ -362,13 +417,14 @@ Generate a JSON response with this exact structure:
   ]
 }
 
-CRITICAL REMINDER: 
-- Use ONLY the category titles exactly as they appear in the assessment data
-- Use ONLY the gap values exactly as they appear in the assessment data
-- Base recommendations on the actual demographic information provided (or note when missing)
-- Select priority areas from the highest gaps and strengths from the lowest gaps
+VALIDATION REQUIREMENTS:
+- Use ONLY the exact category titles provided above
+- Use ONLY the exact gap values provided above
+- Reference the specific assessment data in your summary
+- Provide actionable, specific insights (not generic advice)
+- Acknowledge when demographic information is missing
 
-Generate the JSON response now.`;
+Generate the JSON response now using the specific assessment data provided above.`;
 
   console.log('🔍 PROMPT BUILDER: Completed prompt construction, length:', prompt.length);
   return prompt;

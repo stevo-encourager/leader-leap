@@ -12,7 +12,7 @@ export const FormattedSummary: React.FC<FormattedSummaryProps> = ({
   summary, 
   className = "space-y-4" 
 }) => {
-  // Comprehensive list of book titles that should be labeled as book recommendations
+  // Comprehensive list of book titles - using just the core titles for flexible matching
   const BOOK_TITLES = [
     'Emotional Intelligence 2.0',
     'Crucial Conversations', 
@@ -66,45 +66,46 @@ export const FormattedSummary: React.FC<FormattedSummaryProps> = ({
     return [text];
   };
 
-  // Enhanced book labeling function that handles various formats
+  // Simplified and more flexible book labeling function
   const addBookLabeling = (text: string) => {
-    console.log('📚 FRONTEND: Starting enhanced book labeling for text:', text.substring(0, 100) + '...');
+    console.log('📚 FRONTEND: Starting book labeling for text:', text.substring(0, 100) + '...');
     
     let processedText = text;
     let replacements = 0;
     
-    // Process each book title
+    // Process each book title with a much more flexible approach
     BOOK_TITLES.forEach(bookTitle => {
       console.log('📚 FRONTEND: Processing book title:', bookTitle);
       
-      // Create multiple patterns to match different formats:
-      // 1. "Title by Author" format
-      // 2. Just "Title" format
-      // 3. "Title by Author (already labeled)" - skip these
+      // Create a very flexible regex that matches the book title anywhere in the text
+      // and doesn't already have "(book recommendation)" after it
+      const escapedTitle = bookTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       
-      const patterns = [
-        // Match "Title by [Author]" format that doesn't already have labeling
-        new RegExp(`\\b${bookTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s+by\\s+[A-Za-z\\s&.''-]+(?!\\s*\\(book recommendation\\))`, 'gi'),
-        // Match just "Title" format that doesn't already have labeling
-        new RegExp(`\\b${bookTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?!\\s+by)(?!\\s*\\(book recommendation\\))`, 'gi')
-      ];
+      // This regex looks for the book title and captures any "by Author" part if present
+      // It uses a negative lookahead to avoid double-labeling
+      const flexibleRegex = new RegExp(
+        `(${escapedTitle}(?:\\s+by\\s+[A-Za-z\\s&.''-]+)?)(?!\\s*\\(book recommendation\\))`,
+        'gi'
+      );
       
-      patterns.forEach((pattern, index) => {
-        const matches = processedText.match(pattern);
-        if (matches) {
-          console.log(`📚 FRONTEND: Found ${matches.length} matches for "${bookTitle}" with pattern ${index + 1}:`, matches);
-          
-          matches.forEach(match => {
-            const replacement = `${match} (book recommendation)`;
-            console.log('📚 FRONTEND: Replacing:', match, '→', replacement);
-            processedText = processedText.replace(match, replacement);
-            replacements++;
-          });
-        }
-      });
+      const matches = processedText.match(flexibleRegex);
+      if (matches) {
+        console.log(`📚 FRONTEND: Found ${matches.length} matches for "${bookTitle}":`, matches);
+        
+        matches.forEach(match => {
+          const replacement = `${match.trim()} (book recommendation)`;
+          console.log('📚 FRONTEND: Replacing:', match, '→', replacement);
+          processedText = processedText.replace(match, replacement);
+          replacements++;
+        });
+      } else {
+        console.log(`📚 FRONTEND: No matches found for "${bookTitle}"`);
+      }
     });
     
     console.log('📚 FRONTEND: Made', replacements, 'book labeling replacements');
+    console.log('📚 FRONTEND: Final text preview:', processedText.substring(0, 200) + '...');
+    
     return processedText;
   };
 

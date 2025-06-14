@@ -12,33 +12,6 @@ export const FormattedSummary: React.FC<FormattedSummaryProps> = ({
   summary, 
   className = "space-y-4" 
 }) => {
-  // Comprehensive list of book titles - using just the core titles for flexible matching
-  const BOOK_TITLES = [
-    'Emotional Intelligence 2.0',
-    'Crucial Conversations', 
-    'The 7 Habits of Highly Effective People',
-    'Good to Great',
-    'Dare to Lead',
-    'The Leadership Challenge',
-    'Primal Leadership',
-    'Atomic Habits',
-    'Getting Things Done',
-    'Reinventing Organisations',
-    'The Pyramid Principle',
-    'The Captain Class',
-    'Leading Change',
-    'The Power of Habit',
-    'Build, Excite, Equip',
-    'The 17 Indisputable Laws of Teamwork',
-    'Thinking Fast and Slow',
-    'Getting To Yes',
-    'Playing To Win',
-    'Human Skills',
-    'Radical Candor',
-    'Nonviolent Communication',
-    'Emotional Intelligence' // Also handle the shorter version
-  ];
-
   // Split summary into paragraphs based on transition phrases
   const splitSummary = (text: string): string[] => {
     const transitionPhrases = [
@@ -66,49 +39,6 @@ export const FormattedSummary: React.FC<FormattedSummaryProps> = ({
     return [text];
   };
 
-  // Simplified and more flexible book labeling function
-  const addBookLabeling = (text: string) => {
-    console.log('📚 FRONTEND: Starting book labeling for text:', text.substring(0, 100) + '...');
-    
-    let processedText = text;
-    let replacements = 0;
-    
-    // Process each book title with a much more flexible approach
-    BOOK_TITLES.forEach(bookTitle => {
-      console.log('📚 FRONTEND: Processing book title:', bookTitle);
-      
-      // Create a very flexible regex that matches the book title anywhere in the text
-      // and doesn't already have "(book recommendation)" after it
-      const escapedTitle = bookTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      
-      // This regex looks for the book title and captures any "by Author" part if present
-      // It uses a negative lookahead to avoid double-labeling
-      const flexibleRegex = new RegExp(
-        `(${escapedTitle}(?:\\s+by\\s+[A-Za-z\\s&.''-]+)?)(?!\\s*\\(book recommendation\\))`,
-        'gi'
-      );
-      
-      const matches = processedText.match(flexibleRegex);
-      if (matches) {
-        console.log(`📚 FRONTEND: Found ${matches.length} matches for "${bookTitle}":`, matches);
-        
-        matches.forEach(match => {
-          const replacement = `${match.trim()} (book recommendation)`;
-          console.log('📚 FRONTEND: Replacing:', match, '→', replacement);
-          processedText = processedText.replace(match, replacement);
-          replacements++;
-        });
-      } else {
-        console.log(`📚 FRONTEND: No matches found for "${bookTitle}"`);
-      }
-    });
-    
-    console.log('📚 FRONTEND: Made', replacements, 'book labeling replacements');
-    console.log('📚 FRONTEND: Final text preview:', processedText.substring(0, 200) + '...');
-    
-    return processedText;
-  };
-
   // Convert HTML anchor tags and markdown links to React elements with leader validation
   const renderTextWithLinks = (text: string) => {
     const parts = [];
@@ -119,10 +49,10 @@ export const FormattedSummary: React.FC<FormattedSummaryProps> = ({
     let match;
 
     while ((match = combinedRegex.exec(text)) !== null) {
-      // Add text before the link (with book labeling applied)
+      // Add text before the link
       if (match.index > lastIndex) {
         const beforeText = text.substring(lastIndex, match.index);
-        parts.push(addBookLabeling(beforeText));
+        parts.push(beforeText);
       }
       
       if (match[1] && match[2]) {
@@ -138,7 +68,7 @@ export const FormattedSummary: React.FC<FormattedSummaryProps> = ({
             rel="noopener noreferrer"
             className="text-encourager hover:text-encourager-light underline inline-flex items-center gap-1"
           >
-            {addBookLabeling(linkText)}
+            {linkText}
             <ExternalLink className="h-3 w-3" />
           </a>
         );
@@ -160,7 +90,7 @@ export const FormattedSummary: React.FC<FormattedSummaryProps> = ({
               rel="noopener noreferrer"
               className="text-encourager hover:text-encourager-light underline inline-flex items-center gap-1"
             >
-              {addBookLabeling(leaderValidation.name)}
+              {leaderValidation.name}
               <ExternalLink className="h-3 w-3" />
             </a>
           );
@@ -174,7 +104,7 @@ export const FormattedSummary: React.FC<FormattedSummaryProps> = ({
               rel="noopener noreferrer"
               className="text-encourager hover:text-encourager-light underline inline-flex items-center gap-1"
             >
-              {addBookLabeling(linkText)}
+              {linkText}
               <ExternalLink className="h-3 w-3" />
             </a>
           );
@@ -184,13 +114,13 @@ export const FormattedSummary: React.FC<FormattedSummaryProps> = ({
       lastIndex = combinedRegex.lastIndex;
     }
     
-    // Add remaining text after the last link (with book labeling applied)
+    // Add remaining text after the last link
     if (lastIndex < text.length) {
       const remainingText = text.substring(lastIndex);
-      parts.push(addBookLabeling(remainingText));
+      parts.push(remainingText);
     }
     
-    return parts.length > 0 ? parts : [addBookLabeling(text)];
+    return parts.length > 0 ? parts : [text];
   };
 
   const paragraphs = splitSummary(summary);

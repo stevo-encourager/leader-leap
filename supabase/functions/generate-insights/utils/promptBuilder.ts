@@ -1,3 +1,4 @@
+
 interface CategoryBreakdown {
   title: string;
   skillCount: number;
@@ -211,7 +212,6 @@ const buildValidatedResourcesList = (): string => {
 - 16 Personalities test (MBTI)
 
 **Trust & Relationship Building:**
-- The Speed of Trust by Stephen Covey
 - The Trust Equation
 
 **Delegation & Empowerment:**
@@ -286,6 +286,13 @@ const buildValidatedResourcesList = (): string => {
 - Human Skills by Elizabeth Nyamayaro (book recommendation)
 - Radical Candor by Kim Scott (book recommendation)
 - Nonviolent Communication by Marshall B. Rosenberg (book recommendation)
+
+**CRITICAL RESOURCE VALIDATION RULES:**
+- You MUST ONLY use resources from this validated database above
+- NEVER create, invent, or suggest resources not explicitly listed here
+- Every resource name you use must match EXACTLY as written in this database
+- If a framework, book, or methodology you want to mention is not in this database, do NOT include it
+- This list is exhaustive and final - no additions or variations are permitted
 
 **CRITICAL BOOK RECOMMENDATION LABELING:**
 - When referencing books, you MUST add "(book recommendation)" immediately after the book title
@@ -530,6 +537,14 @@ ${validatedLeadersList}
 - Each resource name you use must match EXACTLY as written in the database
 - If a framework or methodology you want to mention is not in the database, do not include it as a resource
 - Always use the exact resource title as specified in the database
+- This validation rule is ABSOLUTE and CANNOT be overridden under any circumstances
+
+**CRITICAL RESOURCE VALIDATION PROCESS:**
+- Before adding ANY resource to your recommendations, verify it exists in the validated database
+- Cross-reference the exact spelling and formatting with the database entries
+- If you cannot find an exact match, DO NOT use that resource
+- Never invent, create, or modify resource names not in the database
+- This applies to ALL resources: books, frameworks, tools, articles, methodologies
 
 **MANDATORY BOOK RECOMMENDATION LABELING:**
 - Every book reference MUST include "(book recommendation)" immediately after the book title
@@ -680,6 +695,7 @@ Before generating the JSON response, verify:
 □ **CRITICAL**: Other resources (frameworks, articles, tools) do NOT have any type labeling
 □ **CRITICAL**: Each competency section includes at least one book recommendation from the approved list
 □ **CRITICAL**: Each competency section has exactly 3 resources (not 4)
+□ **CRITICAL**: ALL resources exist in the validated database - NO exceptions allowed
 □ Leader name matches EXACTLY with the validated leaders database
 □ Leader reference uses the exact name and principle from the database
 □ Leader HTML anchor tag format is correct: <a href="URL">Leader Name</a> with NO visible URL
@@ -706,6 +722,7 @@ Before generating the JSON response, verify:
 □ **CRITICAL**: Book recommendation labeling is present for ALL book references
 □ **CRITICAL**: At least one book recommendation exists per competency section
 □ **CRITICAL**: Maximum of 3 resources per competency section
+□ **CRITICAL**: NO unauthorized resources are recommended - validation is absolute
 
 ### CRITICAL JSON RULES
 - Output MUST be valid JSON only. No text, markdown, or formatting before/after.
@@ -717,7 +734,7 @@ Before generating the JSON response, verify:
 - Use only suggestive language for assessment tools: "consider using a tool such as [tool name]" rather than direct recommendations.
 - **PERSONALIZATION REQUIREMENT**: Use ALL THREE demographic dimensions (role, industry, experience) to tailor insights, examples, and leader selection for maximum relevance to the user's specific context.
 - **SKILL-LEVEL REQUIREMENT**: Reference specific individual skills by name only (NO numbers, NO gaps, NO scores) in summary, and by name only (NO numerical values) in priority area insights (ONLY validated skills from the database)
-- **VALIDATED RESOURCE REQUIREMENT**: Every resource in the resources arrays must be an exact match from the validated database above. Books must include "(book recommendation)" labeling. Other resources must NOT have any type labeling.
+- **VALIDATED RESOURCE REQUIREMENT**: Every resource in the resources arrays must be an exact match from the validated database above. Books must include "(book recommendation)" labeling. Other resources must NOT have any type labeling. NO EXCEPTIONS ALLOWED.
 - **MINIMUM BOOK REQUIREMENT**: Every competency section must include at least one book recommendation from the validated database
 - **MAXIMUM RESOURCE REQUIREMENT**: Every competency section must include exactly 3 resources (not 4)
 - **VALIDATED LEADER REQUIREMENT**: Every leader in the summary must be an exact match from the validated leaders database above. If no suitable validated leader exists for the context, omit the leader reference entirely rather than using an unvalidated leader.

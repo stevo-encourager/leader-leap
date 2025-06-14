@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
+import { Demographics } from '@/utils/assessmentTypes';
 
 const demographicsSchema = z.object({
   age: z.string().refine(value => {
@@ -23,13 +24,6 @@ const demographicsSchema = z.object({
   industry: z.string().min(2, { message: "Please enter your industry." }),
   experience: z.string().min(1, { message: "Please select your experience level." }),
 });
-
-export interface Demographics {
-  age: string;
-  gender: string;
-  industry: string;
-  experience: string;
-}
 
 interface DemographicsFormProps {
   demographics: Demographics;

@@ -1,13 +1,13 @@
 
 import React from 'react';
-import { Demographics } from '../../utils/assessmentData';
+import { Demographics } from '@/utils/assessmentTypes';
 
 interface ProfileSummaryProps {
   demographics: Demographics;
 }
 
 const ProfileSummary: React.FC<ProfileSummaryProps> = ({ demographics }) => {
-  if (!demographics.role && !demographics.industry && !demographics.yearsOfExperience) {
+  if (!demographics.age && !demographics.industry && !demographics.experience) {
     return null;
   }
 
@@ -15,10 +15,10 @@ const ProfileSummary: React.FC<ProfileSummaryProps> = ({ demographics }) => {
     <div className="bg-slate-50 p-4 rounded-lg">
       <h3 className="text-lg font-medium mb-2">Your Profile</h3>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {demographics.role && (
+        {demographics.age && (
           <div>
-            <p className="text-sm text-slate-500">Role</p>
-            <p className="font-medium">{demographics.role}</p>
+            <p className="text-sm text-slate-500">Age</p>
+            <p className="font-medium">{demographics.age}</p>
           </div>
         )}
         {demographics.industry && (
@@ -27,10 +27,10 @@ const ProfileSummary: React.FC<ProfileSummaryProps> = ({ demographics }) => {
             <p className="font-medium">{demographics.industry}</p>
           </div>
         )}
-        {demographics.yearsOfExperience && (
+        {demographics.experience && (
           <div>
-            <p className="text-sm text-slate-500">Leadership Experience</p>
-            <p className="font-medium">{demographics.yearsOfExperience}</p>
+            <p className="text-sm text-slate-500">Experience Level</p>
+            <p className="font-medium">{demographics.experience}</p>
           </div>
         )}
       </div>

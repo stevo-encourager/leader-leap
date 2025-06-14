@@ -8,6 +8,54 @@ interface FormattedSummaryProps {
   className?: string;
 }
 
+// List of validated book titles that should have "(book recommendation)" labeling
+const BOOK_TITLES = [
+  'Emotional Intelligence 2.0 by Travis Bradberry',
+  'Emotional Intelligence 2.0',
+  'Crucial Conversations by Kerry Patterson',
+  'Crucial Conversations',
+  'The 7 Habits of Highly Effective People by Stephen Covey',
+  'The 7 Habits of Highly Effective People',
+  'Good to Great by Jim Collins',
+  'Good to Great',
+  'Dare to Lead by Brené Brown',
+  'Dare to Lead',
+  'The Leadership Challenge by James Kouzes',
+  'The Leadership Challenge',
+  'Primal Leadership by Daniel Goleman',
+  'Primal Leadership',
+  'Atomic Habits by James Clear',
+  'Atomic Habits',
+  'Getting Things Done by David Allen',
+  'Getting Things Done',
+  'Reinventing Organisations by Frederic Laloux',
+  'Reinventing Organisations',
+  'The Pyramid Principle by Barbara Minto',
+  'The Pyramid Principle',
+  'The Captain Class by Sam Walker',
+  'The Captain Class',
+  'Leading Change by John Kotter',
+  'Leading Change',
+  'The Power of Habit by Charles Duhigg',
+  'The Power of Habit',
+  'Build, Excite, Equip by Nicola Graham',
+  'Build, Excite, Equip',
+  'The 17 Indisputable Laws of Teamwork by John Maxwell',
+  'The 17 Indisputable Laws of Teamwork',
+  'Thinking Fast and Slow by Daniel Kahneman',
+  'Thinking Fast and Slow',
+  'Getting To Yes by Roger Fisher and William Ury',
+  'Getting To Yes',
+  'Playing To Win by AG Lafley & Roger Martin',
+  'Playing To Win',
+  'Human Skills by Elizabeth Nyamayaro',
+  'Human Skills',
+  'Radical Candor by Kim Scott',
+  'Radical Candor',
+  'Nonviolent Communication by Marshall B. Rosenberg',
+  'Nonviolent Communication'
+];
+
 export const FormattedSummary: React.FC<FormattedSummaryProps> = ({ 
   summary, 
   className = "space-y-4" 
@@ -40,6 +88,7 @@ export const FormattedSummary: React.FC<FormattedSummaryProps> = ({
   };
 
   // Convert HTML anchor tags and markdown links to React elements with leader validation
+  // Also automatically add "(book recommendation)" to detected book titles
   const renderTextWithLinks = (text: string) => {
     const parts = [];
     let lastIndex = 0;
@@ -49,9 +98,10 @@ export const FormattedSummary: React.FC<FormattedSummaryProps> = ({
     let match;
 
     while ((match = combinedRegex.exec(text)) !== null) {
-      // Add text before the link
+      // Add text before the link (with book labeling applied)
       if (match.index > lastIndex) {
-        parts.push(text.substring(lastIndex, match.index));
+        const beforeText = text.substring(lastIndex, match.index);
+        parts.push(addBookLabeling(beforeText));
       }
       
       if (match[1] && match[2]) {
@@ -67,7 +117,7 @@ export const FormattedSummary: React.FC<FormattedSummaryProps> = ({
             rel="noopener noreferrer"
             className="text-encourager hover:text-encourager-light underline inline-flex items-center gap-1"
           >
-            {linkText}
+            {addBookLabeling(linkText)}
             <ExternalLink className="h-3 w-3" />
           </a>
         );
@@ -89,7 +139,7 @@ export const FormattedSummary: React.FC<FormattedSummaryProps> = ({
               rel="noopener noreferrer"
               className="text-encourager hover:text-encourager-light underline inline-flex items-center gap-1"
             >
-              {leaderValidation.name}
+              {addBookLabeling(leaderValidation.name)}
               <ExternalLink className="h-3 w-3" />
             </a>
           );
@@ -103,7 +153,7 @@ export const FormattedSummary: React.FC<FormattedSummaryProps> = ({
               rel="noopener noreferrer"
               className="text-encourager hover:text-encourager-light underline inline-flex items-center gap-1"
             >
-              {linkText}
+              {addBookLabeling(linkText)}
               <ExternalLink className="h-3 w-3" />
             </a>
           );
@@ -113,12 +163,32 @@ export const FormattedSummary: React.FC<FormattedSummaryProps> = ({
       lastIndex = combinedRegex.lastIndex;
     }
     
-    // Add remaining text after the last link
+    // Add remaining text after the last link (with book labeling applied)
     if (lastIndex < text.length) {
-      parts.push(text.substring(lastIndex));
+      const remainingText = text.substring(lastIndex);
+      parts.push(addBookLabeling(remainingText));
     }
     
-    return parts.length > 0 ? parts : [text];
+    return parts.length > 0 ? parts : [addBookLabeling(text)];
+  };
+
+  // Function to automatically add "(book recommendation)" to detected book titles
+  const addBookLabeling = (text: string) => {
+    let processedText = text;
+    
+    // Check each book title and add labeling if not already present
+    BOOK_TITLES.forEach(bookTitle => {
+      // Create regex that matches the book title but only if it doesn't already have the labeling
+      const escapedTitle = bookTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`\\b${escapedTitle}(?!\\s*\\(book recommendation\\))`, 'gi');
+      
+      if (regex.test(processedText)) {
+        // Replace with the book title plus the required labeling
+        processedText = processedText.replace(regex, `${bookTitle} (book recommendation)`);
+      }
+    });
+    
+    return processedText;
   };
 
   const paragraphs = splitSummary(summary);

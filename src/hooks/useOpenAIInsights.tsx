@@ -1,7 +1,7 @@
-
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Demographics } from '@/utils/assessmentTypes';
+import { processInsightsForBookLabeling } from '@/utils/summaryFormatter';
 
 interface UseOpenAIInsightsProps {
   categories: Category[];
@@ -210,18 +210,24 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
         debugLog('✅ SUCCESS: Received new insights from API');
         debugLog('📄 NEW INSIGHTS DATA:', data.insights.substring(0, 200) + '...');
         
-        // Set successful state with new insights
+        // Process insights to ensure book recommendations are properly labeled
+        const processedInsights = processInsightsForBookLabeling(JSON.parse(data.insights));
+        const finalInsights = JSON.stringify(processedInsights);
+        
+        debugLog('📚 BOOK LABELING APPLIED: Processed insights for consistent book recommendation labeling');
+        
+        // Set successful state with processed insights
         updateState({
-          insights: data.insights,
+          insights: finalInsights,
           isLoading: false,
           error: null,
           isInitialized: true
-        }, 'Generated new insights from API');
+        }, 'Generated new insights from API with book labeling applied');
         
         initializationCompleteRef.current = true;
         isOperationInProgressRef.current = false;
         
-        debugLog('✅ GENERATION COMPLETE: New insights set');
+        debugLog('✅ GENERATION COMPLETE: New insights set with book labeling');
       } else {
         debugLog('❌ NO INSIGHTS IN RESPONSE');
         throw new Error('No insights received from OpenAI');

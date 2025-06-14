@@ -17,7 +17,7 @@ const generateAssessmentSignature = (categories: Category[], demographics: Demog
     cat.skills.map(skill => `${skill.id}-${skill.ratings.current}-${skill.ratings.desired}`).join('|')
   ).join('||');
   
-  const demoSignature = `${demographics.role || ''}-${demographics.industry || ''}-${demographics.yearsOfExperience || ''}`;
+  const demoSignature = `${demographics.age || ''}-${demographics.industry || ''}-${demographics.experience || ''}`;
   
   return `${categorySignature}::${demoSignature}`;
 };

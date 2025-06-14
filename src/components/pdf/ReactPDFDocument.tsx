@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Image, Link } from '@react-pdf/renderer';
 import { Category, Demographics } from '@/utils/assessmentTypes';
@@ -347,11 +346,11 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
         </View>
 
         <Text style={styles.sectionTitle}>Profile Summary</Text>
-        {demographics?.role && (
-          <Text style={styles.text}><Text style={styles.boldText}>Role:</Text> {demographics.role}</Text>
+        {demographics?.age && (
+          <Text style={styles.text}><Text style={styles.boldText}>Age:</Text> {demographics.age}</Text>
         )}
-        {demographics?.yearsOfExperience && (
-          <Text style={styles.text}><Text style={styles.boldText}>Years of Experience:</Text> {demographics.yearsOfExperience}</Text>
+        {demographics?.experience && (
+          <Text style={styles.text}><Text style={styles.boldText}>Experience Level:</Text> {demographics.experience}</Text>
         )}
         {demographics?.industry && (
           <Text style={styles.text}><Text style={styles.boldText}>Industry:</Text> {demographics.industry}</Text>

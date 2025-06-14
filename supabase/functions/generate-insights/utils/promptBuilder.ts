@@ -603,10 +603,10 @@ ${validatedLeadersList}
 
 **CRITICAL: You MUST ONLY use leaders from the validated database above. Do not reference any leader not explicitly listed.**
 
-**CRITICAL HYPERLINK FORMAT:** When mentioning the inspirational person in the summary, format it as a proper hyperlink with the leader's name as clickable text (NO URL visible):
-- Correct format: "Like [Leader Name](https://workinglink.com), who is known for [specific principle]..."
+**CRITICAL HTML ANCHOR TAG FORMAT:** When mentioning the inspirational person in the summary, format it as a proper HTML anchor tag with the leader's name as clickable text (NO URL visible):
+- Correct format: "Like <a href="https://workinglink.com">Leader Name</a>, who is known for [specific principle]..."
 - The URL should NOT be visible in the text - only the leader's name should appear as a clickable link
-- Example: "Like [Satya Nadella](https://workinglink.com), who is known for empathetic leadership..."
+- Example: "Like <a href="https://workinglink.com">Satya Nadella</a>, who is known for empathetic leadership..."
 
 ### CRITICAL TERMINOLOGY CONSISTENCY
 
@@ -654,7 +654,7 @@ You MUST output ONLY a valid JSON object with this EXACT structure:
 
 - **summary**: Generate a professional, encouraging, and personalized assessment summary that is 6–8 sentences. Use the word "competencies" throughout (NEVER use "strengths" as a synonym). Always refer to the person as "you" or "your" (never "the user" or "the user's"). MUST reference specific individual skills by NAME ONLY (NO numerical values, NO gaps, NO scores, NO decimals, NO parentheses with numbers) within the priority competencies. ONLY use skills from the validated skills database. Include natural references to their role, industry, and experience level. Use supportive, confidence-building language while avoiding repetition. MUST include encouraging messaging about growth opportunities and potential.
 
-**CRITICAL FORMATTING FOR SUMMARY**: Structure the summary as TWO clear paragraphs that will be separated by post-processing. Use transition phrases like "However," "At the same time," "Additionally," or "Your results also" to start the second paragraph. MUST include industry and role-relevant inspirational leader with hyperlink using format: "Like [Leader Name](https://workinglink.com), who is known for [specific principle]..."
+**CRITICAL FORMATTING FOR SUMMARY**: Structure the summary as TWO clear paragraphs that will be separated by post-processing. Use transition phrases like "However," "At the same time," "Additionally," or "Your results also" to start the second paragraph. MUST include industry and role-relevant inspirational leader with HTML anchor tag using format: "Like <a href="https://workinglink.com">Leader Name</a>, who is known for [specific principle]..."
 
 - **priority_areas**: An array with exactly 3 objects, each for a Top 3 Priority Development Area. Each object must contain:
   - \`competency\`: The exact competency name from assessment data
@@ -681,9 +681,9 @@ Before generating the JSON response, verify:
 □ **CRITICAL**: Each competency section has exactly 3 resources (not 4)
 □ Leader name matches EXACTLY with the validated leaders database
 □ Leader reference uses the exact name and principle from the database
-□ Leader hyperlink format is correct: [Leader Name](URL) with NO visible URL
+□ Leader HTML anchor tag format is correct: <a href="URL">Leader Name</a> with NO visible URL
 □ If no suitable validated leader exists for context, leader reference is omitted
-□ Summary includes verified leader with working link in correct format (only if validated leader found)
+□ Summary includes verified leader with working link in correct HTML anchor format (only if validated leader found)
 □ All demographic context (role, industry, experience) is referenced appropriately
 □ Summary contains exactly 2 distinct paragraphs with transition phrase
 □ All competency names match exactly from assessment data
@@ -724,7 +724,7 @@ Before generating the JSON response, verify:
 - **TERMINOLOGY REQUIREMENT**: NEVER use "strength" as synonym for "competency" - always use "competencies" or "leadership competencies"
 - **ENCOURAGER COACHING REQUIREMENT**: All content must reflect Encourager Coaching's positive psychology approach, maximizing natural ability, and helping users become their best leadership version through encouraging, supportive language and framing.
 
-Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above while being specifically tailored to the user's role, industry, experience level, AND individual skill gaps by name only (without numerical values). Remember: ONLY use resources, leaders, and skills from the validated databases with exact title matching, include mandatory "(book recommendation)" labeling for books only, ensure minimum book recommendations per section, limit to exactly 3 resources per section, reference skills by name only in summary (NO numbers), reference specific skills by name only in insights sections (NO numerical values - focus on development suggestions), use proper hyperlink formatting for leaders, maintain consistent terminology (competencies, not strengths), and embody Encourager Coaching's philosophy of positive psychology, encouragement, and helping people maximize their natural abilities to become the best version of themselves.
+Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above while being specifically tailored to the user's role, industry, experience level, AND individual skill gaps by name only (without numerical values). Remember: ONLY use resources, leaders, and skills from the validated databases with exact title matching, include mandatory "(book recommendation)" labeling for books only, ensure minimum book recommendations per section, limit to exactly 3 resources per section, reference skills by name only in summary (NO numbers), reference specific skills by name only in insights sections (NO numerical values - focus on development suggestions), use proper HTML anchor tag formatting for leaders, maintain consistent terminology (competencies, not strengths), and embody Encourager Coaching's philosophy of positive psychology, encouragement, and helping people maximize their natural abilities to become the best version of themselves.
 
 `;
 

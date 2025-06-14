@@ -25,6 +25,10 @@ export const useNavigationState = () => {
     navigate('/assessment');
   }, [navigate]);
 
+  const handleContinueToInstructions = useCallback(() => {
+    setCurrentStep('instructions');
+  }, []);
+
   const handleContinueToAssessment = useCallback(() => {
     setCurrentStep('assessment');
   }, []);
@@ -38,6 +42,10 @@ export const useNavigationState = () => {
     setCurrentStep('demographics');
   }, []);
 
+  const handleBackToInstructions = useCallback(() => {
+    setCurrentStep('instructions');
+  }, []);
+
   const handleCompleteAssessment = useCallback(() => {
     setCurrentStep('results');
     navigate('/results');
@@ -47,9 +55,11 @@ export const useNavigationState = () => {
     currentStep,
     setCurrentStep,
     handleStartAssessment,
+    handleContinueToInstructions,
     handleContinueToAssessment,
     handleBackToIntro,
     handleBackToDemographics,
+    handleBackToInstructions,
     handleCompleteAssessment
   };
 };

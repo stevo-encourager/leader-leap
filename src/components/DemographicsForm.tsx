@@ -1,11 +1,34 @@
+import React, { useState, useCallback } from 'react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 
-import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardHeader, CardBody, CardFooter, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Demographics } from '../utils/assessmentData';
-import { Briefcase, Building, User, ArrowLeft } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+const demographicsSchema = z.object({
+  age: z.string().refine(value => {
+    const num = Number(value);
+    return !isNaN(num) && num > 0 && num < 120;
+  }, {
+    message: "Please enter a valid age between 1 and 120.",
+  }),
+  gender: z.string().min(1, { message: "Please select a gender." }),
+  industry: z.string().min(2, { message: "Please enter your industry." }),
+  experience: z.string().min(1, { message: "Please select your experience level." }),
+});
+
+export interface Demographics {
+  age: string;
+  gender: string;
+  industry: string;
+  experience: string;
+}
 
 interface DemographicsFormProps {
   demographics: Demographics;
@@ -14,143 +37,160 @@ interface DemographicsFormProps {
   onBack: () => void;
 }
 
-const roleOptions = [
-  "Individual Contributor",
-  "Manager",
-  "Team Lead",
-  "Director",
-  "VP",
-  "C-Level",
-  "Founder/Owner",
-  "Consultant",
-  "Other"
-];
+const DemographicsForm: React.FC<DemographicsFormProps> = ({ 
+  demographics, 
+  onDemographicsUpdate, 
+  onContinue, 
+  onBack 
+}) => {
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isValid },
+    setValue,
+    getValues,
+    trigger,
+  } = useForm<Demographics>({
+    resolver: zodResolver(demographicsSchema),
+    defaultValues: demographics,
+    mode: "onChange"
+  });
 
-const industryOptions = [
-  "Consulting",
-  "Education",
-  "Energy",
-  "Finance",
-  "Government",
-  "Healthcare",
-  "HR / Recruitment",
-  "Logistics",
-  "Manufacturing",
-  "Media and Entertainment",
-  "Nonprofit",
-  "Professional Services",
-  "Real Estate",
-  "Retail",
-  "Technology",
-  "Telecommunications",
-  "Travel & Hospitality",
-  "Wellbeing",
-  "Other"
-];
+  // Initialize form values from props on mount
+  React.useEffect(() => {
+    Object.keys(demographics).forEach(key => {
+      setValue(key as keyof Demographics, demographics[key as keyof Demographics], { 
+        shouldValidate: true,
+        shouldDirty: false 
+      });
+    });
+  }, [demographics, setValue]);
 
-const experienceOptions = [
-  "None",
-  "Less than 1 year",
-  "1-3 years",
-  "4-7 years",
-  "8-12 years",
-  "13-20 years",
-  "20+ years"
-];
-
-const DemographicsForm: React.FC<DemographicsFormProps> = ({ demographics, onDemographicsUpdate, onContinue, onBack }) => {
-  
-  const handleRoleChange = (value: string) => {
-    onDemographicsUpdate({ ...demographics, role: value });
-  };
-
-  const handleIndustryChange = (value: string) => {
-    onDemographicsUpdate({ ...demographics, industry: value });
-  };
-
-  const handleExperienceChange = (value: string) => {
-    onDemographicsUpdate({ ...demographics, yearsOfExperience: value });
-  };
-
-  // Check if all required fields are completed
-  const isFormComplete = demographics.role && demographics.industry && demographics.yearsOfExperience;
+  const onSubmit = useCallback((data: Demographics) => {
+    onDemographicsUpdate(data);
+    onContinue();
+  }, [onDemographicsUpdate, onContinue]);
 
   return (
     <div className="fade-in">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">About You</CardTitle>
-          <CardDescription>
-            Help us understand your background and context. This information helps provide better insights.
+      <Card className="max-w-2xl mx-auto shadow-card border-none bg-white">
+        <CardHeader className="text-center pb-4">
+          <CardTitle className="text-2xl font-bold text-encourager">About You</CardTitle>
+          <CardDescription className="text-slate-600">
+            Help us personalize your assessment results and recommendations
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="role" className="flex items-center gap-2">
-                <User className="text-primary h-4 w-4" />
-                Your Role
-              </Label>
-              <Select value={demographics.role} onValueChange={handleRoleChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select your role" />
-                </SelectTrigger>
-                <SelectContent>
-                  {roleOptions.map((role) => (
-                    <SelectItem key={role} value={role}>{role}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="industry" className="flex items-center gap-2">
-                <Building className="text-primary h-4 w-4" />
-                Industry
-              </Label>
-              <Select value={demographics.industry} onValueChange={handleIndustryChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select your industry" />
-                </SelectTrigger>
-                <SelectContent>
-                  {industryOptions.map((industry) => (
-                    <SelectItem key={industry} value={industry}>{industry}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="experience" className="flex items-center gap-2">
-                <Briefcase className="text-primary h-4 w-4" />
-                Leadership Experience
-              </Label>
-              <Select value={demographics.yearsOfExperience} onValueChange={handleExperienceChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Years of leadership experience" />
-                </SelectTrigger>
-                <SelectContent>
-                  {experienceOptions.map((exp) => (
-                    <SelectItem key={exp} value={exp}>{exp}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="bg-blue-50 text-blue-700 p-4 rounded-md">
-              <p className="text-sm">
-                <strong>Note:</strong> All demographic information is used only to provide more tailored insights and new results.
-              </p>
-            </div>
+        
+        <CardContent className="space-y-4">
+          <div className="grid gap-2">
+            <Label htmlFor="age">Age</Label>
+            <Controller
+              control={control}
+              name="age"
+              render={({ field }) => (
+                <Input 
+                  id="age" 
+                  placeholder="Enter your age" 
+                  {...field} 
+                  className={cn(errors.age ? "border-destructive" : "")}
+                />
+              )}
+            />
+            {errors.age && (
+              <p className="text-sm text-destructive">{errors.age.message}</p>
+            )}
+          </div>
+          
+          <div className="grid gap-2">
+            <Label htmlFor="gender">Gender</Label>
+            <Controller
+              control={control}
+              name="gender"
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <SelectTrigger className={cn("w-full", errors.gender ? "border-destructive" : "")}>
+                    <SelectValue placeholder="Select your gender" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="male">Male</SelectItem>
+                    <SelectItem value="female">Female</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                    <SelectItem value="prefer_not_to_say">Prefer Not to Say</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.gender && (
+              <p className="text-sm text-destructive">{errors.gender.message}</p>
+            )}
+          </div>
+          
+          <div className="grid gap-2">
+            <Label htmlFor="industry">Industry</Label>
+            <Controller
+              control={control}
+              name="industry"
+              render={({ field }) => (
+                <Input 
+                  id="industry" 
+                  placeholder="Enter your industry" 
+                  {...field} 
+                  className={cn(errors.industry ? "border-destructive" : "")}
+                />
+              )}
+            />
+            {errors.industry && (
+              <p className="text-sm text-destructive">{errors.industry.message}</p>
+            )}
+          </div>
+          
+          <div className="grid gap-2">
+            <Label htmlFor="experience">Experience Level</Label>
+            <Controller
+              control={control}
+              name="experience"
+              render={({ field }) => (
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <SelectTrigger className={cn("w-full", errors.experience ? "border-destructive" : "")}>
+                    <SelectValue placeholder="Select your experience level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="entry_level">Entry Level</SelectItem>
+                    <SelectItem value="mid_level">Mid Level</SelectItem>
+                    <SelectItem value="senior_level">Senior Level</SelectItem>
+                    <SelectItem value="executive">Executive</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            />
+            {errors.experience && (
+              <p className="text-sm text-destructive">{errors.experience.message}</p>
+            )}
           </div>
         </CardContent>
-        <CardFooter className="flex justify-between">
-          <Button variant="outline" onClick={onBack}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
+        
+        <CardFooter className="flex justify-between pt-6">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={onBack}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft size={16} />
+            Back to Home
           </Button>
-          <Button onClick={onContinue} disabled={!isFormComplete}>
-            Continue to Assessment
+          
+          <Button 
+            type="button"
+            onClick={handleSubmit(onSubmit)}
+            disabled={!isValid}
+            className="bg-encourager hover:bg-encourager-light text-white flex items-center gap-2"
+          >
+            Continue to Instructions
+            <ArrowRight 
+              size={16} 
+              className={`transition-transform ${!isValid ? 'opacity-50' : ''}`}
+            />
           </Button>
         </CardFooter>
       </Card>

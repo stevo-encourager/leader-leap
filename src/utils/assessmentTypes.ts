@@ -1,4 +1,3 @@
-
 // Types for leadership assessment data
 
 export interface SkillRating {
@@ -30,4 +29,4 @@ export interface Demographics {
   industry?: string;
 }
 
-export type AssessmentStep = 'intro' | 'demographics' | 'assessment' | 'results';
+export type AssessmentStep = 'intro' | 'demographics' | 'instructions' | 'assessment' | 'results';

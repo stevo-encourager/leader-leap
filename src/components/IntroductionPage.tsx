@@ -1,12 +1,11 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardFooter } from '@/components/ui/card';
 import { Category } from '../utils/assessmentData';
 import IntroductionHeader from './introduction/IntroductionHeader';
 import PurposeSection from './introduction/PurposeSection';
 import AudienceSection from './introduction/AudienceSection';
-import InstructionsSection from './introduction/InstructionsSection';
 import BenefitsSection from './introduction/BenefitsSection';
 
 interface IntroductionPageProps {
@@ -26,7 +25,6 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
         <AudienceSection />
       </div>
 
-      <InstructionsSection />
       <BenefitsSection />
 
       <CardFooter className="flex justify-center pt-4 pb-8">

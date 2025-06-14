@@ -8,6 +8,7 @@ import AuthSection from '@/components/assessment/AuthSection';
 import Navigation from '@/components/layout/Navigation';
 import Footer from '@/components/layout/Footer';
 import DemographicsForm from '@/components/DemographicsForm';
+import InstructionsPage from '@/components/InstructionsPage';
 import AssessmentForm from '@/components/AssessmentForm';
 import { useAssessment } from '@/hooks/useAssessment';
 import { toast } from '@/hooks/use-toast';
@@ -23,9 +24,11 @@ const Assessment = () => {
     showAuthForm,
     handleDemographicsUpdate,
     handleCategoriesUpdate,
+    handleContinueToInstructions,
     handleContinueToAssessment,
     handleBackToIntro,
     handleBackToDemographics,
+    handleBackToInstructions,
     handleCompleteAssessment,
     handleCloseAuthForm
   } = useAssessment();
@@ -102,11 +105,18 @@ const Assessment = () => {
               <DemographicsForm 
                 demographics={demographics}
                 onDemographicsUpdate={handleDemographicsUpdate}
-                onContinue={handleContinueToAssessment}
+                onContinue={handleContinueToInstructions}
                 onBack={() => {
                   handleBackToIntro();
                   navigate('/');
                 }}
+              />
+            )}
+            
+            {currentStep === 'instructions' && (
+              <InstructionsPage 
+                onContinue={handleContinueToAssessment}
+                onBack={handleBackToDemographics}
               />
             )}
             
@@ -118,7 +128,7 @@ const Assessment = () => {
                   handleCompleteAssessment();
                   navigate('/results');
                 }}
-                onBack={handleBackToDemographics}
+                onBack={handleBackToInstructions}
               />
             )}
             

@@ -1,4 +1,3 @@
-
 /**
  * Utility function to format AI-generated assessment summaries into readable paragraphs
  */
@@ -18,29 +17,30 @@ const DEFAULT_TRANSITION_PHRASES = [
 ];
 
 // List of validated book titles that should have "(book recommendation)" labeling
+// Now includes both full titles and shorter versions for flexible matching
 const VALIDATED_BOOK_TITLES = [
-  'Emotional Intelligence 2.0 by Travis Bradberry',
-  'Crucial Conversations by Kerry Patterson',
-  'The 7 Habits of Highly Effective People by Stephen Covey',
-  'Good to Great by Jim Collins',
-  'Dare to Lead by Brené Brown',
-  'The Leadership Challenge by James Kouzes',
-  'Primal Leadership by Daniel Goleman',
-  'Atomic Habits by James Clear',
-  'Getting Things Done by David Allen',
-  'Reinventing Organisations by Frederic Laloux',
-  'The Pyramid Principle by Barbara Minto',
-  'The Captain Class by Sam Walker',
-  'Leading Change by John Kotter',
-  'The Power of Habit by Charles Duhigg',
-  'Build, Excite, Equip by Nicola Graham',
-  'The 17 Indisputable Laws of Teamwork by John Maxwell',
-  'Thinking Fast and Slow by Daniel Kahneman',
-  'Getting To Yes by Roger Fisher and William Ury',
-  'Playing To Win by AG Lafley & Roger Martin',
-  'Human Skills by Elizabeth Nyamayaro',
-  'Radical Candor by Kim Scott',
-  'Nonviolent Communication by Marshall B. Rosenberg'
+  { full: 'Emotional Intelligence 2.0 by Travis Bradberry', short: 'Emotional Intelligence 2.0' },
+  { full: 'Crucial Conversations by Kerry Patterson', short: 'Crucial Conversations' },
+  { full: 'The 7 Habits of Highly Effective People by Stephen Covey', short: 'The 7 Habits of Highly Effective People' },
+  { full: 'Good to Great by Jim Collins', short: 'Good to Great' },
+  { full: 'Dare to Lead by Brené Brown', short: 'Dare to Lead' },
+  { full: 'The Leadership Challenge by James Kouzes', short: 'The Leadership Challenge' },
+  { full: 'Primal Leadership by Daniel Goleman', short: 'Primal Leadership' },
+  { full: 'Atomic Habits by James Clear', short: 'Atomic Habits' },
+  { full: 'Getting Things Done by David Allen', short: 'Getting Things Done' },
+  { full: 'Reinventing Organisations by Frederic Laloux', short: 'Reinventing Organisations' },
+  { full: 'The Pyramid Principle by Barbara Minto', short: 'The Pyramid Principle' },
+  { full: 'The Captain Class by Sam Walker', short: 'The Captain Class' },
+  { full: 'Leading Change by John Kotter', short: 'Leading Change' },
+  { full: 'The Power of Habit by Charles Duhigg', short: 'The Power of Habit' },
+  { full: 'Build, Excite, Equip by Nicola Graham', short: 'Build, Excite, Equip' },
+  { full: 'The 17 Indisputable Laws of Teamwork by John Maxwell', short: 'The 17 Indisputable Laws of Teamwork' },
+  { full: 'Thinking Fast and Slow by Daniel Kahneman', short: 'Thinking Fast and Slow' },
+  { full: 'Getting To Yes by Roger Fisher and William Ury', short: 'Getting To Yes' },
+  { full: 'Playing To Win by AG Lafley & Roger Martin', short: 'Playing To Win' },
+  { full: 'Human Skills by Elizabeth Nyamayaro', short: 'Human Skills' },
+  { full: 'Radical Candor by Kim Scott', short: 'Radical Candor' },
+  { full: 'Nonviolent Communication by Marshall B. Rosenberg', short: 'Nonviolent Communication' }
 ];
 
 /**
@@ -55,27 +55,39 @@ const addBookRecommendationLabeling = (content: string): string => {
   let processedContent = content;
   let totalReplacements = 0;
   
-  VALIDATED_BOOK_TITLES.forEach((bookTitle, index) => {
-    console.log(`📚 BOOK LABELING: Processing book ${index + 1}/${VALIDATED_BOOK_TITLES.length}: "${bookTitle}"`);
+  VALIDATED_BOOK_TITLES.forEach((book, index) => {
+    console.log(`📚 BOOK LABELING: Processing book ${index + 1}/${VALIDATED_BOOK_TITLES.length}: "${book.full}"`);
     
-    // Create a regex that matches the book title but only if it doesn't already have the labeling
-    const regex = new RegExp(`\\b${bookTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?!\\s*\\(book recommendation\\))`, 'gi');
+    // Try both full title and short title patterns
+    const patterns = [book.full, book.short];
     
-    const beforeLength = processedContent.length;
-    const matches = processedContent.match(regex);
-    
-    if (matches) {
-      console.log(`📚 BOOK LABELING: Found ${matches.length} matches for "${bookTitle}":`, matches);
+    patterns.forEach((pattern, patternIndex) => {
+      console.log(`📚 BOOK LABELING: Trying pattern ${patternIndex + 1}: "${pattern}"`);
       
-      // Replace with the book title plus the required labeling
-      processedContent = processedContent.replace(regex, `${bookTitle} (book recommendation)`);
-      totalReplacements += matches.length;
+      // Create a more flexible regex that matches the book title but only if it doesn't already have the labeling
+      // This regex looks for the book title followed by optional "by Author" and ensures it's not already labeled
+      const escapedPattern = pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regex = new RegExp(`\\b${escapedPattern}(?!\\s*\\(book recommendation\\))`, 'gi');
       
-      const afterLength = processedContent.length;
-      console.log(`📚 BOOK LABELING: Replaced "${bookTitle}" - content length changed from ${beforeLength} to ${afterLength}`);
-    } else {
-      console.log(`📚 BOOK LABELING: No matches found for "${bookTitle}"`);
-    }
+      const beforeLength = processedContent.length;
+      const matches = processedContent.match(regex);
+      
+      if (matches) {
+        console.log(`📚 BOOK LABELING: Found ${matches.length} matches for "${pattern}":`, matches);
+        
+        // Replace with the full book title plus the required labeling
+        processedContent = processedContent.replace(regex, `${book.full} (book recommendation)`);
+        totalReplacements += matches.length;
+        
+        const afterLength = processedContent.length;
+        console.log(`📚 BOOK LABELING: Replaced "${pattern}" with "${book.full} (book recommendation)" - content length changed from ${beforeLength} to ${afterLength}`);
+        
+        // Return early if we found matches to avoid duplicate replacements
+        return;
+      } else {
+        console.log(`📚 BOOK LABELING: No matches found for pattern "${pattern}"`);
+      }
+    });
   });
   
   console.log(`📚 BOOK LABELING: Complete - made ${totalReplacements} total replacements`);

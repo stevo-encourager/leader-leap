@@ -8,54 +8,6 @@ interface FormattedSummaryProps {
   className?: string;
 }
 
-// List of validated book titles that should have "(book recommendation)" labeling
-const BOOK_TITLES = [
-  'Emotional Intelligence 2.0 by Travis Bradberry',
-  'Emotional Intelligence 2.0',
-  'Crucial Conversations by Kerry Patterson',
-  'Crucial Conversations',
-  'The 7 Habits of Highly Effective People by Stephen Covey',
-  'The 7 Habits of Highly Effective People',
-  'Good to Great by Jim Collins',
-  'Good to Great',
-  'Dare to Lead by Brené Brown',
-  'Dare to Lead',
-  'The Leadership Challenge by James Kouzes',
-  'The Leadership Challenge',
-  'Primal Leadership by Daniel Goleman',
-  'Primal Leadership',
-  'Atomic Habits by James Clear',
-  'Atomic Habits',
-  'Getting Things Done by David Allen',
-  'Getting Things Done',
-  'Reinventing Organisations by Frederic Laloux',
-  'Reinventing Organisations',
-  'The Pyramid Principle by Barbara Minto',
-  'The Pyramid Principle',
-  'The Captain Class by Sam Walker',
-  'The Captain Class',
-  'Leading Change by John Kotter',
-  'Leading Change',
-  'The Power of Habit by Charles Duhigg',
-  'The Power of Habit',
-  'Build, Excite, Equip by Nicola Graham',
-  'Build, Excite, Equip',
-  'The 17 Indisputable Laws of Teamwork by John Maxwell',
-  'The 17 Indisputable Laws of Teamwork',
-  'Thinking Fast and Slow by Daniel Kahneman',
-  'Thinking Fast and Slow',
-  'Getting To Yes by Roger Fisher and William Ury',
-  'Getting To Yes',
-  'Playing To Win by AG Lafley & Roger Martin',
-  'Playing To Win',
-  'Human Skills by Elizabeth Nyamayaro',
-  'Human Skills',
-  'Radical Candor by Kim Scott',
-  'Radical Candor',
-  'Nonviolent Communication by Marshall B. Rosenberg',
-  'Nonviolent Communication'
-];
-
 export const FormattedSummary: React.FC<FormattedSummaryProps> = ({ 
   summary, 
   className = "space-y-4" 
@@ -87,8 +39,51 @@ export const FormattedSummary: React.FC<FormattedSummaryProps> = ({
     return [text];
   };
 
+  // Function to detect and label book recommendations using pattern matching
+  const addBookLabeling = (text: string) => {
+    console.log('📚 FRONTEND: Starting book labeling for text:', text.substring(0, 100) + '...');
+    
+    // Pattern to match "Title by Author" format that doesn't already have "(book recommendation)"
+    const bookPattern = /\b([A-Z][^.!?]*?)\s+by\s+([A-Z][a-zA-Z\s&.'-]+)(?!\s*\(book recommendation\))/g;
+    
+    let processedText = text;
+    let match;
+    let replacements = 0;
+    
+    // Reset the regex lastIndex to ensure we start from the beginning
+    bookPattern.lastIndex = 0;
+    
+    while ((match = bookPattern.exec(text)) !== null) {
+      const fullMatch = match[0];
+      const title = match[1].trim();
+      const author = match[2].trim();
+      
+      console.log('📚 FRONTEND: Found potential book:', fullMatch);
+      console.log('📚 FRONTEND: Title:', title);
+      console.log('📚 FRONTEND: Author:', author);
+      
+      // Additional validation - title should be substantial and not contain common non-book phrases
+      const nonBookPhrases = ['according to', 'developed by', 'created by', 'founded by', 'written by'];
+      const isLikelyBook = title.length > 5 && 
+                          !nonBookPhrases.some(phrase => fullMatch.toLowerCase().includes(phrase)) &&
+                          !title.includes('.') && // Avoid sentences
+                          author.length > 2;
+      
+      if (isLikelyBook) {
+        const replacement = `${fullMatch} (book recommendation)`;
+        console.log('📚 FRONTEND: Replacing with:', replacement);
+        processedText = processedText.replace(fullMatch, replacement);
+        replacements++;
+      } else {
+        console.log('📚 FRONTEND: Skipping - not likely a book');
+      }
+    }
+    
+    console.log('📚 FRONTEND: Made', replacements, 'book labeling replacements');
+    return processedText;
+  };
+
   // Convert HTML anchor tags and markdown links to React elements with leader validation
-  // Also automatically add "(book recommendation)" to detected book titles
   const renderTextWithLinks = (text: string) => {
     const parts = [];
     let lastIndex = 0;
@@ -170,25 +165,6 @@ export const FormattedSummary: React.FC<FormattedSummaryProps> = ({
     }
     
     return parts.length > 0 ? parts : [addBookLabeling(text)];
-  };
-
-  // Function to automatically add "(book recommendation)" to detected book titles
-  const addBookLabeling = (text: string) => {
-    let processedText = text;
-    
-    // Check each book title and add labeling if not already present
-    BOOK_TITLES.forEach(bookTitle => {
-      // Create regex that matches the book title but only if it doesn't already have the labeling
-      const escapedTitle = bookTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const regex = new RegExp(`\\b${escapedTitle}(?!\\s*\\(book recommendation\\))`, 'gi');
-      
-      if (regex.test(processedText)) {
-        // Replace with the book title plus the required labeling
-        processedText = processedText.replace(regex, `${bookTitle} (book recommendation)`);
-      }
-    });
-    
-    return processedText;
   };
 
   const paragraphs = splitSummary(summary);

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { ExternalLink } from 'lucide-react';
 import { generateLeaderLink } from '@/utils/leaderMapping';
@@ -38,43 +39,26 @@ export const FormattedSummary: React.FC<FormattedSummaryProps> = ({
     return [text];
   };
 
-  // Convert markdown links to React elements with leader validation
+  // Convert HTML anchor tags and markdown links to React elements with leader validation
   const renderTextWithLinks = (text: string) => {
-    // Regex to match markdown links: [text](url)
-    const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
     const parts = [];
     let lastIndex = 0;
+    
+    // Combined regex to match both HTML anchor tags and markdown links
+    const combinedRegex = /<a href="([^"]+)">([^<]+)<\/a>|\[([^\]]+)\]\(([^)]+)\)/g;
     let match;
 
-    while ((match = linkRegex.exec(text)) !== null) {
+    while ((match = combinedRegex.exec(text)) !== null) {
       // Add text before the link
       if (match.index > lastIndex) {
         parts.push(text.substring(lastIndex, match.index));
       }
       
-      // Validate the link - check if it's a leader link
-      const linkText = match[1];
-      const linkUrl = match[2];
-      
-      // Try to validate as a leader first
-      const leaderValidation = generateLeaderLink(linkText);
-      
-      if (leaderValidation.hasValidLink) {
-        // Use validated leader link
-        parts.push(
-          <a
-            key={match.index}
-            href={leaderValidation.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-encourager hover:text-encourager-light underline inline-flex items-center gap-1"
-          >
-            {leaderValidation.name}
-            <ExternalLink className="h-3 w-3" />
-          </a>
-        );
-      } else {
-        // Use original link if it's not a leader or if leader validation fails
+      if (match[1] && match[2]) {
+        // HTML anchor tag format: <a href="url">text</a>
+        const linkUrl = match[1];
+        const linkText = match[2];
+        
         parts.push(
           <a
             key={match.index}
@@ -87,9 +71,46 @@ export const FormattedSummary: React.FC<FormattedSummaryProps> = ({
             <ExternalLink className="h-3 w-3" />
           </a>
         );
+      } else if (match[3] && match[4]) {
+        // Markdown format: [text](url)
+        const linkText = match[3];
+        const linkUrl = match[4];
+        
+        // Try to validate as a leader first
+        const leaderValidation = generateLeaderLink(linkText);
+        
+        if (leaderValidation.hasValidLink) {
+          // Use validated leader link
+          parts.push(
+            <a
+              key={match.index}
+              href={leaderValidation.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-encourager hover:text-encourager-light underline inline-flex items-center gap-1"
+            >
+              {leaderValidation.name}
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          );
+        } else {
+          // Use original link if it's not a leader or if leader validation fails
+          parts.push(
+            <a
+              key={match.index}
+              href={linkUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-encourager hover:text-encourager-light underline inline-flex items-center gap-1"
+            >
+              {linkText}
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          );
+        }
       }
       
-      lastIndex = linkRegex.lastIndex;
+      lastIndex = combinedRegex.lastIndex;
     }
     
     // Add remaining text after the last link

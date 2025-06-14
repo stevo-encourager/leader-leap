@@ -1,3 +1,4 @@
+
 // Types for leadership assessment data
 
 export interface SkillRating {
@@ -20,13 +21,10 @@ export interface Category {
 }
 
 export interface Demographics {
-  role?: string;
-  jobTitle?: string;
-  department?: string;
-  experienceLevel?: string;
-  teamSize?: string;
-  yearsOfExperience?: string;
+  age?: string;
+  gender?: string;
   industry?: string;
+  experience?: string;
 }
 
 export type AssessmentStep = 'intro' | 'demographics' | 'instructions' | 'assessment' | 'results';

@@ -12,6 +12,33 @@ export const FormattedSummary: React.FC<FormattedSummaryProps> = ({
   summary, 
   className = "space-y-4" 
 }) => {
+  // Comprehensive list of book titles that should be labeled as book recommendations
+  const BOOK_TITLES = [
+    'Emotional Intelligence 2.0',
+    'Crucial Conversations', 
+    'The 7 Habits of Highly Effective People',
+    'Good to Great',
+    'Dare to Lead',
+    'The Leadership Challenge',
+    'Primal Leadership',
+    'Atomic Habits',
+    'Getting Things Done',
+    'Reinventing Organisations',
+    'The Pyramid Principle',
+    'The Captain Class',
+    'Leading Change',
+    'The Power of Habit',
+    'Build, Excite, Equip',
+    'The 17 Indisputable Laws of Teamwork',
+    'Thinking Fast and Slow',
+    'Getting To Yes',
+    'Playing To Win',
+    'Human Skills',
+    'Radical Candor',
+    'Nonviolent Communication',
+    'Emotional Intelligence' // Also handle the shorter version
+  ];
+
   // Split summary into paragraphs based on transition phrases
   const splitSummary = (text: string): string[] => {
     const transitionPhrases = [
@@ -39,45 +66,43 @@ export const FormattedSummary: React.FC<FormattedSummaryProps> = ({
     return [text];
   };
 
-  // Function to detect and label book recommendations using pattern matching
+  // Enhanced book labeling function that handles various formats
   const addBookLabeling = (text: string) => {
-    console.log('📚 FRONTEND: Starting book labeling for text:', text.substring(0, 100) + '...');
-    
-    // Pattern to match "Title by Author" format that doesn't already have "(book recommendation)"
-    const bookPattern = /\b([A-Z][^.!?]*?)\s+by\s+([A-Z][a-zA-Z\s&.'-]+)(?!\s*\(book recommendation\))/g;
+    console.log('📚 FRONTEND: Starting enhanced book labeling for text:', text.substring(0, 100) + '...');
     
     let processedText = text;
-    let match;
     let replacements = 0;
     
-    // Reset the regex lastIndex to ensure we start from the beginning
-    bookPattern.lastIndex = 0;
-    
-    while ((match = bookPattern.exec(text)) !== null) {
-      const fullMatch = match[0];
-      const title = match[1].trim();
-      const author = match[2].trim();
+    // Process each book title
+    BOOK_TITLES.forEach(bookTitle => {
+      console.log('📚 FRONTEND: Processing book title:', bookTitle);
       
-      console.log('📚 FRONTEND: Found potential book:', fullMatch);
-      console.log('📚 FRONTEND: Title:', title);
-      console.log('📚 FRONTEND: Author:', author);
+      // Create multiple patterns to match different formats:
+      // 1. "Title by Author" format
+      // 2. Just "Title" format
+      // 3. "Title by Author (already labeled)" - skip these
       
-      // Additional validation - title should be substantial and not contain common non-book phrases
-      const nonBookPhrases = ['according to', 'developed by', 'created by', 'founded by', 'written by'];
-      const isLikelyBook = title.length > 5 && 
-                          !nonBookPhrases.some(phrase => fullMatch.toLowerCase().includes(phrase)) &&
-                          !title.includes('.') && // Avoid sentences
-                          author.length > 2;
+      const patterns = [
+        // Match "Title by [Author]" format that doesn't already have labeling
+        new RegExp(`\\b${bookTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s+by\\s+[A-Za-z\\s&.''-]+(?!\\s*\\(book recommendation\\))`, 'gi'),
+        // Match just "Title" format that doesn't already have labeling
+        new RegExp(`\\b${bookTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?!\\s+by)(?!\\s*\\(book recommendation\\))`, 'gi')
+      ];
       
-      if (isLikelyBook) {
-        const replacement = `${fullMatch} (book recommendation)`;
-        console.log('📚 FRONTEND: Replacing with:', replacement);
-        processedText = processedText.replace(fullMatch, replacement);
-        replacements++;
-      } else {
-        console.log('📚 FRONTEND: Skipping - not likely a book');
-      }
-    }
+      patterns.forEach((pattern, index) => {
+        const matches = processedText.match(pattern);
+        if (matches) {
+          console.log(`📚 FRONTEND: Found ${matches.length} matches for "${bookTitle}" with pattern ${index + 1}:`, matches);
+          
+          matches.forEach(match => {
+            const replacement = `${match} (book recommendation)`;
+            console.log('📚 FRONTEND: Replacing:', match, '→', replacement);
+            processedText = processedText.replace(match, replacement);
+            replacements++;
+          });
+        }
+      });
+    });
     
     console.log('📚 FRONTEND: Made', replacements, 'book labeling replacements');
     return processedText;

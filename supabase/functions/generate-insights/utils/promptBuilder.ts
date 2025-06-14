@@ -1,3 +1,4 @@
+
 import { AssessmentSummary } from './types.ts';
 import { VALIDATED_SKILLS } from './skills.ts';
 import { VALIDATED_RESOURCES } from './resources.ts';
@@ -22,12 +23,30 @@ export const buildPrompt = (assessmentSummary: AssessmentSummary): string => {
 
 Top 3 Categories by Gap (Priority Development Areas):
 ${topGapCategories.map((cat, i) => {
-  return `${i+1}. ${cat.title}: Gap ${cat.gap.toFixed(1)}`;
+  let categoryText = `${i+1}. ${cat.title}: Gap ${cat.gap.toFixed(1)} (Current: ${cat.averageCurrentRating.toFixed(1)}, Desired: ${cat.averageDesiredRating.toFixed(1)})`;
+  
+  if (cat.topGapSkills && cat.topGapSkills.length > 0) {
+    categoryText += `\n   Top individual skill gaps:`;
+    cat.topGapSkills.forEach((skill, skillIndex) => {
+      categoryText += `\n   - ${skill.title}: Gap ${skill.gap.toFixed(1)} (Current: ${skill.currentRating}, Desired: ${skill.desiredRating})`;
+    });
+  }
+  
+  return categoryText;
 }).join('\n\n')}
 
 Top Competency Areas (High Current Ratings, Low Gaps):
 ${topCompetencies.map((cat, i) => {
-  return `${i+1}. ${cat.title}: Gap ${cat.gap.toFixed(1)}`;
+  let categoryText = `${i+1}. ${cat.title}: Current ${cat.averageCurrentRating.toFixed(1)}, Gap ${cat.gap.toFixed(1)}`;
+  
+  if (cat.topGapSkills && cat.topGapSkills.length > 0) {
+    categoryText += `\n   Individual skills within this competency:`;
+    cat.topGapSkills.forEach((skill, skillIndex) => {
+      categoryText += `\n   - ${skill.title}: Gap ${skill.gap.toFixed(1)} (Current: ${skill.currentRating}, Desired: ${skill.desiredRating})`;
+    });
+  }
+  
+  return categoryText;
 }).join('\n\n')}
 
 You are an expert leadership coach and assessment analyst working with Encourager Coaching, which specializes in positive psychology, maximizing natural ability, and helping people become the best version of themselves. Based on the provided assessment data (including competency names, gap scores, individual skill gaps, and top competencies), generate AI insights for a user's leadership assessment.
@@ -540,7 +559,7 @@ You MUST output ONLY a valid JSON object with this EXACT structure:
   - \`competency\`: The exact competency name from assessment data
   - \`example\`: Encouraging example of how this competency manifests in their specific role/industry context, including reference to specific skills within the competency (ONLY validated skills). Must include positive reinforcement and suggestions about their leadership type.
   - \`leverage_advice\`: Array of exactly 3 specific strategies for leveraging this competency that incorporate role/industry/experience context, reference individual skills where relevant (ONLY validated skills), and include encouraging messaging about personal brand development and leadership confidence.
-  - \`resources\`: Array of exactly 3 resource names from the validated database, using EXACT titles as specified. Books MUST include "(book recommendation)" labeling. Other resources do NOT need any type labeling. MUST include at least one book recommendation per competency.
+  - \`resources\`: Array of exactly 3 resource names from the validated database, using EXACT titles as specified. Books MUST include "(book recommendation)" labeling. Other resources must NOT have any type labeling. MUST include at least one book recommendation per competency.
 
 ### PRE-OUTPUT VALIDATION CHECKLIST
 
@@ -608,16 +627,65 @@ export const buildAssessmentData = (
   averageGap: number,
   demographics: any
 ): AssessmentSummary => {
-  const categoryBreakdown = categories.map((category: any) => ({
-    title: category.title,
-    gap: category.gap,
-  }));
+  const categoryBreakdown = categories.map((category: any) => {
+    // Calculate averages and get top gap skills
+    let totalCurrent = 0;
+    let totalDesired = 0;
+    let validSkills = 0;
+    const skillsWithGaps: any[] = [];
+    
+    if (category.skills && Array.isArray(category.skills)) {
+      category.skills.forEach((skill: any) => {
+        if (!skill || !skill.ratings) return;
+        
+        const current = typeof skill.ratings.current === 'number' 
+          ? skill.ratings.current 
+          : Number(skill.ratings.current || 0);
+          
+        const desired = typeof skill.ratings.desired === 'number' 
+          ? skill.ratings.desired 
+          : Number(skill.ratings.desired || 0);
+        
+        if (!isNaN(current) && !isNaN(desired)) {
+          totalCurrent += current;
+          totalDesired += desired;
+          validSkills++;
+          
+          if (current > 0 || desired > 0) {
+            skillsWithGaps.push({
+              title: skill.name,
+              currentRating: current,
+              desiredRating: desired,
+              gap: desired - current
+            });
+          }
+        }
+      });
+    }
+    
+    // Calculate averages, defaulting to 0 if no valid skills
+    const averageCurrentRating = validSkills > 0 ? totalCurrent / validSkills : 0;
+    const averageDesiredRating = validSkills > 0 ? totalDesired / validSkills : 0;
+    
+    // Sort skills by gap (largest first) and take top 3
+    const topGapSkills = skillsWithGaps
+      .sort((a, b) => b.gap - a.gap)
+      .slice(0, 3);
+    
+    return {
+      title: category.title,
+      gap: category.gap,
+      averageCurrentRating,
+      averageDesiredRating,
+      topGapSkills
+    };
+  });
 
   return {
     demographics: {
       role: demographics.role || null,
       industry: demographics.industry || null,
-      experience: demographics.experience || null,
+      experience: demographics.yearsOfExperience || null, // Map to yearsOfExperience
       teamSize: demographics.teamSize || null,
     },
     averageGap: averageGap,

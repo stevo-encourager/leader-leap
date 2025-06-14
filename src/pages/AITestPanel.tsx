@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -21,6 +22,9 @@ const AITestPanel = () => {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // FIXED: Remove the regenerateCallback state - use direct reference instead
+  // This was causing the "f is not a function" error
 
   // FIXED: Use only the specific test assessment ID
   const TEST_ASSESSMENT_ID = 'f74470bc-3c48-4980-bc5f-17386a724d37';
@@ -74,6 +78,7 @@ const AITestPanel = () => {
     }
   };
 
+  // FIXED: Create a ref to store the regenerate function directly
   const regenerateFunctionRef = React.useRef<(() => Promise<void>) | null>(null);
 
   const handleRefreshInsights = async () => {
@@ -82,6 +87,7 @@ const AITestPanel = () => {
     console.log('🔴 AITestPanel: regenerateFunctionRef.current available:', !!regenerateFunctionRef.current);
     console.log('🔴 AITestPanel: regenerateFunctionRef.current type:', typeof regenerateFunctionRef.current);
     
+    // FIXED: Call the function directly from the ref
     if (regenerateFunctionRef.current && typeof regenerateFunctionRef.current === 'function') {
       console.log('🔴 AITestPanel: Calling regeneration function directly');
       try {
@@ -92,12 +98,14 @@ const AITestPanel = () => {
       }
     } else {
       console.log('🔴 AITestPanel: No valid regeneration function available, forcing re-render');
+      // Fallback: force a re-render to try again
       setRefreshKey(prev => prev + 1);
     }
     
     console.log('🔴 AITestPanel: handleRefreshInsights completed');
   };
 
+  // FIXED: Callback function that receives the regeneration function
   const handleRegenerateCallback = React.useCallback((regenerateFunction: () => Promise<void>) => {
     console.log('🔴 AITestPanel: Received regeneration callback, type:', typeof regenerateFunction);
     console.log('🔴 AITestPanel: Is function?', typeof regenerateFunction === 'function');
@@ -197,7 +205,7 @@ const AITestPanel = () => {
           </div>
         </div>
 
-        {/* AI Insights Section - identical to live dashboard but WITH debug info */}
+        {/* AI Insights Section - identical to live dashboard */}
         <div className="space-y-8">
           <div key={`ai-insights-${refreshKey}`}>
             <AIInsights 
@@ -206,7 +214,6 @@ const AITestPanel = () => {
               averageGap={averageGap}
               assessmentId={TEST_ASSESSMENT_ID}
               onRegenerateCallback={handleRegenerateCallback}
-              showDebugInfo={true}
             />
           </div>
         </div>

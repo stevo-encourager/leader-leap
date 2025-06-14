@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Bot, AlertCircle, Target, TrendingUp, ExternalLink } from 'lucide-react';
 import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
@@ -12,7 +11,6 @@ interface AIInsightsProps {
   averageGap: number;
   assessmentId?: string;
   onRegenerateCallback?: (callback: () => Promise<void>) => void;
-  showDebugInfo?: boolean; // New prop to control debug visibility
 }
 
 interface PriorityArea {
@@ -40,8 +38,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({
   demographics, 
   averageGap, 
   assessmentId,
-  onRegenerateCallback,
-  showDebugInfo = false // Default to false for production use
+  onRegenerateCallback 
 }) => {
   console.log('🔵 AIInsights: Component re-rendered with assessmentId:', assessmentId);
   
@@ -61,46 +58,6 @@ const AIInsights: React.FC<AIInsightsProps> = ({
     assessmentId
   });
 
-  // Helper function to log assessment data that gets sent to the Edge Function
-  const logAssessmentData = React.useCallback(() => {
-    if (categories && demographics) {
-      console.log('🔍 ASSESSMENT DATA BEING SENT TO EDGE FUNCTION:');
-      console.log('📊 Categories:', JSON.stringify(categories, null, 2));
-      console.log('👤 Demographics:', JSON.stringify(demographics, null, 2));
-      console.log('📈 Average Gap:', averageGap);
-      console.log('🆔 Assessment ID:', assessmentId);
-      
-      // Calculate category gaps and build the exact same assessment data that gets sent to the Edge Function
-      const categoriesWithGaps = categories.map(category => {
-        // Calculate the category gap from its skills
-        const categoryGap = category.skills.reduce((sum, skill) => {
-          if (skill.ratings && typeof skill.ratings.current === 'number' && typeof skill.ratings.desired === 'number') {
-            return sum + (skill.ratings.desired - skill.ratings.current);
-          }
-          return sum;
-        }, 0) / Math.max(category.skills.length, 1);
-        
-        return {
-          title: category.title,
-          gap: categoryGap || 0,
-        };
-      });
-      
-      const assessmentData = {
-        categories: categoriesWithGaps,
-        demographics: {
-          role: demographics?.role || null,
-          industry: demographics?.industry || null,
-          experience: demographics?.yearsOfExperience || null, // Use the correct property name that exists
-          teamSize: demographics?.teamSize || null,
-        },
-        averageGap: averageGap,
-      };
-      
-      console.log('📦 EXACT ASSESSMENT DATA OBJECT SENT TO EDGE FUNCTION:', JSON.stringify(assessmentData, null, 2));
-    }
-  }, [categories, demographics, averageGap, assessmentId]);
-
   // Track when insights change to update debug info
   React.useEffect(() => {
     if (insights && insights.length > 0) {
@@ -116,14 +73,11 @@ const AIInsights: React.FC<AIInsightsProps> = ({
     }
   }, [insights]);
 
-  // Create wrapper that calls regenerateInsights and updates debug info
+  // FIXED: Create wrapper that calls regenerateInsights and updates debug info
   const handleRegenerateWrapper = React.useCallback(async () => {
     console.log('🔵 AIInsights: handleRegenerateWrapper called - FRESH CALLBACK');
     console.log('🔵 AIInsights: regenerateInsights available:', !!regenerateInsights);
     console.log('🔵 AIInsights: regenerateInsights type:', typeof regenerateInsights);
-    
-    // CRITICAL: Log assessment data BEFORE regeneration
-    logAssessmentData();
     
     const timestamp = new Date().toISOString().slice(11, 23);
     setDebugInfo(prev => ({
@@ -134,6 +88,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({
       callbackInvocations: prev.callbackInvocations + 1
     }));
 
+    // CRITICAL: Call the regenerateInsights function directly
     if (regenerateInsights && typeof regenerateInsights === 'function') {
       console.log('🔵 AIInsights: Calling regenerateInsights function');
       try {
@@ -152,9 +107,9 @@ const AIInsights: React.FC<AIInsightsProps> = ({
       console.error('🔵 AIInsights: regenerateInsights function not available or not a function');
       console.error('🔵 AIInsights: regenerateInsights value:', regenerateInsights);
     }
-  }, [regenerateInsights, logAssessmentData]);
+  }, [regenerateInsights]);
 
-  // Provide the wrapper function to parent component
+  // FIXED: Provide the wrapper function to parent component
   React.useEffect(() => {
     if (onRegenerateCallback && typeof onRegenerateCallback === 'function') {
       const timestamp = new Date().toISOString().slice(11, 23);
@@ -166,6 +121,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({
         lastCallbackUpdate: `${timestamp} - Callback provided to parent`
       }));
       
+      // Provide the wrapper function to parent
       onRegenerateCallback(handleRegenerateWrapper);
     } else {
       console.log('🔵 AIInsights: No onRegenerateCallback provided or not a function');
@@ -188,6 +144,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({
     try {
       const parsed = JSON.parse(insightsText);
       
+      // Validate structure
       if (!parsed.summary || !parsed.priority_areas || !parsed.key_strengths) {
         console.error('AIInsights: Invalid insights structure - missing required fields');
         return null;
@@ -198,12 +155,14 @@ const AIInsights: React.FC<AIInsightsProps> = ({
         return null;
       }
 
+      // Validate priority areas
       for (const area of parsed.priority_areas) {
         if (!area.competency || !area.insights || !Array.isArray(area.insights)) {
           console.error('AIInsights: Invalid priority area structure:', area);
           return null;
         }
         
+        // Ensure insights is an array of strings only
         for (const insight of area.insights) {
           if (typeof insight !== 'string') {
             console.error('AIInsights: Invalid insight type - must be string:', insight);
@@ -211,6 +170,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({
           }
         }
 
+        // Handle both old 'resource' field and new 'resources' field for backward compatibility
         if (area.resource && !area.resources) {
           area.resources = [area.resource];
         }
@@ -219,12 +179,14 @@ const AIInsights: React.FC<AIInsightsProps> = ({
         }
       }
 
+      // Validate key strengths
       for (const strength of parsed.key_strengths) {
         if (!strength.competency || !strength.example || !strength.leverage_advice || !Array.isArray(strength.leverage_advice)) {
           console.error('AIInsights: Invalid key strength structure:', strength);
           return null;
         }
         
+        // Ensure leverage_advice is an array of strings only
         for (const advice of strength.leverage_advice) {
           if (typeof advice !== 'string') {
             console.error('AIInsights: Invalid advice type - must be string:', advice);
@@ -232,6 +194,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({
           }
         }
 
+        // Ensure resources field exists
         if (!strength.resources) {
           strength.resources = [];
         }
@@ -249,15 +212,18 @@ const AIInsights: React.FC<AIInsightsProps> = ({
     const validResources: Array<{name: string, url: string}> = [];
     
     resources.forEach(resource => {
+      // Check if it's in markdown format [Name](url)
       const markdownMatch = resource.match(/\[([^\]]+)\]\(([^)]+)\)/);
       if (markdownMatch) {
         const name = markdownMatch[1];
         const url = markdownMatch[2];
         
+        // Only add if URL is valid (starts with http/https)
         if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
           validResources.push({ name, url });
         }
       } else {
+        // Try to get a working link from resource mapping
         const resourceLink = generateResourceLink(resource);
         if (resourceLink.hasValidLink && resourceLink.url) {
           validResources.push({ 
@@ -265,6 +231,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({
             url: resourceLink.url 
           });
         }
+        // If no valid link found, don't include this resource at all
       }
     });
     
@@ -415,23 +382,21 @@ const AIInsights: React.FC<AIInsightsProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* DEBUG INDICATOR - ONLY VISIBLE IN TEST PANEL */}
-      {showDebugInfo && (
-        <div className="bg-red-50 border border-red-200 p-4 rounded-lg">
-          <h4 className="font-bold text-red-800 mb-2">DEBUG INFO (Test Panel Only)</h4>
-          <div className="text-sm text-red-700 space-y-1">
-            <div><strong>Regeneration Count:</strong> {debugInfo.regenerationCount}</div>
-            <div><strong>Callback Invocations:</strong> {debugInfo.callbackInvocations}</div>
-            <div><strong>Last Callback Update:</strong> {debugInfo.lastCallbackUpdate || 'None'}</div>
-            <div><strong>Last Backend Response:</strong> {debugInfo.lastBackendResponse || 'None'}</div>
-            <div><strong>Latest Insights Preview:</strong> {debugInfo.lastInsightsPreview || 'None'}</div>
-            <div><strong>Current Loading State:</strong> {isLoading ? 'LOADING' : 'NOT LOADING'}</div>
-            <div><strong>Has Insights:</strong> {insights ? 'YES' : 'NO'}</div>
-            <div><strong>Has Error:</strong> {error ? 'YES' : 'NO'}</div>
-            <div><strong>Has RegenerateInsights Function:</strong> {regenerateInsights ? 'YES' : 'NO'}</div>
-          </div>
+      {/* ENHANCED DEBUG INDICATOR - TEMPORARY FOR TROUBLESHOOTING */}
+      <div className="bg-red-50 border border-red-200 p-4 rounded-lg">
+        <h4 className="font-bold text-red-800 mb-2">DEBUG INFO (Remove when fixed)</h4>
+        <div className="text-sm text-red-700 space-y-1">
+          <div><strong>Regeneration Count:</strong> {debugInfo.regenerationCount}</div>
+          <div><strong>Callback Invocations:</strong> {debugInfo.callbackInvocations}</div>
+          <div><strong>Last Callback Update:</strong> {debugInfo.lastCallbackUpdate || 'None'}</div>
+          <div><strong>Last Backend Response:</strong> {debugInfo.lastBackendResponse || 'None'}</div>
+          <div><strong>Latest Insights Preview:</strong> {debugInfo.lastInsightsPreview || 'None'}</div>
+          <div><strong>Current Loading State:</strong> {isLoading ? 'LOADING' : 'NOT LOADING'}</div>
+          <div><strong>Has Insights:</strong> {insights ? 'YES' : 'NO'}</div>
+          <div><strong>Has Error:</strong> {error ? 'YES' : 'NO'}</div>
+          <div><strong>Has RegenerateInsights Function:</strong> {regenerateInsights ? 'YES' : 'NO'}</div>
         </div>
-      )}
+      </div>
 
       {/* AI-Powered Insights Header */}
       <div className="bg-encourager/5 p-6 rounded-lg border border-encourager/20">

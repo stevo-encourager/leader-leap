@@ -124,45 +124,43 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       updateState({ isLoading: true, error: null }, 'Starting initialization');
 
       try {
-        // Check for existing insights (but only if NOT test assessment for forced regeneration)
-        if (!isTestAssessment) {
-          debugLog('🔍 CHECKING DATABASE FOR EXISTING INSIGHTS');
-          const { data: assessment, error: dbError } = await supabase
-            .from('assessment_results')
-            .select('ai_insights')
-            .eq('id', assessmentId)
-            .single();
+        // Check for existing insights
+        debugLog('🔍 CHECKING DATABASE FOR EXISTING INSIGHTS');
+        const { data: assessment, error: dbError } = await supabase
+          .from('assessment_results')
+          .select('ai_insights')
+          .eq('id', assessmentId)
+          .single();
 
-          if (dbError) {
-            debugLog('❌ DATABASE ERROR:', dbError);
-            // Continue to generate new insights if we can't check existing ones
-          } else if (assessment && 
-                     assessment.ai_insights && 
-                     assessment.ai_insights.trim() !== '' &&
-                     assessment.ai_insights.trim() !== 'null' &&
-                     assessment.ai_insights.trim() !== 'undefined') {
-            
-            debugLog('✅ FOUND EXISTING INSIGHTS');
-            debugLog('📄 INSIGHTS DATA:', assessment.ai_insights.substring(0, 200) + '...');
-            
-            // Set successful state with existing insights
-            updateState({
-              insights: assessment.ai_insights,
-              isLoading: false,
-              error: null,
-              isInitialized: true
-            }, 'Found existing insights in database');
-            
-            initializationCompleteRef.current = true;
-            isOperationInProgressRef.current = false;
-            
-            debugLog('✅ INITIALIZATION COMPLETE WITH EXISTING INSIGHTS');
-            return;
-          }
+        if (dbError) {
+          debugLog('❌ DATABASE ERROR:', dbError);
+          // Continue to generate new insights if we can't check existing ones
+        } else if (assessment && 
+                   assessment.ai_insights && 
+                   assessment.ai_insights.trim() !== '' &&
+                   assessment.ai_insights.trim() !== 'null' &&
+                   assessment.ai_insights.trim() !== 'undefined') {
+          
+          debugLog('✅ FOUND EXISTING INSIGHTS');
+          debugLog('📄 INSIGHTS DATA:', assessment.ai_insights.substring(0, 200) + '...');
+          
+          // Set successful state with existing insights
+          updateState({
+            insights: assessment.ai_insights,
+            isLoading: false,
+            error: null,
+            isInitialized: true
+          }, 'Found existing insights in database');
+          
+          initializationCompleteRef.current = true;
+          isOperationInProgressRef.current = false;
+          
+          debugLog('✅ INITIALIZATION COMPLETE WITH EXISTING INSIGHTS');
+          return;
         }
 
-        debugLog('🔄 NO EXISTING INSIGHTS OR TEST ASSESSMENT - GENERATING NEW');
-        await generateNewInsights(false); // Initial generation, not a regeneration
+        debugLog('🔄 NO EXISTING INSIGHTS - GENERATING NEW');
+        await generateNewInsights();
         
       } catch (err) {
         debugLog('❌ INITIALIZATION ERROR:', err);
@@ -184,10 +182,10 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     } else {
       debugLog('❌ SKIPPING INITIALIZATION - Conditions not met');
     }
-  }, [assessmentId, categories, updateState, isTestAssessment]);
+  }, [assessmentId, categories, updateState]);
 
-  const generateNewInsights = async (isRegeneration: boolean = false) => {
-    debugLog(`🔄 STARTING ${isRegeneration ? 'REGENERATION' : 'NEW INSIGHTS GENERATION'}`);
+  const generateNewInsights = async () => {
+    debugLog('🔄 STARTING NEW INSIGHTS GENERATION');
 
     try {
       debugLog('📡 CALLING SUPABASE FUNCTION');
@@ -197,7 +195,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
           demographics,
           averageGap,
           assessmentId,
-          forceRegenerate: isRegeneration || isTestAssessment // CRITICAL: Pass forceRegenerate flag
+          forceRegenerate: isTestAssessment
         }
       });
 
@@ -209,8 +207,8 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       }
 
       if (data && data.insights) {
-        debugLog(`✅ SUCCESS: Received ${isRegeneration ? 'regenerated' : 'new'} insights from API`);
-        debugLog('📄 INSIGHTS DATA:', data.insights.substring(0, 200) + '...');
+        debugLog('✅ SUCCESS: Received new insights from API');
+        debugLog('📄 NEW INSIGHTS DATA:', data.insights.substring(0, 200) + '...');
         
         // Set successful state with new insights
         updateState({
@@ -218,23 +216,23 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
           isLoading: false,
           error: null,
           isInitialized: true
-        }, `Generated ${isRegeneration ? 'regenerated' : 'new'} insights from API`);
+        }, 'Generated new insights from API');
         
         initializationCompleteRef.current = true;
         isOperationInProgressRef.current = false;
         
-        debugLog(`✅ ${isRegeneration ? 'REGENERATION' : 'GENERATION'} COMPLETE: New insights set`);
+        debugLog('✅ GENERATION COMPLETE: New insights set');
       } else {
         debugLog('❌ NO INSIGHTS IN RESPONSE');
         throw new Error('No insights received from OpenAI');
       }
     } catch (err) {
-      debugLog(`❌ ${isRegeneration ? 'REGENERATION' : 'GENERATION'} ERROR:`, err);
+      debugLog('❌ GENERATION ERROR:', err);
       updateState({
-        error: err instanceof Error ? err.message : `Failed to ${isRegeneration ? 'regenerate' : 'generate'} insights`,
+        error: err instanceof Error ? err.message : 'Failed to generate insights',
         isLoading: false,
         isInitialized: true
-      }, `${isRegeneration ? 'Regeneration' : 'Generation'} error`);
+      }, 'Generation error');
       
       initializationCompleteRef.current = true;
       isOperationInProgressRef.current = false;
@@ -243,6 +241,10 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
 
   const regenerateInsights = useCallback(async () => {
     debugLog('🔄 REGENERATE INSIGHTS CALLED');
+    
+    // FIXED: Remove the operation in progress check for regeneration
+    // This was blocking subsequent regeneration attempts
+    debugLog('🔄 REGENERATE: Starting manual regeneration (bypassing operation check)');
     
     // Validate we have required data
     if (!categories || categories.length === 0 || !assessmentId) {
@@ -254,7 +256,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       return;
     }
     
-    // Set operation flag and clear existing state IMMEDIATELY
+    // FIXED: Set operation flag AFTER validation to prevent blocking
     isOperationInProgressRef.current = true;
     
     // Clear existing insights and set loading state IMMEDIATELY
@@ -268,11 +270,11 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     // Reset flags to allow new generation
     initializationCompleteRef.current = false;
     
-    debugLog('🔄 REGENERATE: State cleared, calling generateNewInsights with regeneration flag');
+    debugLog('🔄 REGENERATE: State cleared, calling generateNewInsights');
     
-    // Start new generation with regeneration flag
+    // Start new generation
     try {
-      await generateNewInsights(true); // CRITICAL: Pass true for regeneration
+      await generateNewInsights();
       debugLog('✅ REGENERATE: Completed successfully');
     } catch (error) {
       debugLog('❌ REGENERATE: Failed with error:', error);

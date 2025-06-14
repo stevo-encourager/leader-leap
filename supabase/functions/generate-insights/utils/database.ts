@@ -1,54 +1,67 @@
 
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-export const checkExistingInsights = async (
-  assessmentId: string, 
-  supabaseUrl: string, 
-  supabaseServiceKey: string,
-  forceRegenerate: boolean = false
-): Promise<string | null> => {
-  console.log('🔍 DATABASE: Checking for existing insights:', {
+export const checkExistingInsights = async (assessmentId: string, supabaseUrl: string, supabaseServiceKey: string, forceRegenerate?: boolean): Promise<string | null> => {
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+  
+  // Special test assessment ID that allows regeneration
+  const TEST_ASSESSMENT_ID = 'f74470bc-3c48-4980-bc5f-17386a724d37';
+  const isTestAssessment = assessmentId === TEST_ASSESSMENT_ID;
+  
+  console.log('🔍 DATABASE CHECK EXISTING INSIGHTS:', {
     assessmentId,
+    isTestAssessment,
     forceRegenerate
   });
-
-  // CRITICAL FIX: If forceRegenerate is true, always return null to generate new insights
-  if (forceRegenerate) {
-    console.log('🔍 DATABASE: forceRegenerate=true - Skipping existing insights check and forcing new generation');
+  
+  // DOUBLE CHECK: First verify we have a valid assessment ID
+  if (!assessmentId || assessmentId.trim() === '') {
+    console.log('🔍 NO ASSESSMENT ID - Cannot check for existing insights');
     return null;
   }
-
-  try {
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    
-    const { data: assessment, error } = await supabase
-      .from('assessment_results')
-      .select('ai_insights')
-      .eq('id', assessmentId)
-      .single();
-
-    if (error) {
-      console.log('🔍 DATABASE: Error checking for existing insights:', error);
-      return null;
-    }
-
-    if (assessment && 
-        assessment.ai_insights && 
-        assessment.ai_insights.trim() !== '' &&
-        assessment.ai_insights.trim() !== 'null' &&
-        assessment.ai_insights.trim() !== 'undefined') {
-      
-      console.log('🔍 DATABASE: Found existing insights, returning saved version');
-      return assessment.ai_insights;
-    }
-
-    console.log('🔍 DATABASE: No existing insights found - generating new insights');
-    return null;
-    
-  } catch (error) {
-    console.error('🔍 DATABASE: Error in checkExistingInsights:', error);
-    return null;
+  
+  // CRITICAL FIX: For test assessment with force regenerate, skip database check entirely
+  if (isTestAssessment && forceRegenerate) {
+    console.log('🔍 TEST ASSESSMENT + FORCE REGENERATE - Skipping database check to force new generation');
+    return null; // Return null to force new generation
   }
+  
+  console.log('🔍 QUERYING DATABASE FOR EXISTING INSIGHTS...');
+  const { data: existingAssessment, error: fetchError } = await supabase
+    .from('assessment_results')
+    .select('ai_insights')
+    .eq('id', assessmentId)
+    .single();
+
+  console.log('🔍 DATABASE QUERY RESULT:', {
+    existingAssessment,
+    fetchError,
+    hasInsights: !!existingAssessment?.ai_insights
+  });
+
+  if (fetchError) {
+    console.error('🔍 ERROR FETCHING EXISTING ASSESSMENT:', fetchError);
+    throw new Error('Could not check for existing insights');
+  }
+
+  // ENHANCED CHECK: More thorough validation of existing insights
+  if (existingAssessment && 
+      existingAssessment.ai_insights && 
+      existingAssessment.ai_insights.trim() !== '' &&
+      existingAssessment.ai_insights.trim() !== 'null' &&
+      existingAssessment.ai_insights.trim() !== 'undefined') {
+    
+    console.log('🔍 FOUND VALID EXISTING INSIGHTS:', {
+      insightsLength: existingAssessment.ai_insights.length,
+      isTestAssessment,
+      willReturnExisting: true
+    });
+    
+    return existingAssessment.ai_insights;
+  }
+
+  console.log('🔍 NO EXISTING INSIGHTS FOUND - Proceeding with generation');
+  return null;
 };
 
 export const saveInsights = async (
@@ -57,24 +70,44 @@ export const saveInsights = async (
   supabaseUrl: string, 
   supabaseServiceKey: string
 ): Promise<void> => {
-  console.log('🔍 DATABASE: Saving insights for assessment:', assessmentId);
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
   
-  try {
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    
-    const { error } = await supabase
-      .from('assessment_results')
-      .update({ ai_insights: insights })
-      .eq('id', assessmentId);
-
-    if (error) {
-      console.error('🔍 DATABASE: Error saving insights:', error);
-      throw new Error(`Failed to save insights: ${error.message}`);
+  // Special test assessment ID that allows regeneration
+  const TEST_ASSESSMENT_ID = 'f74470bc-3c48-4980-bc5f-17386a724d37';
+  const isTestAssessment = assessmentId === TEST_ASSESSMENT_ID;
+  
+  console.log('🔍 SAVING INSIGHTS:', {
+    assessmentId,
+    isTestAssessment,
+    insightsLength: insights.length
+  });
+  
+  // DOUBLE CHECK: Verify we're not overwriting existing insights (except for test assessment)
+  if (!isTestAssessment) {
+    console.log('🔍 NON-TEST ASSESSMENT - Checking for existing insights before save');
+    const existingCheck = await checkExistingInsights(assessmentId, supabaseUrl, supabaseServiceKey);
+    if (existingCheck) {
+      console.log('🔍 EXISTING INSIGHTS FOUND - ABORTING save to prevent overwrite');
+      throw new Error('Insights already exist for this assessment - will not overwrite');
     }
+  } else {
+    console.log('🔍 TEST ASSESSMENT - Allowing save/overwrite');
+  }
+  
+  console.log('🔍 UPDATING DATABASE WITH NEW INSIGHTS...');
+  const { error: updateError } = await supabase
+    .from('assessment_results')
+    .update({ ai_insights: insights })
+    .eq('id', assessmentId);
 
-    console.log('🔍 DATABASE: Successfully saved insights');
-  } catch (error) {
-    console.error('🔍 DATABASE: Error in saveInsights:', error);
-    throw error;
+  if (updateError) {
+    console.error('🔍 SAVE ERROR:', updateError);
+    throw new Error('Failed to save insights to database');
+  } else {
+    console.log('🔍 SAVE SUCCESS:', {
+      assessmentId,
+      isTestAssessment,
+      message: isTestAssessment ? 'Test assessment insights saved (can be regenerated)' : 'Insights permanently saved'
+    });
   }
 };

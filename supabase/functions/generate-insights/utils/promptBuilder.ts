@@ -1,4 +1,3 @@
-
 interface CategoryBreakdown {
   title: string;
   skillCount: number;
@@ -126,52 +125,52 @@ const buildValidatedLeadersList = (): string => {
 **VALIDATED INSPIRATIONAL LEADERS - USE ONLY THESE LEADERS:**
 
 **Transformational & Empathetic Leadership:**
-- Satya Nadella (Microsoft transformation, empathetic leadership)
+- Satya Nadella (Microsoft transformation, empathetic leadership) - https://www.linkedin.com/in/satyanadella/
 
 **Collaborative & Inclusive Leadership:**
-- Mary Barra (Automotive transformation, inclusive culture)
+- Mary Barra (Automotive transformation, inclusive culture) - https://www.linkedin.com/in/mary-barra/
 
 **Values-Based & Learning-Oriented Leadership:**
-- Marc Benioff (Values-driven business, continuous learning)
+- Marc Benioff (Values-driven business, continuous learning) - https://www.linkedin.com/in/marcbenioff/
 
 **Strategic & Empowering Leadership:**
-- Indra Nooyi (Strategic thinking, employee empowerment)
+- Indra Nooyi (Strategic thinking, employee empowerment) - https://www.linkedin.com/in/indranooyi/
 
 **"Founder Mode" & Humble Inquiry Leadership:**
-- Brian Chesky (Scaling organizations, staying connected to mission)
+- Brian Chesky (Scaling organizations, staying connected to mission) - https://www.linkedin.com/in/brianchesky/
 
 **Data-Driven & High-Performance Culture Leadership:**
-- Reed Hastings (Performance culture, data-driven decisions)
+- Reed Hastings (Performance culture, data-driven decisions) - https://www.linkedin.com/in/reedhastings/
 
 **Servant Leadership & Financial Inclusion:**
-- Thasunda Brown Duckett (Community impact, servant leadership)
+- Thasunda Brown Duckett (Community impact, servant leadership) - https://www.linkedin.com/in/thasunda-brown-duckett-22b15523/
 
 **Sustainable & Mission-Driven Leadership:**
-- Paul Polman (Sustainable business, long-term thinking)
+- Paul Polman (Sustainable business, long-term thinking) - https://www.linkedin.com/in/paulpolman/
 
 **Direct & Crisis Management Leadership:**
-- Jamie Dimon (Crisis leadership, direct communication)
+- Jamie Dimon (Crisis leadership, direct communication) - https://www.linkedin.com/in/jamiedimon/
 
 **Technical Visionary & Innovation Leadership:**
-- Jensen Huang (Innovation leadership, technical vision)
+- Jensen Huang (Innovation leadership, technical vision) - https://www.linkedin.com/in/jenhsunhuang/
 
 **Principle-Based & "Why Culture" Leadership:**
-- Andy Jassy (Principle-centered decisions, cultural alignment)
+- Andy Jassy (Principle-centered decisions, cultural alignment) - https://www.linkedin.com/in/andy-jassy-8b1615/
 
 **Transparent, Creative, and Human-Centered:**
-- Stewart Butterfield (Transparent communication, creative leadership)
+- Stewart Butterfield (Transparent communication, creative leadership) - https://www.linkedin.com/in/butterfield/
 
 **Empathetic, Empowering, and Purpose-Driven:**
-- Whitney Wolfe Herd (Purpose-driven innovation, empathetic leadership)
+- Whitney Wolfe Herd (Purpose-driven innovation, empathetic leadership) - https://en.wikipedia.org/wiki/Whitney_Wolfe_Herd
 
 **Tech-Forward, Ethical, and Strategic Transformation:**
-- Arvind Krishna (Ethical technology, transformation leadership)
+- Arvind Krishna (Ethical technology, transformation leadership) - https://www.linkedin.com/in/arvindkrishna/
 
 **Bold, Mission-Driven, Inclusion-Focused:**
-- Reshma Saujani (Bold advocacy, inclusion-focused leadership)
+- Reshma Saujani (Bold advocacy, inclusion-focused leadership) - https://www.linkedin.com/in/reshma-saujani/
 
 **Global Advocacy, Partnership-Driven, Narrative Empowerment:**
-- Elizabeth Nyamayaro (Global impact, partnership building)
+- Elizabeth Nyamayaro (Global impact, partnership building) - https://www.linkedin.com/in/enyamayaro/
 `;
 };
 
@@ -564,13 +563,14 @@ ${validatedLeadersList}
 - NEVER create or reference leaders not in this list
 - Each leader name you use must match EXACTLY as written in the database
 - If you want to reference a leader not in the database, omit the leader reference entirely
-- Always use the exact leader name and principle as specified in the database
+- Always use the exact leader name and corresponding URL as specified in the database
 
 **Leader Selection Process:**
 1. Identify the leadership principle you want to highlight in your summary
 2. Find the EXACT matching leader from the validated database who exemplifies that principle
 3. Use only leaders whose names and principles match exactly from the database
-4. If no exact match exists for your intended principle, omit the leader reference
+4. Use the corresponding URL provided in the database for that leader
+5. If no exact match exists for your intended principle, omit the leader reference
 
 **Leader Quality Validation:**
 - Every leader reference must directly relate to the specific leadership principle being discussed
@@ -603,10 +603,11 @@ ${validatedLeadersList}
 
 **CRITICAL: You MUST ONLY use leaders from the validated database above. Do not reference any leader not explicitly listed.**
 
-**CRITICAL HTML ANCHOR TAG FORMAT:** When mentioning the inspirational person in the summary, format it as a proper HTML anchor tag with the leader's name as clickable text (NO URL visible):
-- Correct format: "Like <a href="https://workinglink.com">Leader Name</a>, who is known for [specific principle]..."
+**CRITICAL HTML ANCHOR TAG FORMAT:** When mentioning the inspirational person in the summary, format it as a proper HTML anchor tag with the leader's name as clickable text using the EXACT URL from the validated database:
+- Correct format: "Like <a href="[EXACT_URL_FROM_DATABASE]">Leader Name</a>, who is known for [specific principle]..."
+- Use the EXACT URL provided in the validated leaders database above for each leader
 - The URL should NOT be visible in the text - only the leader's name should appear as a clickable link
-- Example: "Like <a href="https://workinglink.com">Satya Nadella</a>, who is known for empathetic leadership..."
+- Example: "Like <a href="https://www.linkedin.com/in/indranooyi/">Indra Nooyi</a>, who is known for strategic thinking and employee empowerment..."
 
 ### CRITICAL TERMINOLOGY CONSISTENCY
 

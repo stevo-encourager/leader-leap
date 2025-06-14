@@ -49,15 +49,37 @@ const VALIDATED_BOOK_TITLES = [
  * @returns Content with properly labeled book recommendations
  */
 const addBookRecommendationLabeling = (content: string): string => {
-  let processedContent = content;
+  console.log('📚 BOOK LABELING: Starting with content length:', content.length);
+  console.log('📚 BOOK LABELING: Content preview:', content.substring(0, 200) + '...');
   
-  VALIDATED_BOOK_TITLES.forEach(bookTitle => {
+  let processedContent = content;
+  let totalReplacements = 0;
+  
+  VALIDATED_BOOK_TITLES.forEach((bookTitle, index) => {
+    console.log(`📚 BOOK LABELING: Processing book ${index + 1}/${VALIDATED_BOOK_TITLES.length}: "${bookTitle}"`);
+    
     // Create a regex that matches the book title but only if it doesn't already have the labeling
     const regex = new RegExp(`\\b${bookTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?!\\s*\\(book recommendation\\))`, 'gi');
     
-    // Replace with the book title plus the required labeling
-    processedContent = processedContent.replace(regex, `${bookTitle} (book recommendation)`);
+    const beforeLength = processedContent.length;
+    const matches = processedContent.match(regex);
+    
+    if (matches) {
+      console.log(`📚 BOOK LABELING: Found ${matches.length} matches for "${bookTitle}":`, matches);
+      
+      // Replace with the book title plus the required labeling
+      processedContent = processedContent.replace(regex, `${bookTitle} (book recommendation)`);
+      totalReplacements += matches.length;
+      
+      const afterLength = processedContent.length;
+      console.log(`📚 BOOK LABELING: Replaced "${bookTitle}" - content length changed from ${beforeLength} to ${afterLength}`);
+    } else {
+      console.log(`📚 BOOK LABELING: No matches found for "${bookTitle}"`);
+    }
   });
+  
+  console.log(`📚 BOOK LABELING: Complete - made ${totalReplacements} total replacements`);
+  console.log('📚 BOOK LABELING: Final content preview:', processedContent.substring(0, 200) + '...');
   
   return processedContent;
 };
@@ -148,35 +170,61 @@ export const formatSummaryIntoParagraphs = (
  * @returns Processed insights with proper book labeling
  */
 export const processInsightsForBookLabeling = (insights: any): any => {
+  console.log('📚 INSIGHTS PROCESSING: Starting book labeling process');
+  console.log('📚 INSIGHTS PROCESSING: Input insights type:', typeof insights);
+  console.log('📚 INSIGHTS PROCESSING: Input insights keys:', insights ? Object.keys(insights) : 'null');
+  
   if (!insights || typeof insights !== 'object') {
+    console.log('📚 INSIGHTS PROCESSING: Invalid insights object, returning as-is');
     return insights;
   }
 
   const processedInsights = JSON.parse(JSON.stringify(insights)); // Deep clone
+  console.log('📚 INSIGHTS PROCESSING: Created deep clone');
 
   // Process summary
   if (processedInsights.summary) {
+    console.log('📚 INSIGHTS PROCESSING: Processing summary');
+    const originalSummary = processedInsights.summary;
     processedInsights.summary = addBookRecommendationLabeling(processedInsights.summary);
+    console.log('📚 INSIGHTS PROCESSING: Summary processed, changed:', originalSummary !== processedInsights.summary);
   }
 
   // Process priority areas resources
   if (processedInsights.priority_areas && Array.isArray(processedInsights.priority_areas)) {
-    processedInsights.priority_areas.forEach((area: any) => {
+    console.log('📚 INSIGHTS PROCESSING: Processing priority areas resources');
+    processedInsights.priority_areas.forEach((area: any, index: number) => {
+      console.log(`📚 INSIGHTS PROCESSING: Processing priority area ${index + 1}: ${area.competency || 'Unknown'}`);
       if (area.resources && Array.isArray(area.resources)) {
-        area.resources = area.resources.map((resource: string) => addBookRecommendationLabeling(resource));
+        console.log(`📚 INSIGHTS PROCESSING: Found ${area.resources.length} resources in priority area ${index + 1}`);
+        area.resources = area.resources.map((resource: string, resourceIndex: number) => {
+          console.log(`📚 INSIGHTS PROCESSING: Processing resource ${resourceIndex + 1}: "${resource}"`);
+          const processedResource = addBookRecommendationLabeling(resource);
+          console.log(`📚 INSIGHTS PROCESSING: Resource processed, changed:`, resource !== processedResource);
+          return processedResource;
+        });
       }
     });
   }
 
   // Process key strengths resources
   if (processedInsights.key_strengths && Array.isArray(processedInsights.key_strengths)) {
-    processedInsights.key_strengths.forEach((strength: any) => {
+    console.log('📚 INSIGHTS PROCESSING: Processing key strengths resources');
+    processedInsights.key_strengths.forEach((strength: any, index: number) => {
+      console.log(`📚 INSIGHTS PROCESSING: Processing key strength ${index + 1}: ${strength.competency || 'Unknown'}`);
       if (strength.resources && Array.isArray(strength.resources)) {
-        strength.resources = strength.resources.map((resource: string) => addBookRecommendationLabeling(resource));
+        console.log(`📚 INSIGHTS PROCESSING: Found ${strength.resources.length} resources in key strength ${index + 1}`);
+        strength.resources = strength.resources.map((resource: string, resourceIndex: number) => {
+          console.log(`📚 INSIGHTS PROCESSING: Processing resource ${resourceIndex + 1}: "${resource}"`);
+          const processedResource = addBookRecommendationLabeling(resource);
+          console.log(`📚 INSIGHTS PROCESSING: Resource processed, changed:`, resource !== processedResource);
+          return processedResource;
+        });
       }
     });
   }
 
+  console.log('📚 INSIGHTS PROCESSING: Book labeling process complete');
   return processedInsights;
 };
 

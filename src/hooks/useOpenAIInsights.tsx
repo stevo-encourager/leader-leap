@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Demographics } from '@/utils/assessmentTypes';
@@ -144,13 +145,27 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
           debugLog('✅ FOUND EXISTING INSIGHTS');
           debugLog('📄 INSIGHTS DATA:', assessment.ai_insights.substring(0, 200) + '...');
           
-          // Set successful state with existing insights
+          // ENHANCED: Apply book labeling to existing insights too
+          console.log('📚 APPLYING BOOK LABELING TO EXISTING INSIGHTS');
+          let finalInsights = assessment.ai_insights;
+          
+          try {
+            const parsedInsights = JSON.parse(assessment.ai_insights);
+            console.log('📚 EXISTING INSIGHTS: Successfully parsed existing insights');
+            const processedInsights = processInsightsForBookLabeling(parsedInsights);
+            finalInsights = JSON.stringify(processedInsights);
+            console.log('📚 EXISTING INSIGHTS: Book labeling applied to existing insights');
+          } catch (parseError) {
+            console.log('📚 EXISTING INSIGHTS: Could not parse existing insights for book labeling, using as-is:', parseError);
+          }
+          
+          // Set successful state with processed existing insights
           updateState({
-            insights: assessment.ai_insights,
+            insights: finalInsights,
             isLoading: false,
             error: null,
             isInitialized: true
-          }, 'Found existing insights in database');
+          }, 'Found existing insights in database with book labeling applied');
           
           initializationCompleteRef.current = true;
           isOperationInProgressRef.current = false;
@@ -210,9 +225,19 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
         debugLog('✅ SUCCESS: Received new insights from API');
         debugLog('📄 NEW INSIGHTS DATA:', data.insights.substring(0, 200) + '...');
         
-        // Process insights to ensure book recommendations are properly labeled
-        const processedInsights = processInsightsForBookLabeling(JSON.parse(data.insights));
-        const finalInsights = JSON.stringify(processedInsights);
+        // ENHANCED: Process insights to ensure book recommendations are properly labeled
+        console.log('📚 NEW INSIGHTS: Starting book labeling process');
+        let finalInsights = data.insights;
+        
+        try {
+          const parsedInsights = JSON.parse(data.insights);
+          console.log('📚 NEW INSIGHTS: Successfully parsed new insights from API');
+          const processedInsights = processInsightsForBookLabeling(parsedInsights);
+          finalInsights = JSON.stringify(processedInsights);
+          console.log('📚 NEW INSIGHTS: Book labeling applied to new insights');
+        } catch (parseError) {
+          console.log('📚 NEW INSIGHTS: Could not parse new insights for book labeling, using as-is:', parseError);
+        }
         
         debugLog('📚 BOOK LABELING APPLIED: Processed insights for consistent book recommendation labeling');
         

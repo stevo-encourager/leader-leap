@@ -21,10 +21,13 @@ export interface Category {
 }
 
 export interface Demographics {
-  age?: string;
-  gender?: string;
+  role?: string;
+  jobTitle?: string;
+  department?: string;
+  experienceLevel?: string;
+  teamSize?: string;
+  yearsOfExperience?: string;
   industry?: string;
-  experience?: string;
 }
 
-export type AssessmentStep = 'intro' | 'demographics' | 'instructions' | 'assessment' | 'results';
+export type AssessmentStep = 'intro' | 'demographics' | 'assessment' | 'results';

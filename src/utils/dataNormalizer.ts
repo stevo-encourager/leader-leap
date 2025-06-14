@@ -1,3 +1,4 @@
+
 import { Category, Demographics, Skill, SkillRating } from "@/utils/assessmentTypes";
 import { LocalAssessmentData } from "@/types/assessment";
 
@@ -94,10 +95,9 @@ export const normalizeDemographics = (demographics: any): Demographics => {
   }
   
   return {
-    age: demographics.age || undefined,
-    gender: demographics.gender || undefined,
-    industry: demographics.industry || undefined,
-    experience: demographics.experience || undefined
+    role: demographics.role || undefined,
+    yearsOfExperience: demographics.yearsOfExperience || undefined,
+    industry: demographics.industry || undefined
   };
 };
 

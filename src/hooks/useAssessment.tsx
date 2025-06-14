@@ -12,11 +12,9 @@ export const useAssessment = () => {
     currentStep,
     setCurrentStep,
     handleStartAssessment,
-    handleContinueToInstructions,
     handleContinueToAssessment,
     handleBackToIntro,
     handleBackToDemographics,
-    handleBackToInstructions,
     handleCompleteAssessment
   } = useNavigationState();
 
@@ -85,11 +83,9 @@ export const useAssessment = () => {
     
     // Navigation functions
     handleStartAssessment: handleStartNewAssessment,
-    handleContinueToInstructions,
     handleContinueToAssessment,
     handleBackToIntro,
     handleBackToDemographics,
-    handleBackToInstructions,
     handleCompleteAssessment: wrappedHandleCompleteAssessment,
     
     // Results management

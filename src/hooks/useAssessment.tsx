@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { useNavigationState } from './useNavigationState';
 import { useAuth } from '@/contexts/AuthContext';
@@ -13,6 +12,7 @@ export const useAssessment = () => {
     setCurrentStep,
     handleStartAssessment,
     handleContinueToAssessment,
+    handleContinueToInstructions,
     handleBackToIntro,
     handleBackToDemographics,
     handleCompleteAssessment
@@ -84,6 +84,7 @@ export const useAssessment = () => {
     // Navigation functions
     handleStartAssessment: handleStartNewAssessment,
     handleContinueToAssessment,
+    handleContinueToInstructions,
     handleBackToIntro,
     handleBackToDemographics,
     handleCompleteAssessment: wrappedHandleCompleteAssessment,

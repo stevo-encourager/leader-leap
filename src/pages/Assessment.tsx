@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CircleGauge } from 'lucide-react';
@@ -11,6 +10,8 @@ import DemographicsForm from '@/components/DemographicsForm';
 import AssessmentForm from '@/components/AssessmentForm';
 import { useAssessment } from '@/hooks/useAssessment';
 import { toast } from '@/hooks/use-toast';
+import AssessmentInstructions from '@/components/AssessmentInstructions';
+import AssessmentContent from '@/components/assessment/AssessmentContent';
 
 const Assessment = () => {
   const navigate = useNavigate();
@@ -27,7 +28,8 @@ const Assessment = () => {
     handleBackToIntro,
     handleBackToDemographics,
     handleCompleteAssessment,
-    handleCloseAuthForm
+    handleCloseAuthForm,
+    handleContinueToInstructions
   } = useAssessment();
   
   const { user, loading } = useAuth();
@@ -102,7 +104,7 @@ const Assessment = () => {
               <DemographicsForm 
                 demographics={demographics}
                 onDemographicsUpdate={handleDemographicsUpdate}
-                onContinue={handleContinueToAssessment}
+                onContinue={handleContinueToInstructions}
                 onBack={() => {
                   handleBackToIntro();
                   navigate('/');
@@ -110,15 +112,27 @@ const Assessment = () => {
               />
             )}
             
+            {currentStep === 'instructions' && (
+              <AssessmentInstructions onContinue={handleContinueToAssessment} />
+            )}
+            
             {currentStep === 'assessment' && hasValidCategories && (
-              <AssessmentForm 
+              <AssessmentContent
+                currentStep={currentStep}
                 categories={categories}
-                onCategoriesUpdate={handleCategoriesUpdate}
-                onComplete={() => {
-                  handleCompleteAssessment();
-                  navigate('/results');
+                demographics={demographics}
+                onStartAssessment={() => {
+                  handleBackToIntro();
+                  navigate('/');
                 }}
-                onBack={handleBackToDemographics}
+                onDemographicsUpdate={handleDemographicsUpdate}
+                onContinueToAssessment={handleContinueToAssessment}
+                onContinueToInstructions={handleContinueToInstructions}
+                onBackToIntro={handleBackToIntro}
+                onBackToDemographics={handleBackToDemographics}
+                onCategoriesUpdate={handleCategoriesUpdate}
+                onCompleteAssessment={handleCompleteAssessment}
+                isAuthenticated={!!user}
               />
             )}
             

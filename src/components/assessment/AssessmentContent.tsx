@@ -1,10 +1,10 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import IntroductionPage from '../IntroductionPage';
 import DemographicsForm from '../DemographicsForm';
 import AssessmentForm from '../AssessmentForm';
 import ResultsDisplay from './ResultsDisplay';
+import AssessmentInstructions from '../AssessmentInstructions';
 import { AssessmentStep, Category, Demographics } from '../../utils/assessmentData';
 
 interface AssessmentContentProps {
@@ -14,11 +14,12 @@ interface AssessmentContentProps {
   onStartAssessment: () => void;
   onDemographicsUpdate: (demographics: Demographics) => void;
   onContinueToAssessment: () => void;
+  onContinueToInstructions: () => void;
   onBackToIntro: () => void;
   onBackToDemographics: () => void;
   onCategoriesUpdate: (categories: Category[]) => void;
   onCompleteAssessment: () => void;
-  onShowSignupForm: () => void;
+  onShowSignupForm?: () => void;
   isAuthenticated: boolean;
 }
 
@@ -29,6 +30,7 @@ const AssessmentContent: React.FC<AssessmentContentProps> = ({
   onStartAssessment,
   onDemographicsUpdate,
   onContinueToAssessment,
+  onContinueToInstructions,
   onBackToIntro,
   onBackToDemographics,
   onCategoriesUpdate,
@@ -55,9 +57,15 @@ const AssessmentContent: React.FC<AssessmentContentProps> = ({
       <DemographicsForm 
         demographics={demographics}
         onDemographicsUpdate={onDemographicsUpdate}
-        onContinue={onContinueToAssessment}
+        onContinue={onContinueToInstructions}
         onBack={onBackToIntro}
       />
+    );
+  }
+
+  if (currentStep === 'instructions') {
+    return (
+      <AssessmentInstructions onContinue={onContinueToAssessment} />
     );
   }
 

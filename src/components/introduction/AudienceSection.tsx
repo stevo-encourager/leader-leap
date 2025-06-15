@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { User, Star } from 'lucide-react';
+import { User } from 'lucide-react';
 import SectionHeader from './SectionHeader';
 
 const AudienceSection: React.FC = () => {
@@ -12,7 +11,7 @@ const AudienceSection: React.FC = () => {
         <div className="space-y-2">
           <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-100">
             <div className="text-encourager">
-              <Star size={16} />
+              <User size={16} />
             </div>
             <div className="text-slate-700 text-sm">
               Aspiring Leaders
@@ -20,7 +19,7 @@ const AudienceSection: React.FC = () => {
           </div>
           <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-100">
             <div className="text-encourager">
-              <Star size={16} />
+              <User size={16} />
             </div>
             <div className="text-slate-700 text-sm">
               Mid-Career Execs
@@ -28,7 +27,7 @@ const AudienceSection: React.FC = () => {
           </div>
           <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-100">
             <div className="text-encourager">
-              <Star size={16} />
+              <User size={16} />
             </div>
             <div className="text-slate-700 text-sm">
               C-Suite
@@ -36,7 +35,7 @@ const AudienceSection: React.FC = () => {
           </div>
           <div className="flex items-center gap-2 p-2 bg-slate-50 rounded-lg border border-slate-100">
             <div className="text-encourager">
-              <Star size={16} />
+              <User size={16} />
             </div>
             <div className="text-slate-700 text-sm">
               Entrepreneurs & Business Owners

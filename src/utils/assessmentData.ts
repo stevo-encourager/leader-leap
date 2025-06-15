@@ -1,4 +1,3 @@
-
 import { SkillRating, Skill, Category, Demographics, AssessmentStep } from './assessmentTypes';
 import { allCategories } from './assessmentCategories';
 

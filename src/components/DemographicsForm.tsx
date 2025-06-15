@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -150,7 +149,7 @@ const DemographicsForm: React.FC<DemographicsFormProps> = ({ demographics, onDem
             Back
           </Button>
           <Button onClick={onContinue} disabled={!isFormComplete}>
-            Continue to Assessment
+            Continue to Instructions
           </Button>
         </CardFooter>
       </Card>

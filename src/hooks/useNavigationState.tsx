@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AssessmentStep } from '@/utils/assessmentTypes';
@@ -14,6 +13,8 @@ export const useNavigationState = () => {
       setCurrentStep('intro');
     } else if (location.pathname === '/assessment') {
       setCurrentStep(prevStep => prevStep === 'intro' ? 'demographics' : prevStep);
+    } else if (location.pathname === '/instructions') {
+      setCurrentStep('instructions');
     } else if (location.pathname === '/results') {
       setCurrentStep('results');
     }
@@ -27,6 +28,11 @@ export const useNavigationState = () => {
 
   const handleContinueToAssessment = useCallback(() => {
     setCurrentStep('assessment');
+    navigate('/assessment');
+  }, [navigate]);
+
+  const handleContinueToInstructions = useCallback(() => {
+    setCurrentStep('instructions');
   }, []);
 
   const handleBackToIntro = useCallback(() => {
@@ -48,6 +54,7 @@ export const useNavigationState = () => {
     setCurrentStep,
     handleStartAssessment,
     handleContinueToAssessment,
+    handleContinueToInstructions,
     handleBackToIntro,
     handleBackToDemographics,
     handleCompleteAssessment

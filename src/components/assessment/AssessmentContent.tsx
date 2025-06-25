@@ -65,7 +65,7 @@ const AssessmentContent: React.FC<AssessmentContentProps> = ({
 
   if (currentStep === 'instructions') {
     return (
-      <AssessmentInstructions onContinue={onContinueToAssessment} />
+      <AssessmentInstructions onContinue={onContinueToAssessment} onBack={onBackToDemographics} />
     );
   }
 

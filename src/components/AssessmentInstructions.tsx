@@ -1,14 +1,15 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CircleCheck, ArrowRight } from 'lucide-react';
+import { CircleCheck, ArrowRight, ArrowLeft } from 'lucide-react';
 import SectionHeader from './introduction/SectionHeader';
 
 interface AssessmentInstructionsProps {
   onContinue: () => void;
+  onBack: () => void;
 }
 
-const AssessmentInstructions: React.FC<AssessmentInstructionsProps> = ({ onContinue }) => {
+const AssessmentInstructions: React.FC<AssessmentInstructionsProps> = ({ onContinue, onBack }) => {
   return (
     <div className="fade-in min-h-screen bg-slate-50">
       <main className="assessment-container max-w-2xl mx-auto px-4 py-8">
@@ -54,12 +55,16 @@ const AssessmentInstructions: React.FC<AssessmentInstructionsProps> = ({ onConti
               </div>
             </div>
           </CardContent>
+          <CardFooter className="flex justify-between pt-6">
+            <Button variant="outline" onClick={onBack} className="w-[120px]">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back
+            </Button>
+            <Button onClick={onContinue} className="bg-encourager text-white w-[220px]">
+              Start Assessment
+            </Button>
+          </CardFooter>
         </Card>
-        <div className="flex justify-center mt-8">
-          <Button onClick={onContinue} size="lg" className="bg-encourager text-white px-8 py-4 text-lg rounded-lg">
-            Start Assessment
-          </Button>
-        </div>
       </main>
     </div>
   );

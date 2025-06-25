@@ -113,7 +113,7 @@ const Assessment = () => {
             )}
             
             {currentStep === 'instructions' && (
-              <AssessmentInstructions onContinue={handleContinueToAssessment} />
+              <AssessmentInstructions onContinue={handleContinueToAssessment} onBack={handleBackToDemographics} />
             )}
             
             {currentStep === 'assessment' && hasValidCategories && (

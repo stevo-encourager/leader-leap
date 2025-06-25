@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { CircleGauge, ArrowLeft, Plus } from 'lucide-react';
+import { CircleGauge } from 'lucide-react';
 import Navigation from '@/components/layout/Navigation';
 import Footer from '@/components/layout/Footer';
 import { useAssessmentHistory } from '@/hooks/useAssessmentHistory';
@@ -156,4 +156,4 @@ const MyProfile = () => {
   );
 };
 
-export default MyProfile;
+export default MyProfile; 

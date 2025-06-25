@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -21,15 +20,17 @@ const CategoryNavigationControls: React.FC<CategoryNavigationProps> = ({
   isCategoryComplete
 }) => {
   return (
-    <div className="flex justify-between mt-6">
-      <Button 
-        variant="outline" 
-        onClick={onPrevCategory}
-        className="border-encourager hover:bg-encourager-lightgray hover:text-encourager"
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        {isFirstCategory ? 'Back to Demographics' : 'Previous'}
-      </Button>
+    <div className="flex justify-end mt-6">
+      {!isFirstCategory && (
+        <Button 
+          variant="outline" 
+          onClick={onPrevCategory}
+          className="border-encourager hover:bg-encourager-lightgray hover:text-encourager mr-4"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Previous
+        </Button>
+      )}
       <Button
         onClick={onNextCategory}
         className="bg-encourager hover:bg-encourager-light"

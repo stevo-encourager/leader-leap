@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { Json } from '@/integrations/supabase/types';
@@ -193,6 +192,12 @@ export const deleteAssessment = async (assessmentId: string): Promise<{
     }
     
     console.log("deleteAssessment - Authenticated user ID:", user.id);
+    
+    // Prevent deletion of the protected test assessment
+    if (assessmentId === 'f74470bc-3c48-4980-bc5f-17386a724d37') {
+      console.error('deleteAssessment - Attempted to delete protected test assessment');
+      return { success: false, error: 'This test assessment cannot be deleted.' };
+    }
     
     // First check if the assessment exists and belongs to this user
     const { data: existingAssessment, error: fetchError } = await supabase

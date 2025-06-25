@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -6,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { LogIn, History, Home, Bot } from 'lucide-react';
 
 const Navigation: React.FC = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   
   // Check if we're in development/staging (not production)
   const isDevelopment = import.meta.env.DEV || window.location.hostname !== 'your-production-domain.com';
@@ -27,14 +26,14 @@ const Navigation: React.FC = () => {
       <div className="flex gap-2">
         {user ? (
           <>
-            <Link to="/previous-assessments" className="no-underline">
+            <Link to="/profile" className="no-underline">
               <Button 
                 variant="ghost" 
                 size="sm" 
                 className="flex items-center gap-2"
               >
                 <History size={16} />
-                <span>Previous Assessments</span>
+                <span>My Profile</span>
               </Button>
             </Link>
             
@@ -51,6 +50,15 @@ const Navigation: React.FC = () => {
                 </Button>
               </Link>
             )}
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="flex items-center gap-2"
+              onClick={signOut}
+            >
+              <LogIn size={16} />
+              <span>Logout</span>
+            </Button>
           </>
         ) : (
           <Link to="/login" className="no-underline">

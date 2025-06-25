@@ -28,7 +28,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true })
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('signin');
   const [showPassword, setShowPassword] = useState(false);
-  const { signIn, signUp, signInWithGoogle } = useAuth();
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotSent, setForgotSent] = useState(false);
+  const { signIn, signUp, signInWithGoogle, forgotPassword } = useAuth();
   
   const { register, handleSubmit, formState: { errors } } = useForm({
     resolver: zodResolver(authSchema),
@@ -78,50 +81,97 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true })
   return (
     <Tabs defaultValue="signin" value={activeTab} onValueChange={setActiveTab}>
       <TabsList className="grid w-full grid-cols-2 mb-6">
-        <TabsTrigger value="signin">Sign In</TabsTrigger>
+        <TabsTrigger value="signin">Login</TabsTrigger>
         <TabsTrigger value="signup">Sign Up</TabsTrigger>
       </TabsList>
       
       <TabsContent value="signin">
-        <form onSubmit={handleSubmit(handleSignIn)} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input 
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              {...register('email')}
-            />
-            {errors.email && <p className="text-sm text-red-500">{errors.email.message as string}</p>}
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <div className="relative">
-              <Input 
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
-                {...register('password')}
+        {showForgot ? (
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault();
+              setIsLoading(true);
+              setForgotSent(false);
+              try {
+                await forgotPassword(forgotEmail);
+                setForgotSent(true);
+              } catch {}
+              setIsLoading(false);
+            }}
+            className="space-y-4"
+          >
+            <div className="space-y-2">
+              <Label htmlFor="forgotEmail">Email</Label>
+              <Input
+                id="forgotEmail"
+                type="email"
+                placeholder="you@example.com"
+                value={forgotEmail}
+                onChange={e => setForgotEmail(e.target.value)}
+                required
               />
-              <button 
+            </div>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Send Password Reset Email
+            </Button>
+            <Button type="button" variant="ghost" className="w-full" onClick={() => setShowForgot(false)}>
+              Back to Sign In
+            </Button>
+            {forgotSent && (
+              <p className="text-green-600 text-center text-sm">If an account exists for that email, a reset link has been sent.</p>
+            )}
+          </form>
+        ) : (
+          <>
+            <form onSubmit={handleSubmit(handleSignIn)} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input 
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  {...register('email')}
+                />
+                {errors.email && <p className="text-sm text-red-500">{errors.email.message as string}</p>}
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Input 
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    {...register('password')}
+                  />
+                  <button 
+                    type="button"
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                {errors.password && <p className="text-sm text-red-500">{errors.password.message as string}</p>}
+              </div>
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                Sign In
+              </Button>
+            </form>
+            <div className="mt-2 text-center">
+              <button
                 type="button"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500"
-                onClick={() => setShowPassword(!showPassword)}
+                className="text-sm text-encourager underline hover:text-encourager-dark"
+                onClick={() => setShowForgot(true)}
               >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                Forgot password?
               </button>
             </div>
-            {errors.password && <p className="text-sm text-red-500">{errors.password.message as string}</p>}
-          </div>
-          
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Sign In
-          </Button>
-        </form>
-        
-        {showGoogleAuth && (
+          </>
+        )}
+        {showGoogleAuth && !showForgot && (
           <div className="mt-4 text-center text-sm">
             <p className="text-muted-foreground mb-4">Or continue with</p>
             <Button 
@@ -190,7 +240,21 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true })
             Create Account
           </Button>
         </form>
-        
+        {showGoogleAuth && (
+          <div className="mt-4 text-center text-sm">
+            <p className="text-muted-foreground mb-4">Or continue with</p>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={handleGoogleSignIn}
+              disabled={isLoading}
+              className="w-full"
+            >
+              <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" className="h-5 w-5 mr-2" />
+              Sign up with Google
+            </Button>
+          </div>
+        )}
         <div className="mt-4">
           <p className="text-sm text-muted-foreground text-center">
             By signing up, you agree to our Terms of Service and Privacy Policy.

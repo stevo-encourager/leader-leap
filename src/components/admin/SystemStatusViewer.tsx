@@ -36,6 +36,15 @@ const SystemStatusViewer = () => {
     return 'https://hrgoxcdixvpmcbfgltea.functions.supabase.co/list-users';
   };
 
+  // Helper to get the current session's Authorization header
+  const getAuthHeaders = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    return {
+      'Content-Type': 'application/json',
+      ...(session?.access_token ? { 'Authorization': `Bearer ${session.access_token}` } : {}),
+    };
+  };
+
   // Fetch system stats (profiles, assessments, user count)
   const fetchStats = async () => {
     setIsLoading(true);
@@ -57,9 +66,10 @@ const SystemStatusViewer = () => {
       if (profileError) throw new Error(`Error getting profile count: ${profileError.message}`);
 
       // Get user count via edge function
+      const headers = await getAuthHeaders();
       const response = await fetch(getListUsersUrl(), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
       });
       if (!response.ok) throw new Error('Failed to fetch user accounts');
       const userData = await response.json();
@@ -88,9 +98,10 @@ const SystemStatusViewer = () => {
     setIsLoadingUsers(true);
     setUsersError(null);
     try {
+      const headers = await getAuthHeaders();
       const response = await fetch(getListUsersUrl(), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
       });
       if (!response.ok) throw new Error('Failed to fetch users');
       const data = await response.json();

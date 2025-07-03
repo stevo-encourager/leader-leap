@@ -25,6 +25,12 @@ const SystemStatusViewer = () => {
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const [usersError, setUsersError] = useState<string | null>(null);
 
+  // Helper to get the correct list-users URL based on your Supabase project URL
+  const getListUsersUrl = () => {
+    const url = import.meta.env.VITE_SUPABASE_URL;
+    return `${url}/functions/v1/list-users`;
+  };
+
   // Fetch system stats (profiles, assessments, user count)
   const fetchStats = async () => {
     setIsLoading(true);
@@ -46,7 +52,7 @@ const SystemStatusViewer = () => {
       if (profileError) throw new Error(`Error getting profile count: ${profileError.message}`);
 
       // Get user count via edge function
-      const response = await fetch('/api/list-users', {
+      const response = await fetch(getListUsersUrl(), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
@@ -77,7 +83,7 @@ const SystemStatusViewer = () => {
     setIsLoadingUsers(true);
     setUsersError(null);
     try {
-      const response = await fetch('/api/list-users', {
+      const response = await fetch(getListUsersUrl(), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });

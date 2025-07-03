@@ -25,10 +25,15 @@ const SystemStatusViewer = () => {
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const [usersError, setUsersError] = useState<string | null>(null);
 
-  // Helper to get the correct list-users URL based on your Supabase project URL
+  // Helper to get the correct list-users URL for local and production
   const getListUsersUrl = () => {
-    const url = import.meta.env.VITE_SUPABASE_URL;
-    return `${url}/functions/v1/list-users`;
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname.startsWith('127.');
+    if (isLocal) {
+      // Local dev: use local Supabase Edge Functions
+      return 'http://localhost:54321/functions/v1/list-users';
+    }
+    // Production: use deployed Edge Function URL
+    return 'https://hrgoxcdixvpmcbfgltea.functions.supabase.co/list-users';
   };
 
   // Fetch system stats (profiles, assessments, user count)

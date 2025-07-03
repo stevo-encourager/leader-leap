@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { CircleGauge, RefreshCw, AlertCircle } from 'lucide-react';
+import { CircleGauge, RefreshCw, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -20,6 +19,11 @@ const SystemStatusViewer = () => {
     error: null,
     lastUpdated: null
   });
+
+  const [showUsers, setShowUsers] = useState(false);
+  const [users, setUsers] = useState<any[]>([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [usersError, setUsersError] = useState<string | null>(null);
 
   const fetchStats = async () => {
     setIsLoading(true);
@@ -91,6 +95,30 @@ const SystemStatusViewer = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const fetchUsers = async () => {
+    setIsLoadingUsers(true);
+    setUsersError(null);
+    try {
+      // Call the new edge function to get user details
+      const { data, error } = await supabase.functions.invoke('list-users');
+      if (error || !data || !data.users) {
+        throw new Error(error?.message || 'Failed to fetch users');
+      }
+      setUsers(data.users);
+    } catch (err: any) {
+      setUsersError(err.message);
+    } finally {
+      setIsLoadingUsers(false);
+    }
+  };
+
+  const handleToggleUsers = () => {
+    if (!showUsers && users.length === 0) {
+      fetchUsers();
+    }
+    setShowUsers((prev) => !prev);
   };
 
   useEffect(() => {
@@ -171,25 +199,82 @@ const SystemStatusViewer = () => {
         <div className="text-sm text-muted-foreground">
           {stats.lastUpdated && `Last updated: ${stats.lastUpdated}`}
         </div>
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={fetchStats}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <>
-              <CircleGauge className="mr-2 h-4 w-4 animate-spin" />
-              Refreshing...
-            </>
-          ) : (
-            <>
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Refresh Stats
-            </>
-          )}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleToggleUsers}
+            disabled={isLoading}
+            aria-expanded={showUsers}
+            aria-controls="user-list-section"
+          >
+            {showUsers ? <ChevronUp className="mr-2 h-4 w-4" /> : <ChevronDown className="mr-2 h-4 w-4" />}
+            {showUsers ? 'Hide User Accounts' : 'Show User Accounts'}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={fetchStats}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <CircleGauge className="mr-2 h-4 w-4 animate-spin" />
+                Refreshing...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Refresh Stats
+              </>
+            )}
+          </Button>
+        </div>
       </div>
+      
+      {showUsers && (
+        <div id="user-list-section" className="mt-4 border rounded-md p-4 bg-slate-50">
+          <h3 className="font-medium mb-2">User Accounts ({users.length})</h3>
+          {isLoadingUsers ? (
+            <div className="flex items-center text-sm"><CircleGauge className="animate-spin h-4 w-4 mr-2" /> Loading users...</div>
+          ) : usersError ? (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error loading users</AlertTitle>
+              <AlertDescription>{usersError}</AlertDescription>
+            </Alert>
+          ) : users.length === 0 ? (
+            <div className="text-muted-foreground text-sm">No users found.</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-xs border">
+                <thead>
+                  <tr className="bg-slate-100">
+                    <th className="px-2 py-1 border">ID</th>
+                    <th className="px-2 py-1 border">Email</th>
+                    <th className="px-2 py-1 border">Created At</th>
+                    <th className="px-2 py-1 border">Last Sign In</th>
+                    <th className="px-2 py-1 border">Role</th>
+                    <th className="px-2 py-1 border">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map((user) => (
+                    <tr key={user.id}>
+                      <td className="px-2 py-1 border font-mono">{user.id}</td>
+                      <td className="px-2 py-1 border">{user.email}</td>
+                      <td className="px-2 py-1 border">{user.created_at}</td>
+                      <td className="px-2 py-1 border">{user.last_sign_in_at || '-'}</td>
+                      <td className="px-2 py-1 border">{user.role || '-'}</td>
+                      <td className="px-2 py-1 border">{user.aud || '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
       
       {/* System Status Alerts */}
       {!isLoading && !stats.error && (

@@ -28,11 +28,24 @@ const queryClient = new QueryClient({
 });
 
 function SuperAdminRoute({ children }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const superAdmins = ['steve@chainpace.io', 'steve@encourager.co.uk'];
-  if (!user || !superAdmins.includes(user.email)) {
+  console.log('PROD SuperAdminRoute: user =', user);
+  console.log('PROD SuperAdminRoute: user.email =', user?.email);
+  if (loading) {
+    console.log('PROD SuperAdminRoute: Auth is loading, rendering null.');
+    return <div>Loading...</div>;
+  }
+  if (
+    !user ||
+    !superAdmins.some(
+      email => email.toLowerCase() === (user.email || '').toLowerCase().trim()
+    )
+  ) {
+    console.log('PROD SuperAdminRoute: Access denied. Redirecting to home.');
     return <Navigate to="/" />;
   }
+  console.log('PROD SuperAdminRoute: Access granted. Rendering children.');
   return children;
 }
 

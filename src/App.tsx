@@ -30,11 +30,11 @@ const queryClient = new QueryClient({
 function SuperAdminRoute({ children }) {
   const { user, loading } = useAuth();
   const superAdmins = ['steve@chainpace.io', 'steve@encourager.co.uk'];
-  console.log('PROD SuperAdminRoute: user =', user);
-  console.log('PROD SuperAdminRoute: user.email =', user?.email);
+  console.log('SuperAdminRoute: user =', user);
+  console.log('SuperAdminRoute: user.email =', user?.email);
   if (loading) {
-    console.log('PROD SuperAdminRoute: Auth is loading, rendering null.');
-    return <div>Loading...</div>;
+    console.log('SuperAdminRoute: Auth is loading, rendering null.');
+    return <div>Loading...</div>; // Or use a spinner component if you have one
   }
   if (
     !user ||
@@ -42,10 +42,10 @@ function SuperAdminRoute({ children }) {
       email => email.toLowerCase() === (user.email || '').toLowerCase().trim()
     )
   ) {
-    console.log('PROD SuperAdminRoute: Access denied. Redirecting to home.');
+    console.log('SuperAdminRoute: Access denied. Redirecting to home.');
     return <Navigate to="/" />;
   }
-  console.log('PROD SuperAdminRoute: Access granted. Rendering children.');
+  console.log('SuperAdminRoute: Access granted. Rendering children.');
   return children;
 }
 

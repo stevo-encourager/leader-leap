@@ -12,15 +12,13 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabaseUrl = Deno.env.get('SUPABASE_URL');
-  const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-  console.log("SUPABASE_URL:", supabaseUrl);
-  console.log("SUPABASE_SERVICE_ROLE_KEY (first 10):", serviceRoleKey?.slice(0, 10));
-  const supabase = createClient(supabaseUrl, serviceRoleKey);
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
   try {
     // List all users (up to 1000)
-    const { data, error } = await supabase.auth.admin.listUsers();
+    const { data, error } = await supabase.auth.admin.listUsers({ perPage: 1000 });
 
     if (error) {
       console.error("Error listing users:", error);

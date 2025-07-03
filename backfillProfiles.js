@@ -1,12 +1,10 @@
 console.log("Script started")
-require('dotenv').config();
 const { createClient } = require('@supabase/supabase-js');
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SUPABASE_URL = 'https://hrgoxcdixvpmcbfgltea.supabase.co';
+const SERVICE_ROLE_KEY = 'YOUR_SERVICE_ROLE_KEY_HERE'; 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhyZ294Y2RpeHZwbWNiZmdsdGVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0ODMxMTQsImV4cCI6MjA2MzA1OTExNH0.5FtaIZBVaUnwrQjIEslDlStE3-T0TqxKdHvsZglM24o'
 
-const supabase = createClient(supabaseUrl, serviceRoleKey);
-
+const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
 async function backfillProfiles() {
   const { data: users, error: usersError } = await supabase.auth.admin.listUsers({ perPage: 1000 });

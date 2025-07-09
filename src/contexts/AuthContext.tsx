@@ -209,32 +209,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const isInIframe = window.self !== window.top;
       
       if (isInIframe) {
-        console.log('Detected iframe environment, opening OAuth in new window');
+        console.log('Detected iframe environment (Lovable editor)');
         
-        // Build the OAuth URL
-        const authUrl = `https://hrgoxcdixvpmcbfgltea.supabase.co/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectUrl)}&prompt=select_account&access_type=offline`;
+        // Show helpful message for development
+        toast({
+          title: "Development Mode",
+          description: "Google OAuth doesn't work in the Lovable editor due to iframe restrictions. Please test on your deployed app: https://leader-leap-dashboard.lovable.app",
+          variant: "default",
+        });
         
-        console.log('Opening OAuth URL in new window:', authUrl);
+        // For development purposes, you can uncomment the lines below to simulate a successful login
+        // This is ONLY for development and should NEVER be used in production
+        /*
+        console.log('Simulating successful OAuth for development');
+        toast({
+          title: "Development Login Simulated",
+          description: "This is a development simulation. Real OAuth works on your deployed app.",
+        });
+        */
         
-        // Open in a new window to escape iframe restrictions
-        const popup = window.open(
-          authUrl,
-          'google-oauth',
-          'width=500,height=600,scrollbars=yes,resizable=yes'
-        );
-        
-        if (!popup) {
-          throw new Error('Please allow popups for this site and try again.');
-        }
-        
-        // Monitor the popup for completion
-        const checkClosed = setInterval(() => {
-          if (popup.closed) {
-            clearInterval(checkClosed);
-            console.log('OAuth popup closed');
-            // The auth state change will be handled by the onAuthStateChange listener
-          }
-        }, 1000);
+        return; // Exit early in iframe environment
         
       } else {
         console.log('Not in iframe, using standard OAuth flow');
@@ -265,7 +259,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (error.message?.includes('popup')) {
         errorMessage = 'Please allow popups for this site and try again.';
       } else if (error.message?.includes('X-Frame-Options')) {
-        errorMessage = 'Browser security settings are blocking Google sign-in. Please try a different browser or disable popup blockers.';
+        errorMessage = 'Google OAuth is not supported in the Lovable editor. Please test on your deployed app.';
       } else if (error.message?.includes('403') || error.message?.includes('access')) {
         errorMessage = 'Google OAuth configuration error. Please check that your Google OAuth settings match your domain configuration.';
       }

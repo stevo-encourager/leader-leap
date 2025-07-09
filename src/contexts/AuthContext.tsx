@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -188,8 +189,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       console.log('Starting Google OAuth flow...');
       
-      // Get the current URL for redirect
-      const redirectUrl = `${window.location.origin}/`;
+      // Determine the correct redirect URL based on environment
+      const currentUrl = window.location.origin;
+      let redirectUrl = currentUrl;
+      
+      // If we're in a Lovable preview environment, use the production URL
+      if (currentUrl.includes('lovable.app') && !currentUrl.includes('leader-leap-dashboard')) {
+        redirectUrl = 'https://leader-leap-dashboard.lovable.app';
+      }
+      
+      // Always ensure we redirect to the root path
+      if (!redirectUrl.endsWith('/')) {
+        redirectUrl += '/';
+      }
+      
+      console.log('Current URL:', currentUrl);
       console.log('Redirect URL:', redirectUrl);
       
       const { data, error } = await supabase.auth.signInWithOAuth({
@@ -200,8 +214,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             prompt: 'select_account',
             access_type: 'offline',
           },
-          // Force popup behavior
-          skipBrowserRedirect: false,
         }
       });
 
@@ -224,6 +236,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         errorMessage = 'Please allow popups for this site and try again.';
       } else if (error.message?.includes('X-Frame-Options')) {
         errorMessage = 'Browser security settings are blocking Google sign-in. Please try a different browser or disable popup blockers.';
+      } else if (error.message?.includes('403') || error.message?.includes('access')) {
+        errorMessage = 'Google OAuth configuration error. Please check that your Google OAuth settings match your domain configuration.';
       }
       
       toast({

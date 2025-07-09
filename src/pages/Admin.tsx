@@ -5,12 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DataSchemaViewer from '@/components/admin/DataSchemaViewer';
 import SystemStatusViewer from '@/components/admin/SystemStatusViewer';
+import UserManagement from '@/components/admin/UserManagement';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Admin = () => {
   console.log("Admin page: Rendering admin dashboard");
   console.log("Admin page: SystemStatusViewer component imported:", !!SystemStatusViewer);
+  console.log("Admin page: UserManagement component imported:", !!UserManagement);
   console.log("Admin page: Current URL:", window.location.href);
   
   return (
@@ -26,8 +28,9 @@ const Admin = () => {
       </div>
 
       <Tabs defaultValue="status" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="status">System Status</TabsTrigger>
+          <TabsTrigger value="users">User Management</TabsTrigger>
           <TabsTrigger value="schema">Data Schema</TabsTrigger>
         </TabsList>
         
@@ -43,6 +46,10 @@ const Admin = () => {
               <SystemStatusViewer />
             </CardContent>
           </Card>
+        </TabsContent>
+        
+        <TabsContent value="users" className="mt-6">
+          <UserManagement />
         </TabsContent>
         
         <TabsContent value="schema" className="mt-6">

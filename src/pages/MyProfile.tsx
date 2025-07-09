@@ -93,14 +93,19 @@ const MyProfile = () => {
         throw new Error(data?.message || 'Failed to delete account');
       }
       
+      // Success message logic - show confirmation before sign out and redirect
       toast({
-        title: "Account deleted",
-        description: "Your account has been permanently deleted.",
+        title: "Account deleted successfully",
+        description: "Your account has been successfully deleted. We're sorry to see you go.",
       });
       
-      // Sign out and redirect after successful deletion
-      await signOut();
-      navigate('/');
+      // Small delay to ensure the success message is visible before redirect
+      setTimeout(async () => {
+        // Sign out and redirect after successful deletion
+        await signOut();
+        navigate('/');
+      }, 2000);
+      
     } catch (err: any) {
       console.error('Delete account error:', err);
       

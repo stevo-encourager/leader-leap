@@ -24,6 +24,7 @@ const Results = () => {
   const localDataLoadedRef = useRef(false);
   const [isPageReady, setIsPageReady] = useState(false);
   const [isInitialDataChecked, setIsInitialDataChecked] = useState(false);
+  const [showMandatoryAuth, setShowMandatoryAuth] = useState(false);
   
   // Log the assessment ID for debugging
   console.log('Results page - URL assessmentId parameter:', assessmentId);
@@ -113,6 +114,26 @@ const Results = () => {
     categories,
     demographics
   );
+
+  // Check if we need to show mandatory auth for new assessments
+  useEffect(() => {
+    if (!loading && isPageReady && isInitialDataChecked) {
+      // For new assessments (no assessmentId), require authentication to view results
+      if (!assessmentId && !user && (categories?.length > 0 || getLocalAssessmentData()?.categories?.length > 0)) {
+        console.log('Results page - New assessment detected, requiring authentication');
+        setShowMandatoryAuth(true);
+      } else {
+        setShowMandatoryAuth(false);
+      }
+    }
+  }, [loading, isPageReady, isInitialDataChecked, assessmentId, user, categories]);
+
+  // Handle successful authentication
+  const handleAuthSuccess = () => {
+    console.log('Results page - Authentication successful, hiding auth form');
+    setShowMandatoryAuth(false);
+    handleCloseAuthForm();
+  };
 
   // CRITICAL FIX: Only save for NEW assessments, never for existing ones being viewed
   // Also ensure we don't save multiple times in the same session
@@ -237,6 +258,22 @@ const Results = () => {
     );
   }
 
+  // Show mandatory authentication for new assessments
+  if (showMandatoryAuth) {
+    return (
+      <div className="min-h-screen bg-slate-50">
+        <div className="max-w-5xl mx-auto px-4 py-2">
+          <Navigation />
+        </div>
+        <main className="assessment-container max-w-5xl mx-auto px-4 py-8">
+          <UserHeader />
+          <AuthSection onClose={handleAuthSuccess} mandatory={true} />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   // Determine what data to use for display
   let finalDisplayCategories = [];
   let finalDisplayDemographics = {};
@@ -312,11 +349,11 @@ const Results = () => {
       <main className="assessment-container max-w-5xl mx-auto px-4 py-8">
         <UserHeader />
         
-        {showAuthForm && (
+        {showAuthForm && !showMandatoryAuth && (
           <AuthSection onClose={handleCloseAuthForm} />
         )}
         
-        {!showAuthForm && (
+        {!showAuthForm && !showMandatoryAuth && (
           <ResultsDisplay
             categories={finalDisplayCategories}
             demographics={finalDisplayDemographics}

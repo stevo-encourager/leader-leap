@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -99,7 +100,7 @@ const MyProfile = () => {
   };
 
   const handleStartNewAssessment = () => {
-    navigate('/');
+    navigate('/assessment');
   };
 
   if (isLoading) {
@@ -121,59 +122,61 @@ const MyProfile = () => {
       <main className="max-w-4xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-encourager mb-8">My Profile</h1>
         
-        <div className="mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <h2 className="text-xl font-semibold mb-2">Account Details</h2>
-            <div className="mb-4">
-              <span className="font-medium">Email:</span> {user?.email}
+        <div className="flex gap-8 mb-8">
+          <div className="flex-1">
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-xl font-semibold mb-2">Account Details</h2>
+              <div className="mb-4">
+                <span className="font-medium">Email:</span> {user?.email}
+              </div>
+              <button
+                className="text-encourager underline text-sm mb-2 block"
+                onClick={() => setShowChangePassword((v) => !v)}
+              >
+                {showChangePassword ? 'Cancel' : 'Change Password'}
+              </button>
+              <button
+                className="text-red-600 underline text-sm"
+                onClick={handleDeleteAccount}
+              >
+                Delete Account
+              </button>
+              {showChangePassword && (
+                <form onSubmit={handleChangePassword} className="mt-4 flex flex-col gap-2 max-w-xs">
+                  <input
+                    type="password"
+                    className="border rounded px-3 py-2"
+                    placeholder="New password"
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                    minLength={6}
+                    required
+                  />
+                  <button
+                    type="submit"
+                    className="bg-encourager text-white rounded px-3 py-2 mt-1"
+                    disabled={passwordLoading}
+                  >
+                    {passwordLoading ? 'Updating...' : 'Update Password'}
+                  </button>
+                  {passwordMessage && (
+                    <div className="text-sm text-center mt-1 text-encourager">
+                      {passwordMessage}
+                    </div>
+                  )}
+                </form>
+              )}
             </div>
-            <button
-              className="text-encourager underline text-sm mb-2 block"
-              onClick={() => setShowChangePassword((v) => !v)}
-            >
-              {showChangePassword ? 'Cancel' : 'Change Password'}
-            </button>
-            <button
-              className="text-red-600 underline text-sm"
-              onClick={handleDeleteAccount}
-            >
-              Delete Account
-            </button>
-            {showChangePassword && (
-              <form onSubmit={handleChangePassword} className="mt-4 flex flex-col gap-2 max-w-xs">
-                <input
-                  type="password"
-                  className="border rounded px-3 py-2"
-                  placeholder="New password"
-                  value={newPassword}
-                  onChange={e => setNewPassword(e.target.value)}
-                  minLength={6}
-                  required
-                />
-                <button
-                  type="submit"
-                  className="bg-encourager text-white rounded px-3 py-2 mt-1"
-                  disabled={passwordLoading}
-                >
-                  {passwordLoading ? 'Updating...' : 'Update Password'}
-                </button>
-                {passwordMessage && (
-                  <div className="text-sm text-center mt-1 text-encourager">
-                    {passwordMessage}
-                  </div>
-                )}
-              </form>
-            )}
           </div>
-        </div>
-
-        <div className="mb-8">
-          <Button 
-            onClick={handleStartNewAssessment}
-            className="bg-encourager hover:bg-encourager-light text-white px-6 py-3"
-          >
-            Start New Assessment
-          </Button>
+          
+          <div className="flex-shrink-0">
+            <Button 
+              onClick={handleStartNewAssessment}
+              className="bg-encourager hover:bg-encourager-light text-white px-6 py-3"
+            >
+              Start New Assessment
+            </Button>
+          </div>
         </div>
 
         <div className="mb-8">

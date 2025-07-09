@@ -186,23 +186,49 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const signInWithGoogle = async () => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      console.log('Starting Google OAuth flow...');
+      
+      // Get the current URL for redirect
+      const redirectUrl = `${window.location.origin}/`;
+      console.log('Redirect URL:', redirectUrl);
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/`,
+          redirectTo: redirectUrl,
           queryParams: {
             prompt: 'select_account',
             access_type: 'offline',
           },
+          // Force popup behavior
           skipBrowserRedirect: false,
         }
       });
 
-      if (error) throw error;
+      console.log('OAuth response:', { data, error });
+
+      if (error) {
+        console.error('OAuth error:', error);
+        throw error;
+      }
+
+      // Log successful initiation
+      console.log('Google OAuth initiated successfully');
+      
     } catch (error: any) {
+      console.error('Google sign in error:', error);
+      
+      // Show more specific error messages
+      let errorMessage = error.message;
+      if (error.message?.includes('popup')) {
+        errorMessage = 'Please allow popups for this site and try again.';
+      } else if (error.message?.includes('X-Frame-Options')) {
+        errorMessage = 'Browser security settings are blocking Google sign-in. Please try a different browser or disable popup blockers.';
+      }
+      
       toast({
         title: "Google sign in error",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
       throw error;

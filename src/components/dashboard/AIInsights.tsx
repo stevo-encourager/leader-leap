@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Bot, AlertCircle, Target, TrendingUp, ExternalLink } from 'lucide-react';
 import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
@@ -40,16 +41,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({
   assessmentId,
   onRegenerateCallback 
 }) => {
-  console.log('🔵 AIInsights: Component re-rendered with assessmentId:', assessmentId);
-  
-  // Add debug state for tracking regeneration
-  const [debugInfo, setDebugInfo] = React.useState({
-    lastBackendResponse: '',
-    lastInsightsPreview: '',
-    regenerationCount: 0,
-    lastCallbackUpdate: '',
-    callbackInvocations: 0
-  });
+  console.log('🔵 AIInsights: Component mounted with assessmentId:', assessmentId);
   
   const { insights, isLoading, error, regenerateInsights } = useOpenAIInsights({
     categories,
@@ -58,84 +50,22 @@ const AIInsights: React.FC<AIInsightsProps> = ({
     assessmentId
   });
 
-  // Track when insights change to update debug info
+  // FIXED: Provide the regeneration callback directly to parent
   React.useEffect(() => {
-    if (insights && insights.length > 0) {
-      const timestamp = new Date().toISOString().slice(11, 23);
-      const preview = insights.substring(0, 100) + (insights.length > 100 ? '...' : '');
-      
-      console.log('🔵 AIInsights: Insights updated, setting debug info');
-      setDebugInfo(prev => ({
-        ...prev,
-        lastBackendResponse: `${timestamp} - Response received`,
-        lastInsightsPreview: preview
-      }));
-    }
-  }, [insights]);
-
-  // FIXED: Create wrapper that calls regenerateInsights and updates debug info
-  const handleRegenerateWrapper = React.useCallback(async () => {
-    console.log('🔵 AIInsights: handleRegenerateWrapper called - FRESH CALLBACK');
-    console.log('🔵 AIInsights: regenerateInsights available:', !!regenerateInsights);
-    console.log('🔵 AIInsights: regenerateInsights type:', typeof regenerateInsights);
-    
-    const timestamp = new Date().toISOString().slice(11, 23);
-    setDebugInfo(prev => ({
-      ...prev,
-      lastBackendResponse: `${timestamp} - Regeneration started`,
-      lastInsightsPreview: 'Waiting for new insights...',
-      regenerationCount: prev.regenerationCount + 1,
-      callbackInvocations: prev.callbackInvocations + 1
-    }));
-
-    // CRITICAL: Call the regenerateInsights function directly
-    if (regenerateInsights && typeof regenerateInsights === 'function') {
-      console.log('🔵 AIInsights: Calling regenerateInsights function');
-      try {
-        await regenerateInsights();
-        console.log('🔵 AIInsights: regenerateInsights completed successfully');
-      } catch (error) {
-        console.error('🔵 AIInsights: regenerateInsights failed:', error);
-        const errorTimestamp = new Date().toISOString().slice(11, 23);
-        setDebugInfo(prev => ({
-          ...prev,
-          lastBackendResponse: `${errorTimestamp} - Error: ${error}`,
-          lastInsightsPreview: 'Error occurred'
-        }));
-      }
-    } else {
-      console.error('🔵 AIInsights: regenerateInsights function not available or not a function');
-      console.error('🔵 AIInsights: regenerateInsights value:', regenerateInsights);
-    }
-  }, [regenerateInsights]);
-
-  // FIXED: Provide the wrapper function to parent component
-  React.useEffect(() => {
-    if (onRegenerateCallback && typeof onRegenerateCallback === 'function') {
-      const timestamp = new Date().toISOString().slice(11, 23);
+    if (onRegenerateCallback && regenerateInsights) {
       console.log('🔵 AIInsights: Providing regeneration callback to parent');
-      console.log('🔵 AIInsights: handleRegenerateWrapper type:', typeof handleRegenerateWrapper);
-      
-      setDebugInfo(prev => ({
-        ...prev,
-        lastCallbackUpdate: `${timestamp} - Callback provided to parent`
-      }));
-      
-      // Provide the wrapper function to parent
-      onRegenerateCallback(handleRegenerateWrapper);
-    } else {
-      console.log('🔵 AIInsights: No onRegenerateCallback provided or not a function');
+      onRegenerateCallback(regenerateInsights);
     }
-  }, [onRegenerateCallback, handleRegenerateWrapper]);
+  }, [onRegenerateCallback, regenerateInsights]);
 
   // Log the assessment ID and insights status for debugging
   React.useEffect(() => {
-    console.log('🔵 AIInsights: useEffect triggered - assessmentId:', assessmentId);
     console.log('🔵 AIInsights: Current state:', {
       hasInsights: !!insights,
       isLoading,
       hasError: !!error,
-      insightsLength: insights?.length || 0
+      insightsLength: insights?.length || 0,
+      assessmentId
     });
   }, [assessmentId, insights, isLoading, error]);
 
@@ -382,22 +312,6 @@ const AIInsights: React.FC<AIInsightsProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* ENHANCED DEBUG INDICATOR - TEMPORARY FOR TROUBLESHOOTING */}
-      <div className="bg-red-50 border border-red-200 p-4 rounded-lg">
-        <h4 className="font-bold text-red-800 mb-2">DEBUG INFO (Remove when fixed)</h4>
-        <div className="text-sm text-red-700 space-y-1">
-          <div><strong>Regeneration Count:</strong> {debugInfo.regenerationCount}</div>
-          <div><strong>Callback Invocations:</strong> {debugInfo.callbackInvocations}</div>
-          <div><strong>Last Callback Update:</strong> {debugInfo.lastCallbackUpdate || 'None'}</div>
-          <div><strong>Last Backend Response:</strong> {debugInfo.lastBackendResponse || 'None'}</div>
-          <div><strong>Latest Insights Preview:</strong> {debugInfo.lastInsightsPreview || 'None'}</div>
-          <div><strong>Current Loading State:</strong> {isLoading ? 'LOADING' : 'NOT LOADING'}</div>
-          <div><strong>Has Insights:</strong> {insights ? 'YES' : 'NO'}</div>
-          <div><strong>Has Error:</strong> {error ? 'YES' : 'NO'}</div>
-          <div><strong>Has RegenerateInsights Function:</strong> {regenerateInsights ? 'YES' : 'NO'}</div>
-        </div>
-      </div>
-
       {/* AI-Powered Insights Header */}
       <div className="bg-encourager/5 p-6 rounded-lg border border-encourager/20">
         <div className="flex items-center justify-between mb-6">

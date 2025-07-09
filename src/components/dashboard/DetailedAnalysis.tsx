@@ -28,6 +28,9 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
   assessmentId,
   className = '' 
 }) => {
+  // Store the regeneration callback
+  const [regenerationCallback, setRegenerationCallback] = React.useState<(() => Promise<void>) | null>(null);
+
   // Add extensive validation to ensure we have data to render
   const hasCategories = categories && 
     Array.isArray(categories) && 
@@ -40,6 +43,7 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
   
   console.log('DetailedAnalysis - Categories:', categories);
   console.log('DetailedAnalysis - hasCategories:', hasCategories);
+  console.log('DetailedAnalysis - assessmentId:', assessmentId);
 
   return (
     <Card className={`overflow-hidden ${className}`}>
@@ -103,6 +107,7 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
                   demographics={demographics}
                   averageGap={averageGap}
                   assessmentId={assessmentId}
+                  onRegenerateCallback={setRegenerationCallback}
                 />
               </div>
             ) : (

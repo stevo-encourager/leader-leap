@@ -1,11 +1,11 @@
 
 import { strategicThinkingCategory } from './strategicThinking';
-import { communicationCategory } from './communication';
+import { influencingCategory } from './influencing';
 import { teamBuildingCategory } from './teamBuilding';
 import { decisionMakingCategory } from './decisionMaking';
 import { emotionalIntelligenceCategory } from './emotionalIntelligence';
 import { changeManagementCategory } from './changeManagement';
-import { conflictResolutionCategory } from './conflictResolution';
+import { negotiationConflictResolutionCategory } from './negotiationConflictResolution';
 import { delegationEmpowermentCategory } from './delegationEmpowerment';
 import { timeManagementCategory } from './timeManagement';
 import { professionalDevelopmentCategory } from './professionalDevelopment';
@@ -13,12 +13,12 @@ import { Category } from '../assessmentTypes';
 
 export const allCategories = [
   strategicThinkingCategory,
-  communicationCategory,
+  influencingCategory,
   teamBuildingCategory,
   decisionMakingCategory,
   emotionalIntelligenceCategory,
   changeManagementCategory,
-  conflictResolutionCategory,
+  negotiationConflictResolutionCategory,
   delegationEmpowermentCategory,
   timeManagementCategory,
   professionalDevelopmentCategory
@@ -26,12 +26,12 @@ export const allCategories = [
 
 export {
   strategicThinkingCategory,
-  communicationCategory,
+  influencingCategory,
   teamBuildingCategory,
   decisionMakingCategory,
   emotionalIntelligenceCategory,
   changeManagementCategory,
-  conflictResolutionCategory,
+  negotiationConflictResolutionCategory,
   delegationEmpowermentCategory,
   timeManagementCategory,
   professionalDevelopmentCategory

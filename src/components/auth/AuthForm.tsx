@@ -300,7 +300,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
         )}
         <div className="mt-4">
           <p className="text-sm text-muted-foreground text-center">
-            By signing up, you agree to our Terms of Service and Privacy Policy.
+            By signing up, you agree to our Terms of Service and Privacy Notice.
           </p>
         </div>
       </TabsContent>

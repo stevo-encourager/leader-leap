@@ -29,8 +29,8 @@ const SystemStatusViewer = () => {
       // Reset error state
       setStats(prev => ({ ...prev, error: null }));
       
-      // Get assessment count
-      console.log("SystemStatusViewer: Fetching assessment count...");
+      // Get assessment count - count ALL records, not just completed ones
+      console.log("SystemStatusViewer: Fetching assessment count (all records)...");
       const { count: assessmentCount, error: assessmentError } = await supabase
         .from('assessment_results')
         .select('*', { count: 'exact', head: true });
@@ -39,9 +39,9 @@ const SystemStatusViewer = () => {
         console.error("SystemStatusViewer: Error getting assessment count:", assessmentError);
         throw new Error(`Error getting assessment count: ${assessmentError.message}`);
       }
-      console.log("SystemStatusViewer: Assessment count:", assessmentCount);
+      console.log("SystemStatusViewer: Assessment count (all records):", assessmentCount);
       
-      // Get profile count
+      // Get profile count - ensure we're counting all profiles
       console.log("SystemStatusViewer: Fetching profile count...");
       const { count: profileCount, error: profileError } = await supabase
         .from('profiles')
@@ -52,6 +52,31 @@ const SystemStatusViewer = () => {
         throw new Error(`Error getting profile count: ${profileError.message}`);
       }
       console.log("SystemStatusViewer: Profile count:", profileCount);
+      
+      // Debug: Let's also fetch actual profile data to see what's there
+      const { data: profileData, error: profileDataError } = await supabase
+        .from('profiles')
+        .select('id, email, full_name, created_at');
+      
+      if (profileDataError) {
+        console.error("SystemStatusViewer: Error getting profile data:", profileDataError);
+      } else {
+        console.log("SystemStatusViewer: Profile data:", profileData);
+      }
+      
+      // Debug: Let's also fetch actual assessment data to see what's there
+      const { data: assessmentData, error: assessmentDataError } = await supabase
+        .from('assessment_results')
+        .select('id, user_id, completed, created_at');
+      
+      if (assessmentDataError) {
+        console.error("SystemStatusViewer: Error getting assessment data:", assessmentDataError);
+      } else {
+        console.log("SystemStatusViewer: Assessment data:", assessmentData);
+        console.log("SystemStatusViewer: Assessment data count:", assessmentData?.length);
+        console.log("SystemStatusViewer: Completed assessments:", assessmentData?.filter(a => a.completed !== false).length);
+        console.log("SystemStatusViewer: Incomplete assessments:", assessmentData?.filter(a => a.completed === false).length);
+      }
       
       // Get user count via admin function
       console.log("SystemStatusViewer: Fetching user count via edge function...");
@@ -162,7 +187,7 @@ const SystemStatusViewer = () => {
             )}
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            Completed assessments
+            All assessment records (including incomplete)
           </p>
         </div>
       </div>
@@ -194,6 +219,18 @@ const SystemStatusViewer = () => {
       {/* System Status Alerts */}
       {!isLoading && !stats.error && (
         <>
+          {/* Profile mismatch warning */}
+          {stats.userCount && stats.profileCount && stats.userCount !== stats.profileCount && (
+            <Alert variant="default" className="bg-amber-50 border-amber-200 dark:bg-amber-950 dark:border-amber-800">
+              <AlertCircle className="h-4 w-4 text-amber-600" />
+              <AlertTitle className="text-amber-800 dark:text-amber-200">Profile Sync Issue</AlertTitle>
+              <AlertDescription className="text-amber-700 dark:text-amber-300">
+                User accounts ({stats.userCount}) and profiles ({stats.profileCount}) don't match. 
+                Some users may not have profiles created automatically.
+              </AlertDescription>
+            </Alert>
+          )}
+          
           {(stats.userCount || 0) > 0 && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
@@ -226,6 +263,9 @@ const SystemStatusViewer = () => {
             <div>Component state: {isLoading ? 'Loading' : 'Loaded'}</div>
             <div>Error state: {stats.error ? 'Yes' : 'No'}</div>
             <div>Raw stats: {JSON.stringify(stats, null, 2)}</div>
+            <div className="mt-2 text-amber-600">
+              Note: Check browser console for detailed debug logs about profile and assessment data.
+            </div>
           </div>
         </details>
       </div>

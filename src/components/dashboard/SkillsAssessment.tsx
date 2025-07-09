@@ -41,31 +41,45 @@ const SkillsAssessment: React.FC<SkillsAssessmentProps> = ({ categories }) => {
         </p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="space-y-4">
         {categories.map((category) => {
           const { currentAvg, desiredAvg } = calculateAverages(category);
           
           return (
             <Card key={category.id} className="border border-slate-200">
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg font-semibold text-encourager">
-                  {category.title}
-                </CardTitle>
-                <div className="flex justify-between text-sm text-slate-600 mt-2">
-                  <span>Current Level: {currentAvg}</span>
-                  <span>Desired Level: {desiredAvg}</span>
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <CardTitle className="text-lg font-bold text-slate-900 mb-2">
+                      {category.title}
+                    </CardTitle>
+                    <p className="text-sm text-slate-600 leading-relaxed">
+                      {category.description}
+                    </p>
+                  </div>
+                  <div className="flex gap-6 ml-4">
+                    <span className="font-bold text-sm text-slate-900">Current: {currentAvg}</span>
+                    <span className="font-bold text-sm text-slate-900">Desired: {desiredAvg}</span>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="space-y-3">
+                <div className="space-y-4">
                   {category.skills && category.skills.map((skill) => (
-                    <div key={skill.id} className="border-l-2 border-slate-200 pl-3">
-                      <div className="font-medium text-sm text-slate-800 mb-1">
-                        {skill.name}
-                      </div>
-                      <div className="flex justify-between text-xs text-slate-600">
-                        <span>Current: {skill.ratings?.current || 0}</span>
-                        <span>Desired: {skill.ratings?.desired || 0}</span>
+                    <div key={skill.id} className="border-l-2 border-slate-200 pl-4">
+                      <div className="flex justify-between items-start mb-1">
+                        <div className="flex-1">
+                          <div className="font-bold text-sm text-slate-900 mb-1">
+                            {skill.name}
+                          </div>
+                          <p className="text-xs text-slate-600 leading-relaxed">
+                            {skill.description}
+                          </p>
+                        </div>
+                        <div className="flex gap-6 ml-4">
+                          <span className="text-xs text-slate-900">Current: {skill.ratings?.current || 0}</span>
+                          <span className="text-xs text-slate-900">Desired: {skill.ratings?.desired || 0}</span>
+                        </div>
                       </div>
                     </div>
                   ))}

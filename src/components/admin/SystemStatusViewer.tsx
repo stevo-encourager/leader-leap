@@ -62,6 +62,15 @@ const SystemStatusViewer = () => {
         console.error("SystemStatusViewer: Error getting profile data:", profileDataError);
       } else {
         console.log("SystemStatusViewer: Profile data:", profileData);
+        console.log("SystemStatusViewer: DETAILED Profile Analysis:");
+        profileData?.forEach((profile, index) => {
+          console.log(`  Profile ${index + 1}:`, {
+            id: profile.id,
+            email: profile.email,
+            full_name: profile.full_name,
+            created_at: profile.created_at
+          });
+        });
       }
       
       // Debug: Let's also fetch actual assessment data to see what's there
@@ -76,6 +85,21 @@ const SystemStatusViewer = () => {
         console.log("SystemStatusViewer: Assessment data count:", assessmentData?.length);
         console.log("SystemStatusViewer: Completed assessments:", assessmentData?.filter(a => a.completed !== false).length);
         console.log("SystemStatusViewer: Incomplete assessments:", assessmentData?.filter(a => a.completed === false).length);
+        
+        console.log("SystemStatusViewer: DETAILED Assessment Analysis:");
+        assessmentData?.forEach((assessment, index) => {
+          console.log(`  Assessment ${index + 1}:`, {
+            id: assessment.id,
+            user_id: assessment.user_id,
+            completed: assessment.completed,
+            created_at: assessment.created_at
+          });
+        });
+        
+        // Show unique user IDs in assessments
+        const uniqueUserIds = [...new Set(assessmentData?.map(a => a.user_id) || [])];
+        console.log("SystemStatusViewer: Unique user IDs in assessments:", uniqueUserIds);
+        console.log("SystemStatusViewer: Number of unique users with assessments:", uniqueUserIds.length);
       }
       
       // Get user count via admin function
@@ -87,6 +111,39 @@ const SystemStatusViewer = () => {
         throw new Error(`Error getting user count: ${userError.message}`);
       }
       console.log("SystemStatusViewer: User count response:", userData);
+      
+      // Let's also get detailed user information to see what users exist
+      console.log("SystemStatusViewer: Fetching detailed user list...");
+      const { data: userListData, error: userListError } = await supabase.functions.invoke('list-users');
+      
+      if (userListError) {
+        console.error("SystemStatusViewer: Error getting user list:", userListError);
+      } else {
+        console.log("SystemStatusViewer: User list response:", userListData);
+        if (userListData?.users) {
+          console.log("SystemStatusViewer: DETAILED User Analysis:");
+          userListData.users.forEach((user: any, index: number) => {
+            console.log(`  User ${index + 1}:`, {
+              id: user.id,
+              email: user.email,
+              created_at: user.created_at,
+              email_confirmed_at: user.email_confirmed_at,
+              last_sign_in_at: user.last_sign_in_at
+            });
+          });
+          
+          // Cross-reference users with profiles
+          const userIds = userListData.users.map((u: any) => u.id);
+          const profileUserIds = profileData?.map(p => p.id) || [];
+          const usersWithoutProfiles = userIds.filter((uid: string) => !profileUserIds.includes(uid));
+          
+          console.log("SystemStatusViewer: PROFILE SYNC ANALYSIS:");
+          console.log("  All user IDs:", userIds);
+          console.log("  Profile user IDs:", profileUserIds);
+          console.log("  Users WITHOUT profiles:", usersWithoutProfiles);
+          console.log("  Number of users missing profiles:", usersWithoutProfiles.length);
+        }
+      }
       
       const userCount = userData?.count || 0;
       const timestamp = new Date().toLocaleString();
@@ -227,6 +284,7 @@ const SystemStatusViewer = () => {
               <AlertDescription className="text-amber-700 dark:text-amber-300">
                 User accounts ({stats.userCount}) and profiles ({stats.profileCount}) don't match. 
                 Some users may not have profiles created automatically.
+                Check console logs for detailed analysis of which users are missing profiles.
               </AlertDescription>
             </Alert>
           )}
@@ -265,6 +323,9 @@ const SystemStatusViewer = () => {
             <div>Raw stats: {JSON.stringify(stats, null, 2)}</div>
             <div className="mt-2 text-amber-600">
               Note: Check browser console for detailed debug logs about profile and assessment data.
+            </div>
+            <div className="mt-2 text-blue-600">
+              Expanded Analysis: Console now shows detailed user, profile, and assessment cross-references to identify missing data.
             </div>
           </div>
         </details>

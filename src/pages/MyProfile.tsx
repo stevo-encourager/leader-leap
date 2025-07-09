@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const MyProfile = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const {
     assessments,
     allAssessments,
@@ -68,6 +69,40 @@ const MyProfile = () => {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+      return;
+    }
+    
+    try {
+      // Delete user account
+      const { error } = await import('@/integrations/supabase/client').then(({ supabase }) =>
+        supabase.auth.admin.deleteUser(user?.id || '')
+      );
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Account deleted",
+        description: "Your account has been permanently deleted.",
+      });
+      
+      // Sign out and redirect
+      await signOut();
+      navigate('/');
+    } catch (err: any) {
+      toast({
+        title: "Delete account error",
+        description: err.message || 'Failed to delete account.',
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleStartNewAssessment = () => {
+    navigate('/');
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -86,43 +121,64 @@ const MyProfile = () => {
       </div>
       <main className="max-w-4xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-encourager mb-8">My Profile</h1>
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-2">Account Details</h2>
-          <div className="mb-4">
-            <span className="font-medium">Email:</span> {user?.email}
-          </div>
-          <button
-            className="text-encourager underline text-sm mb-2"
-            onClick={() => setShowChangePassword((v) => !v)}
-          >
-            {showChangePassword ? 'Cancel' : 'Change Password'}
-          </button>
-          {showChangePassword && (
-            <form onSubmit={handleChangePassword} className="mt-2 flex flex-col gap-2 max-w-xs">
-              <input
-                type="password"
-                className="border rounded px-3 py-2"
-                placeholder="New password"
-                value={newPassword}
-                onChange={e => setNewPassword(e.target.value)}
-                minLength={6}
-                required
-              />
+        
+        <div className="flex gap-8 mb-8">
+          <div className="flex-1">
+            <div className="bg-white rounded-lg shadow p-6">
+              <h2 className="text-xl font-semibold mb-2">Account Details</h2>
+              <div className="mb-4">
+                <span className="font-medium">Email:</span> {user?.email}
+              </div>
               <button
-                type="submit"
-                className="bg-encourager text-white rounded px-3 py-2 mt-1"
-                disabled={passwordLoading}
+                className="text-encourager underline text-sm mb-2 block"
+                onClick={() => setShowChangePassword((v) => !v)}
               >
-                {passwordLoading ? 'Updating...' : 'Update Password'}
+                {showChangePassword ? 'Cancel' : 'Change Password'}
               </button>
-              {passwordMessage && (
-                <div className="text-sm text-center mt-1 text-encourager">
-                  {passwordMessage}
-                </div>
+              <button
+                className="text-red-600 underline text-sm"
+                onClick={handleDeleteAccount}
+              >
+                Delete Account
+              </button>
+              {showChangePassword && (
+                <form onSubmit={handleChangePassword} className="mt-4 flex flex-col gap-2 max-w-xs">
+                  <input
+                    type="password"
+                    className="border rounded px-3 py-2"
+                    placeholder="New password"
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                    minLength={6}
+                    required
+                  />
+                  <button
+                    type="submit"
+                    className="bg-encourager text-white rounded px-3 py-2 mt-1"
+                    disabled={passwordLoading}
+                  >
+                    {passwordLoading ? 'Updating...' : 'Update Password'}
+                  </button>
+                  {passwordMessage && (
+                    <div className="text-sm text-center mt-1 text-encourager">
+                      {passwordMessage}
+                    </div>
+                  )}
+                </form>
               )}
-            </form>
-          )}
+            </div>
+          </div>
+          
+          <div className="flex-shrink-0">
+            <Button 
+              onClick={handleStartNewAssessment}
+              className="bg-encourager hover:bg-encourager-light text-white px-6 py-3"
+            >
+              Start New Assessment
+            </Button>
+          </div>
         </div>
+
         <div className="mb-8">
           <h2 className="text-xl font-semibold mb-4">Previous Assessments</h2>
           <div className="flex items-center gap-3 mb-4">
@@ -156,4 +212,4 @@ const MyProfile = () => {
   );
 };
 
-export default MyProfile; 
+export default MyProfile;

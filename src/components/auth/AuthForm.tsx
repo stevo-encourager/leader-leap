@@ -274,7 +274,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
             {/* Marketing Emails Checkbox */}
             <div className="flex items-center space-x-2">
               <Checkbox id="receiveEmails" defaultChecked {...register('receiveEmails')} />
-              <Label htmlFor="receiveEmails" className="text-sm">Receive emails about leadership tips and updates. MAX ONE EMAIL MONTH</Label>
+              <Label htmlFor="receiveEmails" className="text-sm font-normal">Receive emails about leadership tips and updates. MAX ONE EMAIL MONTH</Label>
             </div>
           </div>
           

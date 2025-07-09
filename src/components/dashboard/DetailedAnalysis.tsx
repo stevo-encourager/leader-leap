@@ -3,9 +3,10 @@ import React from 'react';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import SkillGapChart from '../SkillGapChart';
 import AIInsights from './AIInsights';
+import SkillsAssessment from './SkillsAssessment';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { BarChart2, HelpCircle, Target, TrendingUp } from 'lucide-react';
+import { BarChart2, HelpCircle, Target, TrendingUp, ListChecks } from 'lucide-react';
 import { 
   Tooltip,
   TooltipContent,
@@ -74,7 +75,7 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
       </CardHeader>
       <CardContent className="p-0">
         <Tabs defaultValue="radar-chart" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="radar-chart" className="flex items-center gap-2">
               <Target className="h-4 w-4" />
               Radar Chart
@@ -82,6 +83,10 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
             <TabsTrigger value="key-insights" className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
               Key Insights
+            </TabsTrigger>
+            <TabsTrigger value="skills-assessment" className="flex items-center gap-2">
+              <ListChecks className="h-4 w-4" />
+              Skills Assessment
             </TabsTrigger>
           </TabsList>
           
@@ -114,6 +119,20 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
               <div className="h-[600px] w-full flex items-center justify-center bg-slate-50">
                 <p className="text-slate-500 text-center">
                   No assessment data available for AI insights. Please complete an assessment first.
+                </p>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="skills-assessment" className="mt-0">
+            {hasCategories ? (
+              <div className="h-[600px] w-full p-6 overflow-y-auto">
+                <SkillsAssessment categories={categories} />
+              </div>
+            ) : (
+              <div className="h-[600px] w-full flex items-center justify-center bg-slate-50">
+                <p className="text-slate-500 text-center">
+                  No assessment data available for skills assessment. Please complete an assessment first.
                 </p>
               </div>
             )}

@@ -43,6 +43,42 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     });
   }, []);
 
+  // ENHANCED: Better data validation function
+  const validateDataForInsights = useCallback(() => {
+    // Check if categories exist and have valid data
+    if (!categories || !Array.isArray(categories) || categories.length === 0) {
+      console.log('useOpenAIInsights - No valid categories available');
+      return false;
+    }
+
+    // Check if categories have skills with actual ratings
+    const hasValidSkills = categories.some(category => 
+      category && 
+      category.skills && 
+      Array.isArray(category.skills) && 
+      category.skills.some(skill => 
+        skill && 
+        skill.ratings && 
+        typeof skill.ratings.current === 'number' && 
+        typeof skill.ratings.desired === 'number' &&
+        (skill.ratings.current > 0 || skill.ratings.desired > 0)
+      )
+    );
+
+    if (!hasValidSkills) {
+      console.log('useOpenAIInsights - No skills with valid ratings found');
+      return false;
+    }
+
+    // Check averageGap is valid
+    if (typeof averageGap !== 'number' || isNaN(averageGap)) {
+      console.log('useOpenAIInsights - Invalid averageGap:', averageGap);
+      return false;
+    }
+
+    return true;
+  }, [categories, averageGap]);
+
   // Reset state when assessment ID changes
   useEffect(() => {
     if (currentAssessmentIdRef.current !== assessmentId) {
@@ -60,7 +96,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     }
   }, [assessmentId, updateState]);
 
-  // Single initialization effect that runs once per assessment
+  // ENHANCED: Better initialization with improved data validation
   useEffect(() => {
     const initializeInsights = async () => {
       // Guard: Only run if not already initialized for this assessment
@@ -68,8 +104,15 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
         return;
       }
 
-      // Guard: Only proceed if we have valid data
-      if (!categories || categories.length === 0 || !assessmentId || assessmentId.trim() === '') {
+      // ENHANCED: Better validation of required data
+      if (!validateDataForInsights()) {
+        console.log('useOpenAIInsights - Data validation failed, waiting for valid data');
+        return;
+      }
+
+      // Guard: Must have assessmentId for new assessments or be in test mode
+      if (!assessmentId || assessmentId.trim() === '') {
+        console.log('useOpenAIInsights - No assessmentId provided');
         return;
       }
 
@@ -83,6 +126,9 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       updateState({ isLoading: true, error: null }, 'Starting initialization');
 
       try {
+        // ENHANCED: Add delay to ensure data is fully ready
+        await new Promise(resolve => setTimeout(resolve, 100));
+
         // Check for existing insights
         const { data: assessment, error: dbError } = await supabase
           .from('assessment_results')
@@ -91,7 +137,8 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
           .single();
 
         if (dbError) {
-          // Continue to generate new insights if we can't check existing ones
+          console.log('useOpenAIInsights - Database error checking existing insights:', dbError.message);
+          // Continue to generate new insights
         } else if (assessment && 
                    assessment.ai_insights && 
                    assessment.ai_insights.trim() !== '' &&
@@ -114,11 +161,15 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
           return;
         }
 
+        // Generate new insights with enhanced validation
         await generateNewInsights();
         
       } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load insights';
+        console.error('useOpenAIInsights - Initialization error:', errorMessage);
+        
         updateState({
-          error: err instanceof Error ? err.message : 'Failed to load insights',
+          error: errorMessage,
           isLoading: false,
           isInitialized: true
         }, 'Initialization error');
@@ -128,14 +179,31 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       }
     };
 
-    // Only initialize if we have valid data and haven't initialized yet
-    if (assessmentId && categories && categories.length > 0 && !initializationCompleteRef.current) {
-      initializeInsights();
+    // ENHANCED: Better conditions for initialization
+    if (assessmentId && validateDataForInsights() && !initializationCompleteRef.current) {
+      // Add small delay to ensure all props are stable
+      const timeoutId = setTimeout(() => {
+        initializeInsights();
+      }, 50);
+      
+      return () => clearTimeout(timeoutId);
     }
-  }, [assessmentId, categories, updateState]);
+  }, [assessmentId, categories, demographics, averageGap, updateState, validateDataForInsights]);
 
   const generateNewInsights = async () => {
     try {
+      // ENHANCED: Final validation before API call
+      if (!validateDataForInsights()) {
+        throw new Error('Invalid data for insights generation');
+      }
+
+      console.log('useOpenAIInsights - Calling generate-insights with:', {
+        categoriesCount: categories.length,
+        averageGap,
+        assessmentId,
+        hasValidDemographics: demographics && Object.keys(demographics).length > 0
+      });
+
       const { data, error: functionError } = await supabase.functions.invoke('generate-insights', {
         body: {
           categories,
@@ -147,7 +215,8 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       });
 
       if (functionError) {
-        throw new Error(functionError.message);
+        console.error('useOpenAIInsights - Function error:', functionError);
+        throw new Error(functionError.message || 'Edge Function error');
       }
 
       if (data && data.insights) {
@@ -164,11 +233,14 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
         initializationCompleteRef.current = true;
         isOperationInProgressRef.current = false;
       } else {
-        throw new Error('No insights received from OpenAI');
+        throw new Error('No insights received from API');
       }
     } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to generate insights';
+      console.error('useOpenAIInsights - Generation error:', errorMessage);
+      
       updateState({
-        error: err instanceof Error ? err.message : 'Failed to generate insights',
+        error: errorMessage,
         isLoading: false,
         isInitialized: true
       }, 'Generation error');
@@ -179,8 +251,8 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
   };
 
   const regenerateInsights = useCallback(async () => {
-    // Validate we have required data
-    if (!categories || categories.length === 0 || !assessmentId) {
+    // ENHANCED: Better validation for regeneration
+    if (!validateDataForInsights() || !assessmentId) {
       updateState({
         error: 'Missing required data for regeneration',
         isLoading: false
@@ -216,7 +288,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       isOperationInProgressRef.current = false;
       initializationCompleteRef.current = true;
     }
-  }, [categories, demographics, averageGap, assessmentId, isTestAssessment, updateState]);
+  }, [categories, demographics, averageGap, assessmentId, isTestAssessment, updateState, validateDataForInsights]);
 
   return {
     insights: state.insights,

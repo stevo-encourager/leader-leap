@@ -68,15 +68,9 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
         return;
       }
 
-      // Guard: Only proceed if we have valid categories data
-      if (!categories || categories.length === 0) {
+      // Guard: Only proceed if we have valid data
+      if (!categories || categories.length === 0 || !assessmentId || assessmentId.trim() === '') {
         return;
-      }
-
-      // For new assessments, we need categories but assessmentId is optional
-      if (!assessmentId || assessmentId.trim() === '') {
-        // This is a new assessment - we can still generate insights without saving to DB
-        console.log('Generating insights for new assessment without ID');
       }
 
       // Guard: Prevent multiple operations
@@ -89,35 +83,35 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       updateState({ isLoading: true, error: null }, 'Starting initialization');
 
       try {
-        // Only check for existing insights if we have an assessmentId
-        if (assessmentId && assessmentId.trim() !== '') {
-          const { data: assessment, error: dbError } = await supabase
-            .from('assessment_results')
-            .select('ai_insights')
-            .eq('id', assessmentId)
-            .single();
+        // Check for existing insights
+        const { data: assessment, error: dbError } = await supabase
+          .from('assessment_results')
+          .select('ai_insights')
+          .eq('id', assessmentId)
+          .single();
 
-          if (!dbError && assessment && 
-                     assessment.ai_insights && 
-                     assessment.ai_insights.trim() !== '' &&
-                     assessment.ai_insights.trim() !== 'null' &&
-                     assessment.ai_insights.trim() !== 'undefined') {
-            
-            let finalInsights = assessment.ai_insights;
-            
-            // Set successful state with existing insights
-            updateState({
-              insights: finalInsights,
-              isLoading: false,
-              error: null,
-              isInitialized: true
-            }, 'Found existing insights in database');
-            
-            initializationCompleteRef.current = true;
-            isOperationInProgressRef.current = false;
-            
-            return;
-          }
+        if (dbError) {
+          // Continue to generate new insights if we can't check existing ones
+        } else if (assessment && 
+                   assessment.ai_insights && 
+                   assessment.ai_insights.trim() !== '' &&
+                   assessment.ai_insights.trim() !== 'null' &&
+                   assessment.ai_insights.trim() !== 'undefined') {
+          
+          let finalInsights = assessment.ai_insights;
+          
+          // Set successful state with existing insights
+          updateState({
+            insights: finalInsights,
+            isLoading: false,
+            error: null,
+            isInitialized: true
+          }, 'Found existing insights in database');
+          
+          initializationCompleteRef.current = true;
+          isOperationInProgressRef.current = false;
+          
+          return;
         }
 
         await generateNewInsights();
@@ -134,8 +128,8 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       }
     };
 
-    // Only initialize if we have valid categories data and haven't initialized yet
-    if (categories && categories.length > 0 && !initializationCompleteRef.current) {
+    // Only initialize if we have valid data and haven't initialized yet
+    if (assessmentId && categories && categories.length > 0 && !initializationCompleteRef.current) {
       initializeInsights();
     }
   }, [assessmentId, categories, updateState]);
@@ -185,29 +179,12 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
   };
 
   const regenerateInsights = useCallback(async () => {
-    // Improved validation: Check for essential data only
-    if (!categories || categories.length === 0) {
+    // Validate we have required data
+    if (!categories || categories.length === 0 || !assessmentId) {
       updateState({
-        error: 'No assessment data available. Please complete an assessment first.',
+        error: 'Missing required data for regeneration',
         isLoading: false
-      }, 'Regeneration validation failed - no categories');
-      return;
-    }
-
-    // Check if categories have actual rating data
-    const hasValidRatings = categories.some(cat => 
-      cat && cat.skills && cat.skills.some(skill => 
-        skill && skill.ratings && 
-        skill.ratings.current > 0 && 
-        skill.ratings.desired > 0
-      )
-    );
-
-    if (!hasValidRatings) {
-      updateState({
-        error: 'Assessment data is incomplete. Please ensure all skills have been rated.',
-        isLoading: false
-      }, 'Regeneration validation failed - no valid ratings');
+      }, 'Regeneration validation failed');
       return;
     }
     

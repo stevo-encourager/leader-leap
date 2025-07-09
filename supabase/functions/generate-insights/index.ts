@@ -40,13 +40,13 @@ serve(async (req) => {
       categoriesLength: requestBody.categories?.length || 0,
       hasDemo: !!requestBody.demographics,
       averageGap: requestBody.averageGap,
-      assessmentId: requestBody.assessmentId || 'undefined (test mode)',
+      assessmentId: requestBody.assessmentId || 'undefined (new assessment)',
       forceRegenerate: requestBody.forceRegenerate
     });
 
     const { categories, demographics, averageGap, assessmentId, forceRegenerate } = requestBody;
 
-    // Validate required inputs using Deno-compatible pattern
+    // Validate required inputs
     if (!categories || !Array.isArray(categories) || categories.length === 0) {
       console.error('🔍 CRITICAL ERROR: Missing or invalid categories in request body');
       return new Response(JSON.stringify({ 
@@ -67,27 +67,25 @@ serve(async (req) => {
       });
     }
 
-    // UPDATED: Allow assessmentId to be undefined for test scenarios
-    if (assessmentId !== undefined && (typeof assessmentId !== 'string' || assessmentId.trim() === '')) {
-      console.error('🔍 CRITICAL ERROR: Invalid assessmentId in request body - must be string or undefined');
-      return new Response(JSON.stringify({ 
-        error: "Invalid 'assessmentId' in request body. Assessment ID must be a non-empty string or undefined for test scenarios." 
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+    // ENHANCED: Better validation for assessmentId - allow undefined, null, or placeholder values for new assessments
+    const isValidAssessmentId = assessmentId && 
+                               typeof assessmentId === 'string' && 
+                               assessmentId.trim() !== '' &&
+                               assessmentId !== 'undefined' &&
+                               assessmentId !== 'null' &&
+                               assessmentId !== 'new-assessment';
 
     console.log('🔍 INPUT VALIDATION PASSED:', {
       categoriesCount: categories.length,
       hasDemo: !!demographics,
       averageGap: averageGap,
-      assessmentId: assessmentId || 'undefined (test mode)',
+      assessmentId: assessmentId || 'new assessment (no ID)',
+      isValidAssessmentId: isValidAssessmentId,
       forceRegenerate: forceRegenerate
     });
 
-    // CRITICAL FIRST CHECK: Only check for existing insights if we have an assessmentId
-    if (assessmentId) {
+    // ENHANCED: Only check for existing insights if we have a valid, real assessmentId
+    if (isValidAssessmentId) {
       console.log('🔍 CHECKING FOR EXISTING INSIGHTS:', {
         assessmentId,
         forceRegenerate
@@ -110,7 +108,7 @@ serve(async (req) => {
       }
       console.log('🔍 NO EXISTING INSIGHTS OR FORCE REGENERATE - Proceeding with generation');
     } else {
-      console.log('🔍 TEST MODE: No assessmentId provided - generating insights for testing');
+      console.log('🔍 NEW ASSESSMENT MODE: No valid assessmentId - generating fresh insights without database check');
     }
 
     // Build assessment data and prompt
@@ -159,13 +157,13 @@ serve(async (req) => {
     const finalInsights = JSON.stringify(parsedInsights);
     console.log('🔍 FINAL INSIGHTS PREPARED - Length:', finalInsights.length);
 
-    // CRITICAL FINAL SAFEGUARD: Only save if we have a valid assessment ID
-    if (assessmentId) {
+    // ENHANCED: Only save if we have a valid, real assessmentId
+    if (isValidAssessmentId) {
       console.log('🔍 SAVING INSIGHTS TO DATABASE:', assessmentId);
       await saveInsights(assessmentId, finalInsights, supabaseUrl, supabaseServiceKey);
       console.log('🔍 INSIGHTS SAVED SUCCESSFULLY');
     } else {
-      console.log('🔍 TEST MODE: Insights generated but not saved (no assessmentId)');
+      console.log('🔍 NEW ASSESSMENT MODE: Insights generated but not saved (no valid assessmentId)');
     }
 
     console.log('🔍 === GENERATE INSIGHTS FUNCTION SUCCESS ===');

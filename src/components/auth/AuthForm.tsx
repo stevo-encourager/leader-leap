@@ -50,6 +50,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
   });
 
   const gdprConsent = watch('gdprConsent');
+  const receiveEmails = watch('receiveEmails');
 
   const handleSignIn = async (data: any) => {
     setIsLoading(true);
@@ -75,7 +76,13 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
 
     setIsLoading(true);
     try {
-      await signUp(data.email, data.password, data.fullName || '', data.receiveEmails || false);
+      console.log('AuthForm: Signing up with data:', {
+        email: data.email,
+        fullName: data.fullName,
+        receiveEmails: data.receiveEmails
+      });
+      
+      await signUp(data.email, data.password, data.fullName || '', data.receiveEmails === true);
       // Don't call onSuccess here as the user needs to verify their email
     } catch (error) {
       // Error is handled in AuthContext
@@ -273,7 +280,14 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
             
             {/* Marketing Emails Checkbox */}
             <div className="flex items-center space-x-2">
-              <Checkbox id="receiveEmails" defaultChecked {...register('receiveEmails')} />
+              <Checkbox 
+                id="receiveEmails" 
+                checked={receiveEmails}
+                onCheckedChange={(checked) => {
+                  console.log('AuthForm: receiveEmails checkbox changed to:', checked);
+                  setValue('receiveEmails', checked as boolean);
+                }}
+              />
               <Label htmlFor="receiveEmails" className="text-sm font-normal">Receive emails about leadership tips and updates. MAX ONE EMAIL MONTH</Label>
             </div>
           </div>

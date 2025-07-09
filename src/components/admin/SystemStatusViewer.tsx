@@ -171,43 +171,16 @@ const SystemStatusViewer = () => {
         </Button>
       </div>
       
-      {/* System Status Alerts */}
-      {!isLoading && !stats.error && (
-        <>
-          {/* Profile mismatch warning */}
-          {stats.userCount && stats.profileCount && stats.userCount !== stats.profileCount && (
-            <Alert variant="default" className="bg-amber-50 border-amber-200 dark:bg-amber-950 dark:border-amber-800">
-              <AlertCircle className="h-4 w-4 text-amber-600" />
-              <AlertTitle className="text-amber-800 dark:text-amber-200">Profile Sync Issue</AlertTitle>
-              <AlertDescription className="text-amber-700 dark:text-amber-300">
-                User accounts ({stats.userCount}) and profiles ({stats.profileCount}) don't match. 
-                Some users may not have profiles created automatically.
-              </AlertDescription>
-            </Alert>
-          )}
-          
-          {(stats.userCount || 0) > 0 && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>System not in clean state</AlertTitle>
-              <AlertDescription>
-                There are still {stats.userCount} user accounts in the system. 
-                Use the App Reset function to completely clear all data.
-              </AlertDescription>
-            </Alert>
-          )}
-          
-          {(stats.userCount || 0) === 0 && (stats.assessmentCount || 0) === 0 && (stats.profileCount || 0) === 0 && (
-            <Alert className="bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-800">
-              <AlertCircle className="h-4 w-4 text-green-600" />
-              <AlertTitle className="text-green-800 dark:text-green-200">System in clean state</AlertTitle>
-              <AlertDescription className="text-green-700 dark:text-green-300">
-                All user accounts and data have been successfully deleted. 
-                The system is ready for testing from scratch.
-              </AlertDescription>
-            </Alert>
-          )}
-        </>
+      {/* Profile mismatch warning - only show if there's actually a mismatch */}
+      {!isLoading && !stats.error && stats.userCount && stats.profileCount && stats.userCount !== stats.profileCount && (
+        <Alert variant="default" className="bg-amber-50 border-amber-200 dark:bg-amber-950 dark:border-amber-800">
+          <AlertCircle className="h-4 w-4 text-amber-600" />
+          <AlertTitle className="text-amber-800 dark:text-amber-200">Profile Sync Issue</AlertTitle>
+          <AlertDescription className="text-amber-700 dark:text-amber-300">
+            User accounts ({stats.userCount}) and profiles ({stats.profileCount}) don't match. 
+            Some users may not have profiles created automatically.
+          </AlertDescription>
+        </Alert>
       )}
       
       {/* Debug Info */}

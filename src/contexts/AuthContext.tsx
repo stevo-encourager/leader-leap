@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -206,26 +205,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       console.log('Current URL:', currentUrl);
       console.log('Redirect URL:', redirectUrl);
       
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: redirectUrl,
-          queryParams: {
-            prompt: 'select_account',
-            access_type: 'offline',
-          },
-        }
-      });
-
-      console.log('OAuth response:', { data, error });
-
-      if (error) {
-        console.error('OAuth error:', error);
-        throw error;
-      }
-
-      // Log successful initiation
-      console.log('Google OAuth initiated successfully');
+      // Force a full page redirect by setting window.location directly
+      const authUrl = `https://hrgoxcdixvpmcbfgltea.supabase.co/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectUrl)}&prompt=select_account&access_type=offline`;
+      
+      console.log('Redirecting to:', authUrl);
+      
+      // Use window.location.href for a full page redirect to avoid iframe issues
+      window.location.href = authUrl;
       
     } catch (error: any) {
       console.error('Google sign in error:', error);

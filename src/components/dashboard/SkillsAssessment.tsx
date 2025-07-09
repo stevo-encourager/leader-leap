@@ -46,7 +46,7 @@ const SkillsAssessment: React.FC<SkillsAssessmentProps> = ({ categories }) => {
           const { currentAvg, desiredAvg } = calculateAverages(category);
           
           return (
-            <Card key={category.id} className="border border-slate-200">
+            <Card key={category.id} className="border border-slate-200 bg-slate-50">
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">

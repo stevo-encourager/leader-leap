@@ -1,3 +1,4 @@
+
 interface CategoryBreakdown {
   title: string;
   skillCount: number;
@@ -95,7 +96,7 @@ const buildValidatedSkillsList = (): string => {
 - Negotiation
 - Mediation
 
-**Delegation and Empowerment:**
+**Delegation & Empowerment:**
 - Task Delegation
 - Trust Building
 - Autonomy Support

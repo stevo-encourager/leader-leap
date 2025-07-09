@@ -3,7 +3,7 @@ import { Category } from '../assessmentTypes';
 
 export const delegationEmpowermentCategory: Category = {
   id: "delegation-empowerment",
-  title: "Delegation and Empowerment",
+  title: "Delegation & Empowerment",
   description: "The ability to effectively assign responsibilities and empower team members.",
   skills: [
     {

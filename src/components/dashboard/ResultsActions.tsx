@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ArrowLeft, Download, Plus, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -42,8 +41,8 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
   const { user } = useAuth();
   const [isDownloading, setIsDownloading] = useState(false);
   
-  // Special test assessment ID that allows regeneration
-  const TEST_ASSESSMENT_ID = 'f74470bc-3c48-4980-bc5f-17386a724d37';
+  // UPDATED: Special test assessment ID that allows regeneration
+  const TEST_ASSESSMENT_ID = '2631edf1-a358-4303-83c1-deb9664b53e2';
   const isTestAssessment = assessmentId === TEST_ASSESSMENT_ID;
   
   // CRITICAL DEBUG: Log the comparison logic immediately after definition

@@ -26,8 +26,8 @@ const AITestPanel = () => {
   // FIXED: Remove the regenerateCallback state - use direct reference instead
   // This was causing the "f is not a function" error
 
-  // FIXED: Use only the specific test assessment ID
-  const TEST_ASSESSMENT_ID = 'f74470bc-3c48-4980-bc5f-17386a724d37';
+  // UPDATED: Use the new test assessment ID
+  const TEST_ASSESSMENT_ID = '2631edf1-a358-4303-83c1-deb9664b53e2';
 
   // Check if we're in development/staging (not production)
   const isDevelopment = import.meta.env.DEV || window.location.hostname !== 'your-production-domain.com';

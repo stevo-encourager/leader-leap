@@ -10,6 +10,7 @@ import AssessmentsList from '@/components/previous-assessments/AssessmentsList';
 import EmptyAssessmentsList from '@/components/previous-assessments/EmptyAssessmentsList';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 const MyProfile = () => {
   const navigate = useNavigate();
@@ -32,6 +33,7 @@ const MyProfile = () => {
   const [newPassword, setNewPassword] = useState('');
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -56,9 +58,7 @@ const MyProfile = () => {
     setPasswordLoading(true);
     setPasswordMessage(null);
     try {
-      const { error } = await import('@/integrations/supabase/client').then(({ supabase }) =>
-        supabase.auth.updateUser({ password: newPassword })
-      );
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
       setPasswordMessage('Password updated successfully.');
       setNewPassword('');
@@ -74,28 +74,54 @@ const MyProfile = () => {
       return;
     }
     
+    setDeleteLoading(true);
+    
     try {
-      // Delete user account
-      const { error } = await import('@/integrations/supabase/client').then(({ supabase }) =>
-        supabase.auth.admin.deleteUser(user?.id || '')
-      );
+      console.log('Attempting to delete account for user:', user?.id);
       
-      if (error) throw error;
+      // Call the secure Edge Function for account deletion
+      const { data, error } = await supabase.functions.invoke('delete-user-account', {
+        body: { user_id: user?.id }
+      });
+      
+      if (error) {
+        console.error('Edge function error:', error);
+        throw error;
+      }
+      
+      if (!data?.success) {
+        throw new Error(data?.message || 'Failed to delete account');
+      }
       
       toast({
         title: "Account deleted",
         description: "Your account has been permanently deleted.",
       });
       
-      // Sign out and redirect
+      // Sign out and redirect after successful deletion
       await signOut();
       navigate('/');
     } catch (err: any) {
+      console.error('Delete account error:', err);
+      
+      // Provide clear error messages based on the error type
+      let errorMessage = 'Failed to delete account.';
+      
+      if (err.message?.includes('Function not found')) {
+        errorMessage = 'Account deletion service is currently unavailable. Please contact support for assistance.';
+      } else if (err.message?.includes('unauthorized') || err.message?.includes('permission')) {
+        errorMessage = 'You do not have permission to delete this account. Please contact support.';
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
       toast({
         title: "Delete account error",
-        description: err.message || 'Failed to delete account.',
+        description: errorMessage,
         variant: "destructive",
       });
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -137,8 +163,9 @@ const MyProfile = () => {
             <button
               className="text-red-600 underline text-sm"
               onClick={handleDeleteAccount}
+              disabled={deleteLoading}
             >
-              Delete Account
+              {deleteLoading ? 'Deleting...' : 'Delete Account'}
             </button>
             {showChangePassword && (
               <form onSubmit={handleChangePassword} className="mt-4 flex flex-col gap-2 max-w-xs">

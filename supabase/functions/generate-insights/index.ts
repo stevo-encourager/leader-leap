@@ -67,6 +67,10 @@ serve(async (req) => {
       });
     }
 
+    // Special test assessment ID that allows regeneration
+    const TEST_ASSESSMENT_ID = '2631edf1-a358-4303-83c1-deb9664b53e2';
+    const isTestAssessment = assessmentId === TEST_ASSESSMENT_ID;
+
     // ENHANCED: Better validation for assessmentId - allow undefined, null, or placeholder values for new assessments
     const isValidAssessmentId = assessmentId && 
                                typeof assessmentId === 'string' && 
@@ -81,6 +85,7 @@ serve(async (req) => {
       averageGap: averageGap,
       assessmentId: assessmentId || 'new assessment (no ID)',
       isValidAssessmentId: isValidAssessmentId,
+      isTestAssessment: isTestAssessment,
       forceRegenerate: forceRegenerate
     });
 
@@ -88,16 +93,19 @@ serve(async (req) => {
     if (isValidAssessmentId) {
       console.log('🔍 CHECKING FOR EXISTING INSIGHTS:', {
         assessmentId,
+        isTestAssessment,
         forceRegenerate
       });
       
-      // Pass the forceRegenerate flag to the database check
+      // CRITICAL: Pass the forceRegenerate flag to the database check
       const existingInsights = await checkExistingInsights(assessmentId, supabaseUrl, supabaseServiceKey, forceRegenerate);
       
       console.log('🔍 DATABASE CHECK RESULT:', {
         hasExistingInsights: !!existingInsights,
         existingInsightsLength: existingInsights?.length || 0,
-        willReturnExisting: !!existingInsights
+        willReturnExisting: !!existingInsights,
+        isTestAssessment: isTestAssessment,
+        forceRegenerate: forceRegenerate
       });
       
       if (existingInsights) {
@@ -106,7 +114,12 @@ serve(async (req) => {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      console.log('🔍 NO EXISTING INSIGHTS OR FORCE REGENERATE - Proceeding with generation');
+      
+      if (isTestAssessment && forceRegenerate) {
+        console.log('🔍 ✨ TEST ASSESSMENT FORCE REGENERATION ACTIVATED - Generating fresh insights');
+      } else {
+        console.log('🔍 NO EXISTING INSIGHTS FOUND - Proceeding with generation');
+      }
     } else {
       console.log('🔍 NEW ASSESSMENT MODE: No valid assessmentId - generating fresh insights without database check');
     }
@@ -126,6 +139,10 @@ serve(async (req) => {
 
     // Call OpenAI
     console.log('🔍 CALLING OPENAI API...');
+    if (isTestAssessment && forceRegenerate) {
+      console.log('🔍 ✨ GENERATING FRESH INSIGHTS FOR TEST ASSESSMENT (FORCE REGENERATE)');
+    }
+    
     const rawInsights = await callOpenAI(prompt, openAIApiKey);
     console.log('🔍 OPENAI RESPONSE RECEIVED - Length:', rawInsights.length);
 
@@ -160,13 +177,20 @@ serve(async (req) => {
     // ENHANCED: Only save if we have a valid, real assessmentId
     if (isValidAssessmentId) {
       console.log('🔍 SAVING INSIGHTS TO DATABASE:', assessmentId);
+      if (isTestAssessment && forceRegenerate) {
+        console.log('🔍 ✨ SAVING REGENERATED INSIGHTS FOR TEST ASSESSMENT');
+      }
       await saveInsights(assessmentId, finalInsights, supabaseUrl, supabaseServiceKey);
       console.log('🔍 INSIGHTS SAVED SUCCESSFULLY');
     } else {
       console.log('🔍 NEW ASSESSMENT MODE: Insights generated but not saved (no valid assessmentId)');
     }
 
-    console.log('🔍 === GENERATE INSIGHTS FUNCTION SUCCESS ===');
+    if (isTestAssessment && forceRegenerate) {
+      console.log('🔍 ✨ === FORCE REGENERATION COMPLETED SUCCESSFULLY FOR TEST ASSESSMENT ===');
+    } else {
+      console.log('🔍 === GENERATE INSIGHTS FUNCTION SUCCESS ===');
+    }
 
     return new Response(JSON.stringify({ insights: finalInsights }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

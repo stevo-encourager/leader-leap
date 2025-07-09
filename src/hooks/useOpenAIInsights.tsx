@@ -132,7 +132,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
 
         // Only check for existing insights if we have an assessmentId
         if (assessmentId) {
-          // Check for existing insights
+          // Check for existing insights (but not for test assessment on manual regeneration)
           const { data: assessment, error: dbError } = await supabase
             .from('assessment_results')
             .select('ai_insights')
@@ -194,7 +194,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     }
   }, [assessmentId, categories, demographics, averageGap, updateState, validateDataForInsights]);
 
-  const generateNewInsights = async () => {
+  const generateNewInsights = async (forceRegenerate = false) => {
     try {
       // ENHANCED: Final validation before API call
       if (!validateDataForInsights()) {
@@ -205,7 +205,8 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
         categoriesCount: categories.length,
         averageGap,
         assessmentId: assessmentId || 'new-assessment',
-        hasValidDemographics: demographics && Object.keys(demographics).length > 0
+        hasValidDemographics: demographics && Object.keys(demographics).length > 0,
+        forceRegenerate: forceRegenerate || isTestAssessment
       });
 
       const { data, error: functionError } = await supabase.functions.invoke('generate-insights', {
@@ -214,7 +215,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
           demographics,
           averageGap,
           assessmentId: assessmentId || null, // Allow null for new assessments
-          forceRegenerate: isTestAssessment
+          forceRegenerate: forceRegenerate || isTestAssessment // Force regenerate for test assessment
         }
       });
 
@@ -236,6 +237,11 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
         
         initializationCompleteRef.current = true;
         isOperationInProgressRef.current = false;
+        
+        // Log success for test assessment regeneration
+        if (isTestAssessment && forceRegenerate) {
+          console.log('✨ TEST ASSESSMENT: Fresh insights generated successfully!');
+        }
       } else {
         throw new Error('No insights received from API');
       }
@@ -255,6 +261,12 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
   };
 
   const regenerateInsights = useCallback(async () => {
+    console.log('🔥 REGENERATE INSIGHTS CALLED:', {
+      assessmentId,
+      isTestAssessment,
+      validateData: validateDataForInsights()
+    });
+    
     // ENHANCED: Better validation for regeneration - don't require assessmentId for new assessments
     if (!validateDataForInsights()) {
       updateState({
@@ -278,9 +290,12 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     // Reset flags to allow new generation
     initializationCompleteRef.current = false;
     
-    // Start new generation
+    // Start new generation with force flag
     try {
-      await generateNewInsights();
+      if (isTestAssessment) {
+        console.log('✨ FORCING REGENERATION FOR TEST ASSESSMENT');
+      }
+      await generateNewInsights(true); // Force regenerate
     } catch (error) {
       updateState({
         error: error instanceof Error ? error.message : 'Regeneration failed',

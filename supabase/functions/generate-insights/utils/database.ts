@@ -5,7 +5,7 @@ export const checkExistingInsights = async (assessmentId: string, supabaseUrl: s
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
   
   // Special test assessment ID that allows regeneration
-  const TEST_ASSESSMENT_ID = 'f74470bc-3c48-4980-bc5f-17386a724d37';
+  const TEST_ASSESSMENT_ID = '2631edf1-a358-4303-83c1-deb9664b53e2';
   const isTestAssessment = assessmentId === TEST_ASSESSMENT_ID;
   
   console.log('🔍 DATABASE CHECK EXISTING INSIGHTS:', {
@@ -84,7 +84,7 @@ export const saveInsights = async (
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
   
   // Special test assessment ID that allows regeneration
-  const TEST_ASSESSMENT_ID = 'f74470bc-3c48-4980-bc5f-17386a724d37';
+  const TEST_ASSESSMENT_ID = '2631edf1-a358-4303-83c1-deb9664b53e2';
   const isTestAssessment = assessmentId === TEST_ASSESSMENT_ID;
   
   console.log('🔍 SAVING INSIGHTS:', {
@@ -94,8 +94,11 @@ export const saveInsights = async (
   });
   
   try {
-    // CRITICAL FIX: For non-test assessments, check if the assessment record exists before trying to update
-    if (!isTestAssessment) {
+    // CRITICAL FIX: For test assessments, always allow save/overwrite
+    if (isTestAssessment) {
+      console.log('🔍 TEST ASSESSMENT - Allowing save/overwrite without checking existing insights');
+    } else {
+      // For non-test assessments, check if the assessment record exists before trying to update
       console.log('🔍 NON-TEST ASSESSMENT - Checking if assessment exists before save');
       const { data: existingAssessment, error: checkError } = await supabase
         .from('assessment_results')
@@ -117,8 +120,6 @@ export const saveInsights = async (
         console.log('🔍 EXISTING INSIGHTS FOUND - ABORTING save to prevent overwrite');
         throw new Error('Insights already exist for this assessment - will not overwrite');
       }
-    } else {
-      console.log('🔍 TEST ASSESSMENT - Allowing save/overwrite');
     }
     
     console.log('🔍 UPDATING DATABASE WITH NEW INSIGHTS...');

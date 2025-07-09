@@ -22,6 +22,8 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   isAuthenticated,
   assessmentId
 }) => {
+  console.log('ResultsDisplay - Received assessmentId:', assessmentId);
+  
   return (
     <ResultsDashboard
       categories={categories}

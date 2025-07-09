@@ -205,13 +205,57 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       console.log('Current URL:', currentUrl);
       console.log('Redirect URL:', redirectUrl);
       
-      // Force a full page redirect by setting window.location directly
-      const authUrl = `https://hrgoxcdixvpmcbfgltea.supabase.co/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectUrl)}&prompt=select_account&access_type=offline`;
+      // Check if we're in an iframe (Lovable editor context)
+      const isInIframe = window.self !== window.top;
       
-      console.log('Redirecting to:', authUrl);
-      
-      // Use window.location.href for a full page redirect to avoid iframe issues
-      window.location.href = authUrl;
+      if (isInIframe) {
+        console.log('Detected iframe environment, opening OAuth in new window');
+        
+        // Build the OAuth URL
+        const authUrl = `https://hrgoxcdixvpmcbfgltea.supabase.co/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(redirectUrl)}&prompt=select_account&access_type=offline`;
+        
+        console.log('Opening OAuth URL in new window:', authUrl);
+        
+        // Open in a new window to escape iframe restrictions
+        const popup = window.open(
+          authUrl,
+          'google-oauth',
+          'width=500,height=600,scrollbars=yes,resizable=yes'
+        );
+        
+        if (!popup) {
+          throw new Error('Please allow popups for this site and try again.');
+        }
+        
+        // Monitor the popup for completion
+        const checkClosed = setInterval(() => {
+          if (popup.closed) {
+            clearInterval(checkClosed);
+            console.log('OAuth popup closed');
+            // The auth state change will be handled by the onAuthStateChange listener
+          }
+        }, 1000);
+        
+      } else {
+        console.log('Not in iframe, using standard OAuth flow');
+        
+        // Use Supabase's built-in OAuth method for non-iframe environments
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: redirectUrl,
+            queryParams: {
+              prompt: 'select_account',
+              access_type: 'offline',
+            },
+          }
+        });
+
+        if (error) {
+          console.error('OAuth error:', error);
+          throw error;
+        }
+      }
       
     } catch (error: any) {
       console.error('Google sign in error:', error);

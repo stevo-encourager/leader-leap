@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { Json } from '@/integrations/supabase/types';
@@ -194,7 +195,7 @@ export const deleteAssessment = async (assessmentId: string): Promise<{
     console.log("deleteAssessment - Authenticated user ID:", user.id);
     
     // Prevent deletion of the protected test assessment
-    if (assessmentId === 'f74470bc-3c48-4980-bc5f-17386a724d37') {
+    if (assessmentId === '2631edf1-a358-4303-83c1-deb9664b53e2') {
       console.error('deleteAssessment - Attempted to delete protected test assessment');
       return { success: false, error: 'This test assessment cannot be deleted.' };
     }
@@ -263,18 +264,19 @@ export const deleteAllAssessments = async (): Promise<{
       return { success: false, error: 'User not authenticated' };
     }
     
-    // Delete all assessments for this user
+    // Delete all assessments for this user EXCEPT the protected test assessment
     const { error } = await supabase
       .from('assessment_results')
       .delete()
-      .eq('user_id', user.id);
+      .eq('user_id', user.id)
+      .neq('id', '2631edf1-a358-4303-83c1-deb9664b53e2');
       
     if (error) {
       console.error("deleteAllAssessments - Error:", error);
       return { success: false, error: error.message };
     }
     
-    console.log("deleteAllAssessments - Successfully deleted all assessments");
+    console.log("deleteAllAssessments - Successfully deleted all assessments except protected test assessment");
     return { success: true };
   } catch (error) {
     console.error("Error in deleteAllAssessments:", error);

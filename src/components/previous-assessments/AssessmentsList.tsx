@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -107,7 +108,7 @@ const AssessmentsList = ({
                             View Results
                           </Button>
                         </Link>
-                        {onDeleteAssessment && assessment.id !== 'f74470bc-3c48-4980-bc5f-17386a724d37' && (
+                        {onDeleteAssessment && assessment.id !== '2631edf1-a358-4303-83c1-deb9664b53e2' && (
                           <DeleteAssessmentDialog
                             assessmentId={assessment.id}
                             onDeleteAssessment={onDeleteAssessment}

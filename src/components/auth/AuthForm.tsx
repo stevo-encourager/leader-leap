@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -12,10 +11,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 
-// Define the props interface with onSuccess
+// Define the props interface with onSuccess and defaultTab
 export interface AuthFormProps {
   onSuccess?: () => void;
   showGoogleAuth?: boolean;
+  defaultTab?: 'signin' | 'signup';
 }
 
 const authSchema = z.object({
@@ -25,9 +25,9 @@ const authSchema = z.object({
   receiveEmails: z.boolean().optional(),
 });
 
-const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true }) => {
+const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, defaultTab = 'signin' }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>('signin');
+  const [activeTab, setActiveTab] = useState<string>(defaultTab);
   const [showPassword, setShowPassword] = useState(false);
   const [showForgot, setShowForgot] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
@@ -80,7 +80,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true })
   };
 
   return (
-    <Tabs defaultValue="signin" value={activeTab} onValueChange={setActiveTab}>
+    <Tabs defaultValue={defaultTab} value={activeTab} onValueChange={setActiveTab}>
       <TabsList className="grid w-full grid-cols-2 mb-6">
         <TabsTrigger value="signin">Login</TabsTrigger>
         <TabsTrigger value="signup">Sign Up</TabsTrigger>

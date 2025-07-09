@@ -23,7 +23,11 @@ const AuthSection: React.FC<AuthSectionProps> = ({ onClose, mandatory = false })
         </div>
       )}
       
-      <AuthForm onSuccess={onClose} showGoogleAuth={true} />
+      <AuthForm 
+        onSuccess={onClose} 
+        showGoogleAuth={true} 
+        defaultTab={mandatory ? 'signup' : 'signin'}
+      />
       
       {!mandatory && (
         <div className="text-center mt-4">

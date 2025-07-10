@@ -13,6 +13,7 @@ interface AuthContextType {
   signInWithGoogle: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   loading: boolean;
+  initialized: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,18 +29,26 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
     console.log('AuthContext: Setting up auth state listener');
     
-    // Set up auth state listener
+    let mounted = true;
+
+    // Set up auth state listener first
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('AuthContext: Auth state changed:', event, session?.user?.email);
+        if (!mounted) return;
+        
+        console.log('AuthContext: Auth state changed:', event, session?.user?.email || 'No user');
         setSession(session);
         setUser(session?.user ?? null);
-        setLoading(false);
+        
+        if (!initialized) {
+          setInitialized(true);
+        }
       }
     );
 
@@ -47,27 +56,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const getInitialSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
+        if (!mounted) return;
+        
         if (error) {
           console.error('AuthContext: Error getting initial session:', error);
         } else {
-          console.log('AuthContext: Initial session:', session?.user?.email || 'No session');
+          console.log('AuthContext: Initial session loaded:', session?.user?.email || 'No session');
           setSession(session);
           setUser(session?.user ?? null);
         }
       } catch (error) {
-        console.error('AuthContext: Exception getting initial session:', error);
+        if (mounted) {
+          console.error('AuthContext: Exception getting initial session:', error);
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setInitialized(true);
+        }
       }
     };
 
     getInitialSession();
 
     return () => {
+      mounted = false;
       console.log('AuthContext: Cleaning up auth subscription');
       subscription.unsubscribe();
     };
-  }, []);
+  }, [initialized]);
 
   const signIn = async (email: string, password: string) => {
     console.log('AuthContext: Attempting to sign in user:', email);
@@ -83,7 +99,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('AuthContext: Sign in error:', error);
         toast({
           title: "Error signing in",
-          description: error.message,
+          description: error.message || "Failed to sign in. Please try again.",
           variant: "destructive",
         });
         throw error;
@@ -243,6 +259,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signInWithGoogle,
     forgotPassword,
     loading,
+    initialized,
   };
 
   return (

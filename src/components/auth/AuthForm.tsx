@@ -39,7 +39,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { signIn, signUp, signInWithGoogle, forgotPassword, loading } = useAuth();
   
-  const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm({
+  const { register, handleSubmit, formState: { errors }, watch, setValue, reset } = useForm({
     resolver: zodResolver(authSchema),
     defaultValues: {
       email: '',
@@ -245,7 +245,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
                 type="submit" 
                 className="w-full" 
                 disabled={isLoading}
-                onClick={() => console.log('AuthForm: Sign In button clicked')}
+                onClick={(e) => {
+                  console.log('AuthForm: Sign In button clicked');
+                  // Don't prevent default here - let the form submission happen naturally
+                }}
               >
                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Sign In

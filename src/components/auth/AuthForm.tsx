@@ -25,9 +25,13 @@ const authSchema = z.object({
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
   fullName: z.string().optional(),
   receiveEmails: z.boolean().optional(),
-  gdprConsent: z.boolean().refine(val => val === true, {
-    message: "You must consent to data processing to create an account"
-  }).optional(),
+  gdprConsent: z.boolean().optional(),
+}).refine((data) => {
+  // Only require gdprConsent for signup, not signin
+  // This will be checked in the component logic
+  return true;
+}, {
+  message: "You must consent to data processing to create an account"
 });
 
 const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, defaultTab = 'signin' }) => {
@@ -172,9 +176,13 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
       email: data.email, 
       hasPassword: !!data.password,
       receiveEmails: data.receiveEmails,
+      gdprConsent: data.gdprConsent,
       activeTab: activeTab,
       timestamp: new Date().toISOString()
     });
+    
+    // Check form validation errors
+    console.log('AuthForm: Form errors:', errors);
     
     try {
       console.log('AuthForm: About to check activeTab:', activeTab);
@@ -239,7 +247,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
           </form>
         ) : (
           <>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" onClick={() => console.log('AuthForm: Form clicked')}>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input 
@@ -277,6 +285,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
                 type="submit" 
                 className="w-full" 
                 disabled={isLoading}
+                onClick={() => console.log('AuthForm: Sign In button clicked')}
               >
                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Sign In

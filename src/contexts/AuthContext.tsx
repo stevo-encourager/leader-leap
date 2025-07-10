@@ -228,29 +228,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('AuthContext: User created successfully:', data.user.id);
       console.log('AuthContext: User metadata after signup:', data.user.user_metadata);
       
-      // Insert/update the profile with the email preference
-      console.log('AuthContext: Upserting profile with receiveEmails:', receiveEmails);
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert({
-          id: data.user.id,
-          email: email,
-          full_name: fullName,
-          receive_emails: receiveEmails,
-        }, {
-          onConflict: 'id'
-        });
-
-      if (profileError) {
-        console.error('AuthContext: Error creating/updating profile:', profileError);
-        toast({
-          title: "Profile Error",
-          description: "Account created but there was an issue saving your preferences. Please update them in your profile.",
-          variant: "destructive",
-        });
-      } else {
-        console.log('AuthContext: Profile created/updated successfully with receive_emails:', receiveEmails);
-      }
+      // The profile will be created automatically by the database trigger
+      // No need to manually upsert the profile
+      console.log('AuthContext: Profile will be created automatically by database trigger');
 
       toast({
         title: "Account created successfully",
@@ -280,8 +260,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signInWithGoogle = async () => {
-    console.log('AuthContext: Starting Google sign in');
     const redirectUrl = `${window.location.origin}/`;
+    console.log('AuthContext: Google sign in redirectUrl:', redirectUrl);
+    console.log('AuthContext: Starting Google sign in');
     
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',

@@ -290,14 +290,26 @@ const buildValidatedResourcesList = (): string => {
 **CRITICAL RESOURCE VALIDATION RULES:**
 - You MUST ONLY use resources from this validated database above
 - NEVER create, invent, or suggest resources not explicitly listed here
-- Every resource name you use must match EXACTLY as written in this database
+- Every resource name you use must match EXACTLY as written in the database
 - If a framework, book, or methodology you want to mention is not in this database, do NOT include it
 - This list is exhaustive and final - no additions or variations are permitted
 
-**MINIMUM BOOK RECOMMENDATION REQUIREMENT:**
-- Each competency section (both priority areas and key competencies) MUST include at least one book recommendation from the approved list above
-- If no book directly relates to the competency, select the most relevant book from the approved list
-- NEVER omit book recommendations - there must always be at least one book per section
+**CRITICAL RESOURCE COUNT REQUIREMENTS:**
+- Each competency section MUST have EXACTLY 3 resources (no more, no less)
+- Each competency section MUST include EXACTLY 1 book recommendation from the approved list
+- Each competency section MUST include EXACTLY 2 non-book resources (frameworks, tools, etc.)
+- NEVER include more than 1 book per competency section
+- NEVER include fewer than 3 total resources per competency section
+
+**BOOK SELECTION RULES:**
+- Select books that most closely align with the specific competency being discussed
+- If multiple books are relevant, choose the one that best matches the user's industry or role context
+- For communication competencies, prefer "Crucial Conversations" or "Radical Candor"
+- For emotional intelligence competencies, prefer "Emotional Intelligence 2.0" or "Primal Leadership"
+- For strategic thinking competencies, prefer "Good to Great" or "Playing To Win"
+- For team building competencies, prefer "The Leadership Challenge" or "The 17 Indisputable Laws of Teamwork"
+- For change management competencies, prefer "Leading Change" or "The Power of Habit"
+- For decision making competencies, prefer "Thinking Fast and Slow" or "Getting To Yes"
 `;
 };
 
@@ -378,7 +390,7 @@ ${topCompetencies.map((cat, i) => {
   const validatedResourcesList = buildValidatedResourcesList();
   const validatedLeadersList = buildValidatedLeadersList();
 
-  const fullPrompt = `${assessmentDataSection}
+  const fullPrompt = `RESOURCE_VALIDATION_TEST_123\n\n${assessmentDataSection}
 
 You are an expert leadership coach and assessment analyst working with Encourager Coaching, which specializes in positive psychology, maximizing natural ability, and helping people become the best version of themselves. Based on the provided assessment data (including competency names, gap scores, individual skill gaps, and top competencies), generate AI insights for a user's leadership assessment.
 
@@ -568,17 +580,23 @@ ${validatedLeadersList}
 - If you want to reference a leader not in the database, omit the leader reference entirely
 - Always use the exact leader name and corresponding URL as specified in the database
 
-**Leader Selection Process:**
-1. Identify the leadership principle you want to highlight in your summary
-2. Find the EXACT matching leader from the validated database who exemplifies that principle
-3. Use only leaders whose names and principles match exactly from the database
-4. Use the corresponding URL provided in the database for that leader
-5. If no exact match exists for your intended principle, omit the leader reference
+**CRITICAL LEADER SELECTION ALGORITHM:**
+1. Analyze the user's assessment data to identify their primary leadership gaps and strengths
+2. Match the user's industry context (${assessmentSummary.demographics.industry || 'Not specified'}) with relevant leaders
+3. Consider the user's role level (${assessmentSummary.demographics.role || 'Not specified'}) and experience (${assessmentSummary.demographics.yearsOfExperience || 'Not specified'} years)
+4. Select a leader whose expertise and leadership style directly relates to the user's most significant development areas
+5. AVOID selecting the same leader repeatedly - ensure diversity in leader selection across different assessments
+6. If the user's gaps are in strategic thinking, consider leaders like Satya Nadella or Marc Benioff
+7. If the user's gaps are in team building, consider leaders like Mary Barra or Brian Chesky
+8. If the user's gaps are in communication, consider leaders like Stewart Butterfield or Whitney Wolfe Herd
+9. If the user's gaps are in change management, consider leaders like Reed Hastings or Paul Polman
+10. If the user's gaps are in emotional intelligence, consider leaders like Thasunda Brown Duckett or Elizabeth Nyamayaro
 
 **Leader Quality Validation:**
 - Every leader reference must directly relate to the specific leadership principle being discussed
 - Ensure the leader's known expertise aligns with the user's industry context when possible
 - Match leader examples to user's experience level and role context
+- NEVER default to Indra Nooyi unless her specific expertise directly matches the user's primary development area
 
 ### ENHANCED QUALITY STANDARDS
 
@@ -745,5 +763,8 @@ Base your insights on the assessment data provided above and ensure each insight
     cat.topGapSkills ? cat.topGapSkills.map(skill => skill.title) : []
   ).flat());
 
+  console.log('PROMPT BUILDER: FULL PROMPT START');
+  console.log(fullPrompt);
+  console.log('PROMPT BUILDER: FULL PROMPT END');
   return fullPrompt;
 };

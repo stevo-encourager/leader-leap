@@ -17,6 +17,7 @@ import NotFound from "./pages/NotFound";
 import AITestPanel from './pages/AITestPanel';
 import React from 'react';
 import MyProfile from "./pages/MyProfile";
+import Consent from './pages/Consent';
 
 // Configure the QueryClient with sensible defaults
 const queryClient = new QueryClient({
@@ -96,6 +97,7 @@ function App() {
               <Route path="/results/:id" element={<Results />} />
               <Route path="/previous-assessments" element={<PreviousAssessments />} />
               <Route path="/profile" element={<MyProfile />} />
+              <Route path="/consent" element={<Consent />} />
               <Route path="/admin" element={
                 <SuperAdminRoute>
                   <Admin />

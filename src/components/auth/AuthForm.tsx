@@ -25,13 +25,11 @@ const authSchema = z.object({
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
   fullName: z.string().optional(),
   receiveEmails: z.boolean().optional(),
-  gdprConsent: z.boolean().optional(),
+  // gdprConsent is no longer required or checked at signup
 }).refine((data) => {
-  // Only require gdprConsent for signup, not signin
-  // This will be checked in the component logic
   return true;
 }, {
-  message: "You must consent to data processing to create an account"
+  // No consent required at signup
 });
 
 const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, defaultTab = 'signin' }) => {
@@ -49,16 +47,14 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
       email: '',
       password: '',
       fullName: '',
-      receiveEmails: true,
-      gdprConsent: false
+      // Remove receiveEmails and gdprConsent from defaultValues
     }
   });
 
-  const gdprConsent = watch('gdprConsent');
-  const receiveEmails = watch('receiveEmails');
+  // Removed gdprConsent and receiveEmails from watch
 
   console.log('AuthForm: Component rendered with activeTab:', activeTab);
-  console.log('AuthForm: Current receiveEmails value:', receiveEmails);
+  // Removed console.log for receiveEmails
 
   const handleSignIn = async (data: any) => {
     console.log('AuthForm: handleSignIn called - START');
@@ -110,24 +106,14 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
       email: data.email,
       fullName: data.fullName,
       receiveEmails: data.receiveEmails,
-      gdprConsent: data.gdprConsent
+      // gdprConsent removed from signup
     });
     
-    if (!data.gdprConsent) {
-      toast({
-        title: "Consent Required",
-        description: "You must consent to data processing to create an account.",
-        variant: "destructive"
-      });
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
-      console.log('AuthForm: About to call signUp with receiveEmails:', data.receiveEmails);
-      
-      await signUp(data.email, data.password, data.fullName || '', data.receiveEmails === true);
+      console.log('AuthForm: About to call signUp');
+      await signUp(data.email, data.password, data.fullName || '', false); // Pass false for receiveEmails
       console.log('AuthForm: Sign up completed successfully');
       // Don't call onSuccess here as the user needs to verify their email
     } catch (error) {
@@ -175,8 +161,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
     console.log('AuthForm: onSubmit data:', { 
       email: data.email, 
       hasPassword: !!data.password,
-      receiveEmails: data.receiveEmails,
-      gdprConsent: data.gdprConsent,
+      // Removed receiveEmails and gdprConsent from log
       activeTab: activeTab,
       timestamp: new Date().toISOString()
     });
@@ -192,7 +177,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
         await handleSignIn(data);
         console.log('AuthForm: handleSignIn completed');
       } else if (activeTab === 'signup') {
-        console.log('AuthForm: Calling handleSignUp for signup tab with receiveEmails:', data.receiveEmails);
+        console.log('AuthForm: Calling handleSignUp for signup tab');
         await handleSignUp(data);
         console.log('AuthForm: handleSignUp completed');
       }
@@ -308,7 +293,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
             <Button 
               type="button" 
               variant="outline" 
-              onClick={handleGoogleSignIn}
+              onClick={() => { 
+                console.log('DEBUG: Google button clicked'); 
+                handleGoogleSignIn(); 
+              }}
               disabled={isLoading}
               className="w-full"
             >
@@ -361,48 +349,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
             {errors.password && <p className="text-sm text-red-500">{errors.password.message as string}</p>}
           </div>
           
-          <div className="space-y-4 pt-2">
-            {/* GDPR Consent Checkbox */}
-            <div className="flex items-start space-x-3">
-              <Checkbox 
-                id="gdprConsent" 
-                checked={gdprConsent}
-                onCheckedChange={(checked) => {
-                  console.log('AuthForm: GDPR consent changed to:', checked);
-                  setValue('gdprConsent', checked as boolean);
-                }}
-              />
-              <div className="grid gap-1.5 leading-none">
-                <Label htmlFor="gdprConsent" className="text-sm font-normal">
-                  I consent to Encourager Limited processing my personal data as described in the{' '}
-                  <Link 
-                    to="/privacy-notice" 
-                    target="_blank"
-                    className="text-encourager underline hover:text-encourager-light"
-                  >
-                    Privacy Notice
-                  </Link>
-                  .
-                </Label>
-              </div>
-            </div>
-            {errors.gdprConsent && <p className="text-sm text-red-500">{errors.gdprConsent.message as string}</p>}
-            
-            {/* Marketing Emails Checkbox */}
-            <div className="flex items-center space-x-2">
-              <Checkbox 
-                id="receiveEmails" 
-                checked={receiveEmails}
-                onCheckedChange={(checked) => {
-                  console.log('AuthForm: receiveEmails checkbox changed to:', checked);
-                  setValue('receiveEmails', checked as boolean);
-                }}
-              />
-              <Label htmlFor="receiveEmails" className="text-sm font-normal">Receive emails about leadership tips and updates. MAX ONE EMAIL MONTH</Label>
-            </div>
-          </div>
-          
-          <Button type="submit" className="w-full" disabled={isLoading || !gdprConsent}>
+          {/* Removed GDPR consent and receive emails checkboxes from signup form */}
+          <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             Create Account
           </Button>

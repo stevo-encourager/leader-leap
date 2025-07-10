@@ -6,6 +6,7 @@ import { cleanJsonResponse, formatSummaryIntoParagraphs, sanitizeJsonString } fr
 import { buildAssessmentData, buildPrompt } from './utils/promptBuilder.ts';
 import { callOpenAI } from './utils/openaiClient.ts';
 import { checkExistingInsights, saveInsights } from './utils/database.ts';
+import { ALL_RESOURCE_MAPPINGS } from '../../../src/utils/resources/index.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -169,6 +170,64 @@ serve(async (req) => {
       console.error('🔍 JSON PARSING/VALIDATION FAILED:', jsonError.message);
       throw new Error(`OpenAI returned invalid JSON format: ${jsonError.message}`);
     }
+
+    // --- RESOURCE POST-PROCESSING VALIDATION AND AUTO-FILL ---
+    function getValidResourceTitlesByType(type) {
+      return Object.values(ALL_RESOURCE_MAPPINGS)
+        .filter(r => r.type === type)
+        .map(r => r.title);
+    }
+    const allValidTitles = new Set(Object.values(ALL_RESOURCE_MAPPINGS).map(r => r.title));
+    const validBooks = getValidResourceTitlesByType('book');
+    const validNonBooks = Object.values(ALL_RESOURCE_MAPPINGS)
+      .filter(r => r.type !== 'book')
+      .map(r => r.title);
+
+    function validateAndFillResources(resources) {
+      // Remove invalid
+      let filtered = (resources || []).filter(r => allValidTitles.has(r));
+      // Ensure max 1 book
+      let books = filtered.filter(r => validBooks.includes(r));
+      let nonBooks = filtered.filter(r => !validBooks.includes(r));
+      if (books.length > 1) books = books.slice(0, 1);
+      // Fill if needed
+      if (books.length === 0 && validBooks.length > 0) {
+        // Add a book not already present
+        const bookToAdd = validBooks.find(b => !filtered.includes(b));
+        if (bookToAdd) books.push(bookToAdd);
+      }
+      while (nonBooks.length < 2 && validNonBooks.length > 0) {
+        const toAdd = validNonBooks.find(nb => !filtered.includes(nb) && !nonBooks.includes(nb));
+        if (toAdd) nonBooks.push(toAdd);
+        else break;
+      }
+      // Final array: 1 book + 2 non-books
+      return [...books.slice(0,1), ...nonBooks.slice(0,2)].slice(0,3);
+    }
+
+    if (parsedInsights && parsedInsights.priority_areas) {
+      parsedInsights.priority_areas = parsedInsights.priority_areas.map(area => {
+        console.log('DEBUG: Original priority_area resources for', area.competency, ':', area.resources);
+        const validated = validateAndFillResources(area.resources);
+        console.log('DEBUG: Filtered/Filled priority_area resources for', area.competency, ':', validated);
+        return {
+          ...area,
+          resources: validated
+        };
+      });
+    }
+    if (parsedInsights && parsedInsights.key_strengths) {
+      parsedInsights.key_strengths = parsedInsights.key_strengths.map(area => {
+        console.log('DEBUG: Original key_strengths resources for', area.competency, ':', area.resources);
+        const validated = validateAndFillResources(area.resources);
+        console.log('DEBUG: Filtered/Filled key_strengths resources for', area.competency, ':', validated);
+        return {
+          ...area,
+          resources: validated
+        };
+      });
+    }
+    // --- END RESOURCE POST-PROCESSING ---
 
     // Convert back to JSON string with enhanced formatted summary
     const finalInsights = JSON.stringify(parsedInsights);

@@ -43,20 +43,19 @@ const UserManagement = () => {
         throw new Error(usersData.error || "Failed to get users");
       }
       
-      // Get profile data for additional user information
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, full_name, receive_emails');
+      // Get profile data for additional user information using the new edge function
+      const { data: profilesData, error: profilesError } = await supabase.functions.invoke('list-profiles');
       
       if (profilesError) {
-        console.warn("UserManagement: Error getting profiles:", profilesError);
+        console.warn("UserManagement: Error getting profiles via edge function:", profilesError);
       }
       
-      console.log("UserManagement: Profiles data:", profiles);
+      const profiles = profilesData?.profiles || [];
+      console.log("UserManagement: Profiles data from edge function:", profiles);
       
       // Merge user data with profile data
       const mergedUsers = usersData.users.map((user: any) => {
-        const profile = profiles?.find(p => p.id === user.id);
+        const profile = profiles.find((p: any) => p.id === user.id);
         console.log(`UserManagement: Merging user ${user.email} with profile:`, profile);
         
         return {
@@ -101,12 +100,10 @@ const UserManagement = () => {
     );
   };
 
-  const formatEmailPreference = (receiveEmails: boolean | undefined) => {
-    console.log('UserManagement: Formatting email preference:', receiveEmails, 'type:', typeof receiveEmails);
-    
-    if (receiveEmails === true) {
+  const formatEmailPreference = (receiveEmails: boolean | string | number | undefined | null) => {
+    if (receiveEmails === true || receiveEmails === "true" || receiveEmails === 1) {
       return <span className="text-green-600">Subscribed</span>;
-    } else if (receiveEmails === false) {
+    } else if (receiveEmails === false || receiveEmails === "false" || receiveEmails === 0) {
       return <span className="text-gray-600">Unsubscribed</span>;
     } else {
       return <span className="text-gray-400">Unknown</span>;
@@ -249,7 +246,7 @@ const UserManagement = () => {
               </div>
               <div>
                 <div className="font-medium">
-                  {users.filter(u => u.receive_emails === true).length}
+                  {users.filter(u => u.receive_emails == true).length}
                 </div>
                 <div className="text-muted-foreground">Email Subscribers</div>
               </div>

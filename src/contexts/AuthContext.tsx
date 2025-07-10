@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthContextType {
   user: User | null;
@@ -30,6 +31,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     console.log('AuthContext: Setting up auth state listener');
@@ -122,6 +124,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       subscription.unsubscribe();
     };
   }, [initialized]);
+
+  React.useEffect(() => {
+    if (initialized && user) {
+      // Check if user is missing consent or preferences
+      const checkConsent = async () => {
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('gdpr_consent, receive_emails')
+          .eq('id', user.id)
+          .single();
+        // Only redirect if consent is missing (null or false) or receive_emails is null
+        if (!error && profile && (profile.gdpr_consent !== true || profile.receive_emails === null || typeof profile.receive_emails === 'undefined')) {
+          navigate('/consent');
+        }
+      };
+      checkConsent();
+    }
+  }, [initialized, user, navigate]);
 
   const signIn = async (email: string, password: string) => {
     console.log('AuthContext: signIn method called - START');

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -52,9 +53,11 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
   const gdprConsent = watch('gdprConsent');
   const receiveEmails = watch('receiveEmails');
 
+  console.log('AuthForm: Component rendered with activeTab:', activeTab);
+
   const handleSignIn = async (data: any) => {
-    console.log('AuthForm: handleSignIn called with email:', data.email);
-    console.log('AuthForm: Form validation passed, attempting sign in');
+    console.log('AuthForm: handleSignIn CALLED with email:', data.email);
+    console.log('AuthForm: About to call signIn from context');
     
     setIsSubmitting(true);
     
@@ -145,17 +148,22 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
   };
 
   const onSubmit = (data: any) => {
-    console.log('AuthForm: Form submitted with data:', { email: data.email, hasPassword: !!data.password });
+    console.log('AuthForm: onSubmit TRIGGERED with data:', { email: data.email, hasPassword: !!data.password });
     console.log('AuthForm: Active tab:', activeTab);
+    console.log('AuthForm: Form errors:', errors);
     
     if (activeTab === 'signin') {
+      console.log('AuthForm: Calling handleSignIn');
       handleSignIn(data);
     } else {
+      console.log('AuthForm: Calling handleSignUp');
       handleSignUp(data);
     }
   };
 
   const isLoading = loading || isSubmitting;
+
+  console.log('AuthForm: Rendering with loading state:', isLoading);
 
   return (
     <Tabs defaultValue={defaultTab} value={activeTab} onValueChange={setActiveTab}>
@@ -200,6 +208,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
                   placeholder="you@example.com"
                   autoComplete="email"
                   {...register('email')}
+                  onChange={(e) => {
+                    console.log('AuthForm: Email field changed to:', e.target.value);
+                    register('email').onChange(e);
+                  }}
                 />
                 {errors.email && <p className="text-sm text-red-500">{errors.email.message as string}</p>}
               </div>
@@ -213,6 +225,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
                     placeholder="••••••••"
                     autoComplete="current-password"
                     {...register('password')}
+                    onChange={(e) => {
+                      console.log('AuthForm: Password field changed (length):', e.target.value.length);
+                      register('password').onChange(e);
+                    }}
                   />
                   <button 
                     type="button"
@@ -225,7 +241,12 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
                 {errors.password && <p className="text-sm text-red-500">{errors.password.message as string}</p>}
               </div>
               
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={isLoading}
+                onClick={() => console.log('AuthForm: Sign In button clicked')}
+              >
                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Sign In
               </Button>

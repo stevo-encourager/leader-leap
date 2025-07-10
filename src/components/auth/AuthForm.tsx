@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -167,7 +166,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
   };
 
   const onSubmit = async (data: any) => {
-    console.log('AuthForm: onSubmit called - START');
+    console.log('AuthForm: onSubmit handler called - FORM SUBMISSION TRIGGERED');
     console.log('AuthForm: onSubmit data:', { 
       email: data.email, 
       hasPassword: !!data.password,
@@ -192,7 +191,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
       console.error('AuthForm: onSubmit error:', error);
     }
     
-    console.log('AuthForm: onSubmit - END');
+    console.log('AuthForm: onSubmit handler - END');
   };
 
   const isLoading = loading || isSubmitting;
@@ -277,11 +276,6 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
                 type="submit" 
                 className="w-full" 
                 disabled={isLoading}
-                onClick={() => {
-                  console.log('AuthForm: Sign In button clicked - this should trigger form submission');
-                  console.log('AuthForm: Button disabled state:', isLoading);
-                  console.log('AuthForm: Current activeTab:', activeTab);
-                }}
               >
                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Sign In

@@ -124,25 +124,47 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [initialized]);
 
   const signIn = async (email: string, password: string) => {
-    console.log('AuthContext: signIn method called for email:', email);
+    console.log('AuthContext: signIn method called - START');
+    console.log('AuthContext: signIn email:', email);
+    console.log('AuthContext: signIn timestamp:', new Date().toISOString());
+    
     setLoading(true);
     
     try {
-      console.log('AuthContext: Calling supabase.auth.signInWithPassword');
-      const { data, error } = await supabase.auth.signInWithPassword({
+      console.log('AuthContext: About to call supabase.auth.signInWithPassword');
+      console.log('AuthContext: Supabase client exists:', !!supabase);
+      console.log('AuthContext: Supabase auth exists:', !!supabase.auth);
+      
+      const signInData = {
         email: email.trim(),
         password,
+      };
+      
+      console.log('AuthContext: Calling signInWithPassword with:', {
+        email: signInData.email,
+        hasPassword: !!signInData.password,
+        passwordLength: signInData.password?.length
       });
+      
+      const { data, error } = await supabase.auth.signInWithPassword(signInData);
 
+      console.log('AuthContext: signInWithPassword response received');
       console.log('AuthContext: signInWithPassword response:', {
         hasData: !!data,
         hasUser: !!data?.user,
         hasSession: !!data?.session,
+        userEmail: data?.user?.email,
         error: error?.message || 'No error'
       });
 
       if (error) {
         console.error('AuthContext: Sign in error:', error);
+        console.error('AuthContext: Error details:', {
+          message: error.message,
+          status: error.status,
+          statusText: error.statusText
+        });
+        
         toast({
           title: "Error signing in",
           description: error.message || "Failed to sign in. Please try again.",
@@ -153,16 +175,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (data?.user && data?.session) {
         console.log('AuthContext: Sign in successful for user:', data.user.email);
+        console.log('AuthContext: Session created successfully');
         // Don't show success toast here - it will be shown by the auth state change handler
       } else {
         console.warn('AuthContext: Sign in completed but no user/session in response');
+        console.warn('AuthContext: Data object:', data);
         throw new Error('Sign in completed but no user session was created');
       }
     } catch (error) {
       console.error('AuthContext: Exception during sign in:', error);
+      console.error('AuthContext: Exception type:', typeof error);
+      console.error('AuthContext: Exception constructor:', error?.constructor?.name);
       throw error;
     } finally {
+      console.log('AuthContext: Setting loading to false');
       setLoading(false);
+      console.log('AuthContext: signIn method - END');
     }
   };
 

@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -58,11 +59,18 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
 
   const handleSignIn = async (data: any) => {
     console.log('AuthForm: handleSignIn called with email:', data.email);
+    console.log('AuthForm: handleSignIn data object:', { 
+      email: data.email, 
+      hasPassword: !!data.password,
+      passwordLength: data.password?.length 
+    });
     
     setIsSubmitting(true);
     
     try {
-      console.log('AuthForm: About to call signIn method');
+      console.log('AuthForm: About to call signIn method from AuthContext');
+      console.log('AuthForm: signIn function exists:', typeof signIn === 'function');
+      
       await signIn(data.email, data.password);
       console.log('AuthForm: signIn completed successfully');
       
@@ -72,8 +80,21 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
       }
     } catch (error) {
       console.error('AuthForm: Sign in failed with error:', error);
-      // Don't show additional toast here as AuthContext already handles error toasts
+      console.error('AuthForm: Error details:', {
+        message: error?.message,
+        name: error?.name,
+        stack: error?.stack
+      });
+      // Error handling is done in AuthContext, but let's add a fallback
+      if (!error?.message?.includes('already handled')) {
+        toast({
+          title: "Sign in failed",
+          description: error?.message || "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
+      console.log('AuthForm: Setting isSubmitting to false');
       setIsSubmitting(false);
     }
   };
@@ -143,24 +164,44 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
     }
   };
 
-  const onSubmit = (data: any) => {
-    console.log('AuthForm: onSubmit called with data:', { 
+  const onSubmit = async (data: any) => {
+    console.log('AuthForm: onSubmit called - START');
+    console.log('AuthForm: onSubmit data:', { 
       email: data.email, 
       hasPassword: !!data.password,
       receiveEmails: data.receiveEmails,
-      activeTab: activeTab
+      activeTab: activeTab,
+      timestamp: new Date().toISOString()
     });
     
-    if (activeTab === 'signin') {
-      console.log('AuthForm: Calling handleSignIn');
-      return handleSignIn(data);
-    } else {
-      console.log('AuthForm: Calling handleSignUp with receiveEmails:', data.receiveEmails);
-      return handleSignUp(data);
+    try {
+      console.log('AuthForm: About to check activeTab:', activeTab);
+      
+      if (activeTab === 'signin') {
+        console.log('AuthForm: Calling handleSignIn for signin tab');
+        await handleSignIn(data);
+        console.log('AuthForm: handleSignIn completed');
+      } else {
+        console.log('AuthForm: Calling handleSignUp for signup tab with receiveEmails:', data.receiveEmails);
+        await handleSignUp(data);
+        console.log('AuthForm: handleSignUp completed');
+      }
+    } catch (error) {
+      console.error('AuthForm: onSubmit error:', error);
     }
+    
+    console.log('AuthForm: onSubmit - END');
   };
 
   const isLoading = loading || isSubmitting;
+
+  console.log('AuthForm: Render state:', {
+    activeTab,
+    isLoading,
+    loading,
+    isSubmitting,
+    signInExists: typeof signIn === 'function'
+  });
 
   return (
     <Tabs defaultValue={defaultTab} value={activeTab} onValueChange={setActiveTab}>
@@ -230,7 +271,16 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
                 {errors.password && <p className="text-sm text-red-500">{errors.password.message as string}</p>}
               </div>
               
-              <Button type="submit" className="w-full" disabled={isLoading}>
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={isLoading}
+                onClick={() => {
+                  console.log('AuthForm: Sign In button clicked - this should trigger form submission');
+                  console.log('AuthForm: Button disabled state:', isLoading);
+                  console.log('AuthForm: Current activeTab:', activeTab);
+                }}
+              >
                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Sign In
               </Button>

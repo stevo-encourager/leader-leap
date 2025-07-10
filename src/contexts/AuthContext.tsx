@@ -161,8 +161,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.error('AuthContext: Sign in error:', error);
         console.error('AuthContext: Error details:', {
           message: error.message,
-          status: error.status,
-          statusText: error.statusText
+          status: error.status
         });
         
         toast({

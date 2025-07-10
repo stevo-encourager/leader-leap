@@ -1,14 +1,28 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LogIn, History, Home, Bot } from 'lucide-react';
+import { LogIn, History, Home, Bot, Settings } from 'lucide-react';
 
 const Navigation: React.FC = () => {
   const { user, signOut } = useAuth();
   
   // Check if we're in development/staging (not production)
   const isDevelopment = import.meta.env.DEV || window.location.hostname !== 'your-production-domain.com';
+  
+  // Check if user is super admin
+  const superAdmins = ['steve@chainpace.io', 'steve@encourager.co.uk'];
+  const isSuperAdmin = user && superAdmins.some(
+    email => email.toLowerCase() === (user.email || '').toLowerCase().trim()
+  );
+  
+  console.log('Navigation: User info:', {
+    hasUser: !!user,
+    userEmail: user?.email,
+    isSuperAdmin: isSuperAdmin,
+    isDevelopment: isDevelopment
+  });
   
   return (
     <nav className="flex justify-between items-center gap-4 py-2 w-full">
@@ -36,6 +50,20 @@ const Navigation: React.FC = () => {
                 <span>My Profile</span>
               </Button>
             </Link>
+            
+            {/* Admin link - only show for super admins */}
+            {isSuperAdmin && (
+              <Link to="/admin" className="no-underline">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="flex items-center gap-2 text-red-600 hover:text-red-700"
+                >
+                  <Settings size={16} />
+                  <span>Admin</span>
+                </Button>
+              </Link>
+            )}
             
             {/* AI Test Panel - only show in development/staging */}
             {isDevelopment && (

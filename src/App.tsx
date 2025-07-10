@@ -30,24 +30,53 @@ const queryClient = new QueryClient({
 });
 
 function SuperAdminRoute({ children }) {
-  const { user, loading } = useAuth();
+  const { user, loading, initialized } = useAuth();
   const superAdmins = ['steve@chainpace.io', 'steve@encourager.co.uk'];
-  console.log('SuperAdminRoute: user =', user);
-  console.log('SuperAdminRoute: user.email =', user?.email);
-  if (loading) {
-    console.log('SuperAdminRoute: Auth is loading, rendering null.');
-    return <div>Loading...</div>; // Or use a spinner component if you have one
+  
+  console.log('SuperAdminRoute: Debug info:', {
+    user: user,
+    userEmail: user?.email,
+    loading: loading,
+    initialized: initialized,
+    superAdmins: superAdmins,
+    currentUrl: window.location.href,
+    timestamp: new Date().toISOString()
+  });
+  
+  // Wait for auth to be initialized
+  if (!initialized) {
+    console.log('SuperAdminRoute: Auth not initialized yet, showing loading...');
+    return <div>Loading auth...</div>;
   }
-  if (
-    !user ||
-    !superAdmins.some(
-      email => email.toLowerCase() === (user.email || '').toLowerCase().trim()
-    )
-  ) {
-    console.log('SuperAdminRoute: Access denied. Redirecting to home.');
+  
+  if (loading) {
+    console.log('SuperAdminRoute: Auth is loading, rendering loading state.');
+    return <div>Loading...</div>;
+  }
+  
+  if (!user) {
+    console.log('SuperAdminRoute: No user found. Redirecting to login.');
+    return <Navigate to="/login" />;
+  }
+  
+  const userEmail = (user.email || '').toLowerCase().trim();
+  const isSuperAdmin = superAdmins.some(
+    email => email.toLowerCase() === userEmail
+  );
+  
+  console.log('SuperAdminRoute: Email comparison:', {
+    userEmail: userEmail,
+    superAdmins: superAdmins.map(email => email.toLowerCase()),
+    isSuperAdmin: isSuperAdmin
+  });
+  
+  if (!isSuperAdmin) {
+    console.log('SuperAdminRoute: Access denied. User is not a super admin. Redirecting to home.');
+    console.log('SuperAdminRoute: User email does not match any super admin emails');
     return <Navigate to="/" />;
   }
-  console.log('SuperAdminRoute: Access granted. Rendering children.');
+  
+  console.log('SuperAdminRoute: Access granted. User is a super admin. Rendering children.');
   return children;
 }
 

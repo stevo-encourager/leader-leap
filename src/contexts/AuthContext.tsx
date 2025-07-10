@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -47,11 +46,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           hasSession: !!session,
           hasUser: !!session?.user,
           userId: session?.user?.id,
-          userEmail: session?.user?.email
+          userEmail: session?.user?.email,
+          userEmailConfirmed: session?.user?.email_confirmed_at
         });
         
         setSession(session);
         setUser(session?.user ?? null);
+        
+        // Check super admin status for debugging
+        if (session?.user?.email) {
+          const superAdmins = ['steve@chainpace.io', 'steve@encourager.co.uk'];
+          const isSuperAdmin = superAdmins.some(
+            email => email.toLowerCase() === session.user.email.toLowerCase().trim()
+          );
+          console.log('AuthContext: Super admin check:', {
+            userEmail: session.user.email,
+            isSuperAdmin: isSuperAdmin,
+            superAdmins: superAdmins
+          });
+        }
         
         if (!initialized) {
           setInitialized(true);

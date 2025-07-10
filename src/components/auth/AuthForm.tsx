@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -62,6 +61,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
     setIsSubmitting(true);
     
     try {
+      console.log('AuthForm: About to call signIn method');
       await signIn(data.email, data.password);
       console.log('AuthForm: signIn completed successfully');
       
@@ -71,11 +71,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
       }
     } catch (error) {
       console.error('AuthForm: Sign in failed with error:', error);
-      toast({
-        title: "Sign in failed",
-        description: "Please check your credentials and try again.",
-        variant: "destructive",
-      });
+      // Don't show additional toast here as AuthContext already handles error toasts
     } finally {
       setIsSubmitting(false);
     }

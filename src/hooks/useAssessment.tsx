@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { useNavigationState } from './useNavigationState';
 import { useAuth } from '@/contexts/AuthContext';
@@ -53,13 +54,7 @@ export const useAssessment = () => {
     handleCloseAuthForm,
     handleShowSignupForm,
     currentAssessmentId
-  } = useResultsManagement(
-    categories, 
-    demographics, 
-    handleCategoriesUpdate,
-    handleDemographicsUpdate,
-    setCurrentStep
-  );
+  } = useResultsManagement();
 
   const { user } = useAuth();
 

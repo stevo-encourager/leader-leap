@@ -10,6 +10,9 @@ export const useResultsManagement = () => {
   const [demographics, setDemographics] = useState<any>(null);
   const [hasValidRatings, setHasValidRatings] = useState(false);
   const [savedToSupabase, setSavedToSupabase] = useState(false);
+  const [showAuthForm, setShowAuthForm] = useState(false);
+  const [loadingPreviousResults, setLoadingPreviousResults] = useState(false);
+  const [currentAssessmentId, setCurrentAssessmentId] = useState<string | undefined>();
 
   // Only check for ratings when auth is initialized
   useEffect(() => {
@@ -69,6 +72,26 @@ export const useResultsManagement = () => {
     setSavedToSupabase(true);
   }, []);
 
+  const handleSaveResults = useCallback(() => {
+    console.log('useResultsManagement - handleSaveResults called');
+    // TODO: Implement save results logic
+  }, []);
+
+  const handleLoadPreviousResults = useCallback(() => {
+    console.log('useResultsManagement - handleLoadPreviousResults called');
+    setLoadingPreviousResults(true);
+    // TODO: Implement load previous results logic
+    setTimeout(() => setLoadingPreviousResults(false), 1000); // Mock loading
+  }, []);
+
+  const handleCloseAuthForm = useCallback(() => {
+    setShowAuthForm(false);
+  }, []);
+
+  const handleShowSignupForm = useCallback(() => {
+    setShowAuthForm(true);
+  }, []);
+
   return {
     categories,
     demographics,
@@ -78,6 +101,13 @@ export const useResultsManagement = () => {
     updateDemographics,
     markAsSaved,
     user,
-    initialized
+    initialized,
+    showAuthForm,
+    loadingPreviousResults,
+    handleSaveResults,
+    handleLoadPreviousResults,
+    handleCloseAuthForm,
+    handleShowSignupForm,
+    currentAssessmentId
   };
 };

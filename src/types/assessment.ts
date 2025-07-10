@@ -16,3 +16,6 @@ export interface LocalAssessmentData {
 export interface AggregatedAssessments {
   [date: string]: AssessmentSummary[];
 }
+
+// Export the Category type as AssessmentCategory for compatibility
+export type AssessmentCategory = Category;

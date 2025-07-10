@@ -53,12 +53,18 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
   const receiveEmails = watch('receiveEmails');
 
   const handleSignIn = async (data: any) => {
+    console.log('AuthForm: Starting sign in process for:', data.email);
     setIsLoading(true);
+    
     try {
       await signIn(data.email, data.password);
-      if (onSuccess) onSuccess();
+      console.log('AuthForm: Sign in successful, calling onSuccess');
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
-      // Error is handled in AuthContext
+      console.error('AuthForm: Sign in failed:', error);
+      // Error is already handled in AuthContext with toast
     } finally {
       setIsLoading(false);
     }
@@ -85,21 +91,39 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
       await signUp(data.email, data.password, data.fullName || '', data.receiveEmails === true);
       // Don't call onSuccess here as the user needs to verify their email
     } catch (error) {
-      // Error is handled in AuthContext
+      console.error('AuthForm: Sign up failed:', error);
+      // Error is already handled in AuthContext with toast
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleGoogleSignIn = async () => {
+    console.log('AuthForm: Starting Google sign in');
     setIsLoading(true);
     try {
       await signInWithGoogle();
       // onSuccess is called in AuthContext when the redirect happens
     } catch (error) {
-      // Error is handled in AuthContext
+      console.error('AuthForm: Google sign in failed:', error);
+      // Error is already handled in AuthContext with toast
       setIsLoading(false);
     }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log('AuthForm: Sending password reset for:', forgotEmail);
+    setIsLoading(true);
+    setForgotSent(false);
+    try {
+      await forgotPassword(forgotEmail);
+      setForgotSent(true);
+    } catch (error) {
+      console.error('AuthForm: Password reset failed:', error);
+      // Error is already handled in AuthContext with toast
+    }
+    setIsLoading(false);
   };
 
   return (
@@ -111,19 +135,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
       
       <TabsContent value="signin">
         {showForgot ? (
-          <form
-            onSubmit={async (e) => {
-              e.preventDefault();
-              setIsLoading(true);
-              setForgotSent(false);
-              try {
-                await forgotPassword(forgotEmail);
-                setForgotSent(true);
-              } catch {}
-              setIsLoading(false);
-            }}
-            className="space-y-4"
-          >
+          <form onSubmit={handleForgotPassword} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="forgotEmail">Email</Label>
               <Input

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -53,6 +54,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
   const receiveEmails = watch('receiveEmails');
 
   const handleSignIn = async (data: any) => {
+    console.log('AuthForm: handleSignIn called with data:', { email: data.email, hasPassword: !!data.password });
     setIsSubmitting(true);
     
     try {
@@ -122,6 +124,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
   };
 
   const onSubmit = (data: any) => {
+    console.log('AuthForm: onSubmit triggered with data:', { email: data.email, activeTab });
     if (activeTab === 'signin') {
       handleSignIn(data);
     } else {

@@ -52,9 +52,13 @@ const UserManagement = () => {
         console.warn("UserManagement: Error getting profiles:", profilesError);
       }
       
+      console.log("UserManagement: Profiles data:", profiles);
+      
       // Merge user data with profile data
       const mergedUsers = usersData.users.map((user: any) => {
         const profile = profiles?.find(p => p.id === user.id);
+        console.log(`UserManagement: Merging user ${user.email} with profile:`, profile);
+        
         return {
           id: user.id,
           email: user.email,
@@ -70,6 +74,7 @@ const UserManagement = () => {
       setLastUpdated(new Date().toLocaleString());
       
       console.log("UserManagement: Users loaded successfully:", mergedUsers.length, "users");
+      console.log("UserManagement: Final merged user data:", mergedUsers);
       
     } catch (error: any) {
       console.error('UserManagement: Error fetching users:', error);
@@ -94,6 +99,18 @@ const UserManagement = () => {
     return superAdmins.some(adminEmail => 
       adminEmail.toLowerCase() === email.toLowerCase().trim()
     );
+  };
+
+  const formatEmailPreference = (receiveEmails: boolean | undefined) => {
+    console.log('UserManagement: Formatting email preference:', receiveEmails, 'type:', typeof receiveEmails);
+    
+    if (receiveEmails === true) {
+      return <span className="text-green-600">Subscribed</span>;
+    } else if (receiveEmails === false) {
+      return <span className="text-gray-600">Unsubscribed</span>;
+    } else {
+      return <span className="text-gray-400">Unknown</span>;
+    }
   };
 
   console.log("UserManagement: Rendering with users:", users.length, "isLoading:", isLoading);
@@ -200,13 +217,7 @@ const UserManagement = () => {
                       {formatDate(user.last_sign_in_at)}
                     </TableCell>
                     <TableCell>
-                      {user.receive_emails === true ? (
-                        <span className="text-green-600">Subscribed</span>
-                      ) : user.receive_emails === false ? (
-                        <span className="text-gray-600">Unsubscribed</span>
-                      ) : (
-                        <span className="text-gray-400">Unknown</span>
-                      )}
+                      {formatEmailPreference(user.receive_emails)}
                     </TableCell>
                   </TableRow>
                 ))}

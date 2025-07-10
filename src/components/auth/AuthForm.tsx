@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -53,15 +54,14 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
   const receiveEmails = watch('receiveEmails');
 
   console.log('AuthForm: Component rendered with activeTab:', activeTab);
+  console.log('AuthForm: Current receiveEmails value:', receiveEmails);
 
   const handleSignIn = async (data: any) => {
-    console.log('AuthForm: handleSignIn CALLED with email:', data.email);
-    console.log('AuthForm: About to call signIn from context');
+    console.log('AuthForm: handleSignIn called with email:', data.email);
     
     setIsSubmitting(true);
     
     try {
-      console.log('AuthForm: Calling signIn method from AuthContext');
       await signIn(data.email, data.password);
       console.log('AuthForm: signIn completed successfully');
       
@@ -71,7 +71,6 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
       }
     } catch (error) {
       console.error('AuthForm: Sign in failed with error:', error);
-      // Error handling is done in AuthContext, but let's add a fallback toast
       toast({
         title: "Sign in failed",
         description: "Please check your credentials and try again.",
@@ -83,7 +82,12 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
   };
 
   const handleSignUp = async (data: any) => {
-    console.log('AuthForm: handleSignUp called');
+    console.log('AuthForm: handleSignUp called with data:', {
+      email: data.email,
+      fullName: data.fullName,
+      receiveEmails: data.receiveEmails,
+      gdprConsent: data.gdprConsent
+    });
     
     if (!data.gdprConsent) {
       toast({
@@ -97,14 +101,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
     setIsSubmitting(true);
 
     try {
-      console.log('AuthForm: Signing up with data:', {
-        email: data.email,
-        fullName: data.fullName,
-        receiveEmails: data.receiveEmails
-      });
+      console.log('AuthForm: About to call signUp with receiveEmails:', data.receiveEmails);
       
       await signUp(data.email, data.password, data.fullName || '', data.receiveEmails === true);
-      console.log('AuthForm: Sign up completed');
+      console.log('AuthForm: Sign up completed successfully');
       // Don't call onSuccess here as the user needs to verify their email
     } catch (error) {
       console.error('AuthForm: Sign up failed:', error);
@@ -147,26 +147,23 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
   };
 
   const onSubmit = (data: any) => {
-    console.log('AuthForm: onSubmit TRIGGERED with data:', { 
+    console.log('AuthForm: onSubmit called with data:', { 
       email: data.email, 
       hasPassword: !!data.password,
-      fullData: data 
+      receiveEmails: data.receiveEmails,
+      activeTab: activeTab
     });
-    console.log('AuthForm: Active tab:', activeTab);
-    console.log('AuthForm: Form errors:', errors);
     
     if (activeTab === 'signin') {
       console.log('AuthForm: Calling handleSignIn');
       handleSignIn(data);
     } else {
-      console.log('AuthForm: Calling handleSignUp');
+      console.log('AuthForm: Calling handleSignUp with receiveEmails:', data.receiveEmails);
       handleSignUp(data);
     }
   };
 
   const isLoading = loading || isSubmitting;
-
-  console.log('AuthForm: Rendering with loading state:', isLoading);
 
   return (
     <Tabs defaultValue={defaultTab} value={activeTab} onValueChange={setActiveTab}>
@@ -202,43 +199,15 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
           </form>
         ) : (
           <>
-            <form 
-              onSubmit={(e) => {
-                console.log('AuthForm: Form onSubmit event triggered');
-                e.preventDefault();
-                console.log('AuthForm: About to call handleSubmit with onSubmit function');
-                
-                // Call handleSubmit directly with the form data
-                const formData = new FormData(e.currentTarget);
-                const email = formData.get('email') as string;
-                const password = formData.get('password') as string;
-                
-                console.log('AuthForm: Manual form data extraction:', { email, hasPassword: !!password });
-                
-                // Try both approaches - react-hook-form and manual
-                handleSubmit(onSubmit)(e);
-                
-                // Fallback manual call if react-hook-form fails
-                setTimeout(() => {
-                  console.log('AuthForm: Fallback manual onSubmit call');
-                  onSubmit({ email, password });
-                }, 100);
-              }} 
-              className="space-y-4"
-            >
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input 
                   id="email"
-                  name="email"
                   type="email"
                   placeholder="you@example.com"
                   autoComplete="email"
                   {...register('email')}
-                  onChange={(e) => {
-                    console.log('AuthForm: Email field changed to:', e.target.value);
-                    register('email').onChange(e);
-                  }}
                 />
                 {errors.email && <p className="text-sm text-red-500">{errors.email.message as string}</p>}
               </div>
@@ -248,15 +217,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
                 <div className="relative">
                   <Input 
                     id="password"
-                    name="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     autoComplete="current-password"
                     {...register('password')}
-                    onChange={(e) => {
-                      console.log('AuthForm: Password field changed (length):', e.target.value.length);
-                      register('password').onChange(e);
-                    }}
                   />
                   <button 
                     type="button"
@@ -269,14 +233,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
                 {errors.password && <p className="text-sm text-red-500">{errors.password.message as string}</p>}
               </div>
               
-              <Button 
-                type="submit" 
-                className="w-full" 
-                disabled={isLoading}
-                onClick={(e) => {
-                  console.log('AuthForm: Sign In button clicked - will trigger form submission');
-                }}
-              >
+              <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Sign In
               </Button>
@@ -357,7 +314,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
               <Checkbox 
                 id="gdprConsent" 
                 checked={gdprConsent}
-                onCheckedChange={(checked) => setValue('gdprConsent', checked as boolean)}
+                onCheckedChange={(checked) => {
+                  console.log('AuthForm: GDPR consent changed to:', checked);
+                  setValue('gdprConsent', checked as boolean);
+                }}
               />
               <div className="grid gap-1.5 leading-none">
                 <Label htmlFor="gdprConsent" className="text-sm font-normal">

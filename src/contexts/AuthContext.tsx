@@ -199,8 +199,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (data.user) {
       console.log('AuthContext: User created successfully:', data.user.id);
+      console.log('AuthContext: User metadata after signup:', data.user.user_metadata);
       
       // Insert/update the profile with the email preference
+      console.log('AuthContext: Upserting profile with receiveEmails:', receiveEmails);
       const { error: profileError } = await supabase
         .from('profiles')
         .upsert({

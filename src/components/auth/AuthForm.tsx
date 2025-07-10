@@ -35,6 +35,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
   const [showForgot, setShowForgot] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotSent, setForgotSent] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { signIn, signUp, signInWithGoogle, forgotPassword, loading } = useAuth();
   
   const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm({
@@ -52,21 +53,36 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
   const receiveEmails = watch('receiveEmails');
 
   const handleSignIn = async (data: any) => {
-    console.log('AuthForm: Starting sign in process for:', data.email);
+    console.log('AuthForm: handleSignIn called with email:', data.email);
+    console.log('AuthForm: Form validation passed, attempting sign in');
+    
+    setIsSubmitting(true);
     
     try {
+      console.log('AuthForm: Calling signIn method from AuthContext');
       await signIn(data.email, data.password);
-      console.log('AuthForm: Sign in successful, calling onSuccess');
+      console.log('AuthForm: signIn completed successfully');
+      
       if (onSuccess) {
+        console.log('AuthForm: Calling onSuccess callback');
         onSuccess();
       }
     } catch (error) {
-      console.error('AuthForm: Sign in failed:', error);
-      // Error is already handled in AuthContext with toast
+      console.error('AuthForm: Sign in failed with error:', error);
+      // Error handling is done in AuthContext, but let's add a fallback toast
+      toast({
+        title: "Sign in failed",
+        description: "Please check your credentials and try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleSignUp = async (data: any) => {
+    console.log('AuthForm: handleSignUp called');
+    
     if (!data.gdprConsent) {
       toast({
         title: "Consent Required",
@@ -76,6 +92,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
       return;
     }
 
+    setIsSubmitting(true);
+
     try {
       console.log('AuthForm: Signing up with data:', {
         email: data.email,
@@ -84,21 +102,28 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
       });
       
       await signUp(data.email, data.password, data.fullName || '', data.receiveEmails === true);
+      console.log('AuthForm: Sign up completed');
       // Don't call onSuccess here as the user needs to verify their email
     } catch (error) {
       console.error('AuthForm: Sign up failed:', error);
       // Error is already handled in AuthContext with toast
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleGoogleSignIn = async () => {
     console.log('AuthForm: Starting Google sign in');
+    setIsSubmitting(true);
+    
     try {
       await signInWithGoogle();
       // onSuccess is called in AuthContext when the redirect happens
     } catch (error) {
       console.error('AuthForm: Google sign in failed:', error);
       // Error is already handled in AuthContext with toast
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -106,14 +131,31 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
     e.preventDefault();
     console.log('AuthForm: Sending password reset for:', forgotEmail);
     setForgotSent(false);
+    setIsSubmitting(true);
+    
     try {
       await forgotPassword(forgotEmail);
       setForgotSent(true);
     } catch (error) {
       console.error('AuthForm: Password reset failed:', error);
       // Error is already handled in AuthContext with toast
+    } finally {
+      setIsSubmitting(false);
     }
   };
+
+  const onSubmit = (data: any) => {
+    console.log('AuthForm: Form submitted with data:', { email: data.email, hasPassword: !!data.password });
+    console.log('AuthForm: Active tab:', activeTab);
+    
+    if (activeTab === 'signin') {
+      handleSignIn(data);
+    } else {
+      handleSignUp(data);
+    }
+  };
+
+  const isLoading = loading || isSubmitting;
 
   return (
     <Tabs defaultValue={defaultTab} value={activeTab} onValueChange={setActiveTab}>
@@ -136,8 +178,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
                 required
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Send Password Reset Email
             </Button>
             <Button type="button" variant="ghost" className="w-full" onClick={() => setShowForgot(false)}>
@@ -149,13 +191,14 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
           </form>
         ) : (
           <>
-            <form onSubmit={handleSubmit(handleSignIn)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input 
                   id="email"
                   type="email"
                   placeholder="you@example.com"
+                  autoComplete="email"
                   {...register('email')}
                 />
                 {errors.email && <p className="text-sm text-red-500">{errors.email.message as string}</p>}
@@ -168,6 +211,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
                     id="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
+                    autoComplete="current-password"
                     {...register('password')}
                   />
                   <button 
@@ -180,8 +224,9 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
                 </div>
                 {errors.password && <p className="text-sm text-red-500">{errors.password.message as string}</p>}
               </div>
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Sign In
               </Button>
             </form>
@@ -203,7 +248,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
               type="button" 
               variant="outline" 
               onClick={handleGoogleSignIn}
-              disabled={loading}
+              disabled={isLoading}
               className="w-full"
             >
               <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" className="h-5 w-5 mr-2" />
@@ -214,7 +259,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
       </TabsContent>
       
       <TabsContent value="signup">
-        <form onSubmit={handleSubmit(handleSignUp)} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="fullName">Full Name</Label>
             <Input 
@@ -293,8 +338,8 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
             </div>
           </div>
           
-          <Button type="submit" className="w-full" disabled={loading || !gdprConsent}>
-            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+          <Button type="submit" className="w-full" disabled={isLoading || !gdprConsent}>
+            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             Create Account
           </Button>
         </form>
@@ -305,7 +350,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
               type="button" 
               variant="outline" 
               onClick={handleGoogleSignIn}
-              disabled={loading}
+              disabled={isLoading}
               className="w-full"
             >
               <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" className="h-5 w-5 mr-2" />

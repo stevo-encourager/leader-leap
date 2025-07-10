@@ -43,11 +43,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!mounted) return;
         
         console.log('AuthContext: Auth state changed:', event, session?.user?.email || 'No user');
+        console.log('AuthContext: Session details:', {
+          hasSession: !!session,
+          hasUser: !!session?.user,
+          userId: session?.user?.id,
+          userEmail: session?.user?.email
+        });
+        
         setSession(session);
         setUser(session?.user ?? null);
         
         if (!initialized) {
           setInitialized(true);
+        }
+
+        // Handle successful sign in
+        if (event === 'SIGNED_IN' && session?.user) {
+          console.log('AuthContext: User successfully signed in:', session.user.email);
+          toast({
+            title: "Success",
+            description: "Successfully signed in!",
+          });
+        }
+
+        // Handle sign out
+        if (event === 'SIGNED_OUT') {
+          console.log('AuthContext: User signed out');
         }
       }
     );
@@ -55,13 +76,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Get initial session
     const getInitialSession = async () => {
       try {
+        console.log('AuthContext: Getting initial session...');
         const { data: { session }, error } = await supabase.auth.getSession();
         if (!mounted) return;
         
         if (error) {
           console.error('AuthContext: Error getting initial session:', error);
         } else {
-          console.log('AuthContext: Initial session loaded:', session?.user?.email || 'No session');
+          console.log('AuthContext: Initial session loaded:', {
+            hasSession: !!session,
+            userEmail: session?.user?.email || 'No session'
+          });
           setSession(session);
           setUser(session?.user ?? null);
         }
@@ -86,13 +111,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [initialized]);
 
   const signIn = async (email: string, password: string) => {
-    console.log('AuthContext: Attempting to sign in user:', email);
+    console.log('AuthContext: signIn method called for email:', email);
     setLoading(true);
     
     try {
+      console.log('AuthContext: Calling supabase.auth.signInWithPassword');
       const { data, error } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim(),
         password,
+      });
+
+      console.log('AuthContext: signInWithPassword response:', {
+        hasData: !!data,
+        hasUser: !!data?.user,
+        hasSession: !!data?.session,
+        error: error?.message || 'No error'
       });
 
       if (error) {
@@ -105,12 +138,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw error;
       }
 
-      if (data.user) {
+      if (data?.user && data?.session) {
         console.log('AuthContext: Sign in successful for user:', data.user.email);
-        toast({
-          title: "Success",
-          description: "Successfully signed in!",
-        });
+        // Don't show success toast here - it will be shown by the auth state change handler
+      } else {
+        console.warn('AuthContext: Sign in completed but no user/session in response');
+        throw new Error('Sign in completed but no user session was created');
       }
     } catch (error) {
       console.error('AuthContext: Exception during sign in:', error);
@@ -261,6 +294,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loading,
     initialized,
   };
+
+  console.log('AuthContext: Rendering provider with values:', {
+    hasUser: !!user,
+    userEmail: user?.email,
+    hasSession: !!session,
+    loading,
+    initialized
+  });
 
   return (
     <AuthContext.Provider value={value}>

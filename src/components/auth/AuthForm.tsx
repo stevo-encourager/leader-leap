@@ -147,7 +147,11 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
   };
 
   const onSubmit = (data: any) => {
-    console.log('AuthForm: onSubmit TRIGGERED with data:', { email: data.email, hasPassword: !!data.password });
+    console.log('AuthForm: onSubmit TRIGGERED with data:', { 
+      email: data.email, 
+      hasPassword: !!data.password,
+      fullData: data 
+    });
     console.log('AuthForm: Active tab:', activeTab);
     console.log('AuthForm: Form errors:', errors);
     
@@ -202,7 +206,23 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
               onSubmit={(e) => {
                 console.log('AuthForm: Form onSubmit event triggered');
                 e.preventDefault();
+                console.log('AuthForm: About to call handleSubmit with onSubmit function');
+                
+                // Call handleSubmit directly with the form data
+                const formData = new FormData(e.currentTarget);
+                const email = formData.get('email') as string;
+                const password = formData.get('password') as string;
+                
+                console.log('AuthForm: Manual form data extraction:', { email, hasPassword: !!password });
+                
+                // Try both approaches - react-hook-form and manual
                 handleSubmit(onSubmit)(e);
+                
+                // Fallback manual call if react-hook-form fails
+                setTimeout(() => {
+                  console.log('AuthForm: Fallback manual onSubmit call');
+                  onSubmit({ email, password });
+                }, 100);
               }} 
               className="space-y-4"
             >
@@ -210,6 +230,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
                 <Label htmlFor="email">Email</Label>
                 <Input 
                   id="email"
+                  name="email"
                   type="email"
                   placeholder="you@example.com"
                   autoComplete="email"
@@ -227,6 +248,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
                 <div className="relative">
                   <Input 
                     id="password"
+                    name="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     autoComplete="current-password"

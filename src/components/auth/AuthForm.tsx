@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -199,7 +198,14 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
           </form>
         ) : (
           <>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form 
+              onSubmit={(e) => {
+                console.log('AuthForm: Form onSubmit event triggered');
+                e.preventDefault();
+                handleSubmit(onSubmit)(e);
+              }} 
+              className="space-y-4"
+            >
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input 
@@ -246,8 +252,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
                 className="w-full" 
                 disabled={isLoading}
                 onClick={(e) => {
-                  console.log('AuthForm: Sign In button clicked');
-                  // Don't prevent default here - let the form submission happen naturally
+                  console.log('AuthForm: Sign In button clicked - will trigger form submission');
                 }}
               >
                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}

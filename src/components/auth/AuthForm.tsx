@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -152,10 +153,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
     
     if (activeTab === 'signin') {
       console.log('AuthForm: Calling handleSignIn');
-      handleSignIn(data);
+      return handleSignIn(data);
     } else {
       console.log('AuthForm: Calling handleSignUp with receiveEmails:', data.receiveEmails);
-      handleSignUp(data);
+      return handleSignUp(data);
     }
   };
 

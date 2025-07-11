@@ -411,7 +411,7 @@ ${topCompetencies.map((cat, i) => {
   // - Leader selection: Based on PRIMARY STRENGTHS (highest current ratings), not gaps
   // - Resources: EXACTLY 3 per competency, including 1 book, from validated database only
   // - Skills: Reference individual skills by name only (NO numerical values in output)
-  const fullPrompt = `RESOURCE_VALIDATION_TEST_123
+  const fullPrompt = `PROMPT_VERSION: 2025-07-11
 
 ${assessmentDataSection}
 

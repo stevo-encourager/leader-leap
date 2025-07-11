@@ -3,7 +3,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { validateEnvironmentVariables, validateInsightsStructure } from './utils/validation.ts';
 import { cleanJsonResponse, formatSummaryIntoParagraphs, sanitizeJsonString } from './utils/formatting.ts';
-import { buildAssessmentData, buildPrompt } from './utils/promptBuilder.ts';
+import { buildAssessmentData, buildPrompt, formatResourceMarkdown } from './utils/promptBuilder.ts';
 import { callOpenAI } from './utils/openaiClient.ts';
 import { checkExistingInsights, saveInsights } from './utils/database.ts';
 
@@ -129,6 +129,42 @@ serve(async (req) => {
     console.log('🔍 BUILDING ASSESSMENT DATA AND PROMPT...');
     const assessmentSummary = buildAssessmentData(categories, averageGap, demographics);
     
+    // --- PATCH: Format all resources as Markdown links ---
+    function formatAllResources(insightsObj) {
+      if (insightsObj && Array.isArray(insightsObj.priority_areas)) {
+        insightsObj.priority_areas.forEach(area => {
+          if (Array.isArray(area.resources)) {
+            area.resources = area.resources.map(r => {
+              // If already in Markdown format, keep as is
+              if (/^\[.*\]\(.*\)$/.test(r)) return r;
+              // If in 'Name: URL' format, convert to Markdown
+              const match = r.match(/^(.*?):\s*(https?:\/\/\S+)/);
+              if (match) {
+                return `[${match[1].trim()}](${match[2].trim()})`;
+              }
+              // Otherwise, try to use formatResourceMarkdown
+              return formatResourceMarkdown(r);
+            });
+          }
+        });
+      }
+      if (insightsObj && Array.isArray(insightsObj.key_strengths)) {
+        insightsObj.key_strengths.forEach(strength => {
+          if (Array.isArray(strength.resources)) {
+            strength.resources = strength.resources.map(r => {
+              if (/^\[.*\]\(.*\)$/.test(r)) return r;
+              const match = r.match(/^(.*?):\s*(https?:\/\/\S+)/);
+              if (match) {
+                return `[${match[1].trim()}](${match[2].trim()})`;
+              }
+              return formatResourceMarkdown(r);
+            });
+          }
+        });
+      }
+      return insightsObj;
+    }
+    
     console.log('🔍 ASSESSMENT SUMMARY BUILT:', {
       demographicsKeys: Object.keys(assessmentSummary.demographics),
       averageGap: assessmentSummary.averageGap,
@@ -159,6 +195,9 @@ serve(async (req) => {
       
       validateInsightsStructure(parsedInsights);
       console.log('🔍 INSIGHTS STRUCTURE VALIDATION PASSED');
+
+      // PATCH: Format all resources as Markdown links
+      parsedInsights = formatAllResources(parsedInsights);
 
       if (parsedInsights.summary) {
         const formattedSummary = formatSummaryIntoParagraphs(parsedInsights.summary);

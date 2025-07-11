@@ -51,31 +51,16 @@ export const useAssessmentData = (
           sourcedCategories = Object.values(specificAssessment.categories);
           debug.categoriesConvertedFromObject = true;
         }
-        
         // Demographics
         if (specificAssessment.demographics) {
           sourcedDemographics = specificAssessment.demographics;
         }
-        
-      } else if (!assessmentId && contextCategories && contextCategories.length > 0) {
+      } else {
         // Case 2: Using categories from current context (just completed assessment)
         console.log("useAssessmentData - Using categories from context");
         debug.dataSource = "context_assessment";
         sourcedCategories = contextCategories;
         sourcedDemographics = contextDemographics || {};
-      } else {
-        // Case 3: Try to get from local storage as fallback
-        console.log("useAssessmentData - Trying to load from local storage");
-        const localData = getLocalAssessmentData();
-        if (localData && localData.categories && localData.categories.length > 0) {
-          console.log("useAssessmentData - Using data from local storage");
-          debug.dataSource = "local_storage";
-          sourcedCategories = localData.categories;
-          sourcedDemographics = localData.demographics || {};
-        } else {
-          console.warn("useAssessmentData - No valid data source available");
-          debug.dataSource = "none";
-        }
       }
       
       // Log the raw categories from the selected source - focusing on ratings

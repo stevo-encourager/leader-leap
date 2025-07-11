@@ -4,7 +4,6 @@ import { Bot, AlertCircle, Target, TrendingUp, ExternalLink } from 'lucide-react
 import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { FormattedSummary } from '@/components/FormattedSummary';
-import { generateResourceLink } from '@/utils/resourceMapping';
 
 interface AIInsightsProps {
   categories: Category[];
@@ -154,13 +153,13 @@ const AIInsights: React.FC<AIInsightsProps> = ({
         }
       } else {
         // Try to get a working link from resource mapping
-        const resourceLink = generateResourceLink(resource);
-        if (resourceLink.hasValidLink && resourceLink.url) {
-          validResources.push({ 
-            name: resourceLink.title, 
-            url: resourceLink.url 
-          });
-        }
+        // const resourceLink = generateResourceLink(resource);
+        // if (resourceLink.hasValidLink && resourceLink.url) {
+        //   validResources.push({ 
+        //     name: resourceLink.title, 
+        //     url: resourceLink.url 
+        //   });
+        // }
         // If no valid link found, don't include this resource at all
       }
     });
@@ -332,7 +331,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({
           <div className="flex items-center justify-center py-12">
             <div className="flex items-center gap-3 text-encourager">
               <Bot className="animate-pulse" size={24} />
-              <span className="text-lg">EncouragerGPT is analyzing your assessment results...</span>
+              <span className="text-lg">1 minute please, EncouragerGPT is analyzing your test results...</span>
             </div>
           </div>
         )}
@@ -351,6 +350,8 @@ const AIInsights: React.FC<AIInsightsProps> = ({
           <div className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
             {(() => {
               const parsedInsights = parseInsights(insights);
+              console.log('Priority Area Resources:', parsedInsights?.priority_areas?.[0]?.resources);
+              console.log('All Priority Area Resources:', parsedInsights?.priority_areas?.map(a => a.resources));
               
               if (!parsedInsights) {
                 return (

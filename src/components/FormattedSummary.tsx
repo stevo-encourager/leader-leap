@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { ExternalLink } from 'lucide-react';
-import { generateLeaderLink } from '@/utils/leaderMapping';
 
 interface FormattedSummaryProps {
   summary: string;
@@ -78,23 +77,23 @@ export const FormattedSummary: React.FC<FormattedSummaryProps> = ({
         const linkUrl = match[4];
         
         // Try to validate as a leader first
-        const leaderValidation = generateLeaderLink(linkText);
+        // const leaderValidation = generateLeaderLink(linkText);
         
-        if (leaderValidation.hasValidLink) {
-          // Use validated leader link
-          parts.push(
-            <a
-              key={match.index}
-              href={leaderValidation.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-encourager hover:text-encourager-light underline inline-flex items-center gap-1"
-            >
-              {leaderValidation.name}
-              <ExternalLink className="h-3 w-3" />
-            </a>
-          );
-        } else {
+        // if (leaderValidation.hasValidLink) {
+        //   // Use validated leader link
+        //   parts.push(
+        //     <a
+        //       key={match.index}
+        //       href={leaderValidation.url}
+        //       target="_blank"
+        //       rel="noopener noreferrer"
+        //       className="text-encourager hover:text-encourager-light underline inline-flex items-center gap-1"
+        //     >
+        //       {leaderValidation.name}
+        //       <ExternalLink className="h-3 w-3" />
+        //     </a>
+        //   );
+        // } else {
           // Use original link if it's not a leader or if leader validation fails
           parts.push(
             <a
@@ -108,7 +107,7 @@ export const FormattedSummary: React.FC<FormattedSummaryProps> = ({
               <ExternalLink className="h-3 w-3" />
             </a>
           );
-        }
+        // }
       }
       
       lastIndex = combinedRegex.lastIndex;

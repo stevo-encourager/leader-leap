@@ -2,7 +2,6 @@
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Category, Demographics } from '../utils/assessmentTypes';
-import ProfileSummary from './dashboard/ProfileSummary';
 import DetailedAnalysis from './dashboard/DetailedAnalysis';
 import CoachingSupport from './dashboard/CoachingSupport';
 import ResultsActions from './dashboard/ResultsActions';
@@ -96,11 +95,6 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
           </div>
         </CardHeader>
         <CardContent className="space-y-6" id="results-content">
-          {/* Profile Summary */}
-          <div data-section="profile-summary">
-            <ProfileSummary demographics={demographics} />
-          </div>
-
           {/* Detailed Analysis - Competency visualization and insights */}
           <div data-section="detailed-analysis">
             <DetailedAnalysis 

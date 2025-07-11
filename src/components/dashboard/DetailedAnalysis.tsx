@@ -75,17 +75,29 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
       </CardHeader>
       <CardContent className="p-0">
         <Tabs defaultValue="radar-chart" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="radar-chart" className="flex items-center gap-2">
-              <Target className="h-4 w-4" />
+          <TabsList
+            className="grid w-full grid-cols-3 rounded-lg overflow-hidden"
+            style={{ background: '#30574E' }}
+          >
+            <TabsTrigger
+              value="radar-chart"
+              className="flex items-center gap-2 text-white data-[state=active]:bg-[#91ABA5] data-[state=active]:text-white data-[state=active]:shadow-none"
+            >
+              <Target className="h-4 w-4 text-white" />
               Radar Chart
             </TabsTrigger>
-            <TabsTrigger value="key-insights" className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Key Insights
+            <TabsTrigger
+              value="key-insights"
+              className="flex items-center gap-2 text-white data-[state=active]:bg-[#91ABA5] data-[state=active]:text-white data-[state=active]:shadow-none"
+            >
+              <TrendingUp className="h-4 w-4 text-white" />
+              Key Insights and Recommendations
             </TabsTrigger>
-            <TabsTrigger value="skills-assessment" className="flex items-center gap-2">
-              <ListChecks className="h-4 w-4" />
+            <TabsTrigger
+              value="skills-assessment"
+              className="flex items-center gap-2 text-white data-[state=active]:bg-[#91ABA5] data-[state=active]:text-white data-[state=active]:shadow-none"
+            >
+              <ListChecks className="h-4 w-4 text-white" />
               Skills Assessment
             </TabsTrigger>
           </TabsList>

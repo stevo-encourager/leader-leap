@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { AssessmentCategory } from '@/types/assessment';
-import { storeLocalAssessmentData, getLocalAssessmentData } from '@/services/assessment';
+import { storeLocalAssessmentData, getLocalAssessmentData, saveAssessmentResults, TEST_ASSESSMENT_ID } from '@/services/assessment';
 
 export const useResultsManagement = () => {
   const { user, initialized } = useAuth();
@@ -72,10 +72,42 @@ export const useResultsManagement = () => {
     setSavedToSupabase(true);
   }, []);
 
-  const handleSaveResults = useCallback(() => {
-    console.log('useResultsManagement - handleSaveResults called');
-    // TODO: Implement save results logic
-  }, []);
+  const handleSaveResults = useCallback(async () => {
+    if (!user) {
+      console.log('useResultsManagement - No user, skipping save to Supabase');
+      return;
+    }
+    if (!hasValidRatings) {
+      console.log('useResultsManagement - No valid ratings, skipping save');
+      return;
+    }
+    if (savedToSupabase) {
+      console.log('useResultsManagement - Already saved, skipping duplicate save');
+      return;
+    }
+    try {
+      let result;
+      if (currentAssessmentId === TEST_ASSESSMENT_ID) {
+        // Update the test assessment
+        result = await saveAssessmentResults(categories, demographics, false, TEST_ASSESSMENT_ID);
+      } else {
+        // Always create a new record for normal assessments
+        result = await saveAssessmentResults(categories, demographics);
+      }
+      if (result.success && result.data && result.data[0]?.id) {
+        setCurrentAssessmentId(result.data[0].id);
+        setSavedToSupabase(true);
+        console.log('useResultsManagement - Assessment saved successfully:', result.data[0].id);
+        // Optionally show a toast here
+      } else {
+        console.error('useResultsManagement - Failed to save assessment:', result.error);
+        // Optionally show a toast here
+      }
+    } catch (error) {
+      console.error('useResultsManagement - Error saving assessment:', error);
+      // Optionally show a toast here
+    }
+  }, [user, hasValidRatings, savedToSupabase, categories, demographics, currentAssessmentId]);
 
   const handleLoadPreviousResults = useCallback(() => {
     console.log('useResultsManagement - handleLoadPreviousResults called');

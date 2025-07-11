@@ -6,6 +6,7 @@ import { useResultsManagement } from './useResultsManagement';
 import { useAssessmentInitialization } from './useAssessmentInitialization';
 import { useAssessmentState } from './useAssessmentState';
 import { useAssessmentCompletion } from './useAssessmentCompletion';
+import { clearLocalAssessmentData } from '@/services/assessment/manageAssessmentHistory';
 
 export const useAssessment = () => {
   const {
@@ -41,7 +42,8 @@ export const useAssessment = () => {
     const freshCategories = createFreshCategories();
     console.log("useAssessment - Fresh categories created:", freshCategories?.length || 0);
     resetAssessment(freshCategories);
-    
+    // Defensive: forcibly clear local storage to guarantee blank slate
+    clearLocalAssessmentData();
     // Call the original handler
     handleStartAssessment();
   };

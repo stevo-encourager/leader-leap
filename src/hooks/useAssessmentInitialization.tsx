@@ -27,25 +27,18 @@ export const useAssessmentInitialization = () => {
     if (!isInitialized) {
       console.log("useAssessmentInitialization - Initializing categories");
       try {
-        // First check if we have locally stored assessment data
-        const localData = getLocalAssessmentData();
-        if (localData && localData.categories && localData.categories.length > 0) {
-          console.log("useAssessmentInitialization - Found local assessment data, using that");
-          setCategories(localData.categories);
+        // Always use fresh categories with reset ratings for new assessments
+        const freshCategories = createFreshCategories();
+        if (freshCategories && freshCategories.length > 0) {
+          console.log(`useAssessmentInitialization - Loaded ${freshCategories.length} fresh categories`);
+          setCategories(freshCategories);
         } else {
-          // Otherwise use fresh categories with reset ratings
-          const freshCategories = createFreshCategories();
-          if (freshCategories && freshCategories.length > 0) {
-            console.log(`useAssessmentInitialization - Loaded ${freshCategories.length} fresh categories`);
-            setCategories(freshCategories);
-          } else {
-            console.error("useAssessmentInitialization - Fresh categories are empty or invalid");
-            toast({
-              title: "Error loading categories",
-              description: "Could not load assessment categories. Please refresh the page.",
-              variant: "destructive",
-            });
-          }
+          console.error("useAssessmentInitialization - Fresh categories are empty or invalid");
+          toast({
+            title: "Error loading categories",
+            description: "Could not load assessment categories. Please refresh the page.",
+            variant: "destructive",
+          });
         }
         setIsInitialized(true);
       } catch (error) {

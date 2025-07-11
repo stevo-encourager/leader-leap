@@ -3,7 +3,6 @@ import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Image, Link } from '@react-pdf/renderer';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { calculateAverageGap } from '@/utils/assessmentCalculations/averages';
-import { generateResourceLink } from '@/utils/resourceMapping';
 
 // Define styles for React PDF
 const styles = StyleSheet.create({
@@ -194,6 +193,31 @@ interface ReactPDFDocumentProps {
   chartImageDataUrl?: string;
 }
 
+// Add a helper to render markdown links in summary
+function renderSummaryWithLinks(summary: string) {
+  // Regex to match [text](url)
+  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  const parts = [];
+  let lastIndex = 0;
+  let match;
+  let key = 0;
+  while ((match = linkRegex.exec(summary)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(summary.substring(lastIndex, match.index));
+    }
+    parts.push(
+      <Link key={key++} src={match[2]} style={styles.linkText}>
+        {match[1]}
+      </Link>
+    );
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < summary.length) {
+    parts.push(summary.substring(lastIndex));
+  }
+  return parts;
+}
+
 const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
   categories,
   demographics,
@@ -312,19 +336,19 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
         }
       } else {
         // Try to get a working link from resource mapping
-        const resourceLink = generateResourceLink(resource);
-        if (resourceLink.hasValidLink && resourceLink.url) {
+        // const resourceLink = generateResourceLink(resource); // This line is removed
+        // if (resourceLink.hasValidLink && resourceLink.url) { // This line is removed
+        //   formattedResources.push({  // This line is removed
+        //     name: resourceLink.title,  // This line is removed
+        //     url: resourceLink.url  // This line is removed
+        //   }); // This line is removed
+        // } else { // This line is removed
+          // Add the resource title even if no valid link is found // This line is removed
           formattedResources.push({ 
-            name: resourceLink.title, 
-            url: resourceLink.url 
-          });
-        } else {
-          // Add the resource title even if no valid link is found
-          formattedResources.push({ 
-            name: resourceLink.title || resource, 
+            name: resource, 
             url: null 
           });
-        }
+        // } // This line is removed
       }
     });
     
@@ -381,7 +405,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
 
       {/* Page 2 - AI Insights */}
       <Page size="A4" style={styles.page}>
-        <Text style={styles.sectionTitle}>AI-Powered Insights</Text>
+        <Text style={styles.sectionTitle}>Key Insights & Recommendations</Text>
         <Text style={styles.leftAlignedSubtitle}>Personalized leadership development insights powered by EncouragerGPT</Text>
 
         {parsedInsights ? (
@@ -390,7 +414,58 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
             {parsedInsights.summary && (
               <View>
                 <Text style={styles.subsectionTitle}>Assessment Summary</Text>
-                <Text style={styles.text}>{parsedInsights.summary}</Text>
+                {(() => {
+                  const summary = parsedInsights.summary;
+                  // Split into paragraphs (by double newline or single newline)
+                  const paragraphs = summary.split(/\n+/);
+                  const linkRegex = /<a href="([^"]+)">([^<]+)<\/a>|\[([^\]]+)\]\(([^)]+)\)/g;
+                  let key = 0;
+                  return paragraphs.map((paragraph, idx) => {
+                    const parts = [];
+                    let lastIndex = 0;
+                    let match;
+                    while ((match = linkRegex.exec(paragraph)) !== null) {
+                      // Add text before the link
+                      if (match.index > lastIndex) {
+                        parts.push(paragraph.substring(lastIndex, match.index));
+                      }
+                      // HTML anchor tag
+                      if (match[1] && match[2]) {
+                        parts.push(
+                          `${match[2]} (`
+                        );
+                        parts.push(
+                          <Link key={key++} src={match[1]} style={styles.linkText}>{match[1]}</Link>
+                        );
+                        parts.push(
+                          ")"
+                        );
+                      }
+                      // Markdown link
+                      else if (match[3] && match[4]) {
+                        parts.push(
+                          `${match[3]} (`
+                        );
+                        parts.push(
+                          <Link key={key++} src={match[4]} style={styles.linkText}>{match[4]}</Link>
+                        );
+                        parts.push(
+                          ")"
+                        );
+                      }
+                      lastIndex = match.index + match[0].length;
+                    }
+                    // Add any remaining text after the last link
+                    if (lastIndex < paragraph.length) {
+                      parts.push(paragraph.substring(lastIndex));
+                    }
+                    // If no links, just render the paragraph as plain text
+                    if (parts.length === 0) {
+                      return <Text key={key++} style={styles.text}>{paragraph}</Text>;
+                    }
+                    return <Text key={key++} style={styles.text}>{parts}</Text>;
+                  });
+                })()}
               </View>
             )}
 
@@ -422,7 +497,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
                       <Text style={styles.boldText}>
                         {index + 1}. {area.competency || 'Unknown Competency'} (Gap: {(area.gap || 0).toFixed(1)})
                       </Text>
-                      <Text style={styles.boldText}>Key insights:</Text>
+                      <Text style={styles.text}>Key Insights and Recommendations:</Text>
                       {area.insights && Array.isArray(area.insights) && area.insights.map((insight, insightIndex) => {
                         // Additional safety check for insight
                         if (!insight || typeof insight !== 'string') {
@@ -465,7 +540,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
       <Page size="A4" style={styles.page}>
         {parsedInsights?.key_strengths && parsedInsights.key_strengths.length > 0 && (
           <View>
-            <Text style={styles.sectionTitle}>Key Competencies to Leverage</Text>
+            <Text style={{ ...styles.sectionTitle, borderBottomWidth: 0 }}>Key Competencies to Leverage</Text>
             {parsedInsights.key_strengths.map((strength, index) => {
               // Enhanced null checking for strength
               if (!strength || typeof strength !== 'object') {

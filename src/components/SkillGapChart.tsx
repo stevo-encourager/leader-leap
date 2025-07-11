@@ -24,6 +24,7 @@ interface ChartData {
   desired: number;
   fullMark: number;
   skillCount?: number;
+  fullLabel?: string; // Added for PDF full label
 }
 
 // Custom tick component for competency names with optimized spacing
@@ -169,11 +170,9 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
       if (validSkillCount > 0) {
         const avgCurrent = parseFloat((totalCurrent / validSkillCount).toFixed(1));
         const avgDesired = parseFloat((totalDesired / validSkillCount).toFixed(1));
-        
         const displayTitle = isPDF && category.title && category.title.length > 15 
           ? category.title.substring(0, 12) + '...' 
           : category.title || "Unknown Category";
-        
         result.push({
           subject: displayTitle,
           current: avgCurrent,
@@ -321,15 +320,15 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
       data-chart-type="radar"
       id="radar-chart-container"
       style={{
-        width: '100%',
-        height: isPDF ? '400px' : '600px',
+        width: isPDF ? '700px' : '100%',
+        height: isPDF ? '700px' : '600px',
         backgroundColor: 'white',
         display: 'grid',
         gridTemplateRows: isPDF ? '1fr' : '1fr auto',
         gridTemplateAreas: isPDF ? '"chart"' : '"chart" "legend"',
-        gap: isPDF ? '0' : '16px', // Reduced gap slightly for better spacing
+        gap: isPDF ? '0' : '16px',
         overflow: 'visible',
-        paddingBottom: isPDF ? '0' : '20px' // Add bottom padding to prevent legend cropping
+        paddingBottom: isPDF ? '0' : '20px'
       }}
     >
       {/* Chart area with proper grid positioning */}

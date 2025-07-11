@@ -92,10 +92,13 @@ const checkForDuplicateAssessment = async (
   return { exists: false };
 };
 
+export const TEST_ASSESSMENT_ID = '2631edf1-a358-4303-83c1-deb9664b53e2';
+
 export const saveAssessmentResults = async (
   categories: Category[], 
   demographics: Demographics,
-  forceNew: boolean = false // Allow forcing a new assessment if needed
+  forceNew: boolean = false, // Allow forcing a new assessment if needed
+  assessmentId?: string // Optionally pass the assessmentId for test assessment updates
 ): Promise<SaveAssessmentResult> => {
   console.log("saveAssessmentResults - Starting save process");
   console.log("saveAssessmentResults - Categories input:", categories ? `${categories.length} categories` : "none");
@@ -176,48 +179,38 @@ export const saveAssessmentResults = async (
     // Convert Demographics to a regular object to satisfy TypeScript
     const demographicsObject = { ...demographics };
 
-    // Generate assessment signature for duplicate detection
-    const assessmentSignature = generateAssessmentSignature(processedCategories, demographicsObject);
-    
-    let result;
-
-    if (!forceNew) {
-      // Check for duplicate assessment with same content
-      const duplicateCheck = await checkForDuplicateAssessment(user.id, assessmentSignature);
-      
-      if (duplicateCheck.exists && duplicateCheck.assessmentId) {
-        console.log(`saveAssessmentResults - Duplicate assessment found, updating existing: ${duplicateCheck.assessmentId}`);
-        
-        // Update the existing duplicate assessment
-        result = await supabase
-          .from('assessment_results')
-          .update({
-            categories: processedCategories,
-            demographics: demographicsObject,
-            completed: isComplete,
-            ai_insights: null // Reset insights when updating
-          })
-          .eq('id', duplicateCheck.assessmentId)
-          .eq('user_id', user.id)
-          .select();
-          
-        if (result.data) {
-          console.log("saveAssessmentResults - Successfully updated existing assessment");
-          return { success: true, data: result.data, isUpdate: true };
-        }
+    // --- TEST ASSESSMENT SPECIAL CASE ---
+    if (assessmentId === TEST_ASSESSMENT_ID) {
+      // Update the test assessment and reset ai_insights
+      const result = await supabase
+        .from('assessment_results')
+        .update({
+          categories: processedCategories,
+          demographics: demographicsObject,
+          completed: isComplete,
+          ai_insights: null // Always reset for test assessment
+        })
+        .eq('id', TEST_ASSESSMENT_ID)
+        .eq('user_id', user.id)
+        .select();
+      if (result.data) {
+        console.log("saveAssessmentResults - Updated test assessment");
+        return { success: true, data: result.data, isUpdate: true };
+      } else {
+        console.error("saveAssessmentResults - Failed to update test assessment");
+        return { success: false, error: "Failed to update test assessment" };
       }
     }
 
-    // If no duplicate found or force new is true, create new assessment
-    console.log("saveAssessmentResults - Creating new assessment");
-    result = await supabase
+    // --- ALL OTHER ASSESSMENTS: Always create new record ---
+    const result = await supabase
       .from('assessment_results')
       .insert({
         user_id: user.id,
         categories: processedCategories,
         demographics: demographicsObject,
         completed: isComplete,
-        ai_insights: null // Initialize as null, will be populated when first accessed
+        ai_insights: null // Will be generated once on first access
       })
       .select();
 

@@ -37,20 +37,23 @@ const SkillsAssessment: React.FC<SkillsAssessmentProps> = ({ categories }) => {
     <div className="space-y-6">
       <div className="text-center">
         <p className="text-muted-foreground">
-          Your self-assessment scores across all skills.
+          Your self-assessment scores across all competencies and the individual skills within them.
         </p>
       </div>
       
       <div className="space-y-4">
-        {categories.map((category) => {
+        {categories.map((category, idx) => {
           const { currentAvg, desiredAvg } = calculateAverages(category);
           
           return (
-            <Card key={category.id} className="border border-slate-200 bg-slate-50">
+            <Card
+              key={category.id}
+              className="border border-slate-200 bg-encourager-lightgray"
+            >
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
-                    <CardTitle className="text-lg font-bold text-slate-900 mb-2">
+                    <CardTitle className="text-lg font-bold mb-2" style={{ color: '#30574E' }}>
                       {category.title}
                     </CardTitle>
                     <p className="text-sm text-slate-600 leading-relaxed">
@@ -58,8 +61,12 @@ const SkillsAssessment: React.FC<SkillsAssessmentProps> = ({ categories }) => {
                     </p>
                   </div>
                   <div className="flex gap-6 ml-4">
-                    <span className="font-bold text-sm text-slate-900">Current: {currentAvg}</span>
-                    <span className="font-bold text-sm text-slate-900">Desired: {desiredAvg}</span>
+                    <span className="font-bold text-sm" style={{ color: '#30574E' }}>
+                      Current: {currentAvg}
+                    </span>
+                    <span className="font-bold text-sm" style={{ color: '#30574E' }}>
+                      Desired: {desiredAvg}
+                    </span>
                   </div>
                 </div>
               </CardHeader>

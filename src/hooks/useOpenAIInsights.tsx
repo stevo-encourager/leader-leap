@@ -194,70 +194,80 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     }
   }, [assessmentId, categories, demographics, averageGap, updateState, validateDataForInsights]);
 
+  // Polling/retry logic for insights generation
   const generateNewInsights = async (forceRegenerate = false) => {
-    try {
-      // ENHANCED: Final validation before API call
-      if (!validateDataForInsights()) {
-        throw new Error('Invalid data for insights generation');
-      }
-
-      console.log('useOpenAIInsights - Calling generate-insights with:', {
-        categoriesCount: categories.length,
-        averageGap,
-        assessmentId: assessmentId || 'new-assessment',
-        hasValidDemographics: demographics && Object.keys(demographics).length > 0,
-        forceRegenerate: forceRegenerate || isTestAssessment
-      });
-
-      const { data, error: functionError } = await supabase.functions.invoke('generate-insights', {
-        body: {
-          categories,
-          demographics,
+    const MAX_RETRIES = 5;
+    const RETRY_DELAY_MS = 2000;
+    let attempt = 0;
+    let lastError = null;
+    while (attempt < MAX_RETRIES) {
+      try {
+        if (!validateDataForInsights()) {
+          throw new Error('Invalid data for insights generation');
+        }
+        console.log('useOpenAIInsights - Calling generate-insights with:', {
+          categoriesCount: categories.length,
           averageGap,
-          assessmentId: assessmentId || null, // Allow null for new assessments
-          forceRegenerate: forceRegenerate || isTestAssessment // Force regenerate for test assessment
+          assessmentId: assessmentId || 'new-assessment',
+          hasValidDemographics: demographics && Object.keys(demographics).length > 0,
+          forceRegenerate: forceRegenerate || isTestAssessment
+        });
+        const { data, error: functionError } = await supabase.functions.invoke('generate-insights', {
+          body: {
+            categories,
+            demographics,
+            averageGap,
+            assessmentId: assessmentId || null,
+            forceRegenerate: forceRegenerate || isTestAssessment
+          }
+        });
+        if (functionError) {
+          // If the error is a 'still processing' or non-2xx, treat as retryable
+          lastError = functionError.message || 'Edge Function error';
+          console.warn('useOpenAIInsights - Function error (retryable):', lastError);
+          // Wait and retry
+          await new Promise(res => setTimeout(res, RETRY_DELAY_MS));
+          attempt++;
+          continue;
         }
-      });
-
-      if (functionError) {
-        console.error('useOpenAIInsights - Function error:', functionError);
-        throw new Error(functionError.message || 'Edge Function error');
-      }
-
-      if (data && data.insights) {
-        let finalInsights = data.insights;
-        
-        // Set successful state with new insights
-        updateState({
-          insights: finalInsights,
-          isLoading: false,
-          error: null,
-          isInitialized: true
-        }, 'Generated new insights from API');
-        
-        initializationCompleteRef.current = true;
-        isOperationInProgressRef.current = false;
-        
-        // Log success for test assessment regeneration
-        if (isTestAssessment && forceRegenerate) {
-          console.log('✨ TEST ASSESSMENT: Fresh insights generated successfully!');
+        if (data && data.insights) {
+          let finalInsights = data.insights;
+          updateState({
+            insights: finalInsights,
+            isLoading: false,
+            error: null,
+            isInitialized: true
+          }, 'Generated new insights from API');
+          initializationCompleteRef.current = true;
+          isOperationInProgressRef.current = false;
+          if (isTestAssessment && forceRegenerate) {
+            console.log('✨ TEST ASSESSMENT: Fresh insights generated successfully!');
+          }
+          return;
+        } else {
+          // No insights yet, treat as retryable
+          lastError = 'No insights received from API';
+          console.warn('useOpenAIInsights - No insights yet, will retry');
+          await new Promise(res => setTimeout(res, RETRY_DELAY_MS));
+          attempt++;
+          continue;
         }
-      } else {
-        throw new Error('No insights received from API');
+      } catch (err) {
+        lastError = err instanceof Error ? err.message : 'Failed to generate insights';
+        console.warn('useOpenAIInsights - Generation error (retryable):', lastError);
+        await new Promise(res => setTimeout(res, RETRY_DELAY_MS));
+        attempt++;
+        continue;
       }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to generate insights';
-      console.error('useOpenAIInsights - Generation error:', errorMessage);
-      
-      updateState({
-        error: errorMessage,
-        isLoading: false,
-        isInitialized: true
-      }, 'Generation error');
-      
-      initializationCompleteRef.current = true;
-      isOperationInProgressRef.current = false;
     }
+    // If we reach here, all retries failed
+    updateState({
+      error: lastError || 'Failed to generate insights after multiple attempts',
+      isLoading: false,
+      isInitialized: true
+    }, 'Generation error after retries');
+    initializationCompleteRef.current = true;
+    isOperationInProgressRef.current = false;
   };
 
   const regenerateInsights = useCallback(async () => {

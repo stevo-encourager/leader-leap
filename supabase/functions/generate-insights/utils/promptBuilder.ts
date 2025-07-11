@@ -322,7 +322,7 @@ const buildValidatedResourcesList = (): string => {
 - This applies to ALL resources: books, frameworks, tools, articles, methodologies
 - Every resource must directly support the specific insight being provided
 - Prioritize the most authoritative and specific resource for each recommendation
-- Match resource sophistication to user's experience level (${assessmentSummary.demographics.yearsOfExperience || 'Not specified'} years)
+- Match resource sophistication to user's experience level (see user profile)
 - Ensure industry relevance when selecting between similar resources
 `;
 };
@@ -341,6 +341,165 @@ const validateSkillNamesForSummary = (skillNames: string[]): string[] => {
     return cleanedName;
   });
 };
+
+// --- RESOURCE NAME TO URL MAPPING ---
+const VALIDATED_RESOURCE_LINKS: Record<string, string> = {
+  // Time Management & Productivity
+  'The Eisenhower Matrix - Priority Management': 'https://www.eisenhower.me/eisenhower-matrix/',
+  'The Pomodoro Technique': 'https://www.techtarget.com/whatis/definition/pomodoro-technique',
+  'Getting Things Done (GTD) Methodology': 'https://gettingthingsdone.com/what-is-gtd/',
+  // Goal Setting & Planning
+  'SMART Goals Framework': 'https://corporatefinanceinstitute.com/resources/management/smart-goal/',
+  'Objectives and Key Results (OKRs)': 'https://www.whatmatters.com/faqs/okr-meaning-definition-example/',
+  'OKR Framework Guide': 'https://www.atlassian.com/agile/agile-at-scale/okr',
+  // Communication & Feedback
+  'SBI Feedback Model': 'https://www.ccl.org/articles/leading-effectively-articles/closing-the-gap-between-intent-vs-impact-sbii/',
+  'Radical Candor Framework': 'https://www.radicalcandor.com/our-approach/',
+  'What is Nonviolent Communication': 'https://positivepsychology.com/non-violent-communication/',
+  'Active Listening Techniques': 'https://www.mindtools.com/CommSkll/ActiveListening.htm',
+  // Decision Making
+  'OODA Loop': 'https://thedecisionlab.com/reference-guide/computer-science/the-ooda-loop',
+  'DACI Decision Making Framework': 'https://www.atlassian.com/team-playbook/plays/daci',
+  "RACI 'Responsibility Assignment Matrix'": 'https://www.teamgantt.com/blog/raci-chart-definition-tips-and-example',
+  // Strategic Thinking
+  'SWOT Analysis Framework': 'https://www.mindtools.com/pages/article/newTMC_05.htm',
+  'Design Thinking Process by IDEO': 'https://designthinking.ideo.com/',
+  'Scenario Planning: Step by Step Guide': 'https://www.professionalacademy.com/blogs/a-step-by-step-guide-to-scenario-planning/',
+  // Emotional Intelligence
+  'Emotional Intelligence by Daniel Goleman': 'https://www.danielgoleman.info/topics/emotional-intelligence/',
+  '16 Personalities test (MBTI)': 'https://www.16personalities.com/free-personality-test',
+  // Trust & Relationship Building
+  'The Speed of Trust by Stephen Covey': 'https://www.speedoftrust.com/',
+  'The Trust Equation': 'https://trustedadvisor.com/why-trust-matters/understanding-trust/understanding-the-trust-equation',
+  // Delegation & Empowerment
+  '7 Models for Delegation': 'https://blog.hptbydts.com/7-models-for-delegation',
+  'Situational Leadership: What it is and how to build it': 'https://www.betterup.com/blog/situational-leadership-examples',
+  // Performance Management
+  'Performance management that puts people first': 'https://www.mckinsey.com/capabilities/people-and-organizational-performance/our-insights/in-the-spotlight-performance-management-that-puts-people-first',
+  'Effective One-on-One Meetings': 'https://www.manager-tools.com/2005/07/the-single-most-effective-management-tool-part-1',
+  // Conflict Resolution
+  'Thomas-Kilmann Conflict Resolution Model': 'https://www.mtdtraining.com/blog/thomas-kilmann-conflict-management-model.htm',
+  'Getting to Yes - Interest-Based Negotiation': 'https://www.uhab.org/resource/successful-conflict-resolution-getting-to-yes/',
+  // Change Management
+  'ADKAR Change Management Model': 'https://www.prosci.com/methodology/adkar',
+  "Kotter's 8-Step Change Process": 'https://www.kotterinc.com/8-steps-process-for-leading-change/',
+  "Bridges Transition Model": 'https://wmbridges.com/about/what-is-transition/',
+  "Lewin's 3-Stage Change Model": 'https://uk.indeed.com/career-advice/career-development/lewins-change-model',
+  // Team Development
+  "Tuckman's Team Development Model": 'https://www.thecoachingtoolscompany.com/get-your-team-performing-beautifully-with-this-powerful-group-development-model/',
+  'Creating A Team Charter': 'https://miro.com/organizational-chart/what-is-a-team-charter/#how-to-make-a-team-charter',
+  'Ways of Working & Guiding Principles': 'https://www.youtube.com/watch?v=aZ-yZSNd3l4',
+  'A Guide to Harnessing Psychological Safety': 'https://www.encouragercoaching.com/post/unshackling-potential-a-guide-to-harnessing-psychological-safety',
+  // Team Communication
+  "Why It's Necessary to Improve Team Communication": 'https://www.apu.apus.edu/area-of-study/business-and-management/resources/why-it-is-necessary-to-improve-team-communication/',
+  "3 Easy Steps to Staff Meetings That Don't Suck": 'https://www.radicalcandor.com/blog/effective-staff-meetings/',
+  // Learning & Development
+  '70-20-10 Learning and Development Model': 'https://www.ccl.org/articles/leading-effectively-articles/70-20-10-rule/',
+  'What is a Growth Mindset': 'https://www.renaissance.com/edword/growth-mindset/',
+  'Deliberate Practice Framework': 'https://jamesclear.com/deliberate-practice-theory',
+  // Coaching & Mentoring
+  'GROW Coaching Model': 'https://www.coachingcultureatwork.com/the-grow-model/',
+  'How to have a Coaching Conversation': 'https://www.ccl.org/articles/leading-effectively-articles/how-to-have-a-coaching-conversation/',
+  // Career Development
+  'How to create a career development plan in 5 steps': 'https://uk.indeed.com/career-advice/career-development/how-to-create-a-career-development-plan',
+  "Why It's ALWAYS A Good Idea To Build Your Personal Brand": 'https://www.linkedin.com/pulse/why-its-always-good-idea-build-your-personal-brand-gary-vaynerchuk-95k3c/',
+  'Strategic Networking for Leaders': 'https://hbr.org/2016/05/learn-to-love-networking',
+  // Problem Solving
+  'The 5 Whys Technique': 'https://www.youtube.com/watch?v=wLHLWNzYNAU',
+  // Assessment Tools
+  'StrengthsFinder 2.0': 'https://www.gallup.com/cliftonstrengths',
+  'The Predictive Index': 'https://www.predictiveindex.com/',
+  // Leadership Books
+  'Emotional Intelligence 2.0 by Travis Bradberry': 'https://amzn.to/45zVPDo',
+  'Crucial Conversations by Kerry Patterson': 'https://amzn.to/4koOyLq',
+  'The 7 Habits of Highly Effective People by Stephen Covey': 'https://amzn.to/4kn4Sw0',
+  'Good to Great by Jim Collins': 'https://amzn.to/4jBi3s9',
+  'Dare to Lead by Brené Brown': 'https://amzn.to/454pepe',
+  'The Leadership Challenge by James Kouzes': 'https://amzn.to/3HhFyct',
+  'Primal Leadership by Daniel Goleman': 'https://amzn.to/43MFg4V',
+  'Atomic Habits by James Clear': 'https://amzn.to/4mNWBTM',
+  'Getting Things Done by David Allen': 'https://amzn.to/3Zcige4',
+  'Reinventing Organisations by Frederic Laloux': 'https://amzn.to/45AG8fa',
+  'The Pyramid Principle by Barbara Minto': 'https://amzn.to/3Zc2YWN',
+  'The Captain Class by Sam Walker': 'https://amzn.to/43t4vKE',
+  'Leading Change by John Kotter': 'https://amzn.to/3Hgp9oD',
+  'The Power of Habit by Charles Duhigg': 'https://amzn.to/3FErMzX',
+  'Build, Excite, Equip by Nicola Graham': 'https://amzn.to/3Swn0aI',
+  'The 17 Indisputable Laws of Teamwork by John Maxwell': 'https://amzn.to/3ZI7QTy',
+  'Thinking Fast and Slow by Daniel Kahneman': 'https://amzn.to/3HnnOMD',
+  'Getting To Yes by Roger Fisher and William Ury': 'https://amzn.to/4mIcT08',
+  'Playing To Win by AG Lafley & Roger Martin': 'https://amzn.to/4kLsXfW',
+  'Human Skills by Elizabeth Nyamayaro': 'https://amzn.to/3HA3g3s',
+  'Radical Candor by Kim Scott': 'https://amzn.to/3HkG2hT',
+  'Nonviolent Communication by Marshall B. Rosenberg': 'https://amzn.to/3T1gWXQ',
+};
+
+export function formatResourceMarkdown(resourceName: string): string {
+  const url = VALIDATED_RESOURCE_LINKS[resourceName];
+  if (url) {
+    return `[${resourceName}](${url})`;
+  }
+  return resourceName; // fallback to plain name if no URL found
+}
+
+// Build a summary object from raw assessment data for prompt generation
+export function buildAssessmentData(categories: any[], averageGap: number, demographics: any) {
+  // Defensive checks
+  if (!categories || !Array.isArray(categories)) {
+    throw new Error('Invalid categories array provided to buildAssessmentData');
+  }
+
+  // Build category breakdown with required fields for the prompt
+  const categoryBreakdown = categories.map((cat: any) => {
+    // Calculate average current and desired ratings for the category
+    let totalCurrent = 0;
+    let totalDesired = 0;
+    let validSkillCount = 0;
+    let topGapSkills: any[] = [];
+
+    if (cat.skills && Array.isArray(cat.skills)) {
+      // Calculate skill-level gaps and find top gap skills
+      topGapSkills = cat.skills.map((skill: any) => {
+        const current = Number(skill.ratings?.current) || 0;
+        const desired = Number(skill.ratings?.desired) || 0;
+        const gap = Math.abs(desired - current);
+        if (current > 0 || desired > 0) {
+          totalCurrent += current;
+          totalDesired += desired;
+          validSkillCount++;
+        }
+        return {
+          title: skill.name || skill.title || '',
+          currentRating: current,
+          desiredRating: desired,
+          gap,
+        };
+      });
+      // Sort topGapSkills by gap descending
+      topGapSkills = topGapSkills.sort((a, b) => b.gap - a.gap).slice(0, 3);
+    }
+
+    const avgCurrent = validSkillCount > 0 ? totalCurrent / validSkillCount : 0;
+    const avgDesired = validSkillCount > 0 ? totalDesired / validSkillCount : 0;
+    const gap = Math.abs(avgDesired - avgCurrent);
+
+    return {
+      id: cat.id || '',
+      title: cat.title || '',
+      description: cat.description || '',
+      averageCurrentRating: avgCurrent,
+      averageDesiredRating: avgDesired,
+      gap,
+      topGapSkills,
+    };
+  });
+
+  return {
+    averageGap,
+    demographics: demographics || {},
+    categoryBreakdown,
+  };
+}
 
 export const buildPrompt = (assessmentSummary: any): string => {
   console.log('PROMPT BUILDER: Starting prompt generation with assessment summary structure validation');
@@ -589,7 +748,7 @@ ${validatedLeadersList}
 - This applies to ALL resources: books, frameworks, tools, articles, methodologies
 - Every resource must directly support the specific insight being provided
 - Prioritize the most authoritative and specific resource for each recommendation
-- Match resource sophistication to user's experience level (\${assessmentSummary.demographics.yearsOfExperience || 'Not specified'} years)
+- Match resource sophistication to user's experience level (see user profile)
 - Ensure industry relevance when selecting between similar resources
 
 ### CRITICAL INSPIRATIONAL LEADER SELECTION RULES
@@ -768,5 +927,5 @@ Base your insights on the assessment data provided above and ensure each insight
 
   // Log the complete prompt structure for debugging
   console.log('PROMPT VERSION CHECK:', fullPrompt.substring(0, 100)); // logs the first 100 characters
-return fullPrompt;
+  return fullPrompt;
 };

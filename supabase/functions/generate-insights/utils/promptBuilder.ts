@@ -367,19 +367,19 @@ export const buildPrompt = (assessmentSummary: any): string => {
 
   const assessmentDataSection = `
 Assessment Data:
-- Overall Average Gap: ${assessmentSummary.averageGap.toFixed(2)}
-- Role: ${assessmentSummary.demographics.role || 'Not specified'}
-- Experience: ${assessmentSummary.demographics.yearsOfExperience || 'Not specified'} years
-- Industry: ${assessmentSummary.demographics.industry || 'Not specified'}
+- Overall Average Gap: \${assessmentSummary.averageGap.toFixed(2)}
+- Role: \${assessmentSummary.demographics.role || 'Not specified'}
+- Experience: \${assessmentSummary.demographics.yearsOfExperience || 'Not specified'} years
+- Industry: \${assessmentSummary.demographics.industry || 'Not specified'}
 
 Top 3 Categories by Gap (Priority Development Areas):
-${topGapCategories.map((cat, i) => {
-  let categoryText = `${i+1}. ${cat.title}: Gap ${cat.gap.toFixed(1)} (Current: ${cat.averageCurrentRating.toFixed(1)}, Desired: ${cat.averageDesiredRating.toFixed(1)})`;
+\${topGapCategories.map((cat, i) => {
+  let categoryText = \`\${i+1}. \${cat.title}: Gap \${cat.gap.toFixed(1)} (Current: \${cat.averageCurrentRating.toFixed(1)}, Desired: \${cat.averageDesiredRating.toFixed(1)})\`;
   
   if (cat.topGapSkills && cat.topGapSkills.length > 0) {
-    categoryText += `\n   Top individual skill gaps:`;
+    categoryText += \`\n   Top individual skill gaps:\`;
     cat.topGapSkills.forEach((skill, skillIndex) => {
-      categoryText += `\n   - ${skill.title}: Gap ${skill.gap.toFixed(1)} (Current: ${skill.currentRating}, Desired: ${skill.desiredRating})`;
+      categoryText += \`\n   - \${skill.title}: Gap \${skill.gap.toFixed(1)} (Current: \${skill.currentRating}, Desired: \${skill.desiredRating})\`;
     });
   }
   
@@ -387,13 +387,13 @@ ${topGapCategories.map((cat, i) => {
 }).join('\n\n')}
 
 Top Competency Areas (High Current Ratings, Low Gaps):
-${topCompetencies.map((cat, i) => {
-  let categoryText = `${i+1}. ${cat.title}: Current ${cat.averageCurrentRating.toFixed(1)}, Gap ${cat.gap.toFixed(1)}`;
+\${topCompetencies.map((cat, i) => {
+  let categoryText = \`\${i+1}. \${cat.title}: Current \${cat.averageCurrentRating.toFixed(1)}, Gap \${cat.gap.toFixed(1)}\`;
   
   if (cat.topGapSkills && cat.topGapSkills.length > 0) {
-    categoryText += `\n   Individual skills within this competency:`;
+    categoryText += \`\n   Individual skills within this competency:\`;
     cat.topGapSkills.forEach((skill, skillIndex) => {
-      categoryText += `\n   - ${skill.title}: Gap ${skill.gap.toFixed(1)} (Current: ${skill.currentRating}, Desired: ${skill.desiredRating})`;
+      categoryText += \`\n   - \${skill.title}: Gap \${skill.gap.toFixed(1)} (Current: \${skill.currentRating}, Desired: \${skill.desiredRating})\`;
     });
   }
   
@@ -473,9 +473,9 @@ You represent Encourager Coaching, which emphasizes:
 ### ENHANCED SUMMARY PERSONALIZATION REQUIREMENTS
 
 **CRITICAL SUMMARY FORMATTING:**
-- Reference the user's role (${assessmentSummary.demographics.role || 'leadership role'}) naturally throughout the summary
-- Include industry context (${assessmentSummary.demographics.industry || 'your industry'}) where relevant
-- Acknowledge their experience level (${assessmentSummary.demographics.yearsOfExperience || 'current'} years) appropriately
+- Reference the user's role (\${assessmentSummary.demographics.role || 'leadership role'}) naturally throughout the summary
+- Include industry context (\${assessmentSummary.demographics.industry || 'your industry'}) where relevant
+- Acknowledge their experience level (\${assessmentSummary.demographics.yearsOfExperience || 'current'} years) appropriately
 - Use encouraging, supportive language that builds confidence throughout
 - Avoid repetitive skill mentions or similar concepts
 - Highlight 1-2 key skill names per competency for context (names only, NO numbers, NO gap scores, NO parentheses with values)
@@ -503,9 +503,9 @@ You represent Encourager Coaching, which emphasizes:
 ### DEMOGRAPHIC CONTEXT FOR TAILORED INSIGHTS
 
 **User Profile:**
-- Role: ${assessmentSummary.demographics.role || 'Not specified'}
-- Industry: ${assessmentSummary.demographics.industry || 'Not specified'}
-- Leadership Experience: ${assessmentSummary.demographics.yearsOfExperience || 'Not specified'}
+- Role: \${assessmentSummary.demographics.role || 'Not specified'}
+- Industry: \${assessmentSummary.demographics.industry || 'Not specified'}
+- Leadership Experience: \${assessmentSummary.demographics.yearsOfExperience || 'Not specified'}
 
 ### MANDATORY PERSONALIZATION INTEGRATION
 
@@ -589,7 +589,7 @@ ${validatedLeadersList}
 - This applies to ALL resources: books, frameworks, tools, articles, methodologies
 - Every resource must directly support the specific insight being provided
 - Prioritize the most authoritative and specific resource for each recommendation
-- Match resource sophistication to user's experience level (${assessmentSummary.demographics.yearsOfExperience || 'Not specified'} years)
+- Match resource sophistication to user's experience level (\${assessmentSummary.demographics.yearsOfExperience || 'Not specified'} years)
 - Ensure industry relevance when selecting between similar resources
 
 ### CRITICAL INSPIRATIONAL LEADER SELECTION RULES
@@ -602,7 +602,7 @@ ${validatedLeadersList}
 - Always use the exact leader name and corresponding URL as specified in the database
 
 **ENHANCED LEADER SELECTION ALGORITHM:**
-Use the Streamlined Leader Selection Process above to select the most appropriate inspirational leader based on the user's PRIMARY STRENGTHS (highest current ratings), industry context (${assessmentSummary.demographics.industry || 'Not specified'}), role level (${assessmentSummary.demographics.role || 'Not specified'}), and experience (${assessmentSummary.demographics.yearsOfExperience || 'Not specified'} years). Base selection on where the user is ALREADY STRONG, not on their development areas, to show "you're like this successful leader" and reinforce their existing leadership identity.
+Use the Streamlined Leader Selection Process above to select the most appropriate inspirational leader based on the user's PRIMARY STRENGTHS (highest current ratings), industry context (\${assessmentSummary.demographics.industry || 'Not specified'}), role level (\${assessmentSummary.demographics.role || 'Not specified'}), and experience (\${assessmentSummary.demographics.yearsOfExperience || 'Not specified'} years). Base selection on where the user is ALREADY STRONG, not on their development areas, to show "you're like this successful leader" and reinforce their existing leadership identity.
 
 **Leader Quality Validation:**
 - Every leader reference must directly relate to the specific leadership principle being discussed
@@ -693,16 +693,16 @@ You MUST output ONLY a valid JSON object with this EXACT structure:
 - **Second paragraph**: Focus on existing competencies and strengths, including the inspirational leader reference based on their strongest competency areas. Use transition phrases like "However," "At the same time," "Additionally," or "Your results also" to start this paragraph. MUST include inspirational leader with HTML anchor tag format: "Like <a href="[exact URL from database]">Leader Name</a>, who is known for [specific principle that aligns with their strengths]..."
 
 - **priority_areas**: An array with exactly 3 objects, each for a Top 3 Priority Development Area. Each object must contain:
-  - `competency`: The exact competency name from assessment data
-  - `gap`: The numerical gap score
-  - `insights`: Array of exactly 3 actionable, research-backed insights that use encouraging language, avoid generic statements, include specific methodologies/frameworks, integrate role/industry/experience context, AND reference specific individual skills by name WITHOUT mentioning their gap scores or numerical values (ONLY validated skills). MUST include "why" explanations for the importance of developing each competency for leadership effectiveness. Focus on development suggestions and guidance, not numerical reporting.
-  - `resources`: Array of exactly 3 resource names from the validated database, using EXACT titles as specified. MUST include at least one book recommendation per competency.
+  - \`competency\`: The exact competency name from assessment data
+  - \`gap\`: The numerical gap score
+  - \`insights\`: Array of exactly 3 actionable, research-backed insights that use encouraging language, avoid generic statements, include specific methodologies/frameworks, integrate role/industry/experience context, AND reference specific individual skills by name WITHOUT mentioning their gap scores or numerical values (ONLY validated skills). MUST include "why" explanations for the importance of developing each competency for leadership effectiveness. Focus on development suggestions and guidance, not numerical reporting.
+  - \`resources\`: Array of exactly 3 resource names from the validated database, using EXACT titles as specified. MUST include at least one book recommendation per competency.
 
 - **key_strengths**: An array with at least 2 objects, each for a key competency to leverage. Each object must contain:
-  - `competency`: The exact competency name from assessment data
-  - `example`: Encouraging example of how this competency manifests in their specific role/industry context, including reference to specific skills within the competency (ONLY validated skills). Must include positive reinforcement and suggestions about their leadership type.
-  - `leverage_advice`: Array of exactly 3 specific strategies for leveraging this competency that incorporate role/industry/experience context, reference individual skills where relevant (ONLY validated skills), and include encouraging messaging about personal brand development and leadership confidence.
-  - `resources`: Array of exactly 3 resource names from the validated database, using EXACT titles as specified. MUST include at least one book recommendation per competency.
+  - \`competency\`: The exact competency name from assessment data
+  - \`example\`: Encouraging example of how this competency manifests in their specific role/industry context, including reference to specific skills within the competency (ONLY validated skills). Must include positive reinforcement and suggestions about their leadership type.
+  - \`leverage_advice\`: Array of exactly 3 specific strategies for leveraging this competency that incorporate role/industry/experience context, reference individual skills where relevant (ONLY validated skills), and include encouraging messaging about personal brand development and leadership confidence.
+  - \`resources\`: Array of exactly 3 resource names from the validated database, using EXACT titles as specified. MUST include at least one book recommendation per competency.
 
 ### PRE-OUTPUT VALIDATION CHECKLIST
 
@@ -746,7 +746,7 @@ Before generating the JSON response, verify:
 ### CRITICAL JSON RULES
 
 - Output MUST be valid JSON only. No text, markdown, or formatting before/after.
-- The `insights` and `leverage_advice` fields must be arrays of strings ONLY.
+- The \`insights\` and \`leverage_advice\` fields must be arrays of strings ONLY.
 - All arrays must contain only the specified data types.
 - NEVER use resources not in the validated database - this is critical for link integrity
 - NEVER use skills not in the validated skills database - this is critical for assessment accuracy

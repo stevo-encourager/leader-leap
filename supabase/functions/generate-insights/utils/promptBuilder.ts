@@ -1,61 +1,3 @@
-
-interface CategoryBreakdown {
-  title: string;
-  skillCount: number;
-  averageCurrentRating: number;
-  averageDesiredRating: number;
-  gap: number;
-  topGapSkills?: Array<{
-    title: string;
-    gap: number;
-    currentRating: number;
-    desiredRating: number;
-  }>;
-}
-
-export const buildAssessmentData = (categories: any[], averageGap: number, demographics: any) => {
-  const categoryBreakdown = categories.map(cat => {
-    const skills = cat.skills || [];
-    const validSkills = skills.filter(skill => 
-      skill && 
-      skill.ratings && 
-      typeof skill.ratings.current === 'number' && 
-      typeof skill.ratings.desired === 'number'
-    );
-    
-    const currentSum = validSkills.reduce((sum, skill) => sum + skill.ratings.current, 0);
-    const desiredSum = validSkills.reduce((sum, skill) => sum + skill.ratings.desired, 0);
-    const skillCount = validSkills.length || 1;
-    
-    // Calculate individual skill gaps and get top 2 largest gaps
-    // FIXED: Ensure skill ratings are integers (no decimals for individual skills)
-    const skillsWithGaps = validSkills.map(skill => ({
-      title: skill.title || skill.name,
-      gap: skill.ratings.desired - skill.ratings.current,
-      currentRating: Math.round(skill.ratings.current), // Ensure integer values
-      desiredRating: Math.round(skill.ratings.desired)   // Ensure integer values
-    })).sort((a, b) => b.gap - a.gap);
-    
-    const topGapSkills = skillsWithGaps.slice(0, 2);
-    
-    return {
-      title: cat.title,
-      skillCount: skillCount,
-      averageCurrentRating: currentSum / skillCount,
-      averageDesiredRating: desiredSum / skillCount,
-      gap: (desiredSum / skillCount) - (currentSum / skillCount),
-      topGapSkills: topGapSkills
-    };
-  });
-
-  return {
-    totalCategories: categories.length,
-    averageGap: averageGap,
-    demographics: demographics,
-    categoryBreakdown: categoryBreakdown
-  };
-};
-
 // Build the validated skills list for the prompt - ONLY THESE SKILLS CAN BE REFERENCED
 const buildValidatedSkillsList = (): string => {
   return `
@@ -66,10 +8,10 @@ const buildValidatedSkillsList = (): string => {
 - Big Picture Thinking
 - Strategic Planning
 
-**Communication:**
-- Verbal Communication
-- Written & Visual Communication
-- Active Listening
+**Influencing:**
+- Persuasive Messaging
+- Stakeholder Engagement
+- Executive Presence
 
 **Team Building/Management:**
 - Team Motivation
@@ -91,10 +33,10 @@ const buildValidatedSkillsList = (): string => {
 - Change Leadership
 - Resilience
 
-**Conflict Resolution:**
-- Conflict Management
-- Negotiation
-- Mediation
+**Negotiation & Conflict Resolution:**
+- Conflict Resolution
+- Strategic Negotiation
+- Facilitation & Mediation
 
 **Delegation & Empowerment:**
 - Task Delegation
@@ -120,172 +62,201 @@ const buildValidatedSkillsList = (): string => {
 `;
 };
 
-// Build the validated leaders list for the prompt
+// Build the validated leaders list for the prompt - ENHANCED WITH BETTER SELECTION LOGIC
 const buildValidatedLeadersList = (): string => {
   return `
 **VALIDATED INSPIRATIONAL LEADERS - USE ONLY THESE LEADERS:**
 
 **Transformational & Empathetic Leadership:**
-- Satya Nadella (Microsoft transformation, empathetic leadership) - https://www.linkedin.com/in/satyanadella/
+- Satya Nadella (Microsoft transformation, empathetic leadership, emotional intelligence focus) - https://www.linkedin.com/in/satyanadella/
 
 **Collaborative & Inclusive Leadership:**
-- Mary Barra (Automotive transformation, inclusive culture) - https://www.linkedin.com/in/mary-barra/
+- Mary Barra (Automotive transformation, inclusive culture, team building excellence) - https://www.linkedin.com/in/mary-barra/
 
 **Values-Based & Learning-Oriented Leadership:**
-- Marc Benioff (Values-driven business, continuous learning) - https://www.linkedin.com/in/marcbenioff/
+- Marc Benioff (Values-driven business, continuous learning, professional development focus) - https://www.linkedin.com/in/marcbenioff/
 
 **Strategic & Empowering Leadership:**
-- Indra Nooyi (Strategic thinking, employee empowerment) - https://www.linkedin.com/in/indranooyi/
+- Indra Nooyi (Strategic thinking excellence, employee empowerment, delegation mastery) - https://www.linkedin.com/in/indranooyi/
 
 **"Founder Mode" & Humble Inquiry Leadership:**
-- Brian Chesky (Scaling organizations, staying connected to mission) - https://www.linkedin.com/in/brianchesky/
+- Brian Chesky (Scaling organizations, staying connected to mission, adaptability) - https://www.linkedin.com/in/brianchesky/
 
 **Data-Driven & High-Performance Culture Leadership:**
-- Reed Hastings (Performance culture, data-driven decisions) - https://www.linkedin.com/in/reedhastings/
+- Reed Hastings (Performance culture, data-driven decisions, change leadership) - https://www.linkedin.com/in/reedhastings/
 
 **Servant Leadership & Financial Inclusion:**
-- Thasunda Brown Duckett (Community impact, servant leadership) - https://www.linkedin.com/in/thasunda-brown-duckett-22b15523/
+- Thasunda Brown Duckett (Community impact, servant leadership, relationship management) - https://www.linkedin.com/in/thasunda-brown-duckett-22b15523/
 
 **Sustainable & Mission-Driven Leadership:**
-- Paul Polman (Sustainable business, long-term thinking) - https://www.linkedin.com/in/paulpolman/
+- Paul Polman (Sustainable business, long-term thinking, strategic vision) - https://www.linkedin.com/in/paulpolman/
 
 **Direct & Crisis Management Leadership:**
-- Jamie Dimon (Crisis leadership, direct communication) - https://www.linkedin.com/in/jamiedimon/
+- Jamie Dimon (Crisis leadership, direct communication, decisiveness) - https://www.linkedin.com/in/jamiedimon/
 
 **Technical Visionary & Innovation Leadership:**
-- Jensen Huang (Innovation leadership, technical vision) - https://www.linkedin.com/in/jenhsunhuang/
+- Jensen Huang (Innovation leadership, technical vision, future-focused thinking) - https://www.linkedin.com/in/jenhsunhuang/
 
 **Principle-Based & "Why Culture" Leadership:**
-- Andy Jassy (Principle-centered decisions, cultural alignment) - https://www.linkedin.com/in/andy-jassy-8b1615/
+- Andy Jassy (Principle-centered decisions, cultural alignment, trust building) - https://www.linkedin.com/in/andy-jassy-8b1615/
 
 **Transparent, Creative, and Human-Centered:**
-- Stewart Butterfield (Transparent communication, creative leadership) - https://www.linkedin.com/in/butterfield/
+- Stewart Butterfield (Transparent communication, creative leadership, collaboration focus) - https://www.linkedin.com/in/butterfield/
 
 **Empathetic, Empowering, and Purpose-Driven:**
-- Whitney Wolfe Herd (Purpose-driven innovation, empathetic leadership) - https://en.wikipedia.org/wiki/Whitney_Wolfe_Herd
+- Whitney Wolfe Herd (Purpose-driven innovation, empathetic leadership, empowerment focus) - https://en.wikipedia.org/wiki/Whitney_Wolfe_Herd
 
 **Tech-Forward, Ethical, and Strategic Transformation:**
-- Arvind Krishna (Ethical technology, transformation leadership) - https://www.linkedin.com/in/arvindkrishna/
+- Arvind Krishna (Ethical technology, transformation leadership, strategic planning) - https://www.linkedin.com/in/arvindkrishna/
 
 **Bold, Mission-Driven, Inclusion-Focused:**
-- Reshma Saujani (Bold advocacy, inclusion-focused leadership) - https://www.linkedin.com/in/reshma-saujani/
+- Reshma Saujani (Bold advocacy, inclusion-focused leadership, resilience) - https://www.linkedin.com/in/reshma-saujani/
 
 **Global Advocacy, Partnership-Driven, Narrative Empowerment:**
-- Elizabeth Nyamayaro (Global impact, partnership building) - https://www.linkedin.com/in/enyamayaro/
+- Elizabeth Nyamayaro (Global impact, partnership building, stakeholder engagement) - https://www.linkedin.com/in/enyamayaro/
+
+**STREAMLINED LEADER SELECTION PROCESS:**
+
+**Step 1: Identify User's Primary Strength**
+- Analyze assessment data to find the competency with the HIGHEST current rating
+- This becomes the primary basis for leader selection
+
+**Step 2: Apply Competency-to-Leader Mapping**
+- Strategic Thinking/Vision strengths → Satya Nadella, Paul Polman, Jensen Huang, or Arvind Krishna
+- Influencing strengths → Elizabeth Nyamayaro, Stewart Butterfield, or Whitney Wolfe Herd  
+- Team Building/Management strengths → Mary Barra, Brian Chesky, or Marc Benioff
+- Decision Making strengths → Jamie Dimon, Reed Hastings, or Andy Jassy
+- Emotional Intelligence strengths → Thasunda Brown Duckett, Satya Nadella, or Whitney Wolfe Herd
+- Change Management strengths → Reed Hastings, Brian Chesky, or Reshma Saujani
+- Negotiation & Conflict Resolution strengths → Jamie Dimon, Stewart Butterfield, or Andy Jassy
+- Delegation & Empowerment strengths → Indra Nooyi, Mary Barra, or Marc Benioff
+- Time/Priority Management strengths → Vary selection to avoid repetition
+- Professional Development strengths → Marc Benioff, Thasunda Brown Duckett, or Elizabeth Nyamayaro
+
+**Step 3: Apply Industry Filter (if applicable)**
+- Technology industry → Prefer Satya Nadella, Jensen Huang, Marc Benioff, or Andy Jassy
+- Finance industry → Prefer Jamie Dimon or Thasunda Brown Duckett
+- Other industries → Use competency mapping from Step 2
+
+**Step 4: Final Selection Rules**
+- NEVER default to Indra Nooyi unless Strategic Planning, Delegation, or Empowerment are the PRIMARY STRENGTHS
+- ALWAYS vary leader selection - avoid repeating the same leader across assessments
+- If multiple leaders from Steps 2-3 could apply, select based on best industry/role fit
+- If no perfect match exists, omit leader reference entirely rather than forcing a poor fit
 `;
 };
 
-// Build the validated resources list for the prompt - SIMPLIFIED without book labeling requirements
+// Build the validated resources list - ENHANCED WITH EXACT URLs
 const buildValidatedResourcesList = (): string => {
   return `
 **VALIDATED RESOURCE DATABASE - USE ONLY THESE RESOURCES:**
 
 **Time Management & Productivity:**
-- The Eisenhower Matrix - Priority Management
-- Eisenhower Decision Matrix Guide
-- The Pomodoro Technique
-- Getting Things Done (GTD) Methodology
+- The Eisenhower Matrix - Priority Management: https://www.eisenhower.me/eisenhower-matrix/
+- The Pomodoro Technique: https://www.techtarget.com/whatis/definition/pomodoro-technique
+- Getting Things Done (GTD) Methodology: https://gettingthingsdone.com/what-is-gtd/
 
 **Goal Setting & Planning:**
-- SMART Goals Framework
-- Objectives and Key Results (OKRs)
-- OKR Framework Guide
+- SMART Goals Framework: https://corporatefinanceinstitute.com/resources/management/smart-goal/
+- Objectives and Key Results (OKRs): https://www.whatmatters.com/faqs/okr-meaning-definition-example/
+- OKR Framework Guide: https://www.atlassian.com/agile/agile-at-scale/okr
 
 **Communication & Feedback:**
-- SBI Feedback Model
-- Radical Candor Framework
-- What is Nonviolent Communication
-- Active Listening Techniques
+- SBI Feedback Model: https://www.ccl.org/articles/leading-effectively-articles/closing-the-gap-between-intent-vs-impact-sbii/
+- Radical Candor Framework: https://www.radicalcandor.com/our-approach/
+- What is Nonviolent Communication: https://positivepsychology.com/non-violent-communication/
+- Active Listening Techniques: https://www.mindtools.com/CommSkll/ActiveListening.htm
 
 **Decision Making:**
-- OODA Loop
-- DACI Decision Making Framework
-- RACI 'Responsibility Assignment Matrix'
+- OODA Loop: https://thedecisionlab.com/reference-guide/computer-science/the-ooda-loop
+- DACI Decision Making Framework: https://www.atlassian.com/team-playbook/plays/daci
+- RACI 'Responsibility Assignment Matrix': https://www.teamgantt.com/blog/raci-chart-definition-tips-and-example
 
 **Strategic Thinking:**
-- SWOT Analysis Framework
-- Design Thinking Process by IDEO
-- Scenario Planning: Step by Step Guide
+- SWOT Analysis Framework: https://www.mindtools.com/pages/article/newTMC_05.htm
+- Design Thinking Process by IDEO: https://designthinking.ideo.com/
+- Scenario Planning: Step by Step Guide: https://www.professionalacademy.com/blogs/a-step-by-step-guide-to-scenario-planning/
 
 **Emotional Intelligence:**
-- Emotional Intelligence by Daniel Goleman
-- 16 Personalities test (MBTI)
+- Emotional Intelligence by Daniel Goleman: https://www.danielgoleman.info/topics/emotional-intelligence/
+- 16 Personalities test (MBTI): https://www.16personalities.com/free-personality-test
 
 **Trust & Relationship Building:**
-- The Trust Equation
+- The Speed of Trust by Stephen Covey: https://www.speedoftrust.com/
+- The Trust Equation: https://trustedadvisor.com/why-trust-matters/understanding-trust/understanding-the-trust-equation
 
 **Delegation & Empowerment:**
-- 7 Models for Delegation
-- Situational Leadership: What it is and how to build it
+- 7 Models for Delegation: https://blog.hptbydts.com/7-models-for-delegation
+- Situational Leadership: What it is and how to build it: https://www.betterup.com/blog/situational-leadership-examples
 
 **Performance Management:**
-- Performance management that puts people first
-- Effective One-on-One Meetings (listen)
+- Performance management that puts people first: https://www.mckinsey.com/capabilities/people-and-organizational-performance/our-insights/in-the-spotlight-performance-management-that-puts-people-first
+- Effective One-on-One Meetings: https://www.manager-tools.com/2005/07/the-single-most-effective-management-tool-part-1
 
 **Conflict Resolution:**
-- Thomas-Kilmann Conflict Resolution Model
-- Getting to Yes - Interest-Based Negotiation
+- Thomas-Kilmann Conflict Resolution Model: https://www.mtdtraining.com/blog/thomas-kilmann-conflict-management-model.htm
+- Getting to Yes - Interest-Based Negotiation: https://www.uhab.org/resource/successful-conflict-resolution-getting-to-yes/
 
 **Change Management:**
-- ADKAR Change Management Model
-- Kotter's 8-Step Change Process
-- Bridges Transition Model
-- Lewin's 3-Stage Change Model
+- ADKAR Change Management Model: https://www.prosci.com/methodology/adkar
+- Kotter's 8-Step Change Process: https://www.kotterinc.com/8-steps-process-for-leading-change/
+- Bridges Transition Model: https://wmbridges.com/about/what-is-transition/
+- Lewin's 3-Stage Change Model: https://uk.indeed.com/career-advice/career-development/lewins-change-model
 
 **Team Development:**
-- Tuckman's Team Development Model
-- Creating A Team Charter
-- Ways of Working & Guiding Principles (watch)
-- A Guide to Harnessing Psychological Safety
+- Tuckman's Team Development Model: https://www.thecoachingtoolscompany.com/get-your-team-performing-beautifully-with-this-powerful-group-development-model/
+- Creating A Team Charter: https://miro.com/organizational-chart/what-is-a-team-charter/#how-to-make-a-team-charter
+- Ways of Working & Guiding Principles: https://www.youtube.com/watch?v=aZ-yZSNd3l4
+- A Guide to Harnessing Psychological Safety: https://www.encouragercoaching.com/post/unshackling-potential-a-guide-to-harnessing-psychological-safety
 
 **Team Communication:**
-- Why It's Necessary to Improve Team Communication
-- 3 Easy Steps to Staff Meetings That Don't Suck
+- Why It's Necessary to Improve Team Communication: https://www.apu.apus.edu/area-of-study/business-and-management/resources/why-it-is-necessary-to-improve-team-communication/
+- 3 Easy Steps to Staff Meetings That Don't Suck: https://www.radicalcandor.com/blog/effective-staff-meetings/
 
 **Learning & Development:**
-- 70-20-10 Learning and Development Model
-- What is a Growth Mindset
-- Deliberate Practice Framework
+- 70-20-10 Learning and Development Model: https://www.ccl.org/articles/leading-effectively-articles/70-20-10-rule/
+- What is a Growth Mindset: https://www.renaissance.com/edword/growth-mindset/
+- Deliberate Practice Framework: https://jamesclear.com/deliberate-practice-theory
 
 **Coaching & Mentoring:**
-- GROW Coaching Model
-- How to have a Coaching Conversation
+- GROW Coaching Model: https://www.coachingcultureatwork.com/the-grow-model/
+- How to have a Coaching Conversation: https://www.ccl.org/articles/leading-effectively-articles/how-to-have-a-coaching-conversation/
 
 **Career Development:**
-- How to create a career development plan in 5 steps
-- Why It's ALWAYS A Good Idea To Build Your Personal Brand
-- Strategic Networking for Leaders
+- How to create a career development plan in 5 steps: https://uk.indeed.com/career-advice/career-development/how-to-create-a-career-development-plan
+- Why It's ALWAYS A Good Idea To Build Your Personal Brand: https://www.linkedin.com/pulse/why-its-always-good-idea-build-your-personal-brand-gary-vaynerchuk-95k3c/
+- Strategic Networking for Leaders: https://hbr.org/2016/05/learn-to-love-networking
 
 **Problem Solving:**
-- The 5 Whys Technique (watch)
+- The 5 Whys Technique: https://www.youtube.com/watch?v=wLHLWNzYNAU
 
 **Assessment Tools:**
-- StrengthsFinder 2.0
-- The Predictive Index
+- StrengthsFinder 2.0: https://www.gallup.com/cliftonstrengths
+- The Predictive Index: https://www.predictiveindex.com/
 
 **Leadership Books:**
-- Emotional Intelligence 2.0 by Travis Bradberry
-- Crucial Conversations by Kerry Patterson
-- The 7 Habits of Highly Effective People by Stephen Covey
-- Good to Great by Jim Collins
-- Dare to Lead by Brené Brown
-- The Leadership Challenge by James Kouzes
-- Primal Leadership by Daniel Goleman
-- Atomic Habits by James Clear
-- Getting Things Done by David Allen
-- Reinventing Organisations by Frederic Laloux
-- The Pyramid Principle by Barbara Minto
-- The Captain Class by Sam Walker
-- Leading Change by John Kotter
-- The Power of Habit by Charles Duhigg
-- Build, Excite, Equip by Nicola Graham
-- The 17 Indisputable Laws of Teamwork by John Maxwell
-- Thinking Fast and Slow by Daniel Kahneman
-- Getting To Yes by Roger Fisher and William Ury
-- Playing To Win by AG Lafley & Roger Martin
-- Human Skills by Elizabeth Nyamayaro
-- Radical Candor by Kim Scott
-- Nonviolent Communication by Marshall B. Rosenberg
+- Emotional Intelligence 2.0 by Travis Bradberry: https://amzn.to/45zVPDo
+- Crucial Conversations by Kerry Patterson: https://amzn.to/4koOyLq
+- The 7 Habits of Highly Effective People by Stephen Covey: https://amzn.to/4kn4Sw0
+- Good to Great by Jim Collins: https://amzn.to/4jBi3s9
+- Dare to Lead by Brené Brown: https://amzn.to/454pepe
+- The Leadership Challenge by James Kouzes: https://amzn.to/3HhFyct
+- Primal Leadership by Daniel Goleman: https://amzn.to/43MFg4V
+- Atomic Habits by James Clear: https://amzn.to/4mNWBTM
+- Getting Things Done by David Allen: https://amzn.to/3Zcige4
+- Reinventing Organisations by Frederic Laloux: https://amzn.to/45AG8fa
+- The Pyramid Principle by Barbara Minto: https://amzn.to/3Zc2YWN
+- The Captain Class by Sam Walker: https://amzn.to/43t4vKE
+- Leading Change by John Kotter: https://amzn.to/3Hgp9oD
+- The Power of Habit by Charles Duhigg: https://amzn.to/3FErMzX
+- Build, Excite, Equip by Nicola Graham: https://amzn.to/3Swn0aI
+- The 17 Indisputable Laws of Teamwork by John Maxwell: https://amzn.to/3ZI7QTy
+- Thinking Fast and Slow by Daniel Kahneman: https://amzn.to/3HnnOMD
+- Getting To Yes by Roger Fisher and William Ury: https://amzn.to/4mIcT08
+- Playing To Win by AG Lafley & Roger Martin: https://amzn.to/4kLsXfW
+- Human Skills by Elizabeth Nyamayaro: https://amzn.to/3HA3g3s
+- Radical Candor by Kim Scott: https://amzn.to/3HkG2hT
+- Nonviolent Communication by Marshall B. Rosenberg: https://amzn.to/3T1gWXQ
 
 **CRITICAL RESOURCE VALIDATION RULES:**
 - You MUST ONLY use resources from this validated database above
@@ -301,15 +272,58 @@ const buildValidatedResourcesList = (): string => {
 - NEVER include more than 1 book per competency section
 - NEVER include fewer than 3 total resources per competency section
 
-**BOOK SELECTION RULES:**
+**ENHANCED BOOK SELECTION RULES:**
 - Select books that most closely align with the specific competency being discussed
 - If multiple books are relevant, choose the one that best matches the user's industry or role context
-- For communication competencies, prefer "Crucial Conversations" or "Radical Candor"
-- For emotional intelligence competencies, prefer "Emotional Intelligence 2.0" or "Primal Leadership"
-- For strategic thinking competencies, prefer "Good to Great" or "Playing To Win"
-- For team building competencies, prefer "The Leadership Challenge" or "The 17 Indisputable Laws of Teamwork"
-- For change management competencies, prefer "Leading Change" or "The Power of Habit"
-- For decision making competencies, prefer "Thinking Fast and Slow" or "Getting To Yes"
+- For Influencing competencies, prefer "Crucial Conversations" or "Radical Candor"
+- For Emotional Intelligence competencies, prefer "Emotional Intelligence 2.0" or "Primal Leadership"
+- For Strategic Thinking competencies, prefer "Good to Great" or "Playing To Win"
+- For Team Building competencies, prefer "The Leadership Challenge" or "The 17 Indisputable Laws of Teamwork"
+- For Change Management competencies, prefer "Leading Change" or "The Power of Habit"
+- For Decision Making competencies, prefer "Thinking Fast and Slow" or "Getting To Yes"
+- For Time/Priority Management competencies, prefer "Atomic Habits" or "Getting Things Done"
+- For Professional Development competencies, prefer "The 7 Habits of Highly Effective People" or "Atomic Habits"
+- For Negotiation & Conflict Resolution competencies, prefer "Getting To Yes" or "Crucial Conversations"
+- For Delegation & Empowerment competencies, prefer "The Leadership Challenge" or "Dare to Lead"
+
+**CRITICAL RESOURCE VALIDATION RULES:**
+- You MUST ONLY use resources from this validated database above
+- NEVER create, invent, or suggest resources not explicitly listed here
+- Every resource name you use must match EXACTLY as written in the database
+- If a framework, book, or methodology you want to mention is not in this database, do NOT include it
+- This list is exhaustive and final - no additions or variations are permitted
+
+**CRITICAL RESOURCE COUNT REQUIREMENTS:**
+- Each competency section MUST have EXACTLY 3 resources (no more, no less)
+- Each competency section MUST include EXACTLY 1 book recommendation from the approved list
+- Each competency section MUST include EXACTLY 2 non-book resources (frameworks, tools, etc.)
+- NEVER include more than 1 book per competency section
+- NEVER include fewer than 3 total resources per competency section
+
+**ENHANCED BOOK SELECTION RULES:**
+- Select books that most closely align with the specific competency being discussed
+- If multiple books are relevant, choose the one that best matches the user's industry or role context
+- For Influencing competencies, prefer "Crucial Conversations" or "Radical Candor"
+- For Emotional Intelligence competencies, prefer "Emotional Intelligence 2.0" or "Primal Leadership"
+- For Strategic Thinking competencies, prefer "Good to Great" or "Playing To Win"
+- For Team Building competencies, prefer "The Leadership Challenge" or "The 17 Indisputable Laws of Teamwork"
+- For Change Management competencies, prefer "Leading Change" or "The Power of Habit"
+- For Decision Making competencies, prefer "Thinking Fast and Slow" or "Getting To Yes"
+- For Time/Priority Management competencies, prefer "Atomic Habits" or "Getting Things Done"
+- For Professional Development competencies, prefer "The 7 Habits of Highly Effective People" or "Atomic Habits"
+- For Negotiation & Conflict Resolution competencies, prefer "Getting To Yes" or "Crucial Conversations"
+- For Delegation & Empowerment competencies, prefer "The Leadership Challenge" or "Dare to Lead"
+
+**RESOURCE VALIDATION PROCESS:**
+- Before adding ANY resource to your recommendations, verify it exists in the validated database
+- Cross-reference the exact spelling and formatting with the database entries
+- If you cannot find an exact match, DO NOT use that resource
+- Never invent, create, or modify resource names not in the database
+- This applies to ALL resources: books, frameworks, tools, articles, methodologies
+- Every resource must directly support the specific insight being provided
+- Prioritize the most authoritative and specific resource for each recommendation
+- Match resource sophistication to user's experience level (${assessmentSummary.demographics.yearsOfExperience || 'Not specified'} years)
+- Ensure industry relevance when selecting between similar resources
 `;
 };
 
@@ -330,13 +344,14 @@ const validateSkillNamesForSummary = (skillNames: string[]): string[] => {
 
 export const buildPrompt = (assessmentSummary: any): string => {
   console.log('PROMPT BUILDER: Starting prompt generation with assessment summary structure validation');
-  
+
   // Validate assessment summary structure
   if (!assessmentSummary || !assessmentSummary.categoryBreakdown || !Array.isArray(assessmentSummary.categoryBreakdown)) {
     console.error('PROMPT BUILDER ERROR: Invalid assessment summary structure', assessmentSummary);
     throw new Error('Invalid assessment summary structure provided to prompt builder');
   }
 
+  // Get top 3 development areas (highest gaps) and top competencies (high current ratings, low gaps)
   const topGapCategories = assessmentSummary.categoryBreakdown
     .sort((a, b) => b.gap - a.gap)
     .slice(0, 3);
@@ -386,11 +401,19 @@ ${topCompetencies.map((cat, i) => {
 }).join('\n\n')}
 `;
 
+  // Build validated resource lists - these are the ONLY resources ChatGPT can use
   const validatedSkillsList = buildValidatedSkillsList();
   const validatedResourcesList = buildValidatedResourcesList();
   const validatedLeadersList = buildValidatedLeadersList();
 
-  const fullPrompt = `RESOURCE_VALIDATION_TEST_123\n\n${assessmentDataSection}
+  // CRITICAL STRUCTURE REQUIREMENTS FOR CHATGPT:
+  // - Summary: TWO paragraphs (first = growth areas, second = strengths + leader reference)
+  // - Leader selection: Based on PRIMARY STRENGTHS (highest current ratings), not gaps
+  // - Resources: EXACTLY 3 per competency, including 1 book, from validated database only
+  // - Skills: Reference individual skills by name only (NO numerical values in output)
+  const fullPrompt = `RESOURCE_VALIDATION_TEST_123
+
+${assessmentDataSection}
 
 You are an expert leadership coach and assessment analyst working with Encourager Coaching, which specializes in positive psychology, maximizing natural ability, and helping people become the best version of themselves. Based on the provided assessment data (including competency names, gap scores, individual skill gaps, and top competencies), generate AI insights for a user's leadership assessment.
 
@@ -481,7 +504,7 @@ You represent Encourager Coaching, which emphasizes:
 
 **User Profile:**
 - Role: ${assessmentSummary.demographics.role || 'Not specified'}
-- Industry: ${assessmentSummary.demographics.industry || 'Not specified'}  
+- Industry: ${assessmentSummary.demographics.industry || 'Not specified'}
 - Leadership Experience: ${assessmentSummary.demographics.yearsOfExperience || 'Not specified'}
 
 ### MANDATORY PERSONALIZATION INTEGRATION
@@ -558,14 +581,12 @@ ${validatedLeadersList}
 - NEVER omit book recommendations - there must always be at least one book per section
 - Priority should be given to books that most closely align with the competency being discussed
 
-**Resource Selection Process:**
-1. Identify the specific framework, tool, or methodology in your insight
-2. Find the EXACT matching resource name from the validated database
-3. Use only that exact name in your resources array
-4. Ensure at least one book is included per section
-5. If no exact match exists, do not include a resource for that insight
-
-**Quality Validation:**
+**RESOURCE VALIDATION PROCESS:**
+- Before adding ANY resource to your recommendations, verify it exists in the validated database
+- Cross-reference the exact spelling and formatting with the database entries
+- If you cannot find an exact match, DO NOT use that resource
+- Never invent, create, or modify resource names not in the database
+- This applies to ALL resources: books, frameworks, tools, articles, methodologies
 - Every resource must directly support the specific insight being provided
 - Prioritize the most authoritative and specific resource for each recommendation
 - Match resource sophistication to user's experience level (${assessmentSummary.demographics.yearsOfExperience || 'Not specified'} years)
@@ -580,23 +601,14 @@ ${validatedLeadersList}
 - If you want to reference a leader not in the database, omit the leader reference entirely
 - Always use the exact leader name and corresponding URL as specified in the database
 
-**CRITICAL LEADER SELECTION ALGORITHM:**
-1. Analyze the user's assessment data to identify their primary leadership gaps and strengths
-2. Match the user's industry context (${assessmentSummary.demographics.industry || 'Not specified'}) with relevant leaders
-3. Consider the user's role level (${assessmentSummary.demographics.role || 'Not specified'}) and experience (${assessmentSummary.demographics.yearsOfExperience || 'Not specified'} years)
-4. Select a leader whose expertise and leadership style directly relates to the user's most significant development areas
-5. AVOID selecting the same leader repeatedly - ensure diversity in leader selection across different assessments
-6. If the user's gaps are in strategic thinking, consider leaders like Satya Nadella or Marc Benioff
-7. If the user's gaps are in team building, consider leaders like Mary Barra or Brian Chesky
-8. If the user's gaps are in communication, consider leaders like Stewart Butterfield or Whitney Wolfe Herd
-9. If the user's gaps are in change management, consider leaders like Reed Hastings or Paul Polman
-10. If the user's gaps are in emotional intelligence, consider leaders like Thasunda Brown Duckett or Elizabeth Nyamayaro
+**ENHANCED LEADER SELECTION ALGORITHM:**
+Use the Streamlined Leader Selection Process above to select the most appropriate inspirational leader based on the user's PRIMARY STRENGTHS (highest current ratings), industry context (${assessmentSummary.demographics.industry || 'Not specified'}), role level (${assessmentSummary.demographics.role || 'Not specified'}), and experience (${assessmentSummary.demographics.yearsOfExperience || 'Not specified'} years). Base selection on where the user is ALREADY STRONG, not on their development areas, to show "you're like this successful leader" and reinforce their existing leadership identity.
 
 **Leader Quality Validation:**
 - Every leader reference must directly relate to the specific leadership principle being discussed
 - Ensure the leader's known expertise aligns with the user's industry context when possible
 - Match leader examples to user's experience level and role context
-- NEVER default to Indra Nooyi unless her specific expertise directly matches the user's primary development area
+- NEVER default to Indra Nooyi unless her specific expertise directly matches the user's primary STRENGTH areas
 
 ### ENHANCED QUALITY STANDARDS
 
@@ -644,7 +656,7 @@ ${validatedLeadersList}
 ✅ "Your key competencies in professional development..."
 ✅ "These leadership competencies provide a foundation..."
 ✅ "Your assessment highlights competencies in..."
-❌ "Your strengths in professional development..." 
+❌ "Your strengths in professional development..."
 ❌ "These strength areas provide a foundation..."
 ❌ "Your assessment highlights strengths in..."
 
@@ -664,7 +676,7 @@ You MUST output ONLY a valid JSON object with this EXACT structure:
   ],
   "key_strengths": [
     {
-      "competency": "string", 
+      "competency": "string",
       "example": "string",
       "leverage_advice": ["string1", "string2", "string3"],
       "resources": ["string1", "string2", "string3"]
@@ -674,21 +686,23 @@ You MUST output ONLY a valid JSON object with this EXACT structure:
 
 ### FIELD REQUIREMENTS
 
-- **summary**: Generate a professional, encouraging, and personalized assessment summary that is 6–8 sentences. Use the word "competencies" throughout (NEVER use "strengths" as a synonym). Always refer to the person as "you" or "your" (never "the user" or "the user's"). MUST reference specific individual skills by NAME ONLY (NO numerical values, NO gaps, NO scores, NO decimals, NO parentheses with numbers) within the priority competencies. ONLY use skills from the validated skills database. Include natural references to their role, industry, and experience level. Use supportive, confidence-building language while avoiding repetition. MUST include encouraging messaging about growth opportunities and potential.
+- **summary**: Generate a professional, encouraging, and personalized assessment summary that is 6-8 sentences. Use the word "competencies" throughout (NEVER use "strengths" as a synonym). Always refer to the person as "you" or "your" (never "the user" or "the user's"). MUST reference specific individual skills by NAME ONLY (NO numerical values, NO gaps, NO scores, NO decimals, NO parentheses with numbers) within the priority competencies. ONLY use skills from the validated skills database. Include natural references to their role, industry, and experience level. Use supportive, confidence-building language while avoiding repetition. MUST include encouraging messaging about growth opportunities and potential.
 
-**CRITICAL FORMATTING FOR SUMMARY**: Structure the summary as TWO clear paragraphs that will be separated by post-processing. Use transition phrases like "However," "At the same time," "Additionally," or "Your results also" to start the second paragraph. MUST include industry and role-relevant inspirational leader with HTML anchor tag using format: "Like <a href="https://workinglink.com">Leader Name</a>, who is known for [specific principle]..."
+**CRITICAL FORMATTING FOR SUMMARY**: Structure the summary as TWO clear paragraphs:
+- **First paragraph**: Focus on development areas and growth opportunities, referencing specific skills from priority competencies
+- **Second paragraph**: Focus on existing competencies and strengths, including the inspirational leader reference based on their strongest competency areas. Use transition phrases like "However," "At the same time," "Additionally," or "Your results also" to start this paragraph. MUST include inspirational leader with HTML anchor tag format: "Like <a href="[exact URL from database]">Leader Name</a>, who is known for [specific principle that aligns with their strengths]..."
 
 - **priority_areas**: An array with exactly 3 objects, each for a Top 3 Priority Development Area. Each object must contain:
-  - \`competency\`: The exact competency name from assessment data
-  - \`gap\`: The numerical gap score
-  - \`insights\`: Array of exactly 3 actionable, research-backed insights that use encouraging language, avoid generic statements, include specific methodologies/frameworks, integrate role/industry/experience context, AND reference specific individual skills by name WITHOUT mentioning their gap scores or numerical values (ONLY validated skills). MUST include "why" explanations for the importance of developing each competency for leadership effectiveness. Focus on development suggestions and guidance, not numerical reporting.
-  - \`resources\`: Array of exactly 3 resource names from the validated database, using EXACT titles as specified. MUST include at least one book recommendation per competency.
+  - `competency`: The exact competency name from assessment data
+  - `gap`: The numerical gap score
+  - `insights`: Array of exactly 3 actionable, research-backed insights that use encouraging language, avoid generic statements, include specific methodologies/frameworks, integrate role/industry/experience context, AND reference specific individual skills by name WITHOUT mentioning their gap scores or numerical values (ONLY validated skills). MUST include "why" explanations for the importance of developing each competency for leadership effectiveness. Focus on development suggestions and guidance, not numerical reporting.
+  - `resources`: Array of exactly 3 resource names from the validated database, using EXACT titles as specified. MUST include at least one book recommendation per competency.
 
 - **key_strengths**: An array with at least 2 objects, each for a key competency to leverage. Each object must contain:
-  - \`competency\`: The exact competency name from assessment data
-  - \`example\`: Encouraging example of how this competency manifests in their specific role/industry context, including reference to specific skills within the competency (ONLY validated skills). Must include positive reinforcement and suggestions about their leadership type.
-  - \`leverage_advice\`: Array of exactly 3 specific strategies for leveraging this competency that incorporate role/industry/experience context, reference individual skills where relevant (ONLY validated skills), and include encouraging messaging about personal brand development and leadership confidence.
-  - \`resources\`: Array of exactly 3 resource names from the validated database, using EXACT titles as specified. MUST include at least one book recommendation per competency.
+  - `competency`: The exact competency name from assessment data
+  - `example`: Encouraging example of how this competency manifests in their specific role/industry context, including reference to specific skills within the competency (ONLY validated skills). Must include positive reinforcement and suggestions about their leadership type.
+  - `leverage_advice`: Array of exactly 3 specific strategies for leveraging this competency that incorporate role/industry/experience context, reference individual skills where relevant (ONLY validated skills), and include encouraging messaging about personal brand development and leadership confidence.
+  - `resources`: Array of exactly 3 resource names from the validated database, using EXACT titles as specified. MUST include at least one book recommendation per competency.
 
 ### PRE-OUTPUT VALIDATION CHECKLIST
 
@@ -703,8 +717,10 @@ Before generating the JSON response, verify:
 □ Leader name matches EXACTLY with the validated leaders database
 □ Leader reference uses the exact name and principle from the database
 □ Leader HTML anchor tag format is correct: <a href="URL">Leader Name</a> with NO visible URL
+□ Leader selection is based on PRIMARY STRENGTH AREAS (highest current ratings), not gaps
+□ Leader selection avoids Indra Nooyi bias unless appropriate STRENGTHS align
 □ If no suitable validated leader exists for context, leader reference is omitted
-□ Summary includes verified leader with working link in correct HTML anchor format (only if validated leader found)
+□ Summary includes verified leader with working link in correct HTML anchor tag format (only if validated leader found)
 □ All demographic context (role, industry, experience) is referenced appropriately
 □ Summary contains exactly 2 distinct paragraphs with transition phrase
 □ All competency names match exactly from assessment data
@@ -728,8 +744,9 @@ Before generating the JSON response, verify:
 □ **CRITICAL**: NO unauthorized resources are recommended - validation is absolute
 
 ### CRITICAL JSON RULES
+
 - Output MUST be valid JSON only. No text, markdown, or formatting before/after.
-- The \`insights\` and \`leverage_advice\` fields must be arrays of strings ONLY.
+- The `insights` and `leverage_advice` fields must be arrays of strings ONLY.
 - All arrays must contain only the specified data types.
 - NEVER use resources not in the validated database - this is critical for link integrity
 - NEVER use skills not in the validated skills database - this is critical for assessment accuracy
@@ -753,18 +770,19 @@ Base your insights on the assessment data provided above and ensure each insight
   console.log('PROMPT BUILDER: Final prompt generated successfully');
   console.log('PROMPT BUILDER: Prompt length:', fullPrompt.length);
   console.log('PROMPT BUILDER: Assessment data validation complete');
-  
+
   // Additional debugging for summary requirements
   console.log('PROMPT BUILDER: Summary requirements validation:');
   console.log('- Role specified:', assessmentSummary.demographics.role || 'Not specified');
   console.log('- Industry specified:', assessmentSummary.demographics.industry || 'Not specified');
   console.log('- Experience specified:', assessmentSummary.demographics.yearsOfExperience || 'Not specified');
-  console.log('- Skills available for context reference:', topGapCategories.map(cat => 
+  console.log('- Skills available for context reference:', topGapCategories.map(cat =>
     cat.topGapSkills ? cat.topGapSkills.map(skill => skill.title) : []
   ).flat());
 
   console.log('PROMPT BUILDER: FULL PROMPT START');
   console.log(fullPrompt);
   console.log('PROMPT BUILDER: FULL PROMPT END');
+
   return fullPrompt;
 };

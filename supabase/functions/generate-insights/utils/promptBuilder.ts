@@ -767,22 +767,6 @@ Base your insights on the assessment data provided above and ensure each insight
 `;
 
   // Log the complete prompt structure for debugging
-  console.log('PROMPT BUILDER: Final prompt generated successfully');
-  console.log('PROMPT BUILDER: Prompt length:', fullPrompt.length);
-  console.log('PROMPT BUILDER: Assessment data validation complete');
-
-  // Additional debugging for summary requirements
-  console.log('PROMPT BUILDER: Summary requirements validation:');
-  console.log('- Role specified:', assessmentSummary.demographics.role || 'Not specified');
-  console.log('- Industry specified:', assessmentSummary.demographics.industry || 'Not specified');
-  console.log('- Experience specified:', assessmentSummary.demographics.yearsOfExperience || 'Not specified');
-  console.log('- Skills available for context reference:', topGapCategories.map(cat =>
-    cat.topGapSkills ? cat.topGapSkills.map(skill => skill.title) : []
-  ).flat());
-
-  console.log('PROMPT BUILDER: FULL PROMPT START');
-  console.log(fullPrompt);
-  console.log('PROMPT BUILDER: FULL PROMPT END');
-
-  return fullPrompt;
+  console.log('PROMPT VERSION CHECK:', fullPrompt.substring(0, 100)); // logs the first 100 characters
+return fullPrompt;
 };

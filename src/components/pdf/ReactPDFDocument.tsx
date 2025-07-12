@@ -218,6 +218,15 @@ function renderSummaryWithLinks(summary: string) {
   return parts;
 }
 
+// Helper to calculate averages and gap for a category
+function getCategoryStats(category) {
+  const validSkills = (category.skills || []).filter(skill => skill && skill.ratings && typeof skill.ratings.current === 'number' && typeof skill.ratings.desired === 'number');
+  const currentAvg = validSkills.length > 0 ? Math.round(validSkills.reduce((sum, skill) => sum + skill.ratings.current, 0) / validSkills.length * 10) / 10 : 0;
+  const desiredAvg = validSkills.length > 0 ? Math.round(validSkills.reduce((sum, skill) => sum + skill.ratings.desired, 0) / validSkills.length * 10) / 10 : 0;
+  const gap = Math.round((desiredAvg - currentAvg) * 10) / 10;
+  return { currentAvg, desiredAvg, gap, validSkills };
+}
+
 const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
   categories,
   demographics,
@@ -231,6 +240,12 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
     day: 'numeric'
   });
 
+  // Table font sizes and padding for compact layout
+  const tableFontSize = 9;
+  const tableHeaderFontSize = 10;
+  const tablePadding = 2;
+  const competencyFontSize = 13; // Larger for competency names and scores
+
   // Enhanced chart image logging with detailed debugging for 11:11 version restoration
   console.log('ReactPDFDocument: Chart image data received (11:11 version debug):', {
     hasChartData: !!chartImageDataUrl,
@@ -240,7 +255,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
     timestamp: new Date().toISOString()
   });
 
-  // Log additional context about chart data availability
+  // Chart image validation: only accept data:image/ URLs
   if (!chartImageDataUrl) {
     console.error('ReactPDFDocument: No chart image data URL provided - chart capture may have failed');
   } else if (!chartImageDataUrl.startsWith('data:image/')) {
@@ -359,7 +374,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
 
   return (
     <Document>
-      {/* Page 1 - Header, Profile, and Chart */}
+      {/* Page 1 - Cover, Profile, and Chart */}
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
           <Image 
@@ -369,7 +384,6 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
           <Text style={styles.title}>Leader Leap Assessment Results</Text>
           <Text style={styles.subtitle}>Generated on {currentDate}</Text>
         </View>
-
         <Text style={styles.sectionTitle}>Profile Summary</Text>
         {demographics?.role && (
           <Text style={styles.text}><Text style={styles.boldText}>Role:</Text> {demographics.role}</Text>
@@ -382,10 +396,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
         )}
         <Text style={styles.text}><Text style={styles.boldText}>Overall Development Gap:</Text> {averageGap.toFixed(2)} points</Text>
         <Text style={styles.text}>Assessment completed across {categories.length} competency areas</Text>
-
-        {/* Enhanced Chart section with better error handling and 11:11 version logic restoration */}
         <Text style={[styles.sectionTitle, { marginTop: 15 }]}>Competency Analysis - Radar Chart</Text>
-        
         <View style={styles.chartContainer}>
           {chartImageDataUrl && chartImageDataUrl.startsWith('data:image/') ? (
             <Image 
@@ -395,15 +406,13 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
           ) : (
             <View style={styles.chartPlaceholder}>
               <Text style={styles.text}>Radar chart visualization shows your current vs desired competency levels</Text>
-              <Text style={[styles.text, { fontSize: 10, color: '#64748b', marginTop: 10 }]}>
-                Chart image could not be captured - this may indicate a technical issue with chart rendering
-              </Text>
+              <Text style={[styles.text, { fontSize: 10, color: '#64748b', marginTop: 10 }]}>Chart image could not be captured - this may indicate a technical issue with chart rendering</Text>
             </View>
           )}
         </View>
       </Page>
 
-      {/* Page 2 - AI Insights */}
+      {/* Page 2 - Key Insights & Recommendations */}
       <Page size="A4" style={styles.page}>
         <Text style={styles.sectionTitle}>Key Insights & Recommendations</Text>
         <Text style={styles.leftAlignedSubtitle}>Personalized leadership development insights powered by EncouragerGPT</Text>
@@ -536,7 +545,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
         )}
       </Page>
 
-      {/* Page 3 - Key Strengths and Next Steps */}
+      {/* Page 3 - Key Competencies to Leverage */}
       <Page size="A4" style={styles.page}>
         {parsedInsights?.key_strengths && parsedInsights.key_strengths.length > 0 && (
           <View>
@@ -588,37 +597,73 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
             })}
           </View>
         )}
+      </Page>
 
+      {/* Page 4 - Skills Assessment */}
+      <Page size="A4" style={styles.page}>
+        <Text style={[styles.sectionTitle, { marginTop: 10, fontSize: 14 }]}>Skills Assessment</Text>
+        <Text style={[styles.text, { fontSize: tableFontSize, marginBottom: 4 }]}>Your self-assessment scores across all competencies and the individual skills within them.</Text>
+        {/* Table header */}
+        <View style={{ flexDirection: 'row', borderWidth: 1, borderColor: '#b0b0b0', backgroundColor: '#f3f4f6', marginTop: 4 }}>
+          <Text style={{ fontWeight: 'bold', fontSize: tableHeaderFontSize, flex: 2, padding: tablePadding, borderRightWidth: 1, borderColor: '#b0b0b0', textAlign: 'left' }}>Competency</Text>
+          <Text style={{ fontWeight: 'bold', fontSize: tableHeaderFontSize, flex: 1, textAlign: 'center', padding: tablePadding, borderRightWidth: 1, borderColor: '#b0b0b0' }}>Current</Text>
+          <Text style={{ fontWeight: 'bold', fontSize: tableHeaderFontSize, flex: 1, textAlign: 'center', padding: tablePadding, borderRightWidth: 1, borderColor: '#b0b0b0' }}>Desired</Text>
+          <Text style={{ fontWeight: 'bold', fontSize: tableHeaderFontSize, flex: 1, textAlign: 'center', padding: tablePadding, borderRightWidth: 0, borderColor: '#b0b0b0' }}>Gap</Text>
+        </View>
+        {/* Table rows */}
+        {categories
+          .map(cat => ({ ...cat, ...getCategoryStats(cat) }))
+          .sort((a, b) => b.gap - a.gap)
+          .map(category => (
+            <View key={category.id} style={{ borderLeftWidth: 1, borderRightWidth: 1, borderBottomWidth: 1, borderColor: '#b0b0b0' }}>
+              {/* Competency row */}
+              <View style={{ flexDirection: 'row', backgroundColor: '#fff' }}>
+                <Text style={{ flex: 2, fontWeight: 'bold', fontSize: 11, color: '#000000', padding: tablePadding, borderRightWidth: 1, borderColor: '#b0b0b0', textAlign: 'left' }}>{category.title}</Text>
+                <Text style={{ flex: 1, fontWeight: 'bold', fontSize: 11, color: '#000000', textAlign: 'center', padding: tablePadding, borderRightWidth: 1, borderColor: '#b0b0b0' }}>{category.currentAvg}</Text>
+                <Text style={{ flex: 1, fontWeight: 'bold', fontSize: 11, color: '#000000', textAlign: 'center', padding: tablePadding, borderRightWidth: 1, borderColor: '#b0b0b0' }}>{category.desiredAvg}</Text>
+                <Text style={{ flex: 1, fontWeight: 'bold', fontSize: 11, color: '#000000', textAlign: 'center', padding: tablePadding, borderRightWidth: 0 }}>{category.gap}</Text>
+              </View>
+              {/* Skill rows */}
+              {category.validSkills.map(skill => {
+                const skillGap = (typeof skill.ratings.desired === 'number' && typeof skill.ratings.current === 'number') ? (Math.round((skill.ratings.desired - skill.ratings.current) * 10) / 10) : '';
+                return (
+                  <View key={skill.id} style={{ flexDirection: 'row', backgroundColor: '#fafafa', borderTopWidth: 1, borderColor: '#e5e7eb' }}>
+                    <Text style={{ flex: 2, fontSize: tableFontSize, padding: tablePadding, borderRightWidth: 1, borderColor: '#b0b0b0', textAlign: 'left' }}>• {skill.name}</Text>
+                    <Text style={{ flex: 1, fontSize: tableFontSize, textAlign: 'center', padding: tablePadding, borderRightWidth: 1, borderColor: '#b0b0b0' }}>{skill.ratings.current}</Text>
+                    <Text style={{ flex: 1, fontSize: tableFontSize, textAlign: 'center', padding: tablePadding, borderRightWidth: 1, borderColor: '#b0b0b0' }}>{skill.ratings.desired}</Text>
+                    <Text style={{ flex: 1, fontSize: tableFontSize, textAlign: 'center', padding: tablePadding, borderRightWidth: 0 }}>{skillGap}</Text>
+                  </View>
+                );
+              })}
+            </View>
+          ))}
+      </Page>
+
+      {/* Page 5 - Recommended Next Steps & Professional Development Coaching */}
+      <Page size="A4" style={styles.page}>
         <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Recommended Next Steps</Text>
         <Text style={styles.listItem}>• Consider using this report in your next 1:1 with your manager or mentor as a guide for your professional development</Text>
         <Text style={styles.listItem}>• Create a 6 month action plan to address your most critical competency gaps and schedule a time to re-take this assessment to track your progress</Text>
         <Text style={styles.listItem}>• Set an actionable goal for yourself within the next week, and set a reminder to help hold yourself accountable for taking that next step</Text>
-
         <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Professional Development Coaching</Text>
-        
         <View style={styles.coachingContainer}>
           <View style={styles.coachingText}>
             <Text style={styles.text}>Ready to take your leadership skills to the next level? Our expert coaches can help you:</Text>
             <Text style={styles.listItem}>• Learn how to lean into your strengths to achieve your goals</Text>
             <Text style={styles.listItem}>• Understand yourself better and eliminate self-limiting beliefs or obstacles that hold you back</Text>
             <Text style={styles.listItem}>• Establish accountability for practice and reflection</Text>
-            
             <Text style={[styles.boldText, { marginTop: 10 }]}>Book a free 30-minute discovery call now</Text>
             <Text style={styles.linkText}>www.encouragercoaching.com</Text>
-            
-            {/* Bottom logo - left-aligned and matching top logo size (fixed from user request) */}
             <Image 
               style={styles.bottomLogo}
               src="/lovable-uploads/db40277e-6ff0-437e-acf2-faaa2d92671e.png"
             />
           </View>
-          
           <Image 
             style={styles.coachingImage}
             src="/lovable-uploads/b35e005b-ec23-4976-8796-738f7c856377.png"
           />
         </View>
-
         <Text style={styles.footer}>
           Leader Leap Assessment Tool • Generated on {currentDate}{'\n'}
           This assessment is designed to help you identify development opportunities and create targeted improvement plans.

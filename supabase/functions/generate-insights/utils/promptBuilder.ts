@@ -494,6 +494,9 @@ export function buildAssessmentData(categories: any[], averageGap: number, demog
     };
   });
 
+  // DEBUG: Log the computed category breakdown for backend verification
+  console.log("[DEBUG] Backend categoryBreakdown:", JSON.stringify(categoryBreakdown, null, 2));
+
   return {
     averageGap,
     demographics: demographics || {},

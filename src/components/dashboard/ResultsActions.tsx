@@ -195,17 +195,20 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     
     setIsDownloading(true);
     
+    // Declare variables outside try block for cleanup in finally
+    let chartImageDataUrl: string | null = null;
+    
     try {
       console.log('ResultsActions: Starting PDF generation with React PDF');
       
       // Step 1: Capture the radar chart with enhanced error handling
       console.log('ResultsActions: Step 1 - Attempting to capture radar chart...');
-      let chartImageDataUrl: string | null = null;
       
       try {
         chartImageDataUrl = await captureRadarChartAsPNG();
         if (chartImageDataUrl) {
           console.log('ResultsActions: Chart capture successful, data length:', chartImageDataUrl.length);
+          // No blob conversion, just use the data URL
         } else {
           console.warn('ResultsActions: Chart capture returned null');
         }
@@ -279,6 +282,12 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     } finally {
       setIsDownloading(false);
       setIsExportingPDF(false); // Clean up hidden chart
+      
+      // Clean up blob URL if it was created
+      if (chartImageDataUrl) {
+        URL.revokeObjectURL(chartImageDataUrl);
+      }
+      
       console.log('=== PDF DOWNLOAD DEBUG END ===');
     }
   };

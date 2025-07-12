@@ -176,6 +176,9 @@ export const saveAssessmentResults = async (
       }))
     }));
 
+    // DEBUG: Log processed categories before sending to backend
+    console.log("[DEBUG] Processed categories to be sent:", JSON.stringify(processedCategories, null, 2));
+
     // Convert Demographics to a regular object to satisfy TypeScript
     const demographicsObject = { ...demographics };
 

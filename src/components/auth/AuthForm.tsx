@@ -372,7 +372,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
         )}
         <div className="mt-4">
           <p className="text-sm text-muted-foreground text-center">
-            By signing up, you agree to our Terms of Service and Privacy Notice.
+            By signing up, you agree to our Terms of Service and{' '}
+            <a href="/privacy-notice" className="underline text-encourager hover:text-encourager-dark" target="_blank" rel="noopener noreferrer">
+              Privacy Notice
+            </a>.
           </p>
         </div>
       </TabsContent>

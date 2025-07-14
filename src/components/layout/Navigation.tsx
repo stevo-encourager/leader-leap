@@ -3,7 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { LogIn, History, Home, Bot, Settings } from 'lucide-react';
+import { LogIn, History, Home, Bot, Settings, Mail, User } from 'lucide-react';
 
 const Navigation: React.FC = () => {
   const { user, signOut } = useAuth();
@@ -12,7 +12,7 @@ const Navigation: React.FC = () => {
   const isDevelopment = import.meta.env.DEV || window.location.hostname !== 'your-production-domain.com';
   
   // Check if user is super admin
-  const superAdmins = ['steve@chainpace.io', 'steve@encourager.co.uk'];
+  const superAdmins = ['steve@encourager.co.uk'];
   const isSuperAdmin = user && superAdmins.some(
     email => email.toLowerCase() === (user.email || '').toLowerCase().trim()
   );
@@ -38,6 +38,17 @@ const Navigation: React.FC = () => {
       </Link>
       
       <div className="flex gap-2">
+        {/* Support link - always visible */}
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="flex items-center gap-2"
+          onClick={() => window.open('mailto:support@encouragercoaching.com', '_blank')}
+        >
+          <Mail size={16} />
+          <span>Support</span>
+        </Button>
+        
         {user ? (
           <>
             <Link to="/profile" className="no-underline">
@@ -46,7 +57,7 @@ const Navigation: React.FC = () => {
                 size="sm" 
                 className="flex items-center gap-2"
               >
-                <History size={16} />
+                <User size={16} />
                 <span>My Profile</span>
               </Button>
             </Link>

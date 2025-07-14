@@ -16,7 +16,7 @@ import AssessmentLoading from '@/components/assessment/AssessmentLoading';
 
 const AITestPanel = () => {
   const navigate = useNavigate();
-  const { user, loading } = useAuth();
+  const { user, userProfile, loading } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
   const [demographics, setDemographics] = useState<Demographics>({});
   const [isLoadingData, setIsLoadingData] = useState(true);
@@ -48,8 +48,18 @@ const AITestPanel = () => {
       return;
     }
 
+    // Restrict to admins only (using userProfile)
+    if (!loading && user && userProfile && userProfile.is_admin !== true) {
+      navigate('/');
+      return;
+    }
+    // Wait for userProfile to load
+    if (!loading && user && !userProfile) {
+      return;
+    }
+
     loadTestAssessment();
-  }, [user, loading, navigate, isDevelopment]);
+  }, [user, userProfile, loading, navigate, isDevelopment]);
 
   const loadTestAssessment = async () => {
     if (!user) return;
@@ -119,13 +129,13 @@ const AITestPanel = () => {
     }
   }, []);
 
-  // Wait for auth check
-  if (loading) {
+  // Wait for auth check or userProfile
+  if (loading || (user && !userProfile)) {
     return <AssessmentLoading />;
   }
 
-  // Redirect if not authenticated or not in dev/staging
-  if (!user || !isDevelopment) {
+  // Redirect if not authenticated, not in dev/staging, or not admin
+  if (!user || !isDevelopment || !userProfile || userProfile.is_admin !== true) {
     return null;
   }
 

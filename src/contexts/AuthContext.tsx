@@ -4,9 +4,18 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
+interface UserProfile {
+  id: string;
+  email: string;
+  full_name?: string;
+  is_admin?: boolean;
+  [key: string]: any;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
+  userProfile: UserProfile | null;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, fullName: string, receiveEmails: boolean) => Promise<void>;
   signOut: () => Promise<void>;
@@ -31,6 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -57,7 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         // Check super admin status for debugging
         if (session?.user?.email) {
-          const superAdmins = ['steve@chainpace.io', 'steve@encourager.co.uk'];
+          const superAdmins = ['steve@encourager.co.uk'];
           const isSuperAdmin = superAdmins.some(
             email => email.toLowerCase() === session.user.email.toLowerCase().trim()
           );
@@ -124,6 +134,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       subscription.unsubscribe();
     };
   }, [initialized]);
+
+  // Fetch user profile when user changes
+  useEffect(() => {
+    if (user) {
+      const fetchProfile = async () => {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+        if (!error && data) {
+          const profileData: any = data;
+          setUserProfile({ ...profileData, is_admin: profileData.is_admin ?? false });
+        } else {
+          setUserProfile(null);
+        }
+      };
+      fetchProfile();
+    } else {
+      setUserProfile(null);
+    }
+  }, [user]);
 
   React.useEffect(() => {
     if (initialized && user) {
@@ -329,6 +361,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const value = {
     user,
     session,
+    userProfile,
     signIn,
     signUp,
     signOut,

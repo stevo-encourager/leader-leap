@@ -33,7 +33,7 @@ const queryClient = new QueryClient({
 
 function SuperAdminRoute({ children }) {
   const { user, loading, initialized } = useAuth();
-  const superAdmins = ['steve@chainpace.io', 'steve@encourager.co.uk'];
+  const superAdmins = ['steve@encourager.co.uk'];
   
   console.log('SuperAdminRoute: Debug info:', {
     user: user,

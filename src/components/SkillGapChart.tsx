@@ -27,6 +27,19 @@ interface ChartData {
   fullLabel?: string; // Added for PDF full label
 }
 
+// PDF export constants (centralized for consistency)
+const PDF_RADAR_WIDTH = 500;
+const PDF_RADAR_HEIGHT = 400;
+const PDF_CONTAINER_WIDTH = 540; // Outer container for PDF, gives margin for labels
+const PDF_CONTAINER_HEIGHT = 440;
+// Set label radius to 160 for PDF export (500x400px) to keep labels just inside the edge and prevent cut-off.
+// If you change the chart size, adjust this value to be about 80% of the smallest dimension / 2.
+const PDF_LABEL_RADIUS = 160;
+const SCREEN_LABEL_RADIUS = 185; // For on-screen chart
+
+// WARNING: If you change the chart size, you MUST update PDF_CONTAINER_WIDTH, PDF_CONTAINER_HEIGHT, and PDF_LABEL_RADIUS together!
+// The PDF export depends on these being in sync to prevent label cutoff. See ResultsActions.tsx and chartCapture.ts for details.
+
 // Custom tick component for competency names with optimized spacing
 const CustomTick = (props: any) => {
   const { payload, x, y, cx, cy, textAnchor, index, isPDF } = props;
@@ -34,8 +47,8 @@ const CustomTick = (props: any) => {
   // Calculate angle from center to current position
   const angle = Math.atan2(y - cy, x - cx);
   
-  // Adjusted label radius - moved to maximum distance for ultimate breathing room
-  const labelRadius = isPDF ? 95 : 185; // Adjusted for 500x400px PDF chart
+  // Use centralized constants for label radius
+  const labelRadius = isPDF ? PDF_LABEL_RADIUS : SCREEN_LABEL_RADIUS;
   
   const labelX = cx + labelRadius * Math.cos(angle);
   const labelY = cy + labelRadius * Math.sin(angle);
@@ -320,15 +333,17 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
       data-chart-type="radar"
       id="radar-chart-container"
       style={{
-        width: isPDF ? '500px' : '100%',
-        height: isPDF ? '400px' : '600px',
+        width: isPDF ? `${PDF_CONTAINER_WIDTH}px` : '100%',
+        height: isPDF ? `${PDF_CONTAINER_HEIGHT}px` : '600px',
         backgroundColor: 'white',
         display: 'grid',
         gridTemplateRows: isPDF ? '1fr' : '1fr auto',
         gridTemplateAreas: isPDF ? '"chart"' : '"chart" "legend"',
         gap: isPDF ? '0' : '16px',
         overflow: 'visible',
-        paddingBottom: isPDF ? '0' : '20px'
+        paddingBottom: isPDF ? '0' : '20px',
+        placeItems: isPDF ? 'center' : undefined, // Center chart in PDF container
+        position: isPDF ? 'relative' : undefined
       }}
     >
       {/* Chart area with proper grid positioning */}
@@ -338,9 +353,13 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          minHeight: 0
+          minHeight: 0,
+          width: isPDF ? `${PDF_RADAR_WIDTH}px` : '100%',
+          height: isPDF ? `${PDF_RADAR_HEIGHT}px` : '100%',
+          margin: isPDF ? 'auto' : undefined // Center chart in container for PDF
         }}
       >
+        {/* ResponsiveContainer always fills parent for both PDF and screen */}
         <ResponsiveContainer width="100%" height="100%">
           <RadarChart 
             data={validChartData} 

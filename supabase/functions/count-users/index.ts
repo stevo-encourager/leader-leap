@@ -13,13 +13,40 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // --- JWT & Admin Check ---
+  const authHeader = req.headers.get('Authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return new Response('Unauthorized', { status: 401, headers: corsHeaders });
+  }
+  const jwt = authHeader.replace('Bearer ', '');
+
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+  const supabase = createClient(supabaseUrl, anonKey, { global: { headers: { Authorization: `Bearer ${jwt}` } } });
+
+  // Get user info from JWT
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) {
+    return new Response('Unauthorized', { status: 401, headers: corsHeaders });
+  }
+
+  // Check is_admin in profiles
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('is_admin')
+    .eq('id', user.id)
+    .single();
+  if (profileError || !profile?.is_admin) {
+    return new Response('Forbidden', { status: 403, headers: corsHeaders });
+  }
+
+  // --- Admin logic (unchanged) ---
   const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
+  const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
 
   try {
     // List all users and count them
-    const { data, error } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+    const { data, error } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 });
     
     if (error) {
       console.error("Error listing users:", error);
@@ -44,7 +71,7 @@ serve(async (req) => {
         status: 200 
       }
     );
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error counting users:", error);
     return new Response(
       JSON.stringify({ success: false, error: error.message }),

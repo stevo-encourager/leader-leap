@@ -399,7 +399,17 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     <>
       {/* Hidden/offscreen radar chart for PDF export */}
       {isExportingPDF && (
-        <div style={{ position: 'absolute', left: '-9999px', top: 0, width: 500, height: 400, zIndex: -1 }}>
+        // IMPORTANT: These dimensions must match PDF_CONTAINER_WIDTH and PDF_CONTAINER_HEIGHT in SkillGapChart.tsx
+        <div 
+          style={{ 
+            position: 'absolute', 
+            left: '-9999px', 
+            top: 0, 
+            width: 540, // Must match PDF_CONTAINER_WIDTH
+            height: 440, // Must match PDF_CONTAINER_HEIGHT
+            zIndex: -1
+          }}
+        >
           <SkillGapChart categories={categories} isPDF={true} />
         </div>
       )}

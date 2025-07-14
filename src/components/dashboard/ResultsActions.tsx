@@ -399,7 +399,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     <>
       {/* Hidden/offscreen radar chart for PDF export */}
       {isExportingPDF && (
-        <div style={{ position: 'absolute', left: '-9999px', top: 0, width: 600, height: 400, zIndex: -1 }}>
+        <div style={{ position: 'absolute', left: '-9999px', top: 0, width: 500, height: 400, zIndex: -1 }}>
           <SkillGapChart categories={categories} isPDF={true} />
         </div>
       )}

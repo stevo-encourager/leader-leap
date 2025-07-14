@@ -562,7 +562,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
 
               return (
                 <View key={index} style={styles.strengthItem}>
-                  <Text style={styles.boldText}>Competency: {strength.competency || 'Unknown Competency'}</Text>
+                  <Text style={styles.boldText}>{`${index + 1}. ${strength.competency || 'Unknown Competency'}`}</Text>
                   <Text style={styles.text}>Existing Skill: {strength.example || 'No example provided'}</Text>
                   <Text style={styles.boldText}>How to leverage further:</Text>
                   {strength.leverage_advice && Array.isArray(strength.leverage_advice) && strength.leverage_advice.map((advice, adviceIndex) => {

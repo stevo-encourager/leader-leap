@@ -513,35 +513,46 @@ export const buildPrompt = (assessmentSummary: any): string => {
     throw new Error('Invalid assessment summary structure provided to prompt builder');
   }
 
-  // Get top 3 development areas (highest gaps) and top competencies (high current ratings, low gaps)
+  // Get top 3 development areas (highest gaps) and top competencies (highest current ratings)
   const topGapCategories = assessmentSummary.categoryBreakdown
     .sort((a, b) => b.gap - a.gap)
     .slice(0, 3);
 
+  // UPDATED: Top competencies are now the 2 highest current ratings, regardless of gap
   const topCompetencies = assessmentSummary.categoryBreakdown
-    .filter(cat => cat.averageCurrentRating >= 3.5)
-    .sort((a, b) => a.gap - b.gap)
-    .slice(0, 3);
+    .sort((a, b) => b.averageCurrentRating - a.averageCurrentRating)
+    .slice(0, 2);
 
   console.log('PROMPT BUILDER: Processing top gap categories for summary context');
   console.log('Top Gap Categories Count:', topGapCategories.length);
   console.log('Top Competencies Count:', topCompetencies.length);
 
+  // DEBUG: Log the exact categories being used
+  console.log('🔍 DETERMINISTIC CATEGORY SELECTION:');
+  console.log('Priority Areas (Development Areas) - MUST USE THESE EXACTLY:');
+  topGapCategories.forEach((cat, i) => {
+    console.log(`  ${i+1}. ${cat.title} (Gap: ${cat.gap.toFixed(1)}, Current: ${cat.averageCurrentRating.toFixed(1)}, Desired: ${cat.averageDesiredRating.toFixed(1)})`);
+  });
+  console.log('Key Strengths (Highest Current Scores) - MUST USE THESE EXACTLY:');
+  topCompetencies.forEach((cat, i) => {
+    console.log(`  ${i+1}. ${cat.title} (Current: ${cat.averageCurrentRating.toFixed(1)}, Gap: ${cat.gap.toFixed(1)})`);
+  });
+
   const assessmentDataSection = `
 Assessment Data:
-- Overall Average Gap: \${assessmentSummary.averageGap.toFixed(2)}
-- Role: \${assessmentSummary.demographics.role || 'Not specified'}
-- Experience: \${assessmentSummary.demographics.yearsOfExperience || 'Not specified'} years
-- Industry: \${assessmentSummary.demographics.industry || 'Not specified'}
+- Overall Average Gap: ${assessmentSummary.averageGap.toFixed(2)}
+- Role: ${assessmentSummary.demographics.role || 'Not specified'}
+- Experience: ${assessmentSummary.demographics.yearsOfExperience || 'Not specified'} years
+- Industry: ${assessmentSummary.demographics.industry || 'Not specified'}
 
 Top 3 Categories by Gap (Priority Development Areas):
-\${topGapCategories.map((cat, i) => {
-  let categoryText = \`\${i+1}. \${cat.title}: Gap \${cat.gap.toFixed(1)} (Current: \${cat.averageCurrentRating.toFixed(1)}, Desired: \${cat.averageDesiredRating.toFixed(1)})\`;
+${topGapCategories.map((cat, i) => {
+  let categoryText = `${i+1}. ${cat.title}: Gap ${cat.gap.toFixed(1)} (Current: ${cat.averageCurrentRating.toFixed(1)}, Desired: ${cat.averageDesiredRating.toFixed(1)})`;
   
   if (cat.topGapSkills && cat.topGapSkills.length > 0) {
-    categoryText += \`\n   Top individual skill gaps:\`;
+    categoryText += `\n   Top individual skill gaps:`;
     cat.topGapSkills.forEach((skill, skillIndex) => {
-      categoryText += \`\n   - \${skill.title}: Gap \${skill.gap.toFixed(1)} (Current: \${skill.currentRating}, Desired: \${skill.desiredRating})\`;
+      categoryText += `\n   - ${skill.title}: Gap ${skill.gap.toFixed(1)} (Current: ${skill.currentRating}, Desired: ${skill.desiredRating})`;
     });
   }
   
@@ -549,13 +560,13 @@ Top 3 Categories by Gap (Priority Development Areas):
 }).join('\n\n')}
 
 Top Competency Areas (High Current Ratings, Low Gaps):
-\${topCompetencies.map((cat, i) => {
-  let categoryText = \`\${i+1}. \${cat.title}: Current \${cat.averageCurrentRating.toFixed(1)}, Gap \${cat.gap.toFixed(1)}\`;
+${topCompetencies.map((cat, i) => {
+  let categoryText = `${i+1}. ${cat.title}: Current ${cat.averageCurrentRating.toFixed(1)}, Gap ${cat.gap.toFixed(1)}`;
   
   if (cat.topGapSkills && cat.topGapSkills.length > 0) {
-    categoryText += \`\n   Individual skills within this competency:\`;
+    categoryText += `\n   Individual skills within this competency:`;
     cat.topGapSkills.forEach((skill, skillIndex) => {
-      categoryText += \`\n   - \${skill.title}: Gap \${skill.gap.toFixed(1)} (Current: \${skill.currentRating}, Desired: \${skill.desiredRating})\`;
+      categoryText += `\n   - ${skill.title}: Gap ${skill.gap.toFixed(1)} (Current: ${skill.currentRating}, Desired: ${skill.desiredRating})`;
     });
   }
   
@@ -578,6 +589,22 @@ Top Competency Areas (High Current Ratings, Low Gaps):
 ${assessmentDataSection}
 
 You are an expert leadership coach and assessment analyst working with Encourager Coaching, which specializes in positive psychology, maximizing natural ability, and helping people become the best version of themselves. Based on the provided assessment data (including competency names, gap scores, individual skill gaps, and top competencies), generate AI insights for a user's leadership assessment.
+
+**CRITICAL DETERMINISTIC REQUIREMENT - YOU MUST USE THESE EXACT CATEGORIES:**
+
+**PRIORITY DEVELOPMENT AREAS (MUST USE THESE 3 EXACTLY):**
+${topGapCategories.map((cat, i) => `${i+1}. ${cat.title} (Gap: ${cat.gap.toFixed(1)})`).join('\n')}
+
+**KEY STRENGTHS (MUST USE THESE 2 EXACTLY):**
+${topCompetencies.map((cat, i) => `${i+1}. ${cat.title} (Current: ${cat.averageCurrentRating.toFixed(1)})`).join('\n')}
+
+**MANDATORY CATEGORY USAGE RULES:**
+- You MUST use ONLY the 3 priority development areas listed above for the "priority_areas" array
+- You MUST use ONLY the 2 key strengths listed above for the "key_strengths" array  
+- You CANNOT substitute, replace, or choose different categories
+- You CANNOT add additional categories beyond these 5 total (3 development + 2 strengths)
+- The competency names in your JSON output MUST match EXACTLY with the categories listed above
+- If you want to discuss a concept that doesn't match these exact categories, do so within the insights for the provided categories
 
 ${validatedSkillsList}
 
@@ -635,9 +662,9 @@ You represent Encourager Coaching, which emphasizes:
 ### ENHANCED SUMMARY PERSONALIZATION REQUIREMENTS
 
 **CRITICAL SUMMARY FORMATTING:**
-- Reference the user's role (\${assessmentSummary.demographics.role || 'leadership role'}) naturally throughout the summary
-- Include industry context (\${assessmentSummary.demographics.industry || 'your industry'}) where relevant
-- Acknowledge their experience level (\${assessmentSummary.demographics.yearsOfExperience || 'current'} years) appropriately
+- Reference the user's role (${assessmentSummary.demographics.role || 'leadership role'}) naturally throughout the summary
+- Include industry context (${assessmentSummary.demographics.industry || 'your industry'}) where relevant
+- Acknowledge their experience level (${assessmentSummary.demographics.yearsOfExperience || 'current'} years) appropriately
 - Use encouraging, supportive language that builds confidence throughout
 - Avoid repetitive skill mentions or similar concepts
 - Highlight 1-2 key skill names per competency for context (names only, NO numbers, NO gap scores, NO parentheses with values)
@@ -665,9 +692,9 @@ You represent Encourager Coaching, which emphasizes:
 ### DEMOGRAPHIC CONTEXT FOR TAILORED INSIGHTS
 
 **User Profile:**
-- Role: \${assessmentSummary.demographics.role || 'Not specified'}
-- Industry: \${assessmentSummary.demographics.industry || 'Not specified'}
-- Leadership Experience: \${assessmentSummary.demographics.yearsOfExperience || 'Not specified'}
+- Role: ${assessmentSummary.demographics.role || 'Not specified'}
+- Industry: ${assessmentSummary.demographics.industry || 'Not specified'}
+- Leadership Experience: ${assessmentSummary.demographics.yearsOfExperience || 'Not specified'}
 
 ### MANDATORY PERSONALIZATION INTEGRATION
 
@@ -764,7 +791,7 @@ ${validatedLeadersList}
 - Always use the exact leader name and corresponding URL as specified in the database
 
 **ENHANCED LEADER SELECTION ALGORITHM:**
-Use the Streamlined Leader Selection Process above to select the most appropriate inspirational leader based on the user's PRIMARY STRENGTHS (highest current ratings), industry context (\${assessmentSummary.demographics.industry || 'Not specified'}), role level (\${assessmentSummary.demographics.role || 'Not specified'}), and experience (\${assessmentSummary.demographics.yearsOfExperience || 'Not specified'} years). Base selection on where the user is ALREADY STRONG, not on their development areas, to show "you're like this successful leader" and reinforce their existing leadership identity.
+Use the Streamlined Leader Selection Process above to select the most appropriate inspirational leader based on the user's PRIMARY STRENGTHS (highest current ratings), industry context (${assessmentSummary.demographics.industry || 'Not specified'}), role level (${assessmentSummary.demographics.role || 'Not specified'}), and experience (${assessmentSummary.demographics.yearsOfExperience || 'Not specified'} years). Base selection on where the user is ALREADY STRONG, not on their development areas, to show "you're like this successful leader" and reinforce their existing leadership identity.
 
 **Leader Quality Validation:**
 - Every leader reference must directly relate to the specific leadership principle being discussed
@@ -904,6 +931,7 @@ Before generating the JSON response, verify:
 □ **CRITICAL**: At least one book recommendation exists per competency section
 □ **CRITICAL**: Maximum of 3 resources per competency section
 □ **CRITICAL**: NO unauthorized resources are recommended - validation is absolute
+□ **CRITICAL**: You MUST use ONLY the 3 priority development areas and 2 key strengths listed above
 
 ### CRITICAL JSON RULES
 
@@ -923,12 +951,22 @@ Before generating the JSON response, verify:
 - **VALIDATED SKILL REQUIREMENT**: Every skill referenced must be an exact match from the validated skills database above. Never create, invent, or reference skills outside this validated list.
 - **TERMINOLOGY REQUIREMENT**: NEVER use "strength" as synonym for "competency" - always use "competencies" or "leadership competencies"
 - **ENCOURAGER COACHING REQUIREMENT**: All content must reflect Encourager Coaching's positive psychology approach, maximizing natural ability, and helping users become their best leadership version through encouraging, supportive language and framing.
+- **DETERMINISTIC CATEGORY REQUIREMENT**: You MUST use ONLY the 3 priority development areas and 2 key strengths listed above. You CANNOT substitute, replace, or choose different categories.
 
-Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above while being specifically tailored to the user's role, industry, experience level, AND individual skill gaps by name only (without numerical values). Remember: ONLY use resources, leaders, and skills from the validated databases with exact title matching, ensure minimum book recommendations per section, limit to exactly 3 resources per section, reference skills by name only in summary (NO numbers), reference specific skills by name only in insights sections (NO numerical values - focus on development suggestions), use proper HTML anchor tag formatting for leaders, maintain consistent terminology (competencies, not strengths), and embody Encourager Coaching's philosophy of positive psychology, encouragement, and helping people maximize their natural abilities to become the best version of themselves.
+Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above while being specifically tailored to the user's role, industry, experience level, AND individual skill gaps by name only (without numerical values). Remember: ONLY use resources, leaders, and skills from the validated databases with exact title matching, ensure minimum book recommendations per section, limit to exactly 3 resources per section, reference skills by name only in summary (NO numbers), reference specific skills by name only in insights sections (NO numerical values - focus on development suggestions), use proper HTML anchor tag formatting for leaders, maintain consistent terminology (competencies, not strengths), embody Encourager Coaching's philosophy of positive psychology, encouragement, and helping people maximize their natural abilities to become the best version of themselves, AND use ONLY the exact categories listed above for priority areas and key strengths.
 
 `;
 
-  // Log the complete prompt structure for debugging
-  console.log('PROMPT VERSION CHECK:', fullPrompt.substring(0, 100)); // logs the first 100 characters
+  // DEBUG: Log the complete prompt for debugging
+  console.log('🔍 COMPLETE PROMPT BEING SENT TO OPENAI:');
+  console.log('Prompt length:', fullPrompt.length, 'characters');
+  console.log('First 500 characters:', fullPrompt.substring(0, 500));
+  console.log('Last 500 characters:', fullPrompt.substring(fullPrompt.length - 500));
+  
+  // Log the exact categories being used
+  console.log('🔍 DETERMINISTIC CATEGORY SELECTION CONFIRMED:');
+  console.log('Priority Areas to be used:', topGapCategories.map(cat => cat.title));
+  console.log('Key Strengths to be used:', topCompetencies.map(cat => cat.title));
+  
   return fullPrompt;
 };

@@ -330,7 +330,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({
         {isLoading && (
           <div className="flex items-center justify-center py-12">
             <div className="flex items-center gap-3 text-encourager">
-              <Bot className="animate-pulse" size={24} />
+              <Bot className="animate-spin" size={24} />
               <span className="text-lg">1 minute please, EncouragerGPT is analyzing your test results...</span>
             </div>
           </div>

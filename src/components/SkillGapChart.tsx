@@ -35,7 +35,7 @@ const CustomTick = (props: any) => {
   const angle = Math.atan2(y - cy, x - cx);
   
   // Adjusted label radius - moved to maximum distance for ultimate breathing room
-  const labelRadius = isPDF ? 130 : 185; // Increased from 125/180 to 130/185
+  const labelRadius = isPDF ? 95 : 185; // Adjusted for 500x400px PDF chart
   
   const labelX = cx + labelRadius * Math.cos(angle);
   const labelY = cy + labelRadius * Math.sin(angle);
@@ -320,8 +320,8 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
       data-chart-type="radar"
       id="radar-chart-container"
       style={{
-        width: isPDF ? '700px' : '100%',
-        height: isPDF ? '700px' : '600px',
+        width: isPDF ? '500px' : '100%',
+        height: isPDF ? '400px' : '600px',
         backgroundColor: 'white',
         display: 'grid',
         gridTemplateRows: isPDF ? '1fr' : '1fr auto',

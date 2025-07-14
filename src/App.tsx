@@ -12,7 +12,6 @@ import Assessment from "./pages/Assessment";
 import Results from "./pages/Results";
 import PreviousAssessments from "./pages/PreviousAssessments";
 import Admin from "./pages/Admin";
-import Privacy from "./pages/Privacy";
 import PrivacyNotice from "./pages/PrivacyNotice";
 import NotFound from "./pages/NotFound";
 import AITestPanel from './pages/AITestPanel';
@@ -105,8 +104,6 @@ function App() {
                     <Admin />
                   </SuperAdminRoute>
                 } />
-                <Route path="/privacy" element={<Privacy />} />
-                <Route path="/privacy-policy" element={<Privacy />} />
                 <Route path="/privacy-notice" element={<PrivacyNotice />} />
                 <Route path="/ai-test-panel" element={
                   <SuperAdminRoute>

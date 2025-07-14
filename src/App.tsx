@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { HelmetProvider } from 'react-helmet-async';
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Assessment from "./pages/Assessment";
@@ -83,40 +84,42 @@ function SuperAdminRoute({ children }) {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AuthProvider>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/assessment" element={<Assessment />} />
-              <Route path="/results" element={<Results />} />
-              <Route path="/results/:id" element={<Results />} />
-              <Route path="/previous-assessments" element={<PreviousAssessments />} />
-              <Route path="/profile" element={<MyProfile />} />
-              <Route path="/consent" element={<Consent />} />
-              <Route path="/admin" element={
-                <SuperAdminRoute>
-                  <Admin />
-                </SuperAdminRoute>
-              } />
-              <Route path="/privacy" element={<Privacy />} />
-              <Route path="/privacy-policy" element={<Privacy />} />
-              <Route path="/privacy-notice" element={<PrivacyNotice />} />
-              <Route path="/ai-test-panel" element={
-                <SuperAdminRoute>
-                  <AITestPanel />
-                </SuperAdminRoute>
-              } />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </AuthProvider>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <HelmetProvider>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AuthProvider>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/assessment" element={<Assessment />} />
+                <Route path="/results" element={<Results />} />
+                <Route path="/results/:id" element={<Results />} />
+                <Route path="/previous-assessments" element={<PreviousAssessments />} />
+                <Route path="/profile" element={<MyProfile />} />
+                <Route path="/consent" element={<Consent />} />
+                <Route path="/admin" element={
+                  <SuperAdminRoute>
+                    <Admin />
+                  </SuperAdminRoute>
+                } />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/privacy-policy" element={<Privacy />} />
+                <Route path="/privacy-notice" element={<PrivacyNotice />} />
+                <Route path="/ai-test-panel" element={
+                  <SuperAdminRoute>
+                    <AITestPanel />
+                  </SuperAdminRoute>
+                } />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </AuthProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </HelmetProvider>
   );
 }
 

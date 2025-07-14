@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
+import SEO from '@/components/SEO';
 
 const PrivacyNoticeModal: React.FC<{ open: boolean; onOpenChange: (open: boolean) => void }> = ({ open, onOpenChange }) => (
   <Dialog open={open} onOpenChange={onOpenChange}>
@@ -193,58 +194,61 @@ const Consent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <Dialog open>
-        <DialogContent className="max-w-md w-full">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-encourager mb-2 text-center">Consent & Preferences</DialogTitle>
-            <DialogDescription className="text-slate-600 text-center mb-4">
-              Please confirm your consent and email preferences to continue using the app.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="flex items-start gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={gdprConsent}
-                  onChange={e => setGdprConsent(e.target.checked)}
-                  required
-                  className="accent-encourager mt-1"
-                />
-                <span>
-                  I consent to Encourager Limited processing my personal data as described in the{' '}
-                  <button
-                    type="button"
-                    className="underline text-encourager hover:text-encourager-dark focus:outline-none"
-                    onClick={() => setPrivacyOpen(true)}
-                  >
-                    Privacy Notice
-                  </button>.
-                </span>
-              </label>
-            </div>
-            <div>
-              <label className="flex items-start gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  checked={receiveEmails}
-                  onChange={e => setReceiveEmails(e.target.checked)}
-                  className="accent-encourager mt-1"
-                />
-                <span>Receive emails about leadership tips and updates. MAX ONE EMAIL MONTH</span>
-              </label>
-            </div>
-            <DialogFooter>
-              <Button type="submit" className="w-full" disabled={loading || !gdprConsent}>
-                {loading ? 'Saving...' : 'Save Preferences'}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-      <PrivacyNoticeModal open={privacyOpen} onOpenChange={setPrivacyOpen} />
-    </div>
+    <>
+      <SEO title="Consent - Leader Leap" description="Consent page (private)" additionalMeta={[{ name: 'robots', content: 'noindex, nofollow' }]} />
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <Dialog open>
+          <DialogContent className="max-w-md w-full">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-encourager mb-2 text-center">Consent & Preferences</DialogTitle>
+              <DialogDescription className="text-slate-600 text-center mb-4">
+                Please confirm your consent and email preferences to continue using the app.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="flex items-start gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={gdprConsent}
+                    onChange={e => setGdprConsent(e.target.checked)}
+                    required
+                    className="accent-encourager mt-1"
+                  />
+                  <span>
+                    I consent to Encourager Limited processing my personal data as described in the{' '}
+                    <button
+                      type="button"
+                      className="underline text-encourager hover:text-encourager-dark focus:outline-none"
+                      onClick={() => setPrivacyOpen(true)}
+                    >
+                      Privacy Notice
+                    </button>.
+                  </span>
+                </label>
+              </div>
+              <div>
+                <label className="flex items-start gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={receiveEmails}
+                    onChange={e => setReceiveEmails(e.target.checked)}
+                    className="accent-encourager mt-1"
+                  />
+                  <span>Receive emails about leadership tips and updates. MAX ONE EMAIL MONTH</span>
+                </label>
+              </div>
+              <DialogFooter>
+                <Button type="submit" className="w-full" disabled={loading || !gdprConsent}>
+                  {loading ? 'Saving...' : 'Save Preferences'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+        <PrivacyNoticeModal open={privacyOpen} onOpenChange={setPrivacyOpen} />
+      </div>
+    </>
   );
 };
 

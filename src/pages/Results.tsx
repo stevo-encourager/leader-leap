@@ -15,6 +15,7 @@ import InvalidResultsMessage from '@/components/assessment/InvalidResultsMessage
 import { getLocalAssessmentData } from '@/services/assessment/manageAssessmentHistory';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
+import SEO from '@/components/SEO';
 
 const Results = () => {
   const navigate = useNavigate();
@@ -342,42 +343,45 @@ const Results = () => {
   console.log("Results page - Rendering ResultsDisplay with valid data and assessmentId:", assessmentId);
   
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-5xl mx-auto px-4 py-2">
-        <Navigation />
-      </div>
-      <main className="assessment-container max-w-5xl mx-auto px-4 py-8">
-        <UserHeader />
-        
-        {showAuthForm && !showMandatoryAuth && (
-          <AuthSection onClose={handleCloseAuthForm} />
-        )}
-        
-        {!showAuthForm && !showMandatoryAuth && (
-          <ResultsDisplay
-            categories={finalDisplayCategories}
-            demographics={finalDisplayDemographics}
-            onRestart={() => {
-              handleStartAssessment();
-              navigate('/assessment');
-            }}
-            onBack={() => {
-              if (assessmentId) {
-                navigate('/previous-assessments');
-              } else {
-                handleBackToDemographics();
+    <>
+      <SEO title="Results - Leader Leap" description="Assessment results (private)" additionalMeta={[{ name: 'robots', content: 'noindex, nofollow' }]} />
+      <div className="min-h-screen bg-slate-50">
+        <div className="max-w-5xl mx-auto px-4 py-2">
+          <Navigation />
+        </div>
+        <main className="assessment-container max-w-5xl mx-auto px-4 py-8">
+          <UserHeader />
+          
+          {showAuthForm && !showMandatoryAuth && (
+            <AuthSection onClose={handleCloseAuthForm} />
+          )}
+          
+          {!showAuthForm && !showMandatoryAuth && (
+            <ResultsDisplay
+              categories={finalDisplayCategories}
+              demographics={finalDisplayDemographics}
+              onRestart={() => {
+                handleStartAssessment();
                 navigate('/assessment');
-              }
-            }}
-            onSignup={handleShowSignupForm}
-            isAuthenticated={!!user}
-            assessmentId={assessmentId}
-          />
-        )}
-      </main>
+              }}
+              onBack={() => {
+                if (assessmentId) {
+                  navigate('/previous-assessments');
+                } else {
+                  handleBackToDemographics();
+                  navigate('/assessment');
+                }
+              }}
+              onSignup={handleShowSignupForm}
+              isAuthenticated={!!user}
+              assessmentId={assessmentId}
+            />
+          )}
+        </main>
 
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </>
   );
 };
 

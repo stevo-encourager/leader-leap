@@ -9,6 +9,7 @@ import AssessmentsList from '@/components/previous-assessments/AssessmentsList';
 import EmptyAssessmentsList from '@/components/previous-assessments/EmptyAssessmentsList';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import SEO from '@/components/SEO';
 
 const MyProfile = () => {
   const navigate = useNavigate();
@@ -80,79 +81,82 @@ const MyProfile = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-5xl mx-auto px-4 py-2">
-        <Navigation />
-      </div>
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-encourager mb-8">My Profile</h1>
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-2">Account Details</h2>
-          <div className="mb-4">
-            <span className="font-medium">Email:</span> {user?.email}
+    <>
+      <SEO title="Previous Assessments - Leader Leap" description="Previous assessments (private)" additionalMeta={[{ name: 'robots', content: 'noindex, nofollow' }]} />
+      <div className="min-h-screen bg-slate-50">
+        <div className="max-w-5xl mx-auto px-4 py-2">
+          <Navigation />
+        </div>
+        <main className="max-w-4xl mx-auto px-4 py-8">
+          <h1 className="text-3xl font-bold text-encourager mb-8">My Profile</h1>
+          <div className="bg-white rounded-lg shadow p-6 mb-8">
+            <h2 className="text-xl font-semibold mb-2">Account Details</h2>
+            <div className="mb-4">
+              <span className="font-medium">Email:</span> {user?.email}
+            </div>
+            <button
+              className="text-encourager underline text-sm mb-2"
+              onClick={() => setShowChangePassword((v) => !v)}
+            >
+              {showChangePassword ? 'Cancel' : 'Change Password'}
+            </button>
+            {showChangePassword && (
+              <form onSubmit={handleChangePassword} className="mt-2 flex flex-col gap-2 max-w-xs">
+                <input
+                  type="password"
+                  className="border rounded px-3 py-2"
+                  placeholder="New password"
+                  value={newPassword}
+                  onChange={e => setNewPassword(e.target.value)}
+                  minLength={6}
+                  required
+                />
+                <button
+                  type="submit"
+                  className="bg-encourager text-white rounded px-3 py-2 mt-1"
+                  disabled={passwordLoading}
+                >
+                  {passwordLoading ? 'Updating...' : 'Update Password'}
+                </button>
+                {passwordMessage && (
+                  <div className="text-sm text-center mt-1 text-encourager">
+                    {passwordMessage}
+                  </div>
+                )}
+              </form>
+            )}
           </div>
-          <button
-            className="text-encourager underline text-sm mb-2"
-            onClick={() => setShowChangePassword((v) => !v)}
-          >
-            {showChangePassword ? 'Cancel' : 'Change Password'}
-          </button>
-          {showChangePassword && (
-            <form onSubmit={handleChangePassword} className="mt-2 flex flex-col gap-2 max-w-xs">
-              <input
-                type="password"
-                className="border rounded px-3 py-2"
-                placeholder="New password"
-                value={newPassword}
-                onChange={e => setNewPassword(e.target.value)}
-                minLength={6}
-                required
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-4">Previous Assessments</h2>
+            <div className="flex items-center gap-3 mb-4">
+              <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isLoading}>
+                Refresh List
+              </Button>
+            </div>
+            {allAssessments.length === 0 ? (
+              <EmptyAssessmentsList isLoading={isLoading} />
+            ) : (
+              <AssessmentsList
+                assessments={assessments}
+                currentPage={currentPage}
+                pageSize={pageSize}
+                totalAssessments={totalAssessments}
+                onPageChange={handlePageChange}
+                onDeleteAssessment={handleDeleteAssessment}
               />
-              <button
-                type="submit"
-                className="bg-encourager text-white rounded px-3 py-2 mt-1"
-                disabled={passwordLoading}
-              >
-                {passwordLoading ? 'Updating...' : 'Update Password'}
-              </button>
-              {passwordMessage && (
-                <div className="text-sm text-center mt-1 text-encourager">
-                  {passwordMessage}
-                </div>
-              )}
-            </form>
-          )}
-        </div>
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-4">Previous Assessments</h2>
-          <div className="flex items-center gap-3 mb-4">
-            <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isLoading}>
-              Refresh List
-            </Button>
+            )}
+            {lastRefreshed && (
+              <p className="mt-4 text-xs text-slate-400 text-right">
+                Last updated: {new Date(lastRefreshed).toLocaleTimeString()}
+                {' | '}
+                Showing page {currentPage} of {Math.ceil(totalAssessments / pageSize)}
+              </p>
+            )}
           </div>
-          {allAssessments.length === 0 ? (
-            <EmptyAssessmentsList isLoading={isLoading} />
-          ) : (
-            <AssessmentsList
-              assessments={assessments}
-              currentPage={currentPage}
-              pageSize={pageSize}
-              totalAssessments={totalAssessments}
-              onPageChange={handlePageChange}
-              onDeleteAssessment={handleDeleteAssessment}
-            />
-          )}
-          {lastRefreshed && (
-            <p className="mt-4 text-xs text-slate-400 text-right">
-              Last updated: {new Date(lastRefreshed).toLocaleTimeString()}
-              {' | '}
-              Showing page {currentPage} of {Math.ceil(totalAssessments / pageSize)}
-            </p>
-          )}
-        </div>
-      </main>
-      <Footer />
-    </div>
+        </main>
+        <Footer />
+      </div>
+    </>
   );
 };
 

@@ -12,6 +12,7 @@ import { useAssessment } from '@/hooks/useAssessment';
 import { toast } from '@/hooks/use-toast';
 import AssessmentInstructions from '@/components/AssessmentInstructions';
 import AssessmentContent from '@/components/assessment/AssessmentContent';
+import SEO from '@/components/SEO';
 
 const Assessment = () => {
   const navigate = useNavigate();
@@ -84,79 +85,82 @@ const Assessment = () => {
   const hasValidCategories = categories && Array.isArray(categories) && categories.length > 0;
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="max-w-5xl mx-auto px-4 py-2">
-        <Navigation />
-      </div>
-      <main className="assessment-container max-w-5xl mx-auto px-4 py-8">
-        {/* User header (when logged in) */}
-        <UserHeader />
-        
-        {/* Show auth form when user tries to save results without being logged in */}
-        {showAuthForm && (
-          <AuthSection onClose={handleCloseAuthForm} />
-        )}
-        
-        {/* Main content */}
-        {!showAuthForm && (
-          <>
-            {currentStep === 'demographics' && (
-              <DemographicsForm 
-                demographics={demographics}
-                onDemographicsUpdate={handleDemographicsUpdate}
-                onContinue={handleContinueToInstructions}
-                onBack={() => {
-                  handleBackToIntro();
-                  navigate('/');
-                }}
-              />
-            )}
-            
-            {currentStep === 'instructions' && (
-              <AssessmentInstructions onContinue={handleContinueToAssessment} onBack={handleBackToDemographics} />
-            )}
-            
-            {currentStep === 'assessment' && hasValidCategories && (
-              <AssessmentContent
-                currentStep={currentStep}
-                categories={categories}
-                demographics={demographics}
-                onStartAssessment={() => {
-                  handleBackToIntro();
-                  navigate('/');
-                }}
-                onDemographicsUpdate={handleDemographicsUpdate}
-                onContinueToAssessment={handleContinueToAssessment}
-                onContinueToInstructions={handleContinueToInstructions}
-                onBackToIntro={handleBackToIntro}
-                onBackToDemographics={handleBackToDemographics}
-                onCategoriesUpdate={handleCategoriesUpdate}
-                onCompleteAssessment={handleCompleteAssessment}
-                isAuthenticated={!!user}
-              />
-            )}
-            
-            {currentStep === 'assessment' && !hasValidCategories && (
-              <div className="p-6 bg-red-50 border border-red-200 rounded-md text-red-800">
-                <h3 className="font-bold mb-2">Error Loading Assessment</h3>
-                <p>There was a problem loading the assessment categories. Please try again.</p>
-                {loadError && (
-                  <p className="mt-2 text-sm font-medium">Error details: {loadError}</p>
-                )}
-                <button 
-                  onClick={() => navigate('/')}
-                  className="mt-4 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-800 rounded transition-colors"
-                >
-                  Return to Home
-                </button>
-              </div>
-            )}
-          </>
-        )}
-      </main>
+    <>
+      <SEO title="Assessment - Leader Leap" description="Leadership assessment (private)" additionalMeta={[{ name: 'robots', content: 'noindex, nofollow' }]} />
+      <div className="min-h-screen bg-slate-50">
+        <div className="max-w-5xl mx-auto px-4 py-2">
+          <Navigation />
+        </div>
+        <main className="assessment-container max-w-5xl mx-auto px-4 py-8">
+          {/* User header (when logged in) */}
+          <UserHeader />
+          
+          {/* Show auth form when user tries to save results without being logged in */}
+          {showAuthForm && (
+            <AuthSection onClose={handleCloseAuthForm} />
+          )}
+          
+          {/* Main content */}
+          {!showAuthForm && (
+            <>
+              {currentStep === 'demographics' && (
+                <DemographicsForm 
+                  demographics={demographics}
+                  onDemographicsUpdate={handleDemographicsUpdate}
+                  onContinue={handleContinueToInstructions}
+                  onBack={() => {
+                    handleBackToIntro();
+                    navigate('/');
+                  }}
+                />
+              )}
+              
+              {currentStep === 'instructions' && (
+                <AssessmentInstructions onContinue={handleContinueToAssessment} onBack={handleBackToDemographics} />
+              )}
+              
+              {currentStep === 'assessment' && hasValidCategories && (
+                <AssessmentContent
+                  currentStep={currentStep}
+                  categories={categories}
+                  demographics={demographics}
+                  onStartAssessment={() => {
+                    handleBackToIntro();
+                    navigate('/');
+                  }}
+                  onDemographicsUpdate={handleDemographicsUpdate}
+                  onContinueToAssessment={handleContinueToAssessment}
+                  onContinueToInstructions={handleContinueToInstructions}
+                  onBackToIntro={handleBackToIntro}
+                  onBackToDemographics={handleBackToDemographics}
+                  onCategoriesUpdate={handleCategoriesUpdate}
+                  onCompleteAssessment={handleCompleteAssessment}
+                  isAuthenticated={!!user}
+                />
+              )}
+              
+              {currentStep === 'assessment' && !hasValidCategories && (
+                <div className="p-6 bg-red-50 border border-red-200 rounded-md text-red-800">
+                  <h3 className="font-bold mb-2">Error Loading Assessment</h3>
+                  <p>There was a problem loading the assessment categories. Please try again.</p>
+                  {loadError && (
+                    <p className="mt-2 text-sm font-medium">Error details: {loadError}</p>
+                  )}
+                  <button 
+                    onClick={() => navigate('/')}
+                    className="mt-4 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-800 rounded transition-colors"
+                  >
+                    Return to Home
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+        </main>
 
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </>
   );
 };
 

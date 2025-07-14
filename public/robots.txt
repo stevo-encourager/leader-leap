@@ -14,4 +14,4 @@ User-agent: *
 Allow: /
 
 # Sitemap
-Sitemap: https://your-domain.com/sitemap.xml
+Sitemap: https://leader-leap.com/sitemap.xml

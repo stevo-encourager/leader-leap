@@ -38,7 +38,7 @@ const Index = () => {
           "@type": "WebApplication",
           "name": "Leader Leap Assessment Tool",
           "description": "Comprehensive leadership competency gap analysis tool that evaluates 11 key leadership areas including strategic thinking, emotional intelligence, and team building.",
-          "url": "https://your-domain.com/",
+          "url": "https://leader-leap.com/",
           "applicationCategory": "BusinessApplication",
           "operatingSystem": "Web Browser",
           "offers": {

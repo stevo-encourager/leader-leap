@@ -18,7 +18,7 @@ const SEO: React.FC<SEOProps> = ({
   description = "Identify and close leadership competency gaps with our comprehensive assessment tool. Evaluate 11 key leadership areas including strategic thinking, emotional intelligence, and team building.",
   keywords = "leadership assessment, competency gap analysis, leadership development, strategic thinking, emotional intelligence, team building, change management, decision making, delegation, negotiation, professional development",
   canonical,
-  ogImage = "https://your-domain.com/og-image.jpg",
+  ogImage = "https://leader-leap.com/og-image.jpg",
   ogType = "website",
   twitterCard = "summary_large_image",
   structuredData,

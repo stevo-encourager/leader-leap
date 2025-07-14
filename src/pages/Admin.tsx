@@ -18,7 +18,7 @@ const Admin = () => {
   
   return (
     <>
-      <SEO title="Admin - Leader Leap" description="Admin dashboard (private)" ogType="website" canonical="https://your-domain.com/admin" structuredData={{}} additionalMeta={[{ name: 'robots', content: 'noindex, nofollow' }]} />
+      <SEO title="Admin - Leader Leap" description="Admin dashboard (private)" ogType="website" canonical="https://leader-leap.com/admin" structuredData={{}} additionalMeta={[{ name: 'robots', content: 'noindex, nofollow' }]} />
       <div className="container max-w-6xl py-10 space-y-8">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Admin Dashboard</h1>

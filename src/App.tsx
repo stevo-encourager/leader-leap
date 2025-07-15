@@ -104,6 +104,7 @@ function App() {
                     <Admin />
                   </SuperAdminRoute>
                 } />
+                <Route path="/auth/v1/callback" element={<Navigate to="/" replace />} />
                 <Route path="/privacy-notice" element={<PrivacyNotice />} />
                 <Route path="/ai-test-panel" element={
                   <SuperAdminRoute>

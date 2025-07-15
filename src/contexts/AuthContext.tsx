@@ -312,7 +312,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signInWithGoogle = async () => {
-    const redirectUrl = "https://leader-leap.com/auth/v1/callback";
+    const redirectUrl = "https://leader-leap.com/";
     console.log('AuthContext: Google sign in redirectUrl:', redirectUrl);
     console.log('AuthContext: Starting Google sign in');
     

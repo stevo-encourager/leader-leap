@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import SEO from '@/components/SEO';
+import { subscribeToBrevo } from '@/utils/brevoIntegration';
 
 const PrivacyNoticeModal: React.FC<{ open: boolean; onOpenChange: (open: boolean) => void }> = ({ open, onOpenChange }) => (
   <Dialog open={open} onOpenChange={onOpenChange}>
@@ -115,7 +116,7 @@ const PrivacyNoticeModal: React.FC<{ open: boolean; onOpenChange: (open: boolean
 );
 
 const Consent: React.FC = () => {
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const navigate = useNavigate();
   const [gdprConsent, setGdprConsent] = useState(false);
   const [receiveEmails, setReceiveEmails] = useState(true);
@@ -151,25 +152,27 @@ const Consent: React.FC = () => {
       // If user consents to emails, subscribe to Brevo
       if (receiveEmails && user.email) {
         try {
-          const res = await fetch('/api/subscribe-brevo', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: user.email }),
+          console.log('Consent: Subscribing user to Brevo:', user.email);
+          const brevoResult = await subscribeToBrevo({
+            email: user.email,
+            name: user.user_metadata?.full_name || userProfile?.full_name || '',
           });
-          if (res.ok) {
+          
+          if (brevoResult.success) {
             toast({
               title: 'Subscribed to email updates',
               description: 'You will receive leadership tips and updates.',
             });
           } else {
-            const data = await res.json();
+            console.error('Consent: Failed to subscribe to Brevo:', brevoResult.error);
             toast({
               title: 'Email subscription failed',
-              description: data.error || 'Could not subscribe to emails.',
+              description: brevoResult.error || 'Could not subscribe to emails.',
               variant: 'destructive',
             });
           }
         } catch (err: any) {
+          console.error('Consent: Error subscribing to Brevo:', err);
           toast({
             title: 'Email subscription error',
             description: err.message,

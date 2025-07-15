@@ -10,10 +10,5 @@ const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJh
 
 export const supabase = createClient<Database>(
   SUPABASE_URL,
-  SUPABASE_PUBLISHABLE_KEY,
-  {
-    auth: {
-      redirectTo: "https://leader-leap.com/auth/v1/callback"
-    }
-  }
+  SUPABASE_PUBLISHABLE_KEY
 );

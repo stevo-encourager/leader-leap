@@ -25,6 +25,7 @@ const authSchema = z.object({
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
   fullName: z.string().optional(),
   receiveEmails: z.boolean().optional(),
+  // gdprConsent is no longer required or checked at signup
 }).refine((data) => {
   return true;
 }, {
@@ -46,14 +47,14 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
       email: '',
       password: '',
       fullName: '',
-      receiveEmails: true,
+      // Remove receiveEmails and gdprConsent from defaultValues
     }
   });
 
-  const receiveEmails = watch('receiveEmails');
+  // Removed gdprConsent and receiveEmails from watch
 
   console.log('AuthForm: Component rendered with activeTab:', activeTab);
-  console.log('AuthForm: receiveEmails value:', receiveEmails);
+  // Removed console.log for receiveEmails
 
   const handleSignIn = async (data: any) => {
     console.log('AuthForm: handleSignIn called - START');
@@ -105,13 +106,14 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
       email: data.email,
       fullName: data.fullName,
       receiveEmails: data.receiveEmails,
+      // gdprConsent removed from signup
     });
     
     setIsSubmitting(true);
 
     try {
       console.log('AuthForm: About to call signUp');
-      await signUp(data.email, data.password, data.fullName || '', data.receiveEmails || false);
+      await signUp(data.email, data.password, data.fullName || '', false); // Pass false for receiveEmails
       console.log('AuthForm: Sign up completed successfully');
       // Don't call onSuccess here as the user needs to verify their email
     } catch (error) {
@@ -347,19 +349,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
             {errors.password && <p className="text-sm text-red-500">{errors.password.message as string}</p>}
           </div>
           
-          <div className="space-y-2">
-            <div className="flex items-start gap-2">
-              <Checkbox 
-                id="receiveEmails"
-                checked={receiveEmails}
-                onCheckedChange={(checked) => setValue('receiveEmails', checked as boolean)}
-              />
-              <Label htmlFor="receiveEmails" className="text-sm leading-relaxed">
-                Receive emails about leadership tips and updates (max one email per month)
-              </Label>
-            </div>
-          </div>
-          
+          {/* Removed GDPR consent and receive emails checkboxes from signup form */}
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             Create Account

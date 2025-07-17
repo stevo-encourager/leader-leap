@@ -9,9 +9,7 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "seo-check": "node scripts/seo-check.js",
-    "brevo-server": "node brevo-subscribe.cjs",
-    "test-brevo": "node test-brevo.js"
+    "seo-check": "node scripts/seo-check.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
@@ -53,7 +51,6 @@
     "date-fns": "^3.6.0",
     "dotenv": "^16.5.0",
     "embla-carousel-react": "^8.3.0",
-    "cors": "^2.8.5",
     "express": "^4.21.2",
     "html2canvas": "^1.4.1",
     "html2pdf.js": "^0.10.1",

@@ -3,7 +3,6 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { subscribeToBrevo } from '@/utils/brevoIntegration';
 
 interface UserProfile {
   id: string;
@@ -284,28 +283,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // The profile will be created automatically by the database trigger
       // No need to manually upsert the profile
       console.log('AuthContext: Profile will be created automatically by database trigger');
-
-      // Subscribe to Brevo if user opted in for emails
-      if (receiveEmails && email) {
-        try {
-          console.log('AuthContext: Attempting to subscribe user to Brevo');
-          const brevoResult = await subscribeToBrevo({
-            email: email,
-            name: fullName || '',
-          });
-          
-          if (brevoResult.success) {
-            console.log('AuthContext: Successfully subscribed to Brevo');
-            // Don't show toast here as user hasn't verified email yet
-          } else {
-            console.error('AuthContext: Failed to subscribe to Brevo:', brevoResult.error);
-            // Don't show error toast as this shouldn't block signup
-          }
-        } catch (brevoError) {
-          console.error('AuthContext: Error subscribing to Brevo:', brevoError);
-          // Don't show error toast as this shouldn't block signup
-        }
-      }
 
       toast({
         title: "Account created successfully",

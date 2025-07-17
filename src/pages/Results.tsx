@@ -91,6 +91,31 @@ const Results = () => {
       }
     }
     
+    // CRITICAL FIX: If we have categories but they have no ratings, try to load from local storage
+    if (categories && categories.length > 0 && !localDataLoadedRef.current && !assessmentId) {
+      // Check if current categories have any ratings
+      const hasRatings = categories.some(cat => 
+        cat && cat.skills && cat.skills.some(skill => 
+          skill && skill.ratings && 
+          skill.ratings.current > 0 && 
+          skill.ratings.desired > 0
+        )
+      );
+      
+      if (!hasRatings) {
+        console.log("Results page - Categories present but no ratings, loading from local storage");
+        const localData = getLocalAssessmentData();
+        if (localData && localData.categories && localData.categories.length > 0) {
+          console.log("Results page - Found local assessment data with ratings, using that");
+          handleCategoriesUpdate(localData.categories);
+          if (localData.demographics) {
+            handleDemographicsUpdate(localData.demographics);
+          }
+          localDataLoadedRef.current = true;
+        }
+      }
+    }
+    
     setIsInitialDataChecked(true);
   }, [currentStep, categories, demographics, assessmentId, user, handleCategoriesUpdate, handleDemographicsUpdate, isPageReady]);
 
@@ -119,8 +144,14 @@ const Results = () => {
   // Check if we need to show mandatory auth for new assessments
   useEffect(() => {
     if (!loading && isPageReady && isInitialDataChecked) {
-      // For new assessments (no assessmentId), require authentication to view results
-      if (!assessmentId && !user && (categories?.length > 0 || getLocalAssessmentData()?.categories?.length > 0)) {
+      // Show auth prompt for unauthenticated users with local data (test users)
+      const localData = getLocalAssessmentData();
+      const hasLocalData = localData && localData.categories && localData.categories.length > 0;
+      
+      if (!assessmentId && !user && hasLocalData) {
+        console.log('Results page - Unauthenticated user with local data, showing auth prompt');
+        setShowMandatoryAuth(true);
+      } else if (!assessmentId && !user && !hasLocalData && categories?.length > 0) {
         console.log('Results page - New assessment detected, requiring authentication');
         setShowMandatoryAuth(true);
       } else {

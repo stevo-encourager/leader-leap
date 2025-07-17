@@ -16,13 +16,15 @@ interface AssessmentFormProps {
   onCategoriesUpdate: (updatedCategories: Category[]) => void;
   onComplete: () => void;
   onBack: () => void;
+  initialActiveCategory?: number;
 }
 
 const AssessmentForm: React.FC<AssessmentFormProps> = ({
   categories,
   onCategoriesUpdate,
   onComplete,
-  onBack
+  onBack,
+  initialActiveCategory
 }) => {
   const {
     activeCategory,
@@ -32,7 +34,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
     handleNextCategory,
     handlePrevCategory,
     isCategoryCompleted
-  } = useAssessmentForm(categories);
+  } = useAssessmentForm(categories, initialActiveCategory);
 
   console.log("AssessmentForm rendering, about to render HelpButton");
 

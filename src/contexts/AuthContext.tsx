@@ -3,6 +3,15 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 interface UserProfile {
   id: string;
@@ -41,6 +50,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [showAccountCreatedDialog, setShowAccountCreatedDialog] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -85,6 +95,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Handle successful sign in
         if (event === 'SIGNED_IN' && session?.user) {
           console.log('AuthContext: User successfully signed in:', session.user.email);
+          
+          // Debug: Check if there's local assessment data that should be preserved
+          try {
+            const localData = localStorage.getItem('assessment_categories');
+            console.log('AuthContext: Local assessment data after sign in:', localData ? 'exists' : 'none');
+            if (localData) {
+              console.log('AuthContext: Local data length:', localData.length);
+            }
+          } catch (error) {
+            console.log('AuthContext: Error checking local data:', error);
+          }
+          
           toast({
             title: "Success",
             description: "Successfully signed in!",
@@ -168,6 +190,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .single();
         // Only redirect if consent is missing (null or false) or receive_emails is null
         if (!error && profile && (profile.gdpr_consent !== true || profile.receive_emails === null || typeof profile.receive_emails === 'undefined')) {
+          console.log('AuthContext: Redirecting to consent page');
+          
+          // Debug: Check local data before redirect
+          try {
+            const localData = localStorage.getItem('assessment_categories');
+            console.log('AuthContext: Local assessment data before consent redirect:', localData ? 'exists' : 'none');
+            if (localData) {
+              console.log('AuthContext: Local data length before redirect:', localData.length);
+            }
+          } catch (error) {
+            console.log('AuthContext: Error checking local data before redirect:', error);
+          }
+          
           navigate('/consent');
         }
       };
@@ -284,10 +319,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // No need to manually upsert the profile
       console.log('AuthContext: Profile will be created automatically by database trigger');
 
-      toast({
-        title: "Account created successfully",
-        description: "Please check your email to verify your account before signing in.",
-      });
+      setShowAccountCreatedDialog(true);
     }
   };
 
@@ -382,6 +414,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return (
     <AuthContext.Provider value={value}>
       {children}
+      
+      {/* Account Created Success Dialog */}
+      <Dialog open={showAccountCreatedDialog} onOpenChange={setShowAccountCreatedDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Account Created Successfully</DialogTitle>
+            <DialogDescription>
+              Please check your email to verify your account before signing in.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setShowAccountCreatedDialog(false)}>
+              OK
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AuthContext.Provider>
   );
 };

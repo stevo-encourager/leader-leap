@@ -13,10 +13,14 @@ import { toast } from '@/hooks/use-toast';
 import AssessmentInstructions from '@/components/AssessmentInstructions';
 import AssessmentContent from '@/components/assessment/AssessmentContent';
 import SEO from '@/components/SEO';
+import { storeLocalAssessmentData } from '@/services/assessment/manageAssessmentHistory';
+import { Category, Demographics } from '@/utils/assessmentTypes';
+import { allCategories } from '@/utils/assessmentCategories';
 
 const Assessment = () => {
   const navigate = useNavigate();
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [initialActiveCategory, setInitialActiveCategory] = useState<number | undefined>(undefined);
   
   const {
     currentStep,
@@ -34,6 +38,54 @@ const Assessment = () => {
   } = useAssessment();
   
   const { user, loading } = useAuth();
+
+  // Test function to generate demographic data and assessment scores
+  const generateTestData = () => {
+    // Generate realistic demographic data
+    const testDemographics: Demographics = {
+      role: "Manager",
+      jobTitle: "Senior Manager",
+      department: "Operations",
+      experienceLevel: "Mid-level",
+      teamSize: "5-10 people",
+      yearsOfExperience: "4-7 years",
+      industry: "Technology"
+    };
+
+    // Generate realistic assessment scores for all categories and skills
+    const testCategories = allCategories.map(category => ({
+      ...category,
+      skills: category.skills.map(skill => ({
+        ...skill,
+        ratings: {
+          current: Math.floor(Math.random() * 4) + 4, // Random score between 4-7
+          desired: Math.floor(Math.random() * 3) + 7   // Random score between 7-9
+        }
+      }))
+    }));
+
+    // Update the assessment state with test data
+    handleDemographicsUpdate(testDemographics);
+    handleCategoriesUpdate(testCategories);
+    
+    // Store the test data locally
+    const stored = storeLocalAssessmentData(testCategories, testDemographics);
+    console.log('Test button - Data stored locally:', stored);
+    console.log('Test button - Test categories count:', testCategories.length);
+    console.log('Test button - Test demographics:', testDemographics);
+    
+    // Set initial active category to the last category (index 9 for 10 categories)
+    setInitialActiveCategory(allCategories.length - 1);
+    
+    // Continue directly to assessment step
+    handleContinueToInstructions();
+    handleContinueToAssessment();
+    
+    toast({
+      title: "Test data generated",
+      description: "Assessment populated with test data. You're now on the last page with all data filled in.",
+    });
+  };
 
   // Log categories data for debugging and error detection
   useEffect(() => {
@@ -103,6 +155,24 @@ const Assessment = () => {
           {/* Main content */}
           {!showAuthForm && (
             <>
+              {/* Test button - only show on demographics step */}
+              {currentStep === 'demographics' && (
+                <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold text-blue-900">Testing Mode</h3>
+                      <p className="text-sm text-blue-700">Skip the assessment and generate test data</p>
+                    </div>
+                    <button
+                      onClick={generateTestData}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+                    >
+                      Generate demographic info & scores
+                    </button>
+                  </div>
+                </div>
+              )}
+              
               {currentStep === 'demographics' && (
                 <DemographicsForm 
                   demographics={demographics}
@@ -136,6 +206,7 @@ const Assessment = () => {
                   onCategoriesUpdate={handleCategoriesUpdate}
                   onCompleteAssessment={handleCompleteAssessment}
                   isAuthenticated={!!user}
+                  initialActiveCategory={initialActiveCategory}
                 />
               )}
               

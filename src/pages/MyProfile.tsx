@@ -12,6 +12,17 @@ import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import SEO from '@/components/SEO';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 const MyProfile = () => {
   const navigate = useNavigate();
@@ -71,10 +82,6 @@ const MyProfile = () => {
   };
 
   const handleDeleteAccount = async () => {
-    if (!confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-      return;
-    }
-    
     setDeleteLoading(true);
     
     try {
@@ -168,13 +175,33 @@ const MyProfile = () => {
               >
                 {showChangePassword ? 'Cancel' : 'Change Password'}
               </button>
-              <button
-                className="text-red-600 underline text-sm"
-                onClick={handleDeleteAccount}
-                disabled={deleteLoading}
-              >
-                {deleteLoading ? 'Deleting...' : 'Delete Account'}
-              </button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button
+                    className="text-red-600 underline text-sm"
+                    disabled={deleteLoading}
+                  >
+                    {deleteLoading ? 'Deleting...' : 'Delete Account'}
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Account</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete your account? This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDeleteAccount}
+                      className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
               {showChangePassword && (
                 <form onSubmit={handleChangePassword} className="mt-4 flex flex-col gap-2 max-w-xs">
                   <input

@@ -4,8 +4,8 @@ import { Category } from '@/utils/assessmentTypes';
 import { validateCategoriesData } from '@/utils/assessmentData';
 import { useToast } from './use-toast';
 
-export const useAssessmentForm = (categories: Category[]) => {
-  const [activeCategory, setActiveCategory] = useState<number>(0);
+export const useAssessmentForm = (categories: Category[], initialActiveCategory?: number) => {
+  const [activeCategory, setActiveCategory] = useState<number>(initialActiveCategory || 0);
   const [showMidpointDialog, setShowMidpointDialog] = useState<boolean>(false);
   const [midpointDialogShown, setMidpointDialogShown] = useState<boolean>(false);
   const [dataValidationError, setDataValidationError] = useState<string | null>(null);

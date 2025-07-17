@@ -114,19 +114,34 @@ export const saveAssessmentResults = async (
   let totalSkills = 0;
   let skillsWithBothRatings = 0;
   
-  categories.forEach(category => {
+  console.log("saveAssessmentResults - Starting validation of categories:", categories.length);
+  
+  categories.forEach((category, categoryIndex) => {
+    console.log(`saveAssessmentResults - Processing category ${categoryIndex}: ${category.title}`);
     if (category && category.skills && Array.isArray(category.skills)) {
-      category.skills.forEach(skill => {
+      category.skills.forEach((skill, skillIndex) => {
         totalSkills++;
+        console.log(`saveAssessmentResults - Processing skill ${skillIndex}: ${skill.name}`);
+        console.log(`saveAssessmentResults - Skill ratings:`, skill.ratings);
+        
         if (skill && skill.ratings) {
           const currentRating = Number(skill.ratings.current) || 0;
           const desiredRating = Number(skill.ratings.desired) || 0;
           
+          console.log(`saveAssessmentResults - Parsed ratings - current: ${currentRating}, desired: ${desiredRating}`);
+          
           if (currentRating > 0 && desiredRating > 0) {
             skillsWithBothRatings++;
+            console.log(`saveAssessmentResults - ✅ Skill ${skill.name} has valid ratings`);
+          } else {
+            console.log(`saveAssessmentResults - ❌ Skill ${skill.name} has invalid ratings - current: ${currentRating}, desired: ${desiredRating}`);
           }
+        } else {
+          console.log(`saveAssessmentResults - ❌ Skill ${skill.name} has no ratings object`);
         }
       });
+    } else {
+      console.log(`saveAssessmentResults - ❌ Category ${categoryIndex} has no skills array`);
     }
   });
 
@@ -149,11 +164,21 @@ export const saveAssessmentResults = async (
   }
 
   // Check if user is authenticated
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  let user = null;
+  let authError = null;
+  
+  try {
+    const authResult = await supabase.auth.getUser();
+    user = authResult.data.user;
+    authError = authResult.error;
+  } catch (error) {
+    console.log("saveAssessmentResults - Auth session missing, treating as unauthenticated user");
+    authError = error;
+  }
   
   if (authError) {
-    console.error("saveAssessmentResults - Auth error:", authError);
-    return { success: false, error: "Authentication error" };
+    console.log("saveAssessmentResults - No authenticated user, saving to local storage only");
+    return { success: true, data: [] }; // Return success for local storage save
   }
 
   if (!user) {

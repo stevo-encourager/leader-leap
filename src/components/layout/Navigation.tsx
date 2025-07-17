@@ -76,8 +76,8 @@ const Navigation: React.FC = () => {
               </Link>
             )}
             
-            {/* AI Test Panel - only show in development/staging */}
-            {isDevelopment && (
+            {/* AI Test Panel - only show in development/staging for super admins */}
+            {isDevelopment && isSuperAdmin && (
               <Link to="/ai-test-panel" className="no-underline">
                 <Button 
                   variant="ghost" 

@@ -24,6 +24,7 @@ interface AssessmentContentProps {
   onCompleteAssessment: () => void;
   onShowSignupForm?: () => void;
   isAuthenticated: boolean;
+  initialActiveCategory?: number;
 }
 
 const AssessmentContent: React.FC<AssessmentContentProps> = ({
@@ -39,7 +40,8 @@ const AssessmentContent: React.FC<AssessmentContentProps> = ({
   onCategoriesUpdate,
   onCompleteAssessment,
   onShowSignupForm,
-  isAuthenticated
+  isAuthenticated,
+  initialActiveCategory
 }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -90,9 +92,15 @@ const AssessmentContent: React.FC<AssessmentContentProps> = ({
             } else {
               result = await saveAssessmentResults(categories, demographics);
             }
-            if (result.success && result.data && result.data[0]?.id) {
+            if (result.success) {
               setIsSaving(false);
-              navigate(`/results/${result.data[0].id}`);
+              if (result.data && result.data[0]?.id) {
+                // User is authenticated and data was saved to database
+                navigate(`/results/${result.data[0].id}`);
+              } else {
+                // User is not authenticated, data saved locally only
+                navigate('/results');
+              }
             } else {
               setIsSaving(false);
               setSaveError(result.error || 'Failed to save assessment.');
@@ -103,6 +111,7 @@ const AssessmentContent: React.FC<AssessmentContentProps> = ({
           }
         }}
         onBack={onBackToDemographics}
+        initialActiveCategory={initialActiveCategory}
       />
     );
   }

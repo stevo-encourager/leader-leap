@@ -39,6 +39,9 @@ const Assessment = () => {
   
   const { user, loading } = useAuth();
 
+  // Check if we're in development/staging (not production)
+  const isDevelopment = import.meta.env.DEV || window.location.hostname !== 'your-production-domain.com';
+
   // Test function to generate demographic data and assessment scores
   const generateTestData = () => {
     // Generate realistic demographic data
@@ -155,13 +158,13 @@ const Assessment = () => {
           {/* Main content */}
           {!showAuthForm && (
             <>
-              {/* Test button - only show on demographics step */}
-              {currentStep === 'demographics' && (
+              {/* Test button - only show on demographics step in development/staging */}
+              {currentStep === 'demographics' && isDevelopment && (
                 <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-lg font-semibold text-blue-900">Testing Mode</h3>
-                      <p className="text-sm text-blue-700">Skip the assessment and generate test data</p>
+                      <p className="text-sm text-blue-700">Skip the assessment and generate test data (Development Only)</p>
                     </div>
                     <button
                       onClick={generateTestData}

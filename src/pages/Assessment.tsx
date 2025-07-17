@@ -40,7 +40,10 @@ const Assessment = () => {
   const { user, loading } = useAuth();
 
   // Check if we're in development/staging (not production)
-  const isDevelopment = import.meta.env.DEV || window.location.hostname !== 'your-production-domain.com';
+  const isDevelopment = import.meta.env.DEV || 
+    (window.location.hostname !== 'leader-leap.com' && 
+     window.location.hostname !== 'www.leader-leap.com' &&
+     !window.location.hostname.includes('lovable.dev'));
 
   // Test function to generate demographic data and assessment scores
   const generateTestData = () => {

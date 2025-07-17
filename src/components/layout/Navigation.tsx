@@ -9,7 +9,10 @@ const Navigation: React.FC = () => {
   const { user, signOut } = useAuth();
   
   // Check if we're in development/staging (not production)
-  const isDevelopment = import.meta.env.DEV || window.location.hostname !== 'your-production-domain.com';
+  const isDevelopment = import.meta.env.DEV || 
+    (window.location.hostname !== 'leader-leap.com' && 
+     window.location.hostname !== 'www.leader-leap.com' &&
+     !window.location.hostname.includes('lovable.dev'));
   
   // Check if user is super admin
   const superAdmins = ['steve@encourager.co.uk'];

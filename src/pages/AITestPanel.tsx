@@ -30,7 +30,10 @@ const AITestPanel = () => {
   const TEST_ASSESSMENT_ID = '2631edf1-a358-4303-83c1-deb9664b53e2';
 
   // Check if we're in development/staging (not production)
-  const isDevelopment = import.meta.env.DEV || window.location.hostname !== 'your-production-domain.com';
+  const isDevelopment = import.meta.env.DEV || 
+    (window.location.hostname !== 'leader-leap.com' && 
+     window.location.hostname !== 'www.leader-leap.com' &&
+     !window.location.hostname.includes('lovable.dev'));
 
   // Calculate metrics for insights
   const averageGap = calculateAverageGap(categories);

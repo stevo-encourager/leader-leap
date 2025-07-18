@@ -2,6 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface IntroductionHeaderProps {
   onStartAssessment?: () => void;
@@ -9,6 +10,7 @@ interface IntroductionHeaderProps {
 
 const IntroductionHeader: React.FC<IntroductionHeaderProps> = ({ onStartAssessment }) => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   
   const handleStartClick = () => {
     if (onStartAssessment) {
@@ -19,7 +21,7 @@ const IntroductionHeader: React.FC<IntroductionHeaderProps> = ({ onStartAssessme
   };
   
   return (
-    <div className="p-8 flex flex-col items-center">
+    <div className={`${isMobile ? 'p-4' : 'p-8'} flex flex-col items-center`}>
       <a 
         href="https://www.encouragercoaching.com" 
         target="_blank" 
@@ -29,15 +31,15 @@ const IntroductionHeader: React.FC<IntroductionHeaderProps> = ({ onStartAssessme
         <img 
           src="/lovable-uploads/8320d514-fba5-4e1b-a658-1563758db943.png" 
           alt="Encourager Logo" 
-          className="h-32 object-contain mb-6 animate-float" 
+          className={`${isMobile ? 'h-24' : 'h-32'} object-contain mb-6 animate-float`} 
         />
       </a>
       
-      <h1 className="text-4xl md:text-5xl font-bold text-encourager mb-4 text-center">
+      <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl md:text-5xl'} font-bold text-encourager mb-4 text-center`}>
         Leader Leap Assessment Tool
       </h1>
       
-      <p className="text-xl text-slate-600 max-w-2xl text-center mb-10">
+      <p className={`${isMobile ? 'text-base' : 'text-xl'} text-slate-600 ${isMobile ? 'max-w-full' : 'max-w-2xl'} text-center mb-10`}>
         Identify and close the gaps between your current leadership competencies and where you want to be.
       </p>
       

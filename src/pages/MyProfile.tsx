@@ -12,6 +12,7 @@ import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import SEO from '@/components/SEO';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,6 +28,7 @@ import {
 const MyProfile = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
+  const isMobile = useIsMobile();
   const {
     assessments,
     allAssessments,
@@ -157,14 +159,15 @@ const MyProfile = () => {
     <>
       <SEO title="Profile - Leader Leap" description="User profile (private)" additionalMeta={[{ name: 'robots', content: 'noindex, nofollow' }]} />
       <div className="min-h-screen bg-slate-50">
-        <div className="max-w-5xl mx-auto px-4 py-2">
+        <div className={`mx-auto ${isMobile ? 'w-full px-2 py-2 overflow-hidden' : 'max-w-5xl px-4 py-2'}`}>
           <Navigation />
         </div>
-        <main className="max-w-4xl mx-auto px-4 py-8">
-          <h1 className="text-3xl font-bold text-encourager mb-8">My Profile</h1>
-          
-          <div className="mb-8">
-            <div className="bg-white rounded-lg shadow p-6">
+        <main className={`mx-auto ${isMobile ? 'w-full px-2 py-6 overflow-hidden' : 'max-w-4xl px-4 py-8'}`}>
+          <div className={isMobile ? 'w-full max-w-full overflow-hidden' : ''}>
+            <h1 className="text-3xl font-bold text-encourager mb-8">My Profile</h1>
+            
+            <div className="mb-8">
+              <div className="bg-white rounded-lg shadow p-6">
               <h2 className="text-xl font-semibold mb-2">Account Details</h2>
               <div className="mb-4">
                 <span className="font-medium">Email:</span> {user?.email}
@@ -230,10 +233,10 @@ const MyProfile = () => {
             </div>
           </div>
 
-          <div className="flex justify-end mb-8">
+          <div className={`mb-8 ${isMobile ? 'flex justify-center' : 'flex justify-end'}`}>
             <Button 
               onClick={handleStartNewAssessment}
-              className="bg-encourager hover:bg-encourager-light text-white px-6 py-3"
+              className={`bg-encourager hover:bg-encourager-light text-white ${isMobile ? 'w-full px-4 py-3' : 'px-6 py-3'}`}
             >
               Start New Assessment
             </Button>
@@ -259,12 +262,13 @@ const MyProfile = () => {
               />
             )}
             {lastRefreshed && (
-              <p className="mt-4 text-xs text-slate-400 text-right">
+              <p className={`text-xs text-slate-400 ${isMobile ? 'mt-12 text-center' : 'mt-4 text-right'}`}>
                 Last updated: {new Date(lastRefreshed).toLocaleTimeString()}
                 {' | '}
                 Showing page {currentPage} of {Math.ceil(totalAssessments / pageSize)}
               </p>
             )}
+          </div>
           </div>
         </main>
         <Footer />

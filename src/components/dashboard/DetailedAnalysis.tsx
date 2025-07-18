@@ -13,6 +13,7 @@ import {
   TooltipProvider,
   TooltipTrigger 
 } from '@/components/ui/tooltip';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface DetailedAnalysisProps {
   categories: Category[];
@@ -29,6 +30,8 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
   assessmentId,
   className = '' 
 }) => {
+  const isMobile = useIsMobile();
+  
   // Store the regeneration callback
   const [regenerationCallback, setRegenerationCallback] = React.useState<(() => Promise<void>) | null>(null);
 
@@ -76,39 +79,49 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
       <CardContent className="p-0">
         <Tabs defaultValue="radar-chart" className="w-full">
           <TabsList
-            className="grid w-full grid-cols-3 rounded-lg overflow-hidden"
+            className={`w-full rounded-lg overflow-hidden ${
+              isMobile 
+                ? 'flex flex-col space-y-1 p-2 h-auto' 
+                : 'grid grid-cols-3'
+            }`}
             style={{ background: '#30574E' }}
           >
             <TabsTrigger
               value="radar-chart"
-              className="flex items-center gap-2 text-white data-[state=active]:bg-[#91ABA5] data-[state=active]:text-white data-[state=active]:shadow-none"
+              className={`flex items-center gap-2 text-white data-[state=active]:bg-[#91ABA5] data-[state=active]:text-white data-[state=active]:shadow-none ${
+                isMobile ? 'justify-start text-left w-full py-3' : ''
+              }`}
             >
               <Target className="h-4 w-4 text-white" />
-              Radar Chart
+              {isMobile ? 'Chart' : 'Radar Chart'}
             </TabsTrigger>
             <TabsTrigger
               value="key-insights"
-              className="flex items-center gap-2 text-white data-[state=active]:bg-[#91ABA5] data-[state=active]:text-white data-[state=active]:shadow-none"
+              className={`flex items-center gap-2 text-white data-[state=active]:bg-[#91ABA5] data-[state=active]:text-white data-[state=active]:shadow-none ${
+                isMobile ? 'justify-start text-left w-full py-3' : ''
+              }`}
             >
               <TrendingUp className="h-4 w-4 text-white" />
-              Key Insights and Recommendations
+              {isMobile ? 'Insights' : 'Key Insights and Recommendations'}
             </TabsTrigger>
             <TabsTrigger
               value="skills-assessment"
-              className="flex items-center gap-2 text-white data-[state=active]:bg-[#91ABA5] data-[state=active]:text-white data-[state=active]:shadow-none"
+              className={`flex items-center gap-2 text-white data-[state=active]:bg-[#91ABA5] data-[state=active]:text-white data-[state=active]:shadow-none ${
+                isMobile ? 'justify-start text-left w-full py-3' : ''
+              }`}
             >
               <ListChecks className="h-4 w-4 text-white" />
-              Skills Assessment
+              {isMobile ? 'Skills' : 'Skills Assessment'}
             </TabsTrigger>
           </TabsList>
           
           <TabsContent value="radar-chart" className="mt-0">
             {hasCategories ? (
-              <div className="h-[600px] w-full p-6">
+              <div className={`w-full p-6 ${isMobile ? 'h-[400px]' : 'h-[600px]'}`}>
                 <SkillGapChart categories={categories} />
               </div>
             ) : (
-              <div className="h-[600px] w-full flex items-center justify-center bg-slate-50">
+              <div className={`w-full flex items-center justify-center bg-slate-50 ${isMobile ? 'h-[400px]' : 'h-[600px]'}`}>
                 <p className="text-slate-500 text-center">
                   No category data available for visualization. Please complete an assessment first.
                 </p>
@@ -118,7 +131,7 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
           
           <TabsContent value="key-insights" className="mt-0">
             {hasCategories ? (
-              <div className="h-[600px] w-full p-6 overflow-y-auto">
+              <div className={`w-full p-6 overflow-y-auto ${isMobile ? 'h-[400px]' : 'h-[600px]'}`}>
                 <AIInsights 
                   categories={categories}
                   demographics={demographics}
@@ -128,7 +141,7 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
                 />
               </div>
             ) : (
-              <div className="h-[600px] w-full flex items-center justify-center bg-slate-50">
+              <div className={`w-full flex items-center justify-center bg-slate-50 ${isMobile ? 'h-[400px]' : 'h-[600px]'}`}>
                 <p className="text-slate-500 text-center">
                   No assessment data available for AI insights. Please complete an assessment first.
                 </p>
@@ -138,11 +151,11 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
 
           <TabsContent value="skills-assessment" className="mt-0">
             {hasCategories ? (
-              <div className="h-[600px] w-full p-6 overflow-y-auto">
+              <div className={`w-full p-6 overflow-y-auto ${isMobile ? 'h-[400px]' : 'h-[600px]'}`}>
                 <SkillsAssessment categories={categories} />
               </div>
             ) : (
-              <div className="h-[600px] w-full flex items-center justify-center bg-slate-50">
+              <div className={`w-full flex items-center justify-center bg-slate-50 ${isMobile ? 'h-[400px]' : 'h-[600px]'}`}>
                 <p className="text-slate-500 text-center">
                   No assessment data available for skills assessment. Please complete an assessment first.
                 </p>

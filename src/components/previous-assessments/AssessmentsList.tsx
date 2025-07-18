@@ -7,6 +7,7 @@ import { formatDate } from '@/lib/utils';
 import { Pagination } from '@/components/ui/pagination';
 import { AlertTriangle } from 'lucide-react';
 import DeleteAssessmentDialog from './DeleteAssessmentDialog';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface AssessmentRecord {
   id: string;
@@ -51,16 +52,17 @@ const AssessmentsList = ({
   onDeleteAssessment,
   validateAssessment
 }: AssessmentsListProps) => {
+  const isMobile = useIsMobile();
   const totalPages = Math.ceil(totalAssessments / pageSize);
   
   return (
-    <div className="space-y-6">
-      <Table>
+    <div className={`space-y-6 ${isMobile ? 'w-full max-w-full overflow-hidden' : ''}`}>
+      <Table className={isMobile ? 'w-full max-w-full table-fixed' : ''}>
         <TableHeader>
           <TableRow>
-            <TableHead>Date & Time Completed</TableHead>
-            <TableHead>Assessment ID</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead className={isMobile ? 'w-1/3' : ''}>Date & Time Completed</TableHead>
+            <TableHead className={isMobile ? 'w-1/4' : ''}>{isMobile ? 'Assess. ID' : 'Assessment ID'}</TableHead>
+            <TableHead className={`text-right ${isMobile ? 'w-5/12' : ''}`}>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -81,31 +83,33 @@ const AssessmentsList = ({
                       <span className="text-xs text-muted-foreground">{time}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-muted-foreground text-sm">
-                    {assessment.id}
-                    {assessment.completed === false && (
-                      <span className="ml-2 text-xs text-amber-500">(incomplete)</span>
-                    )}
+                  <TableCell className={`text-muted-foreground text-sm ${isMobile ? 'truncate' : ''}`}>
+                    <div className={isMobile ? 'truncate text-xs' : ''}>
+                      {assessment.id}
+                      {assessment.completed === false && (
+                        <span className="ml-2 text-xs text-amber-500">(incomplete)</span>
+                      )}
+                    </div>
                   </TableCell>
-                  <TableCell className="text-right flex justify-end items-center gap-2">
+                  <TableCell className={`text-right ${isMobile ? 'whitespace-nowrap' : 'flex justify-end items-center gap-2'}`}>
                     {assessment.hasValidData === false ? (
-                      <div className="flex items-center justify-end gap-2">
+                      <div className={`${isMobile ? 'flex items-center justify-end gap-1' : 'flex items-center justify-end gap-2'}`}>
                         <AlertTriangle className="h-4 w-4 text-amber-500" />
                         <span className="text-xs text-amber-600">Invalid data</span>
                       </div>
                     ) : assessment.completed === false ? (
-                      <div className="flex items-center justify-end gap-2">
+                      <div className={`${isMobile ? 'flex items-center justify-end gap-1' : 'flex items-center justify-end gap-2'}`}>
                         <AlertTriangle className="h-4 w-4 text-amber-500" />
                         <span className="text-xs text-amber-600">Incomplete assessment</span>
                       </div>
                     ) : (
-                      <>
+                      <div className={`${isMobile ? 'flex items-center justify-end gap-2' : 'flex items-center justify-end gap-2'}`}>
                         <Link to={`/results/${assessment.id}`}>
                           <Button 
                             size="sm" 
                             className="bg-encourager hover:bg-encourager-light"
                           >
-                            View Results
+                            {isMobile ? 'View' : 'View Results'}
                           </Button>
                         </Link>
                         {onDeleteAssessment && assessment.id !== '2631edf1-a358-4303-83c1-deb9664b53e2' && (
@@ -114,7 +118,7 @@ const AssessmentsList = ({
                             onDeleteAssessment={onDeleteAssessment}
                           />
                         )}
-                      </>
+                      </div>
                     )}
                   </TableCell>
                 </TableRow>

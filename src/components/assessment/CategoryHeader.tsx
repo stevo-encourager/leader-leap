@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardTitle } from '@/components/ui/card';
 import { Category } from '@/utils/assessmentTypes';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface CategoryHeaderProps {
   category: Category;
@@ -14,6 +15,8 @@ const CategoryHeader: React.FC<CategoryHeaderProps> = ({
   activeCategory,
   totalCategories
 }) => {
+  const isMobile = useIsMobile();
+
   return (
     <Card className="mb-10 encourager-card">
       <CardContent className="p-6 bg-encourager-lightgray">
@@ -25,7 +28,9 @@ const CategoryHeader: React.FC<CategoryHeaderProps> = ({
             {Array.from({ length: totalCategories }).map((_, index) => (
               <div 
                 key={index}
-                className={`h-1 w-6 rounded-full ${index === activeCategory ? 'bg-encourager' : 'bg-slate-200'}`}
+                className={`h-1 rounded-full ${
+                  isMobile ? 'w-3' : 'w-6'
+                } ${index === activeCategory ? 'bg-encourager' : 'bg-slate-200'}`}
               />
             ))}
           </div>

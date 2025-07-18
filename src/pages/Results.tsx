@@ -16,6 +16,7 @@ import { getLocalAssessmentData } from '@/services/assessment/manageAssessmentHi
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
 import SEO from '@/components/SEO';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Results = () => {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ const Results = () => {
   const [isPageReady, setIsPageReady] = useState(false);
   const [isInitialDataChecked, setIsInitialDataChecked] = useState(false);
   const [showMandatoryAuth, setShowMandatoryAuth] = useState(false);
+  const isMobile = useIsMobile();
   
   // Log the assessment ID for debugging
   console.log('Results page - URL assessmentId parameter:', assessmentId);
@@ -264,10 +266,10 @@ const Results = () => {
     console.error("Results page - Showing error for specific assessment:", specificAssessmentError);
     return (
       <div className="min-h-screen bg-slate-50">
-        <div className="max-w-5xl mx-auto px-4 py-2">
+        <div className={`mx-auto ${isMobile ? 'w-full px-2 py-2 overflow-hidden' : 'max-w-5xl px-4 py-2'}`}>
           <Navigation />
         </div>
-        <main className="assessment-container max-w-5xl mx-auto px-4 py-8">
+        <main className={`mx-auto ${isMobile ? 'w-full px-2 py-6 overflow-hidden' : 'max-w-5xl px-4 py-8'}`}>
           <UserHeader />
           <Alert variant="destructive" className="mb-6">
             <AlertTriangle className="h-4 w-4" />
@@ -294,10 +296,10 @@ const Results = () => {
   if (showMandatoryAuth) {
     return (
       <div className="min-h-screen bg-slate-50">
-        <div className="max-w-5xl mx-auto px-4 py-2">
+        <div className={`mx-auto ${isMobile ? 'w-full px-2 py-2 overflow-hidden' : 'max-w-5xl px-4 py-2'}`}>
           <Navigation />
         </div>
-        <main className="assessment-container max-w-5xl mx-auto px-4 py-8">
+        <main className={`mx-auto ${isMobile ? 'w-full px-2 py-6 overflow-hidden' : 'max-w-5xl px-4 py-8'}`}>
           <UserHeader />
           <AuthSection onClose={handleAuthSuccess} mandatory={true} />
         </main>
@@ -350,10 +352,10 @@ const Results = () => {
     
     return (
       <div className="min-h-screen bg-slate-50">
-        <div className="max-w-5xl mx-auto px-4 py-2">
+        <div className={`mx-auto ${isMobile ? 'w-full px-2 py-2 overflow-hidden' : 'max-w-5xl px-4 py-2'}`}>
           <Navigation />
         </div>
-        <main className="assessment-container max-w-5xl mx-auto px-4 py-8">
+        <main className={`mx-auto ${isMobile ? 'w-full px-2 py-6 overflow-hidden' : 'max-w-5xl px-4 py-8'}`}>
           <UserHeader />
           <InvalidResultsMessage 
             onRestart={() => {
@@ -377,10 +379,10 @@ const Results = () => {
     <>
       <SEO title="Results - Leader Leap" description="Assessment results (private)" additionalMeta={[{ name: 'robots', content: 'noindex, nofollow' }]} />
       <div className="min-h-screen bg-slate-50">
-        <div className="max-w-5xl mx-auto px-4 py-2">
+        <div className={`mx-auto ${isMobile ? 'w-full px-2 py-2 overflow-hidden' : 'max-w-5xl px-4 py-2'}`}>
           <Navigation />
         </div>
-        <main className="assessment-container max-w-5xl mx-auto px-4 py-8">
+        <main className={`mx-auto ${isMobile ? 'w-full px-2 py-6 overflow-hidden' : 'max-w-5xl px-4 py-8'}`}>
           <UserHeader />
           
           {showAuthForm && !showMandatoryAuth && (

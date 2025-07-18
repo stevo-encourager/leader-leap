@@ -9,11 +9,13 @@ import Footer from '@/components/layout/Footer';
 import IntroductionPage from '@/components/IntroductionPage';
 import { useAssessment } from '@/hooks/useAssessment';
 import SEO from '@/components/SEO';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
   const navigate = useNavigate();
   const { handleStartAssessment } = useAssessment();
   const { user, loading } = useAuth();
+  const isMobile = useIsMobile();
 
   // Wait for auth to initialize before rendering
   if (loading) {
@@ -67,10 +69,10 @@ const Index = () => {
         }}
       />
       <div className="min-h-screen bg-slate-50">
-        <div className="max-w-5xl mx-auto px-4 py-2">
+        <div className={`mx-auto ${isMobile ? 'w-full px-2 py-2 overflow-hidden' : 'max-w-5xl px-4 py-2'}`}>
           <Navigation />
         </div>
-        <main className="assessment-container max-w-5xl mx-auto px-4 py-8">
+        <main className={`assessment-container mx-auto ${isMobile ? 'w-full px-2 py-6 overflow-hidden' : 'max-w-5xl px-4 py-8'}`}>
           <IntroductionPage 
             categories={allCategories}
             onStartAssessment={() => {

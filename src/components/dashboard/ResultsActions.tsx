@@ -11,6 +11,7 @@ import { pdf } from '@react-pdf/renderer';
 import ReactPDFDocument from '../pdf/ReactPDFDocument';
 import { captureRadarChartAsPNG } from '@/utils/chartCapture';
 import SkillGapChart from '../SkillGapChart';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ResultsActionsProps {
   onBack: () => void;
@@ -40,6 +41,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
   });
 
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const [isDownloading, setIsDownloading] = useState(false);
   const [isExportingPDF, setIsExportingPDF] = useState(false);
   
@@ -413,84 +415,101 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
           <SkillGapChart categories={categories} isPDF={true} />
         </div>
       )}
-      <div className="flex justify-between w-full">
-        <Button variant="outline" onClick={onBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Assessment
-        </Button>
-        <div className="flex gap-2">
-          {!user && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    onClick={onSignup}
-                    className="flex items-center gap-2"
-                  >
-                    Sign Up
-                    <Info className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="top">
-                  <p className="max-w-xs text-sm">Create an account to save your results and access them anytime</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-          {isTestAssessment && (
-            <>
-              {/* CRITICAL DEBUG: Log inside the conditional that renders the button */}
-              {console.log('🔍 🚨 RENDERING REGENERATE BUTTON - INSIDE CONDITIONAL!')}
-              {console.log('🔍 🚨 BUTTON RENDER STATE:', { isTestAssessment, insightsLoading })}
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      onClick={() => {
-                        console.log('🔍 🚨 BUTTON ONCLICK FIRED - VERY FIRST LINE!');
-                        console.log('🔍 Button onClick called, isTestAssessment:', isTestAssessment);
-                        console.log('🔍 About to call handleRegenerateInsights DIRECTLY');
-                        handleRegenerateInsights();
-                      }}
-                      disabled={insightsLoading}
-                      className="flex items-center gap-2"
-                    >
-                      <Plus className="h-4 w-4" />
-                      {insightsLoading ? 'Regenerating...' : 'Regenerate Insights'}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="top">
-                    <p className="max-w-xs text-sm">Regenerate AI insights for this test assessment</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </>
-          )}
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="encourager" 
-                  className="flex items-center gap-2"
-                  onClick={handleDownloadPDF}
-                  disabled={isPDFExportDisabled}
-                >
-                  <Download className="h-4 w-4" />
-                  {getPDFButtonText()}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="top">
-                <p className="max-w-xs text-sm">{getPDFTooltipText()}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <Button onClick={handleNewAssessment}>
-            <Plus className="mr-2 h-4 w-4" />
-            Start New Assessment
-          </Button>
-        </div>
+      <div className={`${isMobile ? 'flex flex-col gap-4' : 'flex justify-between'} w-full`}>
+        {isMobile ? (
+          <>
+            <Button onClick={handleNewAssessment}>
+              <Plus className="mr-2 h-4 w-4" />
+              Start New Assessment
+            </Button>
+            <Button variant="outline" onClick={onBack}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Your Profile Page
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button variant="outline" onClick={onBack}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Your Profile Page
+            </Button>
+            <div className="flex gap-2">
+              {!user && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        onClick={onSignup}
+                        className="flex items-center gap-2"
+                      >
+                        Sign Up
+                        <Info className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <p className="max-w-xs text-sm">Create an account to save your results and access them anytime</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+              {isTestAssessment && (
+                <>
+                  {/* CRITICAL DEBUG: Log inside the conditional that renders the button */}
+                  {console.log('🔍 🚨 RENDERING REGENERATE BUTTON - INSIDE CONDITIONAL!')}
+                  {console.log('🔍 🚨 BUTTON RENDER STATE:', { isTestAssessment, insightsLoading })}
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => {
+                            console.log('🔍 🚨 BUTTON ONCLICK FIRED - VERY FIRST LINE!');
+                            console.log('🔍 Button onClick called, isTestAssessment:', isTestAssessment);
+                            console.log('🔍 About to call handleRegenerateInsights DIRECTLY');
+                            handleRegenerateInsights();
+                          }}
+                          disabled={insightsLoading}
+                          className="flex items-center gap-2"
+                        >
+                          <Plus className="h-4 w-4" />
+                          {insightsLoading ? 'Regenerating...' : 'Regenerate Insights'}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">
+                        <p className="max-w-xs text-sm">Regenerate AI insights for this test assessment</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </>
+              )}
+              {!isMobile && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        variant="encourager" 
+                        className="flex items-center gap-2"
+                        onClick={handleDownloadPDF}
+                        disabled={isPDFExportDisabled}
+                      >
+                        <Download className="h-4 w-4" />
+                        {getPDFButtonText()}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top">
+                      <p className="max-w-xs text-sm">{getPDFTooltipText()}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+              <Button onClick={handleNewAssessment}>
+                <Plus className="mr-2 h-4 w-4" />
+                Start New Assessment
+              </Button>
+            </div>
+          </>
+        )}
       </div>
     </>
   );

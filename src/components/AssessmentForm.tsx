@@ -10,6 +10,7 @@ import MidpointDialog from './assessment/MidpointDialog';
 import ValidationErrorDisplay from './assessment/ValidationErrorDisplay';
 import HelpButton from './assessment/HelpButton';
 import { useAssessmentForm } from '@/hooks/useAssessmentForm';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface AssessmentFormProps {
   categories: Category[];
@@ -35,6 +36,8 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
     handlePrevCategory,
     isCategoryCompleted
   } = useAssessmentForm(categories, initialActiveCategory);
+
+  const isMobile = useIsMobile();
 
   console.log("AssessmentForm rendering, about to render HelpButton");
 
@@ -134,17 +137,29 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
     <div className="fade-in">
       <div className="flex justify-between items-center mb-8">
         <div className="flex items-center gap-4">
-          <h1 className="text-3xl font-bold text-white flex items-center gap-2 bg-encourager px-4 py-2 rounded-md">
-            <CircleGauge className="text-white" size={28} strokeWidth={1.5} />
-            Leadership Assessment Tool
+          <h1 className={`font-bold text-white flex items-center gap-2 bg-encourager px-4 py-2 rounded-md ${
+            isMobile ? 'text-xl max-w-[280px] leading-tight' : 'text-3xl'
+          }`}>
+            <CircleGauge className="text-white" size={isMobile ? 20 : 28} strokeWidth={1.5} />
+            <span className={isMobile ? 'whitespace-pre-line' : ''}>
+              {isMobile ? 'Leadership\nAssessment Tool' : 'Leadership Assessment Tool'}
+            </span>
           </h1>
         </div>
         <div className="flex items-center gap-4">
-          <img 
-            src="/lovable-uploads/8320d514-fba5-4e1b-a658-1563758db943.png" 
-            alt="Company Logo" 
-            className="h-24" 
-          />
+          {isMobile ? (
+            <img 
+              src="/encouragerfavicon.png" 
+              alt="Company Logo" 
+              className="h-20" 
+            />
+          ) : (
+            <img 
+              src="/lovable-uploads/8320d514-fba5-4e1b-a658-1563758db943.png" 
+              alt="Company Logo" 
+              className="h-24" 
+            />
+          )}
         </div>
       </div>
       

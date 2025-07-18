@@ -506,7 +506,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
                       <Text style={styles.boldText}>
                         {index + 1}. {area.competency || 'Unknown Competency'} (Gap: {(area.gap || 0).toFixed(1)})
                       </Text>
-                      <Text style={styles.text}>Key Insights and Recommendations:</Text>
+                      <Text style={styles.text}>Key Insights & Recommendations:</Text>
                       {area.insights && Array.isArray(area.insights) && area.insights.map((insight, insightIndex) => {
                         // Additional safety check for insight
                         if (!insight || typeof insight !== 'string') {

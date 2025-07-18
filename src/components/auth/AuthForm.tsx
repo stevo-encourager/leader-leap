@@ -113,7 +113,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
 
     try {
       console.log('AuthForm: About to call signUp');
-      await signUp(data.email, data.password, data.fullName || '', false); // Pass false for receiveEmails
+      await signUp(data.email, data.password, data.fullName || '', null); // Pass null so user gets redirected to consent page
       console.log('AuthForm: Sign up completed successfully');
       // Don't call onSuccess here as the user needs to verify their email
     } catch (error) {

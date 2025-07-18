@@ -158,21 +158,18 @@ const Consent: React.FC = () => {
       // If user consents to emails, subscribe to Brevo
       if (receiveEmails && user.email) {
         try {
-          const res = await fetch('/api/subscribe-brevo', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: user.email }),
+          const { data, error } = await supabase.functions.invoke('brevo-subscribe', {
+            body: { email: user.email }
           });
-          if (res.ok) {
+          if (!error && data?.success) {
             toast({
               title: 'Subscribed to email updates',
               description: 'You will receive leadership tips and updates.',
             });
           } else {
-            const data = await res.json();
             toast({
               title: 'Email subscription failed',
-              description: data.error || 'Could not subscribe to emails.',
+              description: error?.message || data?.error || 'Could not subscribe to emails.',
               variant: 'destructive',
             });
           }

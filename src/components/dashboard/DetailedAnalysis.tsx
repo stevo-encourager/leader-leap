@@ -102,7 +102,7 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
               }`}
             >
               <TrendingUp className="h-4 w-4 text-white" />
-              {isMobile ? 'Insights' : 'Key Insights and Recommendations'}
+              {isMobile ? 'Insights' : 'Key Insights & Recommendations'}
             </TabsTrigger>
             <TabsTrigger
               value="skills-assessment"

@@ -26,7 +26,7 @@ BEGIN
     new.id, 
     new.email, 
     new.raw_user_meta_data->>'full_name',
-    COALESCE((new.raw_user_meta_data->>'receive_emails')::boolean, false)
+    COALESCE((new.raw_user_meta_data->>'receive_emails')::boolean, null)
   );
   RETURN new;
 END;

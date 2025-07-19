@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 
@@ -44,43 +44,111 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
   }, []);
 
   // ENHANCED: Better data validation function that doesn't require assessmentId for new assessments
-  const validateDataForInsights = useCallback(() => {
-
-    // Check if categories exist and have valid data
-    if (!categories || !Array.isArray(categories) || categories.length === 0) {
-      return false;
-    }
-
-    // Check if categories have skills with actual ratings
-    const hasValidSkills = categories.some(category => {
-      if (!category || !category.skills || !Array.isArray(category.skills)) {
+  // FIXED: Memoize the validation function to prevent unnecessary re-creation
+  const validateDataForInsights = useMemo(() => {
+    return () => {
+      // Check if categories exist and have valid data
+      if (!categories || !Array.isArray(categories) || categories.length === 0) {
         return false;
       }
-      
-      return category.skills.some(skill => {
-        if (!skill) return false;
+
+      // Check if categories have skills with actual ratings
+      const hasValidSkills = categories.some(category => {
+        if (!category || !category.skills || !Array.isArray(category.skills)) {
+          return false;
+        }
         
-        // Check for valid ratings in the correct format
-        const hasValidRatings = skill.ratings && 
-          typeof skill.ratings.current === 'number' && 
-          typeof skill.ratings.desired === 'number' &&
-          (skill.ratings.current > 0 || skill.ratings.desired > 0);
+        return category.skills.some(skill => {
+          if (!skill) return false;
           
-        return hasValidRatings;
+          // Check for valid ratings in the correct format
+          const hasValidRatings = skill.ratings && 
+            typeof skill.ratings.current === 'number' && 
+            typeof skill.ratings.desired === 'number' &&
+            (skill.ratings.current > 0 || skill.ratings.desired > 0);
+            
+          return hasValidRatings;
+        });
       });
-    });
 
-    if (!hasValidSkills) {
-      return false;
-    }
+      if (!hasValidSkills) {
+        return false;
+      }
 
-    // Check averageGap is valid
-    if (typeof averageGap !== 'number' || isNaN(averageGap)) {
-      return false;
-    }
+      // Check averageGap is valid
+      if (typeof averageGap !== 'number' || isNaN(averageGap)) {
+        return false;
+      }
 
-    return true;
+      return true;
+    };
   }, [categories, averageGap]);
+
+  // Polling/retry logic for insights generation
+  const generateNewInsights = useCallback(async (forceRegenerate = false) => {
+    const MAX_RETRIES = 5;
+    const RETRY_DELAY_MS = 6000;
+    let attempt = 0;
+    let lastError = null;
+    while (attempt < MAX_RETRIES) {
+      try {
+        if (!validateDataForInsights()) {
+          throw new Error('Invalid data for insights generation');
+        }
+
+        const { data, error: functionError } = await supabase.functions.invoke('generate-insights', {
+          body: {
+            categories,
+            demographics,
+            averageGap,
+            assessmentId: assessmentId || null,
+            forceRegenerate: forceRegenerate || isTestAssessment
+          }
+        });
+        if (functionError) {
+          // If the error is a 'still processing' or non-2xx, treat as retryable
+          lastError = functionError.message || 'Edge Function error';
+      
+          // Wait and retry - longer delay for first attempt
+          const delay = attempt === 0 ? 8000 : RETRY_DELAY_MS;
+          await new Promise(res => setTimeout(res, delay));
+          attempt++;
+          continue;
+        }
+        if (data && data.insights) {
+          const finalInsights = data.insights;
+          updateState({
+            insights: finalInsights,
+            isLoading: false,
+            error: null,
+            isInitialized: true
+          }, 'Generated new insights from API');
+          initializationCompleteRef.current = true;
+          isOperationInProgressRef.current = false;
+          return;
+        } else {
+          // No insights yet, treat as retryable
+          lastError = 'No insights received from API';
+          await new Promise(res => setTimeout(res, RETRY_DELAY_MS));
+          attempt++;
+          continue;
+        }
+      } catch (err) {
+        lastError = err instanceof Error ? err.message : 'Failed to generate insights';
+        await new Promise(res => setTimeout(res, RETRY_DELAY_MS));
+        attempt++;
+        continue;
+      }
+    }
+    // If we reach here, all retries failed
+    updateState({
+      error: lastError || 'Failed to generate insights after multiple attempts',
+      isLoading: false,
+      isInitialized: true
+    }, 'Generation error after retries');
+    initializationCompleteRef.current = true;
+    isOperationInProgressRef.current = false;
+  }, [categories, demographics, averageGap, assessmentId, isTestAssessment, validateDataForInsights, updateState]);
 
   // ENHANCED: Better initialization logic that always checks database first
   const initializeInsights = useCallback(async () => {
@@ -135,81 +203,21 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     } finally {
       isOperationInProgressRef.current = false;
     }
-  }, [assessmentId, updateState, validateDataForInsights]);
+  }, [assessmentId, updateState, validateDataForInsights, generateNewInsights]);
+
+  // FIXED: Stabilize the useEffect dependencies to prevent unnecessary re-initialization
+  // Use a stable reference for the initialization check
+  const shouldInitialize = useMemo(() => {
+    return validateDataForInsights() && !initializationCompleteRef.current;
+  }, [validateDataForInsights]);
 
   // ENHANCED: Better initialization trigger that doesn't rely on local state
   useEffect(() => {
     // Only run if we have valid data and haven't completed initialization
-    if (validateDataForInsights() && !initializationCompleteRef.current) {
+    if (shouldInitialize) {
       initializeInsights();
     }
-  }, [assessmentId, validateDataForInsights, initializeInsights]);
-
-  // Polling/retry logic for insights generation
-  const generateNewInsights = async (forceRegenerate = false) => {
-    const MAX_RETRIES = 5;
-    const RETRY_DELAY_MS = 6000;
-    let attempt = 0;
-    let lastError = null;
-    while (attempt < MAX_RETRIES) {
-      try {
-        if (!validateDataForInsights()) {
-          throw new Error('Invalid data for insights generation');
-        }
-
-        const { data, error: functionError } = await supabase.functions.invoke('generate-insights', {
-          body: {
-            categories,
-            demographics,
-            averageGap,
-            assessmentId: assessmentId || null,
-            forceRegenerate: forceRegenerate || isTestAssessment
-          }
-        });
-        if (functionError) {
-          // If the error is a 'still processing' or non-2xx, treat as retryable
-          lastError = functionError.message || 'Edge Function error';
-      
-          // Wait and retry - longer delay for first attempt
-          const delay = attempt === 0 ? 8000 : RETRY_DELAY_MS;
-          await new Promise(res => setTimeout(res, delay));
-          attempt++;
-          continue;
-        }
-        if (data && data.insights) {
-          let finalInsights = data.insights;
-          updateState({
-            insights: finalInsights,
-            isLoading: false,
-            error: null,
-            isInitialized: true
-          }, 'Generated new insights from API');
-          initializationCompleteRef.current = true;
-          isOperationInProgressRef.current = false;
-          return;
-        } else {
-          // No insights yet, treat as retryable
-          lastError = 'No insights received from API';
-          await new Promise(res => setTimeout(res, RETRY_DELAY_MS));
-          attempt++;
-          continue;
-        }
-      } catch (err) {
-        lastError = err instanceof Error ? err.message : 'Failed to generate insights';
-        await new Promise(res => setTimeout(res, RETRY_DELAY_MS));
-        attempt++;
-        continue;
-      }
-    }
-    // If we reach here, all retries failed
-    updateState({
-      error: lastError || 'Failed to generate insights after multiple attempts',
-      isLoading: false,
-      isInitialized: true
-    }, 'Generation error after retries');
-    initializationCompleteRef.current = true;
-    isOperationInProgressRef.current = false;
-  };
+  }, [assessmentId, shouldInitialize, initializeInsights]);
 
   const regenerateInsights = useCallback(async () => {
     
@@ -238,9 +246,6 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     
     // Start new generation with force flag
     try {
-      if (isTestAssessment) {
-    
-      }
       await generateNewInsights(true); // Force regenerate
     } catch (error) {
       updateState({
@@ -253,7 +258,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       isOperationInProgressRef.current = false;
       initializationCompleteRef.current = true;
     }
-  }, [assessmentId, isTestAssessment, updateState]);
+  }, [updateState, validateDataForInsights, generateNewInsights]);
 
   return {
     insights: state.insights,

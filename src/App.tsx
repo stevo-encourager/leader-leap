@@ -10,7 +10,7 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Assessment from "./pages/Assessment";
 import Results from "./pages/Results";
-import PreviousAssessments from "./pages/PreviousAssessments";
+
 import Admin from "./pages/Admin";
 import PrivacyNotice from "./pages/PrivacyNotice";
 import NotFound from "./pages/NotFound";
@@ -119,7 +119,7 @@ function App() {
                 <Route path="/assessment" element={<Assessment />} />
                 <Route path="/results" element={<Results />} />
                 <Route path="/results/:id" element={<Results />} />
-                <Route path="/previous-assessments" element={<PreviousAssessments />} />
+                
                 <Route path="/profile" element={<MyProfile />} />
                 <Route path="/consent" element={<Consent />} />
                 <Route path="/reset-password" element={<ResetPassword />} />

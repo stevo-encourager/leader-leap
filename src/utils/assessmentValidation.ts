@@ -113,5 +113,5 @@ export const handleAssessmentDataError = (
     variant: "destructive",
   });
   
-  navigate('/previous-assessments');
+  navigate('/profile');
 };

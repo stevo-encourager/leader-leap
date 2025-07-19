@@ -262,7 +262,7 @@ const Results = () => {
               handleStartAssessment();
               navigate('/assessment');
             }}
-            onBack={() => navigate('/previous-assessments')}
+            onBack={() => navigate('/profile')}
             errorType={specificAssessmentError}
             debugData={debugData}
           />
@@ -337,7 +337,7 @@ const Results = () => {
               handleStartAssessment();
               navigate('/assessment');
             }}
-            onBack={assessmentId ? () => navigate('/previous-assessments') : undefined}
+            onBack={assessmentId ? () => navigate('/profile') : undefined}
             errorType="missing-data" 
             debugData={debugData}
           />
@@ -374,7 +374,7 @@ const Results = () => {
               }}
               onBack={() => {
                 if (assessmentId) {
-                  navigate('/previous-assessments');
+                  navigate('/profile');
                 } else {
                   handleBackToDemographics();
                   navigate('/assessment');

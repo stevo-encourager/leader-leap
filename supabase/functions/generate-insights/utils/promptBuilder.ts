@@ -335,7 +335,7 @@ const validateSkillNamesForSummary = (skillNames: string[]): string[] => {
     
     // Log any cleaning that occurred
     if (cleanedName !== skillName) {
-      console.log(`SUMMARY SKILL CLEANUP: "${skillName}" -> "${cleanedName}"`);
+  
     }
     
     return cleanedName;
@@ -435,11 +435,29 @@ const VALIDATED_RESOURCE_LINKS: Record<string, string> = {
 };
 
 export function formatResourceMarkdown(resourceName: string): string {
+  // First, try to find an exact match
   const url = VALIDATED_RESOURCE_LINKS[resourceName];
   if (url) {
     return `[${resourceName}](${url})`;
   }
-  return resourceName; // fallback to plain name if no URL found
+  
+  // If no exact match, check if the resource name contains a URL (format: "Name: URL")
+  const urlMatch = resourceName.match(/^(.+?):\s*(https?:\/\/.+)$/);
+  if (urlMatch) {
+    const name = urlMatch[1].trim();
+    const url = urlMatch[2].trim();
+    return `[${name}](${url})`;
+  }
+  
+  // If still no match, try to find a partial match in the validated resources
+  for (const [validName, validUrl] of Object.entries(VALIDATED_RESOURCE_LINKS)) {
+    if (resourceName.includes(validName) || validName.includes(resourceName)) {
+      return `[${validName}](${validUrl})`;
+    }
+  }
+  
+  // Fallback to plain name if no URL found
+  return resourceName;
 }
 
 // Build a summary object from raw assessment data for prompt generation
@@ -460,8 +478,9 @@ export function buildAssessmentData(categories: any[], averageGap: number, demog
     if (cat.skills && Array.isArray(cat.skills)) {
       // Calculate skill-level gaps and find top gap skills
       topGapSkills = cat.skills.map((skill: any) => {
-        const current = Number(skill.ratings?.current) || 0;
-        const desired = Number(skill.ratings?.desired) || 0;
+        // Handle both old format (ratings object) and new format (direct properties)
+        const current = Number(skill.currentRating || skill.ratings?.current || 0);
+        const desired = Number(skill.targetRating || skill.desiredRating || skill.ratings?.desired || 0);
         const gap = Math.abs(desired - current);
         if (current > 0 || desired > 0) {
           totalCurrent += current;
@@ -485,7 +504,7 @@ export function buildAssessmentData(categories: any[], averageGap: number, demog
 
     return {
       id: cat.id || '',
-      title: cat.title || '',
+      title: cat.name || cat.title || '',
       description: cat.description || '',
       averageCurrentRating: avgCurrent,
       averageDesiredRating: avgDesired,
@@ -495,7 +514,7 @@ export function buildAssessmentData(categories: any[], averageGap: number, demog
   });
 
   // DEBUG: Log the computed category breakdown for backend verification
-  console.log("[DEBUG] Backend categoryBreakdown:", JSON.stringify(categoryBreakdown, null, 2));
+  
 
   return {
     averageGap,
@@ -505,11 +524,10 @@ export function buildAssessmentData(categories: any[], averageGap: number, demog
 }
 
 export const buildPrompt = (assessmentSummary: any): string => {
-  console.log('PROMPT BUILDER: Starting prompt generation with assessment summary structure validation');
+
 
   // Validate assessment summary structure
   if (!assessmentSummary || !assessmentSummary.categoryBreakdown || !Array.isArray(assessmentSummary.categoryBreakdown)) {
-    console.error('PROMPT BUILDER ERROR: Invalid assessment summary structure', assessmentSummary);
     throw new Error('Invalid assessment summary structure provided to prompt builder');
   }
 
@@ -523,20 +541,7 @@ export const buildPrompt = (assessmentSummary: any): string => {
     .sort((a, b) => b.averageCurrentRating - a.averageCurrentRating)
     .slice(0, 2);
 
-  console.log('PROMPT BUILDER: Processing top gap categories for summary context');
-  console.log('Top Gap Categories Count:', topGapCategories.length);
-  console.log('Top Competencies Count:', topCompetencies.length);
 
-  // DEBUG: Log the exact categories being used
-  console.log('🔍 DETERMINISTIC CATEGORY SELECTION:');
-  console.log('Priority Areas (Development Areas) - MUST USE THESE EXACTLY:');
-  topGapCategories.forEach((cat, i) => {
-    console.log(`  ${i+1}. ${cat.title} (Gap: ${cat.gap.toFixed(1)}, Current: ${cat.averageCurrentRating.toFixed(1)}, Desired: ${cat.averageDesiredRating.toFixed(1)})`);
-  });
-  console.log('Key Strengths (Highest Current Scores) - MUST USE THESE EXACTLY:');
-  topCompetencies.forEach((cat, i) => {
-    console.log(`  ${i+1}. ${cat.title} (Current: ${cat.averageCurrentRating.toFixed(1)}, Gap: ${cat.gap.toFixed(1)})`);
-  });
 
   const assessmentDataSection = `
 Assessment Data:
@@ -957,16 +962,8 @@ Base your insights on the assessment data provided above and ensure each insight
 
 `;
 
-  // DEBUG: Log the complete prompt for debugging
-  console.log('🔍 COMPLETE PROMPT BEING SENT TO OPENAI:');
-  console.log('Prompt length:', fullPrompt.length, 'characters');
-  console.log('First 500 characters:', fullPrompt.substring(0, 500));
-  console.log('Last 500 characters:', fullPrompt.substring(fullPrompt.length - 500));
-  
-  // Log the exact categories being used
-  console.log('🔍 DETERMINISTIC CATEGORY SELECTION CONFIRMED:');
-  console.log('Priority Areas to be used:', topGapCategories.map(cat => cat.title));
-  console.log('Key Strengths to be used:', topCompetencies.map(cat => cat.title));
+  // Log only non-sensitive information for debugging
+
   
   return fullPrompt;
 };

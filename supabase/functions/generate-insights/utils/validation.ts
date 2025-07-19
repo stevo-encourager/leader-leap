@@ -11,7 +11,6 @@ export const validateEnvironmentVariables = () => {
   if (!supabaseUrl || !supabaseServiceKey) {
     throw new Error('Supabase configuration not complete');
   }
-
   return { openAIApiKey, supabaseUrl, supabaseServiceKey };
 };
 

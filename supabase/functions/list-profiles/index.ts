@@ -47,7 +47,7 @@ serve(async (req) => {
     // List all profiles
     const { data, error } = await supabaseAdmin
       .from('profiles')
-      .select('id, email, full_name, receive_emails');
+      .select('id, email, full_name, receive_emails, gdpr_consent');
 
     if (error) {
       console.error("Error listing profiles:", error);

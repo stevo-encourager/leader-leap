@@ -23,7 +23,8 @@ export interface AuthFormProps {
 const authSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
-  fullName: z.string().optional(),
+  firstName: z.string().min(1, { message: "First name is required" }),
+  surname: z.string().min(1, { message: "Surname is required" }),
   receiveEmails: z.boolean().optional(),
   // gdprConsent is no longer required or checked at signup
 }).refine((data) => {
@@ -46,45 +47,25 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
     defaultValues: {
       email: '',
       password: '',
-      fullName: '',
+      firstName: '',
+      surname: '',
       // Remove receiveEmails and gdprConsent from defaultValues
     }
   });
 
   // Removed gdprConsent and receiveEmails from watch
 
-  console.log('AuthForm: Component rendered with activeTab:', activeTab);
-  // Removed console.log for receiveEmails
-
   const handleSignIn = async (data: any) => {
-    console.log('AuthForm: handleSignIn called - START');
-    console.log('AuthForm: handleSignIn called with email:', data.email);
-    console.log('AuthForm: handleSignIn data object:', { 
-      email: data.email, 
-      hasPassword: !!data.password,
-      passwordLength: data.password?.length 
-    });
     
     setIsSubmitting(true);
     
     try {
-      console.log('AuthForm: About to call signIn method from AuthContext');
-      console.log('AuthForm: signIn function exists:', typeof signIn === 'function');
-      
       await signIn(data.email, data.password);
-      console.log('AuthForm: signIn completed successfully');
       
       if (onSuccess) {
-        console.log('AuthForm: Calling onSuccess callback');
         onSuccess();
       }
     } catch (error) {
-      console.error('AuthForm: Sign in failed with error:', error);
-      console.error('AuthForm: Error details:', {
-        message: error?.message,
-        name: error?.name,
-        stack: error?.stack
-      });
       // Error handling is done in AuthContext, but let's add a fallback
       if (!error?.message?.includes('already handled')) {
         toast({
@@ -94,30 +75,18 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
         });
       }
     } finally {
-      console.log('AuthForm: Setting isSubmitting to false');
       setIsSubmitting(false);
     }
-    
-    console.log('AuthForm: handleSignIn - END');
   };
 
   const handleSignUp = async (data: any) => {
-    console.log('AuthForm: handleSignUp called with data:', {
-      email: data.email,
-      fullName: data.fullName,
-      receiveEmails: data.receiveEmails,
-      // gdprConsent removed from signup
-    });
     
     setIsSubmitting(true);
 
     try {
-      console.log('AuthForm: About to call signUp');
-      await signUp(data.email, data.password, data.fullName || '', null); // Pass null so user gets redirected to consent page
-      console.log('AuthForm: Sign up completed successfully');
+      await signUp(data.email, data.password, data.firstName, data.surname, null); // Pass null for receiveEmails so user gets redirected to consent page
       // Don't call onSuccess here as the user needs to verify their email
     } catch (error) {
-      console.error('AuthForm: Sign up failed:', error);
       // Error is already handled in AuthContext with toast
     } finally {
       setIsSubmitting(false);
@@ -125,14 +94,12 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
   };
 
   const handleGoogleSignIn = async () => {
-    console.log('AuthForm: Starting Google sign in');
     setIsSubmitting(true);
     
     try {
       await signInWithGoogle();
       // onSuccess is called in AuthContext when the redirect happens
     } catch (error) {
-      console.error('AuthForm: Google sign in failed:', error);
       // Error is already handled in AuthContext with toast
     } finally {
       setIsSubmitting(false);
@@ -141,7 +108,6 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('AuthForm: Sending password reset for:', forgotEmail);
     setForgotSent(false);
     setIsSubmitting(true);
     
@@ -149,7 +115,6 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
       await forgotPassword(forgotEmail);
       setForgotSent(true);
     } catch (error) {
-      console.error('AuthForm: Password reset failed:', error);
       // Error is already handled in AuthContext with toast
     } finally {
       setIsSubmitting(false);
@@ -157,46 +122,20 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
   };
 
   const onSubmit = async (data: any) => {
-    console.log('AuthForm: onSubmit handler called - FORM SUBMISSION TRIGGERED');
-    console.log('AuthForm: onSubmit data:', { 
-      email: data.email, 
-      hasPassword: !!data.password,
-      // Removed receiveEmails and gdprConsent from log
-      activeTab: activeTab,
-      timestamp: new Date().toISOString()
-    });
-    
-    // Check form validation errors
-    console.log('AuthForm: Form errors:', errors);
-    
     try {
-      console.log('AuthForm: About to check activeTab:', activeTab);
-      
       if (activeTab === 'signin') {
-        console.log('AuthForm: Calling handleSignIn for signin tab');
         await handleSignIn(data);
-        console.log('AuthForm: handleSignIn completed');
       } else if (activeTab === 'signup') {
-        console.log('AuthForm: Calling handleSignUp for signup tab');
         await handleSignUp(data);
-        console.log('AuthForm: handleSignUp completed');
       }
     } catch (error) {
-      console.error('AuthForm: onSubmit error:', error);
+      // Error handling is done in individual handlers
     }
-    
-    console.log('AuthForm: onSubmit handler - END');
   };
 
   const isLoading = loading || isSubmitting;
 
-  console.log('AuthForm: Render state:', {
-    activeTab,
-    isLoading,
-    loading,
-    isSubmitting,
-    signInExists: typeof signIn === 'function'
-  });
+
 
   return (
     <Tabs defaultValue={defaultTab} value={activeTab} onValueChange={setActiveTab}>
@@ -232,7 +171,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
           </form>
         ) : (
           <>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" onClick={() => console.log('AuthForm: Form clicked')}>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input 
@@ -270,7 +209,6 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
                 type="submit" 
                 className="w-full" 
                 disabled={isLoading}
-                onClick={() => console.log('AuthForm: Sign In button clicked')}
               >
                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Sign In
@@ -294,7 +232,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
               type="button" 
               variant="outline" 
               onClick={() => { 
-                console.log('DEBUG: Google button clicked'); 
+             
                 handleGoogleSignIn(); 
               }}
               disabled={isLoading}
@@ -310,12 +248,23 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
       <TabsContent value="signup">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="fullName">Full Name</Label>
+            <Label htmlFor="firstName">First Name</Label>
             <Input 
-              id="fullName"
-              placeholder="John Doe"
-              {...register('fullName')}
+              id="firstName"
+              placeholder="John"
+              {...register('firstName')}
             />
+            {errors.firstName && <p className="text-sm text-red-500">{errors.firstName.message as string}</p>}
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="surname">Surname</Label>
+            <Input 
+              id="surname"
+              placeholder="Doe"
+              {...register('surname')}
+            />
+            {errors.surname && <p className="text-sm text-red-500">{errors.surname.message as string}</p>}
           </div>
           
           <div className="space-y-2">

@@ -49,27 +49,36 @@ export type Database = {
           created_at: string
           email: string
           full_name: string | null
+          first_name: string | null
+          surname: string | null
           id: string
           receive_emails: boolean | null
           gdpr_consent: boolean | null
+          is_admin: boolean | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           email: string
           full_name?: string | null
+          first_name?: string | null
+          surname?: string | null
           id: string
           receive_emails?: boolean | null
           gdpr_consent?: boolean | null
+          is_admin?: boolean | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           email?: string
           full_name?: string | null
+          first_name?: string | null
+          surname?: string | null
           id?: string
           receive_emails?: boolean | null
           gdpr_consent?: boolean | null
+          is_admin?: boolean | null
           updated_at?: string
         }
         Relationships: []

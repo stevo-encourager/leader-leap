@@ -32,7 +32,7 @@ export const useSpecificAssessment = (assessmentId: string | undefined): UseSpec
       return;
     }
     
-    console.log('useSpecificAssessment - Fetching assessment with id:', assessmentId);
+
     
     const fetchSpecificAssessment = async () => {
       setLoadingSpecificAssessment(true);
@@ -40,7 +40,7 @@ export const useSpecificAssessment = (assessmentId: string | undefined): UseSpec
       
       try {
         const result = await getAssessmentById(assessmentId);
-        console.log("useSpecificAssessment - Raw fetch result:", result);
+    
         
         if (result.success && result.data) {
           // Extract categories data
@@ -53,7 +53,7 @@ export const useSpecificAssessment = (assessmentId: string | undefined): UseSpec
           const normalizedCategories = validateAndNormalizeCategories(rawCategoriesData);
           
           if (normalizedCategories && normalizedCategories.length > 0) {
-            console.log("useSpecificAssessment - Setting assessment data with valid categories");
+        
             setSpecificAssessmentData({
               categories: normalizedCategories,
               demographics: demographicsData

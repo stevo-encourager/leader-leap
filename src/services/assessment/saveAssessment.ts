@@ -27,7 +27,7 @@ const checkForDuplicateAssessment = async (
   userId: string, 
   assessmentSignature: string
 ): Promise<{ exists: boolean; assessmentId?: string }> => {
-  console.log("checkForDuplicateAssessment - Checking for duplicate with signature:", assessmentSignature.substring(0, 100) + "...");
+  
   
   // Check for assessments created in the last 24 hours to avoid checking too far back
   const oneDayAgo = new Date();
@@ -41,14 +41,12 @@ const checkForDuplicateAssessment = async (
     .order('created_at', { ascending: false });
 
   if (error) {
-    console.error("checkForDuplicateAssessment - Error checking for duplicates:", error);
     return { exists: false };
   }
 
-  if (!recentAssessments || recentAssessments.length === 0) {
-    console.log("checkForDuplicateAssessment - No recent assessments found");
-    return { exists: false };
-  }
+      if (!recentAssessments || recentAssessments.length === 0) {
+      return { exists: false };
+    }
 
   // Check each recent assessment to see if it has the same signature
   for (const assessment of recentAssessments) {
@@ -79,20 +77,17 @@ const checkForDuplicateAssessment = async (
       );
       
       if (existingSignature === assessmentSignature) {
-        console.log("checkForDuplicateAssessment - Found duplicate assessment:", assessment.id);
         return { exists: true, assessmentId: assessment.id };
       }
     } catch (error) {
-      console.error("checkForDuplicateAssessment - Error comparing assessment:", error);
       continue;
     }
   }
 
-  console.log("checkForDuplicateAssessment - No duplicate found among recent assessments");
   return { exists: false };
 };
 
-export const TEST_ASSESSMENT_ID = '2631edf1-a358-4303-83c1-deb9664b53e2';
+export const TEST_ASSESSMENT_ID = '08a5f01a-db17-474d-a3e8-c53bedbc34c8';
 
 export const saveAssessmentResults = async (
   categories: Category[], 
@@ -100,13 +95,9 @@ export const saveAssessmentResults = async (
   forceNew: boolean = false, // Allow forcing a new assessment if needed
   assessmentId?: string // Optionally pass the assessmentId for test assessment updates
 ): Promise<SaveAssessmentResult> => {
-  console.log("saveAssessmentResults - Starting save process");
-  console.log("saveAssessmentResults - Categories input:", categories ? `${categories.length} categories` : "none");
-  console.log("saveAssessmentResults - Force new assessment:", forceNew);
   
   // Validate input data
   if (!categories || !Array.isArray(categories) || categories.length === 0) {
-    console.error("saveAssessmentResults - Invalid categories data:", categories);
     return { success: false, error: "Invalid categories data" };
   }
 
@@ -114,53 +105,35 @@ export const saveAssessmentResults = async (
   let totalSkills = 0;
   let skillsWithBothRatings = 0;
   
-  console.log("saveAssessmentResults - Starting validation of categories:", categories.length);
-  
-  categories.forEach((category, categoryIndex) => {
-    console.log(`saveAssessmentResults - Processing category ${categoryIndex}: ${category.title}`);
+  categories.forEach((category) => {
     if (category && category.skills && Array.isArray(category.skills)) {
-      category.skills.forEach((skill, skillIndex) => {
+      category.skills.forEach((skill) => {
         totalSkills++;
-        console.log(`saveAssessmentResults - Processing skill ${skillIndex}: ${skill.name}`);
-        console.log(`saveAssessmentResults - Skill ratings:`, skill.ratings);
         
         if (skill && skill.ratings) {
           const currentRating = Number(skill.ratings.current) || 0;
           const desiredRating = Number(skill.ratings.desired) || 0;
           
-          console.log(`saveAssessmentResults - Parsed ratings - current: ${currentRating}, desired: ${desiredRating}`);
-          
           if (currentRating > 0 && desiredRating > 0) {
             skillsWithBothRatings++;
-            console.log(`saveAssessmentResults - ✅ Skill ${skill.name} has valid ratings`);
-          } else {
-            console.log(`saveAssessmentResults - ❌ Skill ${skill.name} has invalid ratings - current: ${currentRating}, desired: ${desiredRating}`);
           }
-        } else {
-          console.log(`saveAssessmentResults - ❌ Skill ${skill.name} has no ratings object`);
         }
       });
-    } else {
-      console.log(`saveAssessmentResults - ❌ Category ${categoryIndex} has no skills array`);
     }
   });
-
-  console.log(`saveAssessmentResults - Found ${skillsWithBothRatings}/${totalSkills} skills with complete ratings`);
 
   // Check if the assessment is complete (all skills have both ratings)
   const isComplete = totalSkills > 0 && skillsWithBothRatings === totalSkills;
   
   if (!isComplete) {
-    console.error("saveAssessmentResults - Assessment is incomplete");
     return { success: false, error: "Assessment is incomplete. All skills must be rated." };
   }
 
   // Always store locally first as a backup
   try {
     storeLocalAssessmentData(categories, demographics);
-    console.log("saveAssessmentResults - Successfully stored data locally");
   } catch (localError) {
-    console.error("saveAssessmentResults - Error storing locally:", localError);
+    // Silent fail for local storage
   }
 
   // Check if user is authenticated
@@ -172,23 +145,14 @@ export const saveAssessmentResults = async (
     user = authResult.data.user;
     authError = authResult.error;
   } catch (error) {
-    console.log("saveAssessmentResults - Auth session missing, treating as unauthenticated user");
     authError = error;
   }
   
-  if (authError) {
-    console.log("saveAssessmentResults - No authenticated user, saving to local storage only");
-    return { success: true, data: [] }; // Return success for local storage save
-  }
-
-  if (!user) {
-    console.log("saveAssessmentResults - No authenticated user, saving to local storage only");
+  if (authError || !user) {
     return { success: true, data: [] }; // Return success for local storage save
   }
 
   try {
-    console.log(`saveAssessmentResults - Saving to database for user: ${user.id}`);
-    
     // Prepare the data to save - ensure all ratings are properly formatted
     const processedCategories = categories.map(category => ({
       ...category,
@@ -200,9 +164,6 @@ export const saveAssessmentResults = async (
         }
       }))
     }));
-
-    // DEBUG: Log processed categories before sending to backend
-    console.log("[DEBUG] Processed categories to be sent:", JSON.stringify(processedCategories, null, 2));
 
     // Convert Demographics to a regular object to satisfy TypeScript
     const demographicsObject = { ...demographics };
@@ -222,10 +183,8 @@ export const saveAssessmentResults = async (
         .eq('user_id', user.id)
         .select();
       if (result.data) {
-        console.log("saveAssessmentResults - Updated test assessment");
         return { success: true, data: result.data, isUpdate: true };
       } else {
-        console.error("saveAssessmentResults - Failed to update test assessment");
         return { success: false, error: "Failed to update test assessment" };
       }
     }
@@ -245,15 +204,12 @@ export const saveAssessmentResults = async (
     const { data, error } = result;
 
     if (error) {
-      console.error("saveAssessmentResults - Database error:", error);
       return { success: false, error: error.message };
     }
 
-    console.log("saveAssessmentResults - Successfully saved to database:", data);
     return { success: true, data, isUpdate: false };
 
   } catch (error) {
-    console.error("saveAssessmentResults - Unexpected error:", error);
     return { success: false, error: "An unexpected error occurred while saving" };
   }
 };

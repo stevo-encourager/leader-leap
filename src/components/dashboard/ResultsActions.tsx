@@ -30,15 +30,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
   demographics = {},
   assessmentId
 }) => {
-  // CRITICAL DEBUG: Log all component render state at the very top
-  console.log('🔍 🚨 RESULTS ACTIONS COMPONENT RENDER - TOP OF FUNCTION:', {
-    assessmentId,
-    assessmentIdType: typeof assessmentId,
-    assessmentIdLength: assessmentId?.length || 0,
-    categories: categories?.length || 0,
-    demographics: Object.keys(demographics || {}),
-    propsReceived: { onBack: !!onBack, onRestart: !!onRestart, onSignup: !!onSignup }
-  });
+
 
   const { user } = useAuth();
   const isMobile = useIsMobile();
@@ -46,17 +38,10 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
   const [isExportingPDF, setIsExportingPDF] = useState(false);
   
   // UPDATED: Special test assessment ID that allows regeneration
-  const TEST_ASSESSMENT_ID = '2631edf1-a358-4303-83c1-deb9664b53e2';
+  const TEST_ASSESSMENT_ID = '08a5f01a-db17-474d-a3e8-c53bedbc34c8';
   const isTestAssessment = assessmentId === TEST_ASSESSMENT_ID;
   
-  // CRITICAL DEBUG: Log the comparison logic immediately after definition
-  console.log('🔍 🚨 TEST ASSESSMENT CHECK:', {
-    assessmentId,
-    TEST_ASSESSMENT_ID,
-    isTestAssessment,
-    exactMatch: assessmentId === TEST_ASSESSMENT_ID,
-    stringComparison: String(assessmentId) === String(TEST_ASSESSMENT_ID)
-  });
+
 
   // Calculate average gap for insights hook
   const averageGap = categories.length > 0 ? calculateAverageGap(categories) : 0;
@@ -69,22 +54,12 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     assessmentId
   });
 
-  // CRITICAL DEBUG: Log insights hook state
-  console.log('🔍 🚨 INSIGHTS HOOK STATE:', {
-    hasInsights: !!insights,
-    insightsLoading,
-    hasRegenerateFunction: !!regenerateInsights,
-    regenerateFunctionType: typeof regenerateInsights
-  });
+
 
   // Enhanced validation to check if we actually have assessment data
   const hasValidAssessmentData = () => {
-    console.log('ResultsActions: Checking for valid assessment data...');
-    console.log('ResultsActions: categories length:', categories?.length || 0);
-    console.log('ResultsActions: assessmentId:', assessmentId);
     
     if (!categories || !Array.isArray(categories) || categories.length === 0) {
-      console.log('ResultsActions: No categories or empty array');
       return false;
     }
     
@@ -114,29 +89,20 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
       }
     });
     
-    console.log('ResultsActions: Validation results:', {
-      skillsWithRatings,
-      totalRatingValues,
-      isValid: skillsWithRatings > 0 && totalRatingValues > 0
-    });
-    
     return skillsWithRatings > 0 && totalRatingValues > 0;
   };
   
   // Check if AI insights are ready for PDF export
   const areInsightsReadyForExport = () => {
     if (insightsLoading) {
-      console.log('ResultsActions: Insights are still loading');
       return false;
     }
     
     if (insightsError) {
-      console.log('ResultsActions: Insights failed to load, but allowing export');
       return true; // Allow export even if insights failed
     }
     
     if (!insights || insights.trim().length === 0) {
-      console.log('ResultsActions: No insights available yet');
       return false;
     }
     
@@ -154,11 +120,9 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     );
     
     if (hasPlaceholder) {
-      console.log('ResultsActions: Insights contain placeholder text');
       return false;
     }
     
-    console.log('ResultsActions: Insights are ready for export with consistent data');
     return true;
   };
   
@@ -167,16 +131,8 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     setIsExportingPDF(true); // Show hidden chart
     // Wait for chart to render in DOM
     await new Promise(res => setTimeout(res, 1200));
-    console.log('=== PDF DOWNLOAD DEBUG START ===');
-    console.log('ResultsActions: PDF download button clicked');
-    console.log('ResultsActions: categories received:', categories?.length || 0);
-    console.log('ResultsActions: demographics received:', demographics ? Object.keys(demographics) : 'none');
-    console.log('ResultsActions: assessmentId for consistent insights:', assessmentId);
-    console.log('ResultsActions: insights ready:', areInsightsReadyForExport());
-    console.log('ResultsActions: insights length:', insights?.length || 0);
     
     if (!hasValidAssessmentData()) {
-      console.error('ResultsActions: PDF generation failed - no valid assessment data');
       toast({
         title: "Cannot Export PDF",
         description: "No completed assessment data available. Please complete the assessment with actual ratings first.",
@@ -186,7 +142,6 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     }
     
     if (!areInsightsReadyForExport()) {
-      console.error('ResultsActions: PDF generation failed - insights not ready');
       toast({
         title: "Please Wait",
         description: "AI insights are still being generated. Please wait a moment and try again.",
@@ -201,26 +156,14 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     let chartImageDataUrl: string | null = null;
     
     try {
-      console.log('ResultsActions: Starting PDF generation with React PDF');
-      
       // Step 1: Capture the radar chart with enhanced error handling
-      console.log('ResultsActions: Step 1 - Attempting to capture radar chart...');
-      
       try {
         chartImageDataUrl = await captureRadarChartAsPNG();
-        if (chartImageDataUrl) {
-          console.log('ResultsActions: Chart capture successful, data length:', chartImageDataUrl.length);
-          // No blob conversion, just use the data URL
-        } else {
-          console.warn('ResultsActions: Chart capture returned null');
-        }
       } catch (chartError) {
-        console.error('ResultsActions: Chart capture failed with error:', chartError);
         // Continue without chart - don't fail the entire PDF generation
       }
       
       // Step 2: Generate PDF document
-      console.log('ResultsActions: Step 2 - Creating PDF document...');
       const pdfDoc = (
         <ReactPDFDocument
           categories={categories}
@@ -231,16 +174,13 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
       );
       
       // Step 3: Generate PDF blob
-      console.log('ResultsActions: Step 3 - Generating PDF blob...');
       const pdfBlob = await pdf(pdfDoc).toBlob();
-      console.log('ResultsActions: PDF blob generated successfully, size:', pdfBlob.size);
       
       if (pdfBlob.size === 0) {
         throw new Error('Generated PDF blob is empty');
       }
       
       // Step 4: Create and trigger download
-      console.log('ResultsActions: Step 4 - Creating download link...');
       const url = URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
       link.href = url;
@@ -249,19 +189,12 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-      
-      console.log('ResultsActions: PDF download successful');
       toast({
         title: "Download Successful",
         description: "Your Leader Leap assessment results have been downloaded as a PDF.",
       });
       
     } catch (error) {
-      console.error('=== PDF GENERATION ERROR ===');
-      console.error('ResultsActions: Error during PDF generation:', error);
-      console.error('Error type:', typeof error);
-      console.error('Error message:', error instanceof Error ? error.message : 'Unknown error');
-      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
       
       // More specific error messages based on error type
       let errorMessage = "There was an error generating your PDF. Please try again.";
@@ -290,7 +223,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
         URL.revokeObjectURL(chartImageDataUrl);
       }
       
-      console.log('=== PDF DOWNLOAD DEBUG END ===');
+  
     }
   };
 
@@ -307,28 +240,16 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
 
   // FIXED: Direct regeneration handler - no callback chain needed
   const handleRegenerateInsights = async () => {
-    console.log('🔍 🚨 HANDLE REGENERATE INSIGHTS CALLED - BUTTON CLICK HANDLER!');
-    console.log('🔍 ResultsActions: Direct button click with:', {
-      isTestAssessment,
-      assessmentId,
-      hasRegenerateFunction: !!regenerateInsights,
-      regenerateInsights: typeof regenerateInsights
-    });
-    
     if (isTestAssessment) {
-      console.log('🔍 ResultsActions: Regenerating insights for test assessment');
       toast({
         title: "Regenerating Insights",
         description: "Generating new AI insights for test assessment...",
       });
       
       if (regenerateInsights) {
-        console.log('🔍 ResultsActions: About to call regenerateInsights() DIRECTLY');
         try {
           await regenerateInsights();
-          console.log('🔍 ResultsActions: Direct regenerateInsights() completed successfully');
         } catch (error) {
-          console.error('🔍 ResultsActions: Direct regenerateInsights() failed:', error);
           toast({
             title: "Regeneration Failed",
             description: "Failed to regenerate insights. Please try again.",
@@ -336,7 +257,6 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
           });
         }
       } else {
-        console.error('🔍 ResultsActions: regenerateInsights function not available');
         toast({
           title: "Cannot Regenerate",
           description: "Regeneration function not available. Please refresh the page.",
@@ -344,7 +264,6 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
         });
       }
     } else {
-      console.log('🔍 ResultsActions: Regeneration requested for non-test assessment - not allowed');
       toast({
         title: "Cannot Regenerate",
         description: "Insights can only be regenerated for test assessments.",
@@ -389,13 +308,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     return 'Download your complete assessment results as a professionally formatted PDF';
   };
 
-  // CRITICAL DEBUG: Log right before rendering to confirm button should be visible
-  console.log('🔍 🚨 ABOUT TO RENDER BUTTONS - FINAL CHECK:', {
-    isTestAssessment,
-    assessmentId,
-    TEST_ASSESSMENT_ID,
-    willRenderRegenerateButton: isTestAssessment
-  });
+
 
   return (
     <>
@@ -455,20 +368,12 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
               )}
               {isTestAssessment && (
                 <>
-                  {/* CRITICAL DEBUG: Log inside the conditional that renders the button */}
-                  {console.log('🔍 🚨 RENDERING REGENERATE BUTTON - INSIDE CONDITIONAL!')}
-                  {console.log('🔍 🚨 BUTTON RENDER STATE:', { isTestAssessment, insightsLoading })}
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <Button 
                           variant="outline" 
-                          onClick={() => {
-                            console.log('🔍 🚨 BUTTON ONCLICK FIRED - VERY FIRST LINE!');
-                            console.log('🔍 Button onClick called, isTestAssessment:', isTestAssessment);
-                            console.log('🔍 About to call handleRegenerateInsights DIRECTLY');
-                            handleRegenerateInsights();
-                          }}
+                          onClick={handleRegenerateInsights}
                           disabled={insightsLoading}
                           className="flex items-center gap-2"
                         >

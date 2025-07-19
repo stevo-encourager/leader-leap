@@ -20,13 +20,6 @@ const Navigation: React.FC = () => {
     email => email.toLowerCase() === (user.email || '').toLowerCase().trim()
   );
   
-  console.log('Navigation: User info:', {
-    hasUser: !!user,
-    userEmail: user?.email,
-    isSuperAdmin: isSuperAdmin,
-    isDevelopment: isDevelopment
-  });
-  
   return (
     <nav className="flex justify-between items-center gap-4 py-2 w-full">
       <Link to="/" className="no-underline">

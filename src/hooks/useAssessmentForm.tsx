@@ -13,8 +13,7 @@ export const useAssessmentForm = (categories: Category[], initialActiveCategory?
 
   // Validate categories data on component mount
   useEffect(() => {
-    console.log("useAssessmentForm - Validating categories data:", categories);
-    console.log("useAssessmentForm - Total categories:", categories?.length || 0);
+    
     
     if (!validateCategoriesData(categories)) {
       setDataValidationError("Invalid assessment data structure");
@@ -27,7 +26,7 @@ export const useAssessmentForm = (categories: Category[], initialActiveCategory?
     }
     
     if (categories && categories.length > 0) {
-      console.log("useAssessmentForm - First category skills:", categories[0]?.skills);
+  
       setDataValidationError(null);
     }
   }, [categories, toast]);
@@ -36,7 +35,7 @@ export const useAssessmentForm = (categories: Category[], initialActiveCategory?
   useEffect(() => {
     // Ensure categories is valid before calculating midpoint
     if (!categories || categories.length === 0) {
-      console.error("useAssessmentForm - No valid categories available");
+  
       return;
     }
     
@@ -52,7 +51,7 @@ export const useAssessmentForm = (categories: Category[], initialActiveCategory?
   }, [activeCategory, categories, midpointDialogShown]);
 
   const handleNextCategory = (onComplete: () => void) => {
-    console.log(`Navigating from category ${activeCategory} to ${activeCategory + 1}. Total categories: ${categories.length}`);
+
     
     // Check if the current category is fully completed before proceeding
     const currentCategory = categories[activeCategory];
@@ -81,7 +80,7 @@ export const useAssessmentForm = (categories: Category[], initialActiveCategory?
       }
       
       // Log categories before completing to verify data
-      console.log("Completing assessment with categories:", categories);
+  
       onComplete();
     }
   };
@@ -98,7 +97,7 @@ export const useAssessmentForm = (categories: Category[], initialActiveCategory?
   const isCategoryCompleted = (category: Category): boolean => {
     // Add safety check for skills
     if (!category || !category.skills || !Array.isArray(category.skills)) {
-      console.warn(`isCategoryCompleted: Category ${category?.title || 'unknown'} has invalid skills`);
+  
       return false;
     }
     

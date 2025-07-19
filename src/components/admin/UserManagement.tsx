@@ -15,6 +15,7 @@ interface User {
   email_confirmed_at: string | null;
   full_name?: string;
   receive_emails?: boolean;
+  gdpr_consent?: boolean;
 }
 
 const UserManagement = () => {
@@ -65,7 +66,8 @@ const UserManagement = () => {
           last_sign_in_at: user.last_sign_in_at,
           email_confirmed_at: user.email_confirmed_at,
           full_name: profile?.full_name || user.user_metadata?.full_name,
-          receive_emails: profile?.receive_emails
+          receive_emails: profile?.receive_emails,
+          gdpr_consent: profile?.gdpr_consent
         };
       });
       
@@ -105,6 +107,16 @@ const UserManagement = () => {
       return <span className="text-green-600">Subscribed</span>;
     } else if (receiveEmails === false || receiveEmails === "false" || receiveEmails === 0) {
       return <span className="text-gray-600">Unsubscribed</span>;
+    } else {
+      return <span className="text-gray-400">Unknown</span>;
+    }
+  };
+
+  const formatGDPRConsent = (gdprConsent: boolean | undefined | null) => {
+    if (gdprConsent === true) {
+      return <span className="text-green-600">Consented</span>;
+    } else if (gdprConsent === false) {
+      return <span className="text-red-600">Declined</span>;
     } else {
       return <span className="text-gray-400">Unknown</span>;
     }
@@ -178,6 +190,7 @@ const UserManagement = () => {
                   <TableHead>Created</TableHead>
                   <TableHead>Last Sign In</TableHead>
                   <TableHead>Email Prefs</TableHead>
+                  <TableHead>GDPR Consent</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -202,9 +215,9 @@ const UserManagement = () => {
                     </TableCell>
                     <TableCell>
                       {user.email_confirmed_at ? (
-                        <span className="text-green-600">✓ Verified</span>
+                        <span className="text-green-600">Verified</span>
                       ) : (
-                        <span className="text-amber-600">⚠ Pending</span>
+                        <span className="text-amber-600">Pending</span>
                       )}
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
@@ -215,6 +228,9 @@ const UserManagement = () => {
                     </TableCell>
                     <TableCell>
                       {formatEmailPreference(user.receive_emails)}
+                    </TableCell>
+                    <TableCell>
+                      {formatGDPRConsent(user.gdpr_consent)}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -227,7 +243,7 @@ const UserManagement = () => {
         {users.length > 0 && (
           <div className="bg-muted/50 rounded-lg p-4">
             <h4 className="font-medium mb-2">Summary</h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
               <div>
                 <div className="font-medium">{users.length}</div>
                 <div className="text-muted-foreground">Total Users</div>
@@ -249,6 +265,12 @@ const UserManagement = () => {
                   {users.filter(u => u.receive_emails == true).length}
                 </div>
                 <div className="text-muted-foreground">Email Subscribers</div>
+              </div>
+              <div>
+                <div className="font-medium">
+                  {users.filter(u => u.gdpr_consent == true).length}
+                </div>
+                <div className="text-muted-foreground">GDPR Consented</div>
               </div>
             </div>
           </div>

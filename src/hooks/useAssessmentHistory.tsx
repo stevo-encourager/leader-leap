@@ -24,9 +24,7 @@ export const useAssessmentHistory = () => {
   const fetchAssessments = useCallback(async () => {
     setIsLoading(true);
     try {
-      console.log("useAssessmentHistory - Fetching assessments...");
       const result = await getAssessmentHistory();
-      console.log('useAssessmentHistory - Assessment history fetch result:', result);
       
       if (result.success && result.data) {
         // Filter to include only completed assessments
@@ -46,9 +44,7 @@ export const useAssessmentHistory = () => {
         // Set all assessments
         setAssessments(sortedAssessments);
         
-        console.log('useAssessmentHistory - Completed assessments count:', sortedAssessments.length);
       } else {
-        console.error('useAssessmentHistory - Failed to fetch history:', result.error);
         toast({
           title: "Error fetching assessments",
           description: result.error || "Failed to load your assessment history",
@@ -57,7 +53,6 @@ export const useAssessmentHistory = () => {
         setAssessments([]);
       }
     } catch (error) {
-      console.error('useAssessmentHistory - Error in fetchAssessments:', error);
       toast({
         title: "Error fetching assessments",
         description: "An unexpected error occurred",
@@ -106,7 +101,6 @@ export const useAssessmentHistory = () => {
         });
       }
     } catch (error) {
-      console.error('Error deleting assessment:', error);
       toast({
         title: "Error deleting assessment",
         description: "An unexpected error occurred",
@@ -139,7 +133,6 @@ export const useAssessmentHistory = () => {
         });
       }
     } catch (error) {
-      console.error('Error deleting assessments:', error);
       toast({
         title: "Error deleting assessments",
         description: "An unexpected error occurred",

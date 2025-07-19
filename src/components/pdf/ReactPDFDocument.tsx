@@ -247,13 +247,6 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
   const competencyFontSize = 13; // Larger for competency names and scores
 
   // Enhanced chart image logging with detailed debugging for 11:11 version restoration
-  console.log('ReactPDFDocument: Chart image data received (11:11 version debug):', {
-    hasChartData: !!chartImageDataUrl,
-    dataUrlLength: chartImageDataUrl?.length || 0,
-    dataUrlPreview: chartImageDataUrl?.substring(0, 100) || 'No data',
-    isValidDataUrl: chartImageDataUrl?.startsWith('data:image/') || false,
-    timestamp: new Date().toISOString()
-  });
 
   // Chart image validation: only accept data:image/ URLs
   if (!chartImageDataUrl) {
@@ -261,7 +254,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
   } else if (!chartImageDataUrl.startsWith('data:image/')) {
     console.error('ReactPDFDocument: Invalid chart image data URL format:', chartImageDataUrl?.substring(0, 50));
   } else {
-    console.log('ReactPDFDocument: Valid chart image data received, ready for PDF inclusion');
+  
   }
 
   // Enhanced parseInsights function with better error handling and null checks
@@ -269,7 +262,6 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
     try {
       // Add null/undefined check for insightsText
       if (!insightsText || typeof insightsText !== 'string') {
-        console.log('ReactPDFDocument: Invalid insights text provided');
         return null;
       }
 
@@ -277,17 +269,14 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
       
       // Enhanced validation with null checks
       if (!parsed || typeof parsed !== 'object') {
-        console.log('ReactPDFDocument: Parsed insights is not a valid object');
         return null;
       }
 
       if (!parsed.summary || !parsed.priority_areas || !parsed.key_strengths) {
-        console.log('ReactPDFDocument: Missing required properties in parsed insights');
         return null;
       }
       
       if (!Array.isArray(parsed.priority_areas) || !Array.isArray(parsed.key_strengths)) {
-        console.log('ReactPDFDocument: Priority areas or key strengths are not arrays');
         return null;
       }
 
@@ -318,7 +307,6 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
         key_strengths: cleanedKeyStrengths
       };
     } catch (error) {
-      console.error('ReactPDFDocument: Error parsing insights:', error);
       return null;
     }
   };
@@ -485,7 +473,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
                 {parsedInsights.priority_areas.map((area, index) => {
                   // Enhanced null checking for area
                   if (!area || typeof area !== 'object') {
-                    console.warn(`ReactPDFDocument: Invalid area at index ${index}`);
+            
                     return null;
                   }
 
@@ -553,7 +541,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
             {parsedInsights.key_strengths.map((strength, index) => {
               // Enhanced null checking for strength
               if (!strength || typeof strength !== 'object') {
-                console.warn(`ReactPDFDocument: Invalid strength at index ${index}`);
+        
                 return null;
               }
 

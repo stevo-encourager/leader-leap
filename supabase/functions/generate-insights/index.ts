@@ -20,238 +20,95 @@ serve(async (req) => {
   }
 
   try {
-    console.log('🔍 === GENERATE INSIGHTS FUNCTION START ===');
-    
-    // Validate environment variables
+    // STEP 1: Validate environment variables
     const { openAIApiKey, supabaseUrl, supabaseServiceKey } = validateEnvironmentVariables();
-    console.log('🔍 Environment variables validated successfully');
 
-    let requestBody: any;
-    try {
-      requestBody = await req.json();
-    } catch (e) {
-      console.error('🔍 CRITICAL ERROR: Invalid JSON in request body:', e);
-      return new Response(JSON.stringify({ error: "Invalid JSON in request body" }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
+    // STEP 2: Parse and validate request
+    const requestBody = await req.json();
+    const { categories, averageGap, assessmentId, forceRegenerate = false, demographics = {} } = requestBody;
 
-    console.log('🔍 REQUEST BODY RECEIVED:', {
-      categoriesLength: requestBody.categories?.length || 0,
-      hasDemo: !!requestBody.demographics,
-      averageGap: requestBody.averageGap,
-      assessmentId: requestBody.assessmentId || 'undefined (new assessment)',
-      forceRegenerate: requestBody.forceRegenerate
-    });
-
-    const { categories, demographics, averageGap, assessmentId, forceRegenerate } = requestBody;
-
-    // Validate required inputs
+    // Basic validation
     if (!categories || !Array.isArray(categories) || categories.length === 0) {
-      console.error('🔍 CRITICAL ERROR: Missing or invalid categories in request body');
-      return new Response(JSON.stringify({ 
-        error: "Missing or invalid 'categories' array in request body. Categories are required for insight generation." 
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+      throw new Error('Invalid or missing categories array');
     }
 
-    if (typeof averageGap !== 'number') {
-      console.error('🔍 CRITICAL ERROR: Missing or invalid averageGap in request body');
-      return new Response(JSON.stringify({ 
-        error: "Missing or invalid 'averageGap' number in request body. Average gap is required for insight generation." 
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    if (typeof averageGap !== 'number' || averageGap < 0) {
+      throw new Error('Invalid averageGap value');
     }
 
-    // Special test assessment ID that allows regeneration
-    const TEST_ASSESSMENT_ID = '2631edf1-a358-4303-83c1-deb9664b53e2';
-    const isTestAssessment = assessmentId === TEST_ASSESSMENT_ID;
+    // Early validation to fail fast
+    if (categories.length > 20) {
+      throw new Error('Too many categories provided');
+    }
 
-    // ENHANCED: Better validation for assessmentId - allow undefined, null, or placeholder values for new assessments
-    const isValidAssessmentId = assessmentId && 
-                               typeof assessmentId === 'string' && 
-                               assessmentId.trim() !== '' &&
-                               assessmentId !== 'undefined' &&
-                               assessmentId !== 'null' &&
-                               assessmentId !== 'new-assessment';
-
-    console.log('🔍 INPUT VALIDATION PASSED:', {
-      categoriesCount: categories.length,
-      hasDemo: !!demographics,
-      averageGap: averageGap,
-      assessmentId: assessmentId || 'new assessment (no ID)',
-      isValidAssessmentId: isValidAssessmentId,
-      isTestAssessment: isTestAssessment,
-      forceRegenerate: forceRegenerate
-    });
-
-    // ENHANCED: Only check for existing insights if we have a valid, real assessmentId
-    if (isValidAssessmentId) {
-      console.log('🔍 CHECKING FOR EXISTING INSIGHTS:', {
-        assessmentId,
-        isTestAssessment,
-        forceRegenerate
-      });
-      
-      // CRITICAL: Pass the forceRegenerate flag to the database check
+    // STEP 3: Check for existing insights (unless force regenerate)
+    if (!forceRegenerate) {
       const existingInsights = await checkExistingInsights(assessmentId, supabaseUrl, supabaseServiceKey, forceRegenerate);
-      
-      console.log('🔍 DATABASE CHECK RESULT:', {
-        hasExistingInsights: !!existingInsights,
-        existingInsightsLength: existingInsights?.length || 0,
-        willReturnExisting: !!existingInsights,
-        isTestAssessment: isTestAssessment,
-        forceRegenerate: forceRegenerate
-      });
-      
       if (existingInsights) {
-        console.log('🔍 RETURNING EXISTING INSIGHTS - No generation needed');
         return new Response(JSON.stringify({ insights: existingInsights }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      
-      if (isTestAssessment && forceRegenerate) {
-        console.log('🔍 ✨ TEST ASSESSMENT FORCE REGENERATION ACTIVATED - Generating fresh insights');
-      } else {
-        console.log('🔍 NO EXISTING INSIGHTS FOUND - Proceeding with generation');
-      }
-    } else {
-      console.log('🔍 NEW ASSESSMENT MODE: No valid assessmentId - generating fresh insights without database check');
     }
 
-    // Build assessment data and prompt
-    console.log('🔍 BUILDING ASSESSMENT DATA AND PROMPT...');
+    // STEP 4: Build assessment data and prompt
     const assessmentSummary = buildAssessmentData(categories, averageGap, demographics);
-    
-    // --- PATCH: Format all resources as Markdown links ---
-    function formatAllResources(insightsObj) {
-      if (insightsObj && Array.isArray(insightsObj.priority_areas)) {
-        insightsObj.priority_areas.forEach(area => {
-          if (Array.isArray(area.resources)) {
-            area.resources = area.resources.map(r => {
-              // If already in Markdown format, keep as is
-              if (/^\[.*\]\(.*\)$/.test(r)) return r;
-              // If in 'Name: URL' format, convert to Markdown
-              const match = r.match(/^(.*?):\s*(https?:\/\/\S+)/);
-              if (match) {
-                return `[${match[1].trim()}](${match[2].trim()})`;
-              }
-              // Otherwise, try to use formatResourceMarkdown
-              return formatResourceMarkdown(r);
-            });
-          }
-        });
-      }
-      if (insightsObj && Array.isArray(insightsObj.key_strengths)) {
-        insightsObj.key_strengths.forEach(strength => {
-          if (Array.isArray(strength.resources)) {
-            strength.resources = strength.resources.map(r => {
-              if (/^\[.*\]\(.*\)$/.test(r)) return r;
-              const match = r.match(/^(.*?):\s*(https?:\/\/\S+)/);
-              if (match) {
-                return `[${match[1].trim()}](${match[2].trim()})`;
-              }
-              return formatResourceMarkdown(r);
-            });
-          }
-        });
-      }
-      return insightsObj;
-    }
-    
-    console.log('🔍 ASSESSMENT SUMMARY BUILT:', {
-      demographicsKeys: Object.keys(assessmentSummary.demographics),
-      averageGap: assessmentSummary.averageGap,
-      categoryCount: assessmentSummary.categoryBreakdown.length
-    });
-    
     const prompt = buildPrompt(assessmentSummary);
-    console.log('🔍 PROMPT BUILT - Length:', prompt.length);
 
-    // Call OpenAI
-    console.log('🔍 CALLING OPENAI API...');
-    if (isTestAssessment && forceRegenerate) {
-      console.log('🔍 ✨ GENERATING FRESH INSIGHTS FOR TEST ASSESSMENT (FORCE REGENERATE)');
-    }
-    
+    // STEP 5: Call OpenAI
     const rawInsights = await callOpenAI(prompt, openAIApiKey);
-    console.log('🔍 OPENAI RESPONSE RECEIVED - Length:', rawInsights.length);
 
-    // Clean and parse the response
-    console.log('🔍 CLEANING AND PARSING JSON RESPONSE...');
+    // STEP 6: Clean and parse the response
     const cleanedInsights = cleanJsonResponse(rawInsights);
     const sanitizedInsights = sanitizeJsonString(cleanedInsights);
+    const parsedInsights = JSON.parse(sanitizedInsights);
 
-    let parsedInsights;
-    try {
-      parsedInsights = JSON.parse(sanitizedInsights);
-      console.log('🔍 JSON PARSED SUCCESSFULLY');
-      
-      validateInsightsStructure(parsedInsights);
-      console.log('🔍 INSIGHTS STRUCTURE VALIDATION PASSED');
+    // STEP 7: Validate insights structure
+    validateInsightsStructure(parsedInsights);
 
-      // PATCH: Format all resources as Markdown links
-      parsedInsights = formatAllResources(parsedInsights);
+    // STEP 8: Format summary
+    if (parsedInsights.summary) {
+      const formattedSummary = formatSummaryIntoParagraphs(parsedInsights.summary);
+      parsedInsights.summary = formattedSummary;
+    }
 
-      if (parsedInsights.summary) {
-        const formattedSummary = formatSummaryIntoParagraphs(parsedInsights.summary);
-        parsedInsights.summary = formattedSummary;
-        console.log('🔍 SUMMARY FORMATTING APPLIED');
+    // STEP 9: Convert resources to markdown format for frontend compatibility
+    if (parsedInsights.priority_areas) {
+      parsedInsights.priority_areas.forEach((area: any) => {
+        if (area.resources && Array.isArray(area.resources)) {
+          area.resources = area.resources.map((resource: string) => formatResourceMarkdown(resource));
+        }
+      });
+    }
+    if (parsedInsights.key_strengths) {
+      parsedInsights.key_strengths.forEach((strength: any) => {
+        if (strength.resources && Array.isArray(strength.resources)) {
+          strength.resources = strength.resources.map((resource: string) => formatResourceMarkdown(resource));
+        }
+      });
+    }
+
+    // STEP 10: Save insights (if applicable)
+    if (assessmentId && assessmentId !== 'new-assessment') {
+      try {
+        await saveInsights(assessmentId, JSON.stringify(parsedInsights), supabaseUrl, supabaseServiceKey);
+      } catch (saveError) {
+        // Don't throw error - continue to return insights
       }
-      
-    } catch (jsonError) {
-      console.error('🔍 JSON PARSING/VALIDATION FAILED:', jsonError.message);
-      throw new Error(`OpenAI returned invalid JSON format: ${jsonError.message}`);
     }
 
-
-
-    // Convert back to JSON string with enhanced formatted summary
-    const finalInsights = JSON.stringify(parsedInsights);
-    console.log('🔍 FINAL INSIGHTS PREPARED - Length:', finalInsights.length);
-
-    // ENHANCED: Only save if we have a valid, real assessmentId
-    if (isValidAssessmentId) {
-      console.log('🔍 SAVING INSIGHTS TO DATABASE:', assessmentId);
-      if (isTestAssessment && forceRegenerate) {
-        console.log('🔍 ✨ SAVING REGENERATED INSIGHTS FOR TEST ASSESSMENT');
-      }
-      await saveInsights(assessmentId, finalInsights, supabaseUrl, supabaseServiceKey);
-      console.log('🔍 INSIGHTS SAVED SUCCESSFULLY');
-    } else {
-      console.log('🔍 NEW ASSESSMENT MODE: Insights generated but not saved (no valid assessmentId)');
-    }
-
-    if (isTestAssessment && forceRegenerate) {
-      console.log('🔍 ✨ === FORCE REGENERATION COMPLETED SUCCESSFULLY FOR TEST ASSESSMENT ===');
-    } else {
-      console.log('🔍 === GENERATE INSIGHTS FUNCTION SUCCESS ===');
-    }
-
-    return new Response(JSON.stringify({ insights: finalInsights }), {
+    return new Response(JSON.stringify({ insights: JSON.stringify(parsedInsights) }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
-  } catch (error) {
-    console.error('🔍 === GENERATE INSIGHTS FUNCTION ERROR ===');
-    console.error('🔍 Error details:', {
-      name: error.name,
-      message: error.message,
-      stack: error.stack
-    });
     
-    const errorMessage = error.message.includes('OpenAI') 
-      ? 'Unable to generate insights due to AI service error. Please try again later.'
-      : error.message.includes('already exist')
-      ? 'Insights already exist for this assessment and cannot be regenerated.'
+  } catch (error) {
+    
+    // Provide user-friendly error message without exposing internal details
+    const userMessage = error.message.includes('OpenAI') 
+      ? 'Unable to generate insights at this time. Please try again later.'
       : 'An unexpected error occurred while generating insights. Please try again.';
     
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    return new Response(JSON.stringify({ error: userMessage }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

@@ -78,9 +78,7 @@ const Assessment = () => {
     
     // Store the test data locally
     const stored = storeLocalAssessmentData(testCategories, testDemographics);
-    console.log('Test button - Data stored locally:', stored);
-    console.log('Test button - Test categories count:', testCategories.length);
-    console.log('Test button - Test demographics:', testDemographics);
+
     
     // Set initial active category to the last category (index 9 for 10 categories)
     setInitialActiveCategory(allCategories.length - 1);
@@ -97,29 +95,20 @@ const Assessment = () => {
 
   // Log categories data for debugging and error detection
   useEffect(() => {
-    console.log("Assessment page - Categories:", categories);
-    
     if (!categories || !Array.isArray(categories)) {
-      console.error("Assessment page - Categories is not an array:", categories);
       setLoadError("Categories data is invalid or missing");
       return;
     }
     
-    console.log("Assessment page - Categories valid:", categories.length > 0);
-    
     if (categories.length === 0) {
-      console.error("Assessment page - Categories array is empty");
       setLoadError("No assessment categories were loaded");
       return;
     }
     
     if (categories.length > 0) {
-      console.log("Assessment page - First category:", categories[0]);
-      
       // Check if the first category has the expected properties
       const firstCategory = categories[0];
       if (!firstCategory.id || !firstCategory.title || !Array.isArray(firstCategory.skills)) {
-        console.error("Assessment page - First category has invalid format:", firstCategory);
         setLoadError("Assessment categories have an invalid format");
         return;
       }

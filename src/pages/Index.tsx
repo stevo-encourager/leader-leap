@@ -17,6 +17,41 @@ const Index = () => {
   const { user, loading } = useAuth();
   const isMobile = useIsMobile();
 
+  // Check if this is a password reset flow
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const accessToken = urlParams.get('access_token');
+    const refreshToken = urlParams.get('refresh_token');
+    const type = urlParams.get('type');
+    
+    // Also check hash fragment for tokens
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const hashAccessToken = hashParams.get('access_token');
+    const hashRefreshToken = hashParams.get('refresh_token');
+    const hashType = hashParams.get('type');
+    
+    // Log all URL parameters for debugging
+    console.log('Index: URL parameters:', Object.fromEntries(urlParams.entries()));
+    console.log('Index: Hash parameters:', Object.fromEntries(hashParams.entries()));
+    
+    // Check for various password reset URL formats
+    const isPasswordReset = (
+      (accessToken && refreshToken && type === 'recovery') ||
+      (accessToken && type === 'recovery') ||
+      (hashAccessToken && hashRefreshToken && hashType === 'recovery') ||
+      (hashAccessToken && hashType === 'recovery') ||
+      urlParams.has('error_description') && urlParams.get('error_description')?.includes('password')
+    );
+    
+    if (isPasswordReset) {
+      console.log('Index: Password reset flow detected, redirecting to reset page');
+      // Preserve the URL parameters when redirecting
+      const currentUrl = window.location.href;
+      const resetUrl = currentUrl.replace('/?', '/reset-password?').replace('/#', '/reset-password#');
+      window.location.href = resetUrl;
+    }
+  }, [navigate]);
+
   // Wait for auth to initialize before rendering
   if (loading) {
     return (

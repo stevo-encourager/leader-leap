@@ -22,7 +22,6 @@ export const callOpenAI = async (prompt: string, openAIApiKey: string): Promise<
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error(`OpenAI API error: ${response.status} - ${errorText}`);
     throw new Error(`OpenAI API error: ${response.status}`);
   }
 
@@ -33,6 +32,5 @@ export const callOpenAI = async (prompt: string, openAIApiKey: string): Promise<
     throw new Error('Empty response from OpenAI API');
   }
 
-  console.log('Raw OpenAI response:', rawInsights);
   return rawInsights;
 };

@@ -5,7 +5,7 @@ export const checkExistingInsights = async (assessmentId: string, supabaseUrl: s
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
   
   // Special test assessment ID that allows regeneration
-  const TEST_ASSESSMENT_ID = '2631edf1-a358-4303-83c1-deb9664b53e2';
+  const TEST_ASSESSMENT_ID = '08a5f01a-db17-474d-a3e8-c53bedbc34c8';
   const isTestAssessment = assessmentId === TEST_ASSESSMENT_ID;
   
   console.log('🔍 DATABASE CHECK EXISTING INSIGHTS:', {
@@ -84,7 +84,7 @@ export const saveInsights = async (
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
   
   // Special test assessment ID that allows regeneration
-  const TEST_ASSESSMENT_ID = '2631edf1-a358-4303-83c1-deb9664b53e2';
+  const TEST_ASSESSMENT_ID = '08a5f01a-db17-474d-a3e8-c53bedbc34c8';
   const isTestAssessment = assessmentId === TEST_ASSESSMENT_ID;
   
   console.log('🔍 SAVING INSIGHTS:', {
@@ -94,32 +94,28 @@ export const saveInsights = async (
   });
   
   try {
-    // CRITICAL FIX: For test assessments, always allow save/overwrite
-    if (isTestAssessment) {
-      console.log('🔍 TEST ASSESSMENT - Allowing save/overwrite without checking existing insights');
-    } else {
-      // For non-test assessments, check if the assessment record exists before trying to update
-      console.log('🔍 NON-TEST ASSESSMENT - Checking if assessment exists before save');
-      const { data: existingAssessment, error: checkError } = await supabase
-        .from('assessment_results')
-        .select('id, ai_insights')
-        .eq('id', assessmentId)
-        .maybeSingle();
+    // For all assessments, check if the assessment record exists before trying to update
+    console.log('🔍 Checking if assessment exists before save');
+    const { data: existingAssessment, error: checkError } = await supabase
+      .from('assessment_results')
+      .select('id, ai_insights')
+      .eq('id', assessmentId)
+      .maybeSingle();
 
-      if (checkError) {
-        console.error('🔍 ERROR CHECKING ASSESSMENT EXISTENCE:', checkError);
-        throw new Error('Failed to verify assessment exists before saving insights');
-      }
+    if (checkError) {
+      console.error('🔍 ERROR CHECKING ASSESSMENT EXISTENCE:', checkError);
+      throw new Error('Failed to verify assessment exists before saving insights');
+    }
 
-      if (!existingAssessment) {
-        console.error('🔍 ASSESSMENT RECORD NOT FOUND - Cannot save insights to non-existent assessment');
-        throw new Error('Assessment record not found - cannot save insights');
-      }
+    if (!existingAssessment) {
+      console.error('🔍 ASSESSMENT RECORD NOT FOUND - Cannot save insights to non-existent assessment');
+      throw new Error('Assessment record not found - cannot save insights');
+    }
 
-      if (existingAssessment.ai_insights && existingAssessment.ai_insights.trim() !== '') {
-        console.log('🔍 EXISTING INSIGHTS FOUND - ABORTING save to prevent overwrite');
-        throw new Error('Insights already exist for this assessment - will not overwrite');
-      }
+    // For non-test assessments, if insights already exist, don't overwrite them
+    if (!isTestAssessment && existingAssessment.ai_insights && existingAssessment.ai_insights.trim() !== '') {
+      console.log('🔍 EXISTING INSIGHTS FOUND FOR NON-TEST ASSESSMENT - ABORTING save to prevent overwrite');
+      return; // Don't throw error, just return without saving
     }
     
     console.log('🔍 UPDATING DATABASE WITH NEW INSIGHTS...');

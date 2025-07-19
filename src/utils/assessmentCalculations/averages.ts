@@ -5,18 +5,10 @@ import { Category } from '../assessmentTypes';
 export const calculateAverageGap = (categories: Category[]): number => {
   // Add defensive check for undefined or null categories
   if (!categories || !Array.isArray(categories)) {
-    console.error("calculateAverageGap received invalid categories:", categories);
     return 0;
   }
   
-  // Debug output
-  console.log("calculateAverageGap - Input categories:", 
-    categories?.length, 
-    categories?.map(c => c?.title)
-  );
-  
   if (categories.length === 0) {
-    console.log("calculateAverageGap - No valid categories");
     return 0;
   }
   
@@ -27,13 +19,11 @@ export const calculateAverageGap = (categories: Category[]): number => {
   for (const category of categories) {
     // Skip undefined categories
     if (!category) {
-      console.log("calculateAverageGap - Found undefined category in array");
       continue;
     }
     
     // Handle missing skills array
     if (!category.skills || !Array.isArray(category.skills)) {
-      console.log(`calculateAverageGap - Category ${category.title || 'unknown'} has no skills`);
       continue;
     }
     
@@ -56,8 +46,6 @@ export const calculateAverageGap = (categories: Category[]): number => {
         const gap = Math.abs(desired - current);
         totalGap += gap;
         totalSkillsWithRatings++;
-        
-        console.log(`calculateAverageGap - Skill: ${skill.name}, Current: ${current}, Desired: ${desired}, Gap: ${gap}`);
       }
     }
   }
@@ -66,8 +54,6 @@ export const calculateAverageGap = (categories: Category[]): number => {
   const average = totalSkillsWithRatings > 0 
     ? totalGap / totalSkillsWithRatings 
     : 0;
-    
-  console.log(`calculateAverageGap - Total skills with ratings: ${totalSkillsWithRatings}, Total gap: ${totalGap}, Average: ${average.toFixed(2)}`);
   
   // Return the result with 2 decimal places
   return Number(average.toFixed(2));

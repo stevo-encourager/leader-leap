@@ -40,8 +40,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   
   // Debug received categories with more detailed logging
   useEffect(() => {
-    console.log("ResultsDashboard - Received categories count:", categories?.length || 0);
-    console.log("ResultsDashboard - Received assessmentId:", assessmentId);
+    
     
     // Check actual rating data
     let totalRatingsFound = 0;
@@ -62,7 +61,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
       });
     });
     
-    console.log(`ResultsDashboard - Found ${totalRatingsFound} total rating values across ${totalSkillsWithRatings} skills`);
+
   }, [categories, assessmentId]);
   
   // Calculate metrics with extra error handling
@@ -77,15 +76,8 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
           typeof skill.ratings.desired === 'number'
         ))) {
       
-      console.log("ResultsDashboard - Calculating metrics with valid data");
       averageGap = calculateAverageGap(categories);
-      
-      console.log("ResultsDashboard - Metrics calculated:", {
-        averageGap
-      });
-    } else {
-      console.log("ResultsDashboard - Skipped metrics calculation due to invalid data");
-    }
+          }
   } catch (error) {
     console.error("ResultsDashboard - Error calculating metrics:", error);
   }

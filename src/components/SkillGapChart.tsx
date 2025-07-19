@@ -86,9 +86,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
   // Ensure categories is always an array
   const safeCategories = Array.isArray(categories) ? categories : [];
   
-  console.log("SkillGapChart - Categories count:", safeCategories.length);
-  console.log("SkillGapChart - isPDF:", isPDF);
-  console.log("SkillGapChart - Should show legend:", !isPDF);
+
   
   if (safeCategories.length > 0) {
     const safeCategoriesString = JSON.stringify(
@@ -102,26 +100,11 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
         }))
       }))
     );
-    console.log("SkillGapChart - Categories data:", safeCategoriesString.substring(0, 1000) + (safeCategoriesString.length > 1000 ? '...' : ''));
-    
-    const totalSkills = safeCategories.reduce((total, cat) => total + (cat.skills?.length || 0), 0);
-    console.log("SkillGapChart - Total skills:", totalSkills);
-    
-    if (safeCategories[0]) {
-      const firstCat = safeCategories[0];
-      console.log("SkillGapChart - First category:", {
-        title: firstCat.title,
-        skillsCount: firstCat.skills?.length || 0,
-        hasSkills: Array.isArray(firstCat.skills) && firstCat.skills.length > 0,
-        firstSkillName: firstCat.skills?.[0]?.name,
-        firstSkillRatings: firstCat.skills?.[0]?.ratings
-      });
-    }
+
   }
   
-  // Process chart data with detailed logging
+  // Process chart data
   const chartData = useMemo(() => {
-    console.log("SkillGapChart - Processing chart data from categories");
     
     if (!safeCategories || safeCategories.length === 0) {
       console.warn("SkillGapChart - No categories provided");
@@ -176,7 +159,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
           totalCurrent += current;
           totalDesired += desired;
           validSkillCount++;
-          console.log(`SkillGapChart - Valid skill: ${skill.name}, current=${current}, desired=${desired}`);
+  
         } else {
           console.log(`SkillGapChart - Skill with zero ratings: ${skill.name}`);
         }
@@ -196,16 +179,13 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
           skillCount: validSkillCount
         });
         
-        console.log(`SkillGapChart - Category ${category.title}: avgCurrent=${avgCurrent}, avgDesired=${avgDesired} from ${validSkillCount} valid skills`);
+
       } else {
         console.log(`SkillGapChart - Category ${category.title || 'Unknown'} has no valid skills with ratings`);
       }
     }
     
-    console.log("SkillGapChart - Final chart data items:", result.length);
-    if (result.length > 0) {
-      console.log("SkillGapChart - Chart data sample:", result);
-    }
+
     
     return result;
   }, [safeCategories, isPDF]);
@@ -216,90 +196,9 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
            (!isNaN(item.current) && !isNaN(item.desired)))
   );
   
-  console.log("SkillGapChart - Valid chart data items:", validChartData.length);
+
   
-  // Enhanced DOM structure logging for chart capture debugging
-  useEffect(() => {
-    if (chartContainerRef.current && validChartData.length > 0) {
-      setTimeout(() => {
-        console.log('=== ENHANCED CHART DOM INSPECTION FOR CAPTURE ===');
-        const container = chartContainerRef.current;
-        
-        if (container) {
-          console.log('Chart container found:', {
-            element: container,
-            testId: container.getAttribute('data-testid'),
-            chartType: container.getAttribute('data-chart-type'),
-            className: container.className,
-            offsetWidth: container.offsetWidth,
-            offsetHeight: container.offsetHeight,
-            isVisible: container.offsetWidth > 0 && container.offsetHeight > 0,
-            parentElement: container.parentElement?.tagName,
-            children: container.children.length
-          });
-          
-          const svgInContainer = container.querySelector('svg');
-          if (svgInContainer) {
-            console.log('SVG found in radar container:', {
-              element: svgInContainer,
-              className: svgInContainer.className.baseVal || svgInContainer.className,
-              width: svgInContainer.getAttribute('width'),
-              height: svgInContainer.getAttribute('height'),
-              viewBox: svgInContainer.getAttribute('viewBox'),
-              children: svgInContainer.children.length
-            });
-            
-            const rechartsWrapper = container.querySelector('.recharts-wrapper');
-            const rechartsRadar = container.querySelector('.recharts-radar-chart');
-            const rechartsRadarElements = container.querySelectorAll('[class*="recharts-radar"]');
-            
-            console.log('Recharts elements found:', {
-              wrapper: !!rechartsWrapper,
-              radarChart: !!rechartsRadar,
-              radarElements: rechartsRadarElements.length
-            });
-          } else {
-            console.warn('No SVG found in radar chart container!');
-          }
-          
-          // DEBUG: Check for legend element specifically
-          const legendElement = container.querySelector('[style*="gridArea"]');
-          console.log('Legend element found:', !!legendElement);
-          if (legendElement) {
-            console.log('Legend element details:', {
-              element: legendElement,
-              computedStyle: window.getComputedStyle(legendElement),
-              offsetWidth: (legendElement as HTMLElement).offsetWidth,
-              offsetHeight: (legendElement as HTMLElement).offsetHeight,
-              display: window.getComputedStyle(legendElement).display,
-              visibility: window.getComputedStyle(legendElement).visibility,
-              opacity: window.getComputedStyle(legendElement).opacity
-            });
-          }
-        }
-        
-        const captureSelectors = [
-          '[data-testid="radar-chart-container"]',
-          '[data-chart-type="radar"]',
-          '.radar-chart-container',
-          '.recharts-radar-chart',
-          '.recharts-surface'
-        ];
-        
-        console.log('Testing chart capture selectors:');
-        captureSelectors.forEach(selector => {
-          const found = document.querySelectorAll(selector);
-          console.log(`Selector "${selector}": found ${found.length} elements`);
-          if (found.length > 0) {
-            const first = found[0] as HTMLElement;
-            console.log(`  First match dimensions: ${first.offsetWidth}x${first.offsetHeight}`);
-          }
-        });
-        
-        console.log('=== END ENHANCED DOM INSPECTION ===');
-      }, 1000);
-    }
-  }, [validChartData]);
+
   
   if (validChartData.length === 0) {
     console.warn("SkillGapChart - No valid chart data to display");
@@ -315,7 +214,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
     );
   }
 
-  console.log("SkillGapChart - Rendering radar chart with data:", validChartData);
+
 
   // Optimized chart margins for mobile and larger chart size
   const chartMargins = isPDF 

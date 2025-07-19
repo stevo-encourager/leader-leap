@@ -30,7 +30,7 @@ const Results = () => {
   const isMobile = useIsMobile();
   
   // Log the assessment ID for debugging
-  console.log('Results page - URL assessmentId parameter:', assessmentId);
+
   
   const {
     currentStep,
@@ -72,19 +72,13 @@ const Results = () => {
   useEffect(() => {
     if (!isPageReady) return;
     
-    console.log("Results page - Render triggered with:");
-    console.log("Results page - assessmentId:", assessmentId);
-    console.log("Results page - currentStep:", currentStep);
-    console.log("Results page - user authenticated:", !!user);
-    console.log("Results page - Categories from context:", categories);
-    console.log("Results page - Categories count:", categories?.length || 0);
+
     
     // Try to load local data if categories are empty AND we're not viewing a specific assessment
     if ((!categories || categories.length === 0) && !localDataLoadedRef.current && !assessmentId) {
       console.log("Results page - Trying to load from local storage");
       const localData = getLocalAssessmentData();
       if (localData && localData.categories && localData.categories.length > 0) {
-        console.log("Results page - Found local assessment data, using that");
         handleCategoriesUpdate(localData.categories);
         if (localData.demographics) {
           handleDemographicsUpdate(localData.demographics);
@@ -105,10 +99,8 @@ const Results = () => {
       );
       
       if (!hasRatings) {
-        console.log("Results page - Categories present but no ratings, loading from local storage");
         const localData = getLocalAssessmentData();
         if (localData && localData.categories && localData.categories.length > 0) {
-          console.log("Results page - Found local assessment data with ratings, using that");
           handleCategoriesUpdate(localData.categories);
           if (localData.demographics) {
             handleDemographicsUpdate(localData.demographics);
@@ -151,10 +143,8 @@ const Results = () => {
       const hasLocalData = localData && localData.categories && localData.categories.length > 0;
       
       if (!assessmentId && !user && hasLocalData) {
-        console.log('Results page - Unauthenticated user with local data, showing auth prompt');
         setShowMandatoryAuth(true);
       } else if (!assessmentId && !user && !hasLocalData && categories?.length > 0) {
-        console.log('Results page - New assessment detected, requiring authentication');
         setShowMandatoryAuth(true);
       } else {
         setShowMandatoryAuth(false);
@@ -164,7 +154,6 @@ const Results = () => {
 
   // Handle successful authentication
   const handleAuthSuccess = () => {
-    console.log('Results page - Authentication successful, hiding auth form');
     setShowMandatoryAuth(false);
     handleCloseAuthForm();
   };
@@ -174,13 +163,12 @@ const Results = () => {
   useEffect(() => {
     // IMMEDIATELY RETURN if we're viewing an existing assessment
     if (assessmentId) {
-      console.log('Results page - Viewing existing assessment, NEVER save to prevent duplicates');
+  
       return;
     }
     
     // IMMEDIATELY RETURN if we've already triggered a save in this session
     if (saveTriggeredRef.current) {
-      console.log('Results page - Save already triggered in this session, skipping');
       return;
     }
     
@@ -208,7 +196,6 @@ const Results = () => {
       );
       
       if (hasValidRatings) {
-        console.log('Results page - Triggering one-time assessment save for NEW assessment');
         saveTriggeredRef.current = true;
         
         // Delay to ensure all state is properly set
@@ -216,12 +203,9 @@ const Results = () => {
           handleSaveResults();
         }, 300);
       } else {
-        console.log('Results page - Categories present but no valid ratings found, checking local storage');
-        
         // Try one more time to load from local storage
         const localData = getLocalAssessmentData();
         if (localData && localData.categories && localData.categories.length > 0) {
-          console.log('Results page - Found local assessment data, using that before save');
           handleCategoriesUpdate(localData.categories);
           if (localData.demographics) {
             handleDemographicsUpdate(localData.demographics);
@@ -234,8 +218,6 @@ const Results = () => {
               handleSaveResults();
             }
           }, 400);
-        } else {
-          console.log('Results page - No valid rating data available, cannot save');
         }
       }
     } 
@@ -246,7 +228,6 @@ const Results = () => {
              categories && 
              categories.length > 0 &&
              isPageReady) {
-      console.log('Results page - Guest user, ensuring local storage is updated');
       saveTriggeredRef.current = true;
     }
   }, [user, currentStep, assessmentId, categories, handleSaveResults, handleCategoriesUpdate, handleDemographicsUpdate, isPageReady, isInitialDataChecked]);
@@ -263,7 +244,6 @@ const Results = () => {
 
   // Error state for specific assessment ID
   if (assessmentId && specificAssessmentError) {
-    console.error("Results page - Showing error for specific assessment:", specificAssessmentError);
     return (
       <div className="min-h-screen bg-slate-50">
         <div className={`mx-auto ${isMobile ? 'w-full px-2 py-2 overflow-hidden' : 'max-w-5xl px-4 py-2'}`}>
@@ -315,31 +295,27 @@ const Results = () => {
   
   // Case 1: Viewing specific assessment
   if (assessmentId && specificAssessmentData && specificAssessmentData.categories.length > 0) {
-    console.log("Results page - Using specific assessment data");
+
     finalDisplayCategories = specificAssessmentData.categories;
     finalDisplayDemographics = specificAssessmentData.demographics || {};
     hasValidData = true;
   }
   // Case 2: Using assessment context (just completed)
   else if (!assessmentId && categories && categories.length > 0) {
-    console.log("Results page - Using context assessment data");
     finalDisplayCategories = categories;
     finalDisplayDemographics = demographics || {};
     hasValidData = true;
   }
   // Case 3: Using processed display data from the hook
   else if (displayCategories && displayCategories.length > 0) {
-    console.log("Results page - Using processed display data");
     finalDisplayCategories = displayCategories;
     finalDisplayDemographics = displayDemographics || {};
     hasValidData = true;
   }
   // Case 4: Try local storage as last resort (only for new assessments, not existing ones)
   else if (!assessmentId) {
-    console.log("Results page - Checking local storage for data");
     const localData = getLocalAssessmentData();
     if (localData && localData.categories && localData.categories.length > 0) {
-      console.log("Results page - Using local storage data");
       finalDisplayCategories = localData.categories;
       finalDisplayDemographics = localData.demographics || {};
       hasValidData = true;
@@ -348,7 +324,6 @@ const Results = () => {
   
   // If no valid data is available from any source
   if (!hasValidData) {
-    console.error("Results page - No valid assessment data available from any source");
     
     return (
       <div className="min-h-screen bg-slate-50">
@@ -373,7 +348,7 @@ const Results = () => {
   }
 
   // Render the results page with available data
-  console.log("Results page - Rendering ResultsDisplay with valid data and assessmentId:", assessmentId);
+  
   
   return (
     <>

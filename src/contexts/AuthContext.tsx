@@ -26,7 +26,7 @@ interface AuthContextType {
   session: Session | null;
   userProfile: UserProfile | null;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, fullName: string, receiveEmails: boolean) => Promise<void>;
+  signUp: (email: string, password: string, firstName: string, surname: string, receiveEmails: boolean) => Promise<void>;
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
@@ -51,6 +51,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [initialized, setInitialized] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [showAccountCreatedDialog, setShowAccountCreatedDialog] = useState(false);
+  const [showAccountExistsDialog, setShowAccountExistsDialog] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -95,6 +96,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Handle successful sign in
         if (event === 'SIGNED_IN' && session?.user) {
           console.log('AuthContext: User successfully signed in:', session.user.email);
+          
+          // Check if this is a password reset flow
+          const urlParams = new URLSearchParams(window.location.search);
+          const hashParams = new URLSearchParams(window.location.hash.substring(1));
+          const accessToken = urlParams.get('access_token') || hashParams.get('access_token');
+          const refreshToken = urlParams.get('refresh_token') || hashParams.get('refresh_token');
+          const type = urlParams.get('type') || hashParams.get('type');
+          
+          if (accessToken && refreshToken && type === 'recovery') {
+            console.log('AuthContext: Password reset flow detected, redirecting to reset page');
+            // This is a password reset flow, redirect to the reset page with preserved parameters
+            const currentUrl = window.location.href;
+            const resetUrl = currentUrl.replace('/?', '/reset-password?').replace('/#', '/reset-password#');
+            window.location.href = resetUrl;
+            return;
+          }
           
           // Debug: Check if there's local assessment data that should be preserved
           try {
@@ -280,10 +297,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signUp = async (email: string, password: string, fullName: string, receiveEmails: boolean) => {
+  const signUp = async (email: string, password: string, firstName: string, surname: string, receiveEmails: boolean) => {
     console.log('AuthContext: Signing up user with data:', {
       email,
-      fullName,
+      firstName,
+      surname,
       receiveEmails,
     });
 
@@ -295,7 +313,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       options: {
         emailRedirectTo: redirectUrl,
         data: {
-          full_name: fullName,
+          first_name: firstName,
+          surname: surname,
           receive_emails: receiveEmails,
         }
       }
@@ -303,15 +322,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (error) {
       console.error('AuthContext: Sign up error:', error);
-      toast({
-        title: "Error creating account",
-        description: error.message,
-        variant: "destructive",
-      });
+      
+      // Check for specific error messages that indicate existing email
+      const errorMessage = error.message?.toLowerCase() || '';
+      const isExistingEmail = errorMessage.includes('already registered') || 
+                             errorMessage.includes('already exists') ||
+                             errorMessage.includes('user already registered') ||
+                             errorMessage.includes('email already exists') ||
+                             error.status === 422; // Common status for existing email
+      
+      if (isExistingEmail) {
+        setShowAccountExistsDialog(true);
+      } else {
+        toast({
+          title: "Error creating account",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
       throw error;
     }
 
-    if (data.user) {
+    // Only show success dialog if we have a user and no errors
+    if (data.user && !error) {
       console.log('AuthContext: User created successfully:', data.user.id);
       console.log('AuthContext: User metadata after signup:', data.user.user_metadata);
       
@@ -341,6 +374,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       title: "Signed out",
       description: "You have been signed out successfully.",
     });
+    
+    // Navigate to home page after successful sign out
+    navigate('/');
   };
 
   const signInWithGoogle = async () => {
@@ -403,14 +439,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initialized,
   };
 
-  console.log('AuthContext: Rendering provider with values:', {
-    hasUser: !!user,
-    userEmail: user?.email,
-    hasSession: !!session,
-    loading,
-    initialized
-  });
-
   return (
     <AuthContext.Provider value={value}>
       {children}
@@ -426,6 +454,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           </DialogHeader>
           <DialogFooter>
             <Button onClick={() => setShowAccountCreatedDialog(false)}>
+              OK
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Account Already Exists Dialog */}
+      <Dialog open={showAccountExistsDialog} onOpenChange={setShowAccountExistsDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Account Already Exists</DialogTitle>
+            <DialogDescription>
+              An account with this email address already exists.
+              <br />
+              Please use the 'Forgot password?' link in the Login section to reset your password.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setShowAccountExistsDialog(false)}>
               OK
             </Button>
           </DialogFooter>

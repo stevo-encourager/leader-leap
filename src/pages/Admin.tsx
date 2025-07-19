@@ -11,10 +11,7 @@ import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Admin = () => {
-  console.log("Admin page: Rendering admin dashboard");
-  console.log("Admin page: SystemStatusViewer component imported:", !!SystemStatusViewer);
-  console.log("Admin page: UserManagement component imported:", !!UserManagement);
-  console.log("Admin page: Current URL:", window.location.href);
+
   
   return (
     <>

@@ -40,14 +40,12 @@ export const useAssessmentData = (
       // Determine the source of our data
       if (assessmentId && specificAssessment && specificAssessment.categories) {
         // Case 1: Viewing a specific saved assessment
-        console.log("useAssessmentData - Using specific assessment data");
         debug.dataSource = "specific_assessment";
         
         // Ensure categories is an array
         if (Array.isArray(specificAssessment.categories)) {
           sourcedCategories = specificAssessment.categories;
         } else if (typeof specificAssessment.categories === 'object') {
-          console.log("useAssessmentData - Converting specific assessment categories from object to array");
           sourcedCategories = Object.values(specificAssessment.categories);
           debug.categoriesConvertedFromObject = true;
         }
@@ -57,34 +55,12 @@ export const useAssessmentData = (
         }
       } else {
         // Case 2: Using categories from current context (just completed assessment)
-        console.log("useAssessmentData - Using categories from context");
         debug.dataSource = "context_assessment";
         sourcedCategories = contextCategories;
         sourcedDemographics = contextDemographics || {};
       }
       
-      // Log the raw categories from the selected source - focusing on ratings
-      console.log("useAssessmentData - Processing raw categories:", {
-        categoriesLength: sourcedCategories?.length || 0,
-        isArray: Array.isArray(sourcedCategories),
-        firstCategoryTitle: sourcedCategories && sourcedCategories.length > 0 ? sourcedCategories[0]?.title : 'none'
-      });
-      
-      // Log first skill's ratings if available
-      if (sourcedCategories && sourcedCategories.length > 0 && 
-          sourcedCategories[0].skills && sourcedCategories[0].skills.length > 0) {
-        const firstSkill = sourcedCategories[0].skills[0];
-        console.log("useAssessmentData - First skill ratings before processing:", JSON.stringify({
-          name: firstSkill.name,
-          ratings: firstSkill.ratings,
-          ratingsCurrent: firstSkill.ratings ? firstSkill.ratings.current : 'undefined',
-          ratingsCurrentType: firstSkill.ratings ? typeof firstSkill.ratings.current : 'n/a',
-          ratingsDesired: firstSkill.ratings ? firstSkill.ratings.desired : 'undefined',
-          ratingsDesiredType: firstSkill.ratings ? typeof firstSkill.ratings.desired : 'n/a'
-        }));
-      }
-      
-      console.log("useAssessmentData - Raw demographics:", sourcedDemographics);
+
       
       // Count initial ratings for debugging
       let ratingsCount = 0;
@@ -100,7 +76,6 @@ export const useAssessmentData = (
           }
         });
       }
-      console.log("useAssessmentData - Initial ratings count:", ratingsCount);
       debug.initialRatingsCount = ratingsCount;
       
       // Process and validate the data
@@ -145,7 +120,7 @@ export const useAssessmentData = (
                       
                       // Log non-zero ratings for debugging
                       if (current > 0) {
-                        console.log(`useAssessmentData - Valid current rating for ${skill.name}: ${current}`);
+                        // Rating is valid
                       }
                     }
                     
@@ -156,11 +131,9 @@ export const useAssessmentData = (
                       
                       // Log non-zero ratings for debugging
                       if (desired > 0) {
-                        console.log(`useAssessmentData - Valid desired rating for ${skill.name}: ${desired}`);
+                        // Rating is valid
                       }
                     }
-                    
-                    console.log(`useAssessmentData - Processed skill: ${processedSkill.name}, current=${processedSkill.ratings.current}, desired=${processedSkill.ratings.desired}`);
                   }
                   
                   return processedSkill;
@@ -182,7 +155,6 @@ export const useAssessmentData = (
             });
           }
         });
-        console.log("useAssessmentData - Processed ratings count:", processedRatingsCount);
         debug.processedRatingsCount = processedRatingsCount;
         
         // Set the data and mark as valid
@@ -195,7 +167,7 @@ export const useAssessmentData = (
         debug.valid = cleanedCategories.length > 0;
       } else {
         // No valid categories data
-        console.warn("useAssessmentData - No valid categories data found");
+    
         setDisplayCategories([]);
         setIsAssessmentDataValid(false);
         

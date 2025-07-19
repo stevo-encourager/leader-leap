@@ -45,9 +45,7 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
       cat.skills.length > 0
     );
   
-  console.log('DetailedAnalysis - Categories:', categories);
-  console.log('DetailedAnalysis - hasCategories:', hasCategories);
-  console.log('DetailedAnalysis - assessmentId:', assessmentId);
+
 
   return (
     <Card className={`overflow-hidden ${className}`}>

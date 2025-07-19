@@ -183,6 +183,37 @@ async function securityAudit() {
   }
 }
 
+// SAFETY CHECK: Prevent accidental database resets
+function checkForDestructiveOperations() {
+  const args = process.argv.join(' ');
+  
+  const destructiveCommands = [
+    'supabase db reset',
+    'supabase db reset --linked',
+    'DROP DATABASE',
+    'TRUNCATE',
+    'DELETE FROM'
+  ];
+  
+  const hasDestructiveCommand = destructiveCommands.some(cmd => 
+    args.toLowerCase().includes(cmd.toLowerCase())
+  );
+  
+  if (hasDestructiveCommand) {
+    console.error('\n🚨 DESTRUCTIVE OPERATION DETECTED 🚨');
+    console.error('This command would destroy data. Please confirm:');
+    console.error('1. You are in the correct environment');
+    console.error('2. You have a backup of your data');
+    console.error('3. You understand this will delete all data');
+    console.error('\nTo proceed, add --force-destructive to your command');
+    console.error('Example: supabase db reset --linked --force-destructive');
+    process.exit(1);
+  }
+}
+
+// Run safety check
+checkForDestructiveOperations();
+
 // Run the audit
 securityAudit().then(() => {
   console.log('\n✅ Security audit completed');

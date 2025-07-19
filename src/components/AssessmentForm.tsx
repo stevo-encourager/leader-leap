@@ -39,7 +39,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
 
   const isMobile = useIsMobile();
 
-  console.log("AssessmentForm rendering, about to render HelpButton");
+
 
   const handleSkillRating = (categoryId: string, skillId: string, type: 'current' | 'desired', value: number) => {
     console.log(`Updating skill rating: category=${categoryId}, skill=${skillId}, type=${type}, value=${value}`);
@@ -131,7 +131,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
   const isFirstCategory = activeCategory === 0;
   const isCategoryComplete = isCategoryCompleted(currentCategory);
 
-  console.log("Rendering HelpButton in header section");
+
 
   return (
     <div className="fade-in">

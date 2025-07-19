@@ -37,10 +37,8 @@ export const useAssessment = () => {
 
   // Reset all categories to default values when starting a new assessment
   const handleStartNewAssessment = () => {
-    console.log("useAssessment - Starting new assessment with fresh categories");
     // Create completely fresh copy of default categories with all ratings reset to 0
     const freshCategories = createFreshCategories();
-    console.log("useAssessment - Fresh categories created:", freshCategories?.length || 0);
     resetAssessment(freshCategories);
     // Defensive: forcibly clear local storage to guarantee blank slate
     clearLocalAssessmentData();
@@ -63,7 +61,6 @@ export const useAssessment = () => {
   // Effect to handle result saving when user logs in
   useEffect(() => {
     if (user && currentStep === 'results' && categories && categories.length > 0) {
-      console.log("useAssessment - User logged in and on results page, triggering save");
       handleSaveResults();
     }
   }, [user, currentStep, handleSaveResults, categories]);

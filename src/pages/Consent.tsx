@@ -135,8 +135,7 @@ const Consent: React.FC = () => {
     
     // Debug: Check local data before saving preferences
     const localDataBefore = getLocalAssessmentData();
-    console.log('Consent page - Local data BEFORE saving preferences:', localDataBefore);
-    console.log('Consent page - Categories count BEFORE:', localDataBefore?.categories?.length || 0);
+
     try {
       // Update the user's profile with consent and email preferences
       const { error } = await supabase
@@ -186,35 +185,21 @@ const Consent: React.FC = () => {
         description: 'Thank you for confirming your consent and preferences.',
       });
       
-      // Debug: Check local data after saving preferences
-      const localDataAfter = getLocalAssessmentData();
-      console.log('Consent page - Local data AFTER saving preferences:', localDataAfter);
-      console.log('Consent page - Categories count AFTER:', localDataAfter?.categories?.length || 0);
-      
       // Check if user has local assessment data that needs to be saved
       const localData = getLocalAssessmentData();
-      console.log('Consent page - Retrieved local data:', localData);
-      console.log('Consent page - Local data categories count:', localData?.categories?.length || 0);
       if (localData && localData.categories && localData.categories.length > 0) {
         // User has assessment data, save it to the database first
         try {
-          console.log('Consent page - Saving local assessment data to database for new user');
-          console.log('Consent page - Categories to save:', localData.categories);
-          console.log('Consent page - Demographics to save:', localData.demographics);
           const result = await saveAssessmentResults(localData.categories, localData.demographics);
-          console.log('Consent page - Save result:', result);
           
           if (result.success && result.data && result.data[0]?.id) {
-            console.log('Consent page - Assessment saved successfully, redirecting to results');
             // Redirect to the specific assessment results page
             navigate(`/results/${result.data[0].id}`);
           } else {
-            console.error('Consent page - Failed to save assessment:', result.error);
             // Still redirect to results page, it will handle loading from local storage
             navigate('/results');
           }
         } catch (error) {
-          console.error('Consent page - Error saving assessment:', error);
           // Still redirect to results page, it will handle loading from local storage
           navigate('/results');
         }

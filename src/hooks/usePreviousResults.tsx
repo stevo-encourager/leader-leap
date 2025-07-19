@@ -23,14 +23,7 @@ export const usePreviousResults = (
   
   // Helper function to validate and process categories data
   const validateAndProcessCategories = (categoriesData: any): Category[] | null => {
-    console.log('usePreviousResults - validateAndProcessCategories input:', {
-      type: typeof categoriesData,
-      isArray: Array.isArray(categoriesData),
-      length: categoriesData?.length || 0
-    });
-    
     if (!Array.isArray(categoriesData) || categoriesData.length === 0) {
-      console.log('usePreviousResults - Invalid categories data structure');
       return null;
     }
     
@@ -73,10 +66,7 @@ export const usePreviousResults = (
       });
     });
     
-    console.log(`usePreviousResults - Processed categories with ${totalRatings} total ratings`);
-    
     if (totalRatings === 0) {
-      console.log('usePreviousResults - No valid ratings found in processed data');
       return null;
     }
     
@@ -85,7 +75,6 @@ export const usePreviousResults = (
   
   const handleLoadPreviousResults = async () => {
     setLoadingPreviousResults(true);
-    console.log('usePreviousResults - Loading previous results for user:', user?.id);
     
     try {
       // If user is not authenticated, try to load from local storage instead
@@ -96,7 +85,6 @@ export const usePreviousResults = (
           const validatedCategories = validateAndProcessCategories(localData.categories);
           
           if (validatedCategories) {
-            console.log('usePreviousResults - Using validated local storage data');
             setCategories(validatedCategories);
             setDemographics(localData.demographics || {});
             setCurrentStep('results');
@@ -125,10 +113,7 @@ export const usePreviousResults = (
       }
       
       // User is authenticated, try to load from database
-      console.log('usePreviousResults - User authenticated, fetching from database');
       const result = await getLatestAssessmentResults();
-      
-      console.log('usePreviousResults - Database fetch result:', result);
       
       if (result.success && result.data) {
         const categoriesData = result.data.categories;
@@ -138,15 +123,12 @@ export const usePreviousResults = (
         const validatedCategories = validateAndProcessCategories(categoriesData);
         
         if (validatedCategories) {
-          console.log('usePreviousResults - Using validated database data');
           setCategories(validatedCategories);
           setDemographics(demographicsData || {});
           setCurrentStep('results');
           
           // Store the assessment ID and mark as saved
           if (result.data.id) {
-            console.log('usePreviousResults - Loaded assessment with ID:', result.data.id);
-            
             if (result.data.created_at) {
               const savedDate = new Date(result.data.created_at).toISOString().split('T')[0];
               markAsSaved(result.data.id, savedDate);
@@ -162,21 +144,18 @@ export const usePreviousResults = (
             description: "Your most recent assessment results have been loaded.",
           });
         } else {
-          console.log('usePreviousResults - Database data invalid, showing fallback message');
           toast({
             title: "No valid assessment data",
             description: "Your saved assessment doesn't contain complete ratings. Please complete a new assessment.",
           });
         }
       } else {
-        console.log('usePreviousResults - No database results found');
         toast({
           title: "No previous results found",
           description: "You don't have any saved assessment results yet. Please complete the assessment.",
         });
       }
     } catch (error) {
-      console.error('usePreviousResults - Error loading previous results:', error);
       toast({
         title: "Error loading results",
         description: "An error occurred while loading your previous results.",

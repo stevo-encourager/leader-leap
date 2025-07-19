@@ -13,6 +13,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import SEO from '@/components/SEO';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { getLatestAssessmentResults } from '@/services/assessment/fetchAssessment';
+import { Demographics } from '@/utils/assessmentTypes';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,7 +29,7 @@ import {
 
 const MyProfile = () => {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, userProfile, signOut } = useAuth();
   const isMobile = useIsMobile();
   const {
     assessments,
@@ -48,6 +50,8 @@ const MyProfile = () => {
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [demographics, setDemographics] = useState<Demographics | null>(null);
+  const [demographicsLoading, setDemographicsLoading] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -56,6 +60,23 @@ const MyProfile = () => {
     }
     fetchAssessments();
     setLastRefreshed(new Date().toISOString());
+    
+    // Fetch the most recent demographic data
+    const fetchDemographics = async () => {
+      setDemographicsLoading(true);
+      try {
+        const result = await getLatestAssessmentResults();
+        if (result.success && result.data) {
+          setDemographics(result.data.demographics);
+        }
+      } catch (error) {
+        console.error('Error fetching demographics:', error);
+      } finally {
+        setDemographicsLoading(false);
+      }
+    };
+    
+    fetchDemographics();
   }, [user, navigate]);
 
   const handleRefresh = () => {
@@ -87,7 +108,7 @@ const MyProfile = () => {
     setDeleteLoading(true);
     
     try {
-      console.log('Attempting to delete account for user:', user?.id);
+  
       
       // Call the secure Edge Function for account deletion
       const { data, error } = await supabase.functions.invoke('delete-user-account', {
@@ -95,7 +116,6 @@ const MyProfile = () => {
       });
       
       if (error) {
-        console.error('Edge function error:', error);
         throw error;
       }
       
@@ -117,8 +137,6 @@ const MyProfile = () => {
       }, 2000);
       
     } catch (err: any) {
-      console.error('Delete account error:', err);
-      
       // Provide clear error messages based on the error type
       let errorMessage = 'Failed to delete account.';
       
@@ -168,10 +186,37 @@ const MyProfile = () => {
             
             <div className="mb-8">
               <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-2">Account Details</h2>
+              <h2 className="text-xl font-semibold mb-2 text-encourager">Personal Details</h2>
               <div className="mb-4">
-                <span className="font-medium">Email:</span> {user?.email}
+                {userProfile?.full_name && (
+                  <div className="mb-2">
+                    <span className="font-medium">Name:</span> {userProfile.full_name}
+                  </div>
+                )}
+                <div className="mb-2">
+                  <span className="font-medium">Email:</span> {user?.email}
+                </div>
               </div>
+              {demographics && (demographics.role || demographics.yearsOfExperience || demographics.industry) && (
+                <div className="mb-4">
+                  <h3 className="text-xl font-semibold mb-2 text-encourager">Demographic Information <span className="font-normal">(based on your most recent assessment)</span></h3>
+                  {demographics.role && (
+                    <div className="mb-2">
+                      <span className="font-medium">Your Role:</span> {demographics.role}
+                    </div>
+                  )}
+                  {demographics.industry && (
+                    <div className="mb-2">
+                      <span className="font-medium">Industry:</span> {demographics.industry}
+                    </div>
+                  )}
+                  {demographics.yearsOfExperience && (
+                    <div className="mb-2">
+                      <span className="font-medium">Leadership Experience:</span> {demographics.yearsOfExperience}
+                    </div>
+                  )}
+                </div>
+              )}
               <button
                 className="text-encourager underline text-sm mb-2 block"
                 onClick={() => setShowChangePassword((v) => !v)}

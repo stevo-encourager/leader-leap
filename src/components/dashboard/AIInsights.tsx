@@ -2,8 +2,8 @@
 import React from 'react';
 import { Bot, AlertCircle, Target, TrendingUp, ExternalLink } from 'lucide-react';
 import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
-import { Category, Demographics } from '@/utils/assessmentTypes';
 import { FormattedSummary } from '@/components/FormattedSummary';
+import type { Category, Demographics } from '@/utils/assessmentTypes';
 
 interface AIInsightsProps {
   categories: Category[];
@@ -40,8 +40,6 @@ const AIInsights: React.FC<AIInsightsProps> = ({
   assessmentId,
   onRegenerateCallback 
 }) => {
-  console.log('🔵 AIInsights: Component mounted with assessmentId:', assessmentId);
-  
   const { insights, isLoading, error, regenerateInsights } = useOpenAIInsights({
     categories,
     demographics,
@@ -49,26 +47,20 @@ const AIInsights: React.FC<AIInsightsProps> = ({
     assessmentId
   });
 
+
+
+
+
+
+  
   // FIXED: Provide the regeneration callback directly to parent
   React.useEffect(() => {
     if (onRegenerateCallback && regenerateInsights) {
-      console.log('🔵 AIInsights: Providing regeneration callback to parent');
       onRegenerateCallback(regenerateInsights);
     }
   }, [onRegenerateCallback, regenerateInsights]);
 
-  // Log the assessment ID and insights status for debugging
-  React.useEffect(() => {
-    console.log('🔵 AIInsights: Current state:', {
-      hasInsights: !!insights,
-      isLoading,
-      hasError: !!error,
-      insightsLength: insights?.length || 0,
-      assessmentId
-    });
-  }, [assessmentId, insights, isLoading, error]);
-
-  // Parse insights from JSON string
+  // Enhanced parsing function with better error handling
   const parseInsights = (insightsText: string): AIInsightsData | null => {
     try {
       const parsed = JSON.parse(insightsText);
@@ -151,16 +143,6 @@ const AIInsights: React.FC<AIInsightsProps> = ({
         if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
           validResources.push({ name, url });
         }
-      } else {
-        // Try to get a working link from resource mapping
-        // const resourceLink = generateResourceLink(resource);
-        // if (resourceLink.hasValidLink && resourceLink.url) {
-        //   validResources.push({ 
-        //     name: resourceLink.title, 
-        //     url: resourceLink.url 
-        //   });
-        // }
-        // If no valid link found, don't include this resource at all
       }
     });
     
@@ -350,8 +332,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({
           <div className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
             {(() => {
               const parsedInsights = parseInsights(insights);
-              console.log('Priority Area Resources:', parsedInsights?.priority_areas?.[0]?.resources);
-              console.log('All Priority Area Resources:', parsedInsights?.priority_areas?.map(a => a.resources));
+              
               
               if (!parsedInsights) {
                 return (

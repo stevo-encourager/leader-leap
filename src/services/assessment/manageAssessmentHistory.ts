@@ -20,26 +20,9 @@ interface AssessmentRecord {
  */
 export const storeLocalAssessmentData = (categories: Category[], demographics: Demographics): boolean => {
   try {
-    console.log("storeLocalAssessmentData - Storing assessment data locally:", {
-      categoriesCount: categories?.length || 0,
-      hasRatings: categories?.some(cat => 
-        cat?.skills?.some(skill => 
-          skill?.ratings?.current > 0 || skill?.ratings?.desired > 0
-        )
-      ),
-      demographicsProvided: !!demographics
-    });
+
     
-    // Debug the first category's ratings before storage
-    if (categories && categories.length > 0 && categories[0].skills && categories[0].skills.length > 0) {
-      console.log("storeLocalAssessmentData - Sample data before storage:", 
-        JSON.stringify({
-          category: categories[0].title,
-          skill: categories[0].skills[0].name,
-          ratings: categories[0].skills[0].ratings
-        })
-      );
-    }
+
     
     // Ensure we have a deep copy to avoid reference issues
     const categoriesToStore = JSON.parse(JSON.stringify(categories));
@@ -49,24 +32,10 @@ export const storeLocalAssessmentData = (categories: Category[], demographics: D
     localStorage.setItem('assessment_demographics', JSON.stringify(demographics));
     localStorage.setItem('assessment_timestamp', new Date().toISOString());
     
-    // Verify the data was stored correctly by reading it back
-    const storedData = localStorage.getItem('assessment_categories');
-    if (storedData) {
-      const parsedData = JSON.parse(storedData);
-      if (parsedData && parsedData.length > 0 && parsedData[0].skills && parsedData[0].skills.length > 0) {
-        console.log("storeLocalAssessmentData - Verification of stored data:", 
-          JSON.stringify({
-            category: parsedData[0].title,
-            skill: parsedData[0].skills[0].name,
-            ratings: parsedData[0].skills[0].ratings
-          })
-        );
-      }
-    }
+
     
     return true;
   } catch (error) {
-    console.error("Error storing local assessment data:", error);
     return false;
   }
 };
@@ -81,28 +50,13 @@ export const getLocalAssessmentData = (): LocalAssessmentData | null => {
     const timestamp = localStorage.getItem('assessment_timestamp');
     
     if (!categoriesStr) {
-      console.log("getLocalAssessmentData - No local assessment data found");
       return null;
     }
     
     const categories = JSON.parse(categoriesStr);
     const demographics = demographicsStr ? JSON.parse(demographicsStr) : {};
     
-    console.log("getLocalAssessmentData - Retrieved local assessment data:", {
-      categoriesCount: categories?.length || 0,
-      timestamp: timestamp || 'unknown'
-    });
-    
-    // Debug the first category's ratings after retrieval
-    if (categories && categories.length > 0 && categories[0].skills && categories[0].skills.length > 0) {
-      console.log("getLocalAssessmentData - Sample data after retrieval:", 
-        JSON.stringify({
-          category: categories[0].title,
-          skill: categories[0].skills[0].name,
-          ratings: categories[0].skills[0].ratings
-        })
-      );
-    }
+
     
     return { 
       categories, 
@@ -110,7 +64,6 @@ export const getLocalAssessmentData = (): LocalAssessmentData | null => {
       timestamp: timestamp || new Date().toISOString() 
     };
   } catch (error) {
-    console.error("Error retrieving local assessment data:", error);
     return null;
   }
 };
@@ -125,7 +78,6 @@ export const clearLocalAssessmentData = (): boolean => {
     localStorage.removeItem('assessment_timestamp');
     return true;
   } catch (error) {
-    console.error("Error clearing local assessment data:", error);
     return false;
   }
 };
@@ -140,36 +92,30 @@ export const getAssessmentHistory = async (): Promise<{
   error?: string 
 }> => {
   try {
-    console.log("getAssessmentHistory - Starting fetch");
-    
     // Get the current user ID first
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
-      console.error("getAssessmentHistory - User not authenticated");
       return { success: false, error: 'User not authenticated' };
     }
     
-    // Fetch all completed assessments for this user
+    // Fetch all completed assessments for this user, excluding the test assessment
     const { data: assessments, error } = await supabase
       .from('assessment_results')
       .select('id, created_at, completed')
       .eq('user_id', user.id)
+      .neq('id', '08a5f01a-db17-474d-a3e8-c53bedbc34c8') // Exclude test assessment
       .order('created_at', { ascending: false });
       
     if (error) {
-      console.error("getAssessmentHistory - Error fetching history:", error);
       return { success: false, error: error.message };
     }
-    
-    console.log(`getAssessmentHistory - Found ${assessments?.length || 0} assessments`);
     
     return { 
       success: true, 
       data: assessments as AssessmentRecord[]
     };
   } catch (error) {
-    console.error("Error in getAssessmentHistory:", error);
     return { success: false, error: 'Failed to fetch assessment history' };
   }
 };
@@ -182,21 +128,15 @@ export const deleteAssessment = async (assessmentId: string): Promise<{
   error?: string 
 }> => {
   try {
-    console.log("deleteAssessment - Starting deletion for assessment:", assessmentId);
-    
     // Verify user is authenticated
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
-      console.error("deleteAssessment - User not authenticated");
       return { success: false, error: 'User not authenticated' };
     }
     
-    console.log("deleteAssessment - Authenticated user ID:", user.id);
-    
     // Prevent deletion of the protected test assessment
-    if (assessmentId === '2631edf1-a358-4303-83c1-deb9664b53e2') {
-      console.error('deleteAssessment - Attempted to delete protected test assessment');
+    if (assessmentId === '08a5f01a-db17-474d-a3e8-c53bedbc34c8') {
       return { success: false, error: 'This test assessment cannot be deleted.' };
     }
     
@@ -209,16 +149,12 @@ export const deleteAssessment = async (assessmentId: string): Promise<{
       .single();
       
     if (fetchError) {
-      console.error("deleteAssessment - Error checking assessment existence:", fetchError);
       return { success: false, error: 'Assessment not found or access denied' };
     }
     
     if (!existingAssessment) {
-      console.error("deleteAssessment - Assessment not found for user");
       return { success: false, error: 'Assessment not found' };
     }
-    
-    console.log("deleteAssessment - Found assessment to delete:", existingAssessment);
     
     // Delete the assessment
     const { error: deleteError, count } = await supabase
@@ -228,20 +164,15 @@ export const deleteAssessment = async (assessmentId: string): Promise<{
       .eq('user_id', user.id);
       
     if (deleteError) {
-      console.error("deleteAssessment - Delete error:", deleteError);
       return { success: false, error: deleteError.message };
     }
     
-    console.log(`deleteAssessment - Successfully deleted ${count} record(s)`);
-    
     if (count === 0) {
-      console.warn("deleteAssessment - No records were deleted");
       return { success: false, error: 'No records were deleted' };
     }
     
     return { success: true };
   } catch (error) {
-    console.error("Error in deleteAssessment:", error);
     return { success: false, error: 'Failed to delete assessment' };
   }
 };
@@ -254,13 +185,10 @@ export const deleteAllAssessments = async (): Promise<{
   error?: string 
 }> => {
   try {
-    console.log("deleteAllAssessments - Starting");
-    
     // Verify user is authenticated
     const { data: { user } } = await supabase.auth.getUser();
     
     if (!user) {
-      console.error("deleteAllAssessments - User not authenticated");
       return { success: false, error: 'User not authenticated' };
     }
     
@@ -269,17 +197,14 @@ export const deleteAllAssessments = async (): Promise<{
       .from('assessment_results')
       .delete()
       .eq('user_id', user.id)
-      .neq('id', '2631edf1-a358-4303-83c1-deb9664b53e2');
+      .neq('id', 'db860913-600f-49b2-b9b2-d6fbc47cda2b');
       
     if (error) {
-      console.error("deleteAllAssessments - Error:", error);
       return { success: false, error: error.message };
     }
     
-    console.log("deleteAllAssessments - Successfully deleted all assessments except protected test assessment");
     return { success: true };
   } catch (error) {
-    console.error("Error in deleteAllAssessments:", error);
     return { success: false, error: 'Failed to delete all assessments' };
   }
 };

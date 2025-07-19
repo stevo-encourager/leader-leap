@@ -17,23 +17,17 @@ export interface FetchAssessmentResult {
 }
 
 export const getLatestAssessmentResults = async (): Promise<FetchAssessmentResult> => {
-  console.log("getLatestAssessmentResults - Starting fetch");
-  
   try {
     // Check if user is authenticated
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
     if (authError) {
-      console.error("getLatestAssessmentResults - Auth error:", authError);
       return { success: false, error: "Authentication error" };
     }
 
     if (!user) {
-      console.log("getLatestAssessmentResults - No authenticated user");
       return { success: false, error: "User not authenticated" };
     }
-
-    console.log(`getLatestAssessmentResults - Fetching for user: ${user.id}`);
 
     // Fetch the most recent completed assessment
     const { data, error } = await supabase
@@ -45,28 +39,18 @@ export const getLatestAssessmentResults = async (): Promise<FetchAssessmentResul
       .limit(1);
 
     if (error) {
-      console.error("getLatestAssessmentResults - Database error:", error);
       return { success: false, error: error.message };
     }
 
     if (!data || data.length === 0) {
-      console.log("getLatestAssessmentResults - No assessment found for user");
       return { success: false, error: "No assessment found" };
     }
 
     const assessment = data[0];
-    console.log("getLatestAssessmentResults - Raw assessment data:", {
-      id: assessment.id,
-      categoriesType: typeof assessment.categories,
-      categoriesLength: Array.isArray(assessment.categories) ? assessment.categories.length : 'not array',
-      demographicsType: typeof assessment.demographics,
-      created_at: assessment.created_at
-    });
 
     // Validate and normalize the categories data
     const rawCategories = assessment.categories;
     if (!rawCategories || !Array.isArray(rawCategories)) {
-      console.error("getLatestAssessmentResults - Invalid categories data:", rawCategories);
       return { success: false, error: "Invalid assessment data format" };
     }
 
@@ -84,11 +68,8 @@ export const getLatestAssessmentResults = async (): Promise<FetchAssessmentResul
     );
 
     if (validCategories.length === 0) {
-      console.error("getLatestAssessmentResults - No valid categories with ratings found");
       return { success: false, error: "Assessment contains no valid rating data" };
     }
-
-    console.log(`getLatestAssessmentResults - Successfully normalized ${validCategories.length} categories with rating data`);
 
     const result: AssessmentResult = {
       id: assessment.id,
@@ -101,46 +82,48 @@ export const getLatestAssessmentResults = async (): Promise<FetchAssessmentResul
     return { success: true, data: result };
 
   } catch (error) {
-    console.error("getLatestAssessmentResults - Unexpected error:", error);
     return { success: false, error: "An unexpected error occurred while fetching assessment" };
   }
 };
 
 // Function to fetch a specific assessment by ID (for test panel)
 export const getSpecificAssessmentResults = async (assessmentId: string): Promise<FetchAssessmentResult> => {
-  console.log(`getSpecificAssessmentResults - Fetching assessment: ${assessmentId}`);
+  // Special test assessment ID that doesn't require completed=true
+  const TEST_ASSESSMENT_ID = '08a5f01a-db17-474d-a3e8-c53bedbc34c8';
+  const isTestAssessment = assessmentId === TEST_ASSESSMENT_ID;
   
   try {
-    // Fetch the specific assessment without user_id restriction for test purposes
-    const { data, error } = await supabase
+    // Fetch the specific assessment - for test assessments, don't require completed=true
+    const TEST_ASSESSMENT_ID = 'db860913-600f-49b2-b9b2-d6fbc47cda2b';
+    const isTestAssessment = assessmentId === TEST_ASSESSMENT_ID;
+    
+    // For test assessments, don't filter by completed status at all
+    let query = supabase
       .from('assessment_results')
       .select('*')
       .eq('id', assessmentId)
-      .eq('completed', true)
       .limit(1);
+    
+    // Only add completed filter for non-test assessments
+    if (!isTestAssessment) {
+      query = query.eq('completed', true);
+    }
+    
+    const { data, error } = await query;
 
     if (error) {
-      console.error("getSpecificAssessmentResults - Database error:", error);
       return { success: false, error: error.message };
     }
 
     if (!data || data.length === 0) {
-      console.log("getSpecificAssessmentResults - Assessment not found");
       return { success: false, error: "Assessment not found" };
     }
 
     const assessment = data[0];
-    console.log("getSpecificAssessmentResults - Raw assessment data:", {
-      id: assessment.id,
-      categoriesType: typeof assessment.categories,
-      categoriesLength: Array.isArray(assessment.categories) ? assessment.categories.length : 'not array',
-      demographicsType: typeof assessment.demographics
-    });
 
     // Validate and normalize the categories data
     const rawCategories = assessment.categories;
     if (!rawCategories || !Array.isArray(rawCategories)) {
-      console.error("getSpecificAssessmentResults - Invalid categories data:", rawCategories);
       return { success: false, error: "Invalid assessment data format" };
     }
 
@@ -148,7 +131,7 @@ export const getSpecificAssessmentResults = async (assessmentId: string): Promis
     const normalizedCategories = normalizeCategories(rawCategories);
     const normalizedDemographics = normalizeDemographics(assessment.demographics);
 
-    console.log(`getSpecificAssessmentResults - Successfully normalized ${normalizedCategories.length} categories`);
+
 
     const result: AssessmentResult = {
       id: assessment.id,
@@ -161,26 +144,21 @@ export const getSpecificAssessmentResults = async (assessmentId: string): Promis
     return { success: true, data: result };
 
   } catch (error) {
-    console.error("getSpecificAssessmentResults - Unexpected error:", error);
     return { success: false, error: "An unexpected error occurred while fetching assessment" };
   }
 };
 
 // Add the getAssessmentById function that was missing
 export const getAssessmentById = async (assessmentId: string): Promise<FetchAssessmentResult> => {
-  console.log(`getAssessmentById - Fetching assessment: ${assessmentId}`);
-  
   try {
     // Check if user is authenticated
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
     if (authError) {
-      console.error("getAssessmentById - Auth error:", authError);
       return { success: false, error: "Authentication error" };
     }
 
     if (!user) {
-      console.log("getAssessmentById - No authenticated user");
       return { success: false, error: "User not authenticated" };
     }
 
@@ -193,27 +171,19 @@ export const getAssessmentById = async (assessmentId: string): Promise<FetchAsse
       .limit(1);
 
     if (error) {
-      console.error("getAssessmentById - Database error:", error);
       return { success: false, error: error.message };
     }
 
     if (!data || data.length === 0) {
-      console.log("getAssessmentById - Assessment not found");
       return { success: false, error: "Assessment not found" };
     }
 
     const assessment = data[0];
-    console.log("getAssessmentById - Raw assessment data:", {
-      id: assessment.id,
-      categoriesType: typeof assessment.categories,
-      categoriesLength: Array.isArray(assessment.categories) ? assessment.categories.length : 'not array',
-      demographicsType: typeof assessment.demographics
-    });
-
+    // Log the raw assessment data for debugging
+    
     // Validate and normalize the categories data
     const rawCategories = assessment.categories;
     if (!rawCategories || !Array.isArray(rawCategories)) {
-      console.error("getAssessmentById - Invalid categories data:", rawCategories);
       return { success: false, error: "Invalid assessment data format" };
     }
 
@@ -221,7 +191,7 @@ export const getAssessmentById = async (assessmentId: string): Promise<FetchAsse
     const normalizedCategories = normalizeCategories(rawCategories);
     const normalizedDemographics = normalizeDemographics(assessment.demographics);
 
-    console.log(`getAssessmentById - Successfully normalized ${normalizedCategories.length} categories`);
+
 
     const result: AssessmentResult = {
       id: assessment.id,
@@ -234,7 +204,6 @@ export const getAssessmentById = async (assessmentId: string): Promise<FetchAsse
     return { success: true, data: result };
 
   } catch (error) {
-    console.error("getAssessmentById - Unexpected error:", error);
     return { success: false, error: "An unexpected error occurred while fetching assessment" };
   }
 };

@@ -199,7 +199,7 @@ const MyProfile = () => {
               </div>
               {demographics && (demographics.role || demographics.yearsOfExperience || demographics.industry) && (
                 <div className="mb-4">
-                  <h3 className="text-xl font-semibold mb-2 text-encourager">Demographic Information <span className="font-normal">(based on your most recent assessment)</span></h3>
+                  <h3 className="text-xl font-semibold mb-2 text-encourager">Current Profile</h3>
                   {demographics.role && (
                     <div className="mb-2">
                       <span className="font-medium">Your Role:</span> {demographics.role}

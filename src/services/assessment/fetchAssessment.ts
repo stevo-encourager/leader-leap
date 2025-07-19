@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { normalizeCategories, normalizeDemographics } from '@/utils/dataNormalizer';
+// Force TypeScript refresh for updated Supabase types
 
 export interface AssessmentResult {
   id: string;

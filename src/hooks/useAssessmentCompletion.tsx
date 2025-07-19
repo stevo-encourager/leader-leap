@@ -9,8 +9,6 @@ export const useAssessmentCompletion = (
   completeHandler: () => void
 ) => {
   const handleCompleteAssessment = () => {
-    console.log("handleCompleteAssessment - Completing assessment with categories:", 
-                categories ? JSON.stringify({ length: categories.length, isArray: Array.isArray(categories) }) : "none");
     
     // Check if we have valid category data before completing
     if (!categories || !Array.isArray(categories) || categories.length === 0) {
@@ -53,7 +51,6 @@ export const useAssessmentCompletion = (
     
     // CRITICAL FIX: Store assessment data locally before changing page
     storeLocalAssessmentData(categories, demographics);
-    console.log("handleCompleteAssessment - Stored assessment data locally");
     
     // Call the original handler
     completeHandler();

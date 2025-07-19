@@ -13,10 +13,7 @@ import {
 const HelpButton: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
 
-  console.log("HelpButton component is rendering");
-
   const handleButtonClick = () => {
-    console.log("Help button clicked!");
     setIsOpen(true);
   };
 

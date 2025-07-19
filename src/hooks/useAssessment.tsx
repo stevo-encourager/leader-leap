@@ -37,14 +37,11 @@ export const useAssessment = () => {
 
   // Reset all categories to default values when starting a new assessment
   const handleStartNewAssessment = () => {
-    console.log("handleStartNewAssessment - Starting completely fresh assessment");
     // Clear local storage FIRST to ensure we don't preserve any old data
     clearLocalAssessmentData();
-    console.log("handleStartNewAssessment - Cleared local storage for fresh start");
     
     // Create completely fresh copy of default categories with all ratings reset to 0
     const freshCategories = createFreshCategories();
-    console.log("handleStartNewAssessment - Created fresh categories:", freshCategories.length);
     
     // Reset assessment state with fresh categories
     resetAssessment(freshCategories);
@@ -55,13 +52,10 @@ export const useAssessment = () => {
 
   // Function to continue an existing assessment (loads from local storage)
   const handleContinueAssessment = () => {
-    console.log("handleContinueAssessment - Attempting to load existing data");
     const loadedExisting = loadExistingData();
     if (loadedExisting) {
-      console.log("handleContinueAssessment - Successfully loaded existing data");
       handleStartAssessment();
     } else {
-      console.log("handleContinueAssessment - No existing data found, starting fresh");
       handleStartNewAssessment();
     }
   };

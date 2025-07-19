@@ -55,7 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const navigate = useNavigate();
 
   useEffect(() => {
-    console.log('AuthContext: Setting up auth state listener');
+    
     
     let mounted = true;
 
@@ -64,14 +64,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       async (event, session) => {
         if (!mounted) return;
         
-        console.log('AuthContext: Auth state changed:', event, session?.user?.email || 'No user');
-        console.log('AuthContext: Session details:', {
-          hasSession: !!session,
-          hasUser: !!session?.user,
-          userId: session?.user?.id,
-          userEmail: session?.user?.email,
-          userEmailConfirmed: session?.user?.email_confirmed_at
-        });
         
         setSession(session);
         setUser(session?.user ?? null);
@@ -95,7 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Handle successful sign in
         if (event === 'SIGNED_IN' && session?.user) {
-          console.log('AuthContext: User successfully signed in:', session.user.email);
+          
           
           // Check if this is a password reset flow
           const urlParams = new URLSearchParams(window.location.search);
@@ -105,7 +97,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const type = urlParams.get('type') || hashParams.get('type');
           
           if (accessToken && refreshToken && type === 'recovery') {
-            console.log('AuthContext: Password reset flow detected, redirecting to reset page');
+            
             // This is a password reset flow, redirect to the reset page with preserved parameters
             const currentUrl = window.location.href;
             const resetUrl = currentUrl.replace('/?', '/reset-password?').replace('/#', '/reset-password#');
@@ -116,12 +108,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // Debug: Check if there's local assessment data that should be preserved
           try {
             const localData = localStorage.getItem('assessment_categories');
-            console.log('AuthContext: Local assessment data after sign in:', localData ? 'exists' : 'none');
-            if (localData) {
-              console.log('AuthContext: Local data length:', localData.length);
-            }
           } catch (error) {
-            console.log('AuthContext: Error checking local data:', error);
+            // Silent error handling for local data check
           }
           
           toast({
@@ -132,7 +120,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Handle sign out
         if (event === 'SIGNED_OUT') {
-          console.log('AuthContext: User signed out');
+          
         }
       }
     );
@@ -140,7 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Get initial session
     const getInitialSession = async () => {
       try {
-        console.log('AuthContext: Getting initial session...');
+        
         const { data: { session }, error } = await supabase.auth.getSession();
         if (!mounted) return;
         
@@ -169,7 +157,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return () => {
       mounted = false;
-      console.log('AuthContext: Cleaning up auth subscription');
+      
       subscription.unsubscribe();
     };
   }, [initialized]);
@@ -207,17 +195,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .single();
         // Only redirect if consent is missing (null or false) or receive_emails is null
         if (!error && profile && (profile.gdpr_consent !== true || profile.receive_emails === null || typeof profile.receive_emails === 'undefined')) {
-          console.log('AuthContext: Redirecting to consent page');
-          
-          // Debug: Check local data before redirect
+          // Check local data before redirect
           try {
             const localData = localStorage.getItem('assessment_categories');
-            console.log('AuthContext: Local assessment data before consent redirect:', localData ? 'exists' : 'none');
-            if (localData) {
-              console.log('AuthContext: Local data length before redirect:', localData.length);
-            }
           } catch (error) {
-            console.log('AuthContext: Error checking local data before redirect:', error);
+            // Silent error handling for local data check
           }
           
           navigate('/consent');
@@ -228,34 +210,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [initialized, user, navigate]);
 
   const signIn = async (email: string, password: string) => {
-    console.log('AuthContext: signIn method called - START');
-    console.log('AuthContext: signIn email:', email);
-    console.log('AuthContext: signIn timestamp:', new Date().toISOString());
     
     setLoading(true);
     
     try {
-      console.log('AuthContext: About to call supabase.auth.signInWithPassword');
-      console.log('AuthContext: Supabase client exists:', !!supabase);
-      console.log('AuthContext: Supabase auth exists:', !!supabase.auth);
       
       const signInData = {
         email: email.trim(),
         password,
       };
       
-      console.log('AuthContext: Calling signInWithPassword with:', {
-        email: signInData.email,
-        hasPassword: !!signInData.password,
-        passwordLength: signInData.password?.length
-      });
       
       const { data, error } = await supabase.auth.signInWithPassword(signInData);
 
-      console.log('AuthContext: signInWithPassword response received');
-      console.log('AuthContext: signInWithPassword response:', {
-        hasData: !!data,
-        hasUser: !!data?.user,
         hasSession: !!data?.session,
         userEmail: data?.user?.email,
         error: error?.message || 'No error'
@@ -277,8 +244,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (data?.user && data?.session) {
-        console.log('AuthContext: Sign in successful for user:', data.user.email);
-        console.log('AuthContext: Session created successfully');
         // Don't show success toast here - it will be shown by the auth state change handler
       } else {
         console.warn('AuthContext: Sign in completed but no user/session in response');
@@ -291,9 +256,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('AuthContext: Exception constructor:', error?.constructor?.name);
       throw error;
     } finally {
-      console.log('AuthContext: Setting loading to false');
       setLoading(false);
-      console.log('AuthContext: signIn method - END');
     }
   };
 
@@ -357,7 +320,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signOut = async () => {
-    console.log('AuthContext: Signing out user');
+    
     const { error } = await supabase.auth.signOut();
     
     if (error) {
@@ -381,8 +344,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signInWithGoogle = async () => {
     const redirectUrl = `${window.location.origin}/`;
-    console.log('AuthContext: Google sign in redirectUrl:', redirectUrl);
-    console.log('AuthContext: Starting Google sign in');
     
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -403,7 +364,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const forgotPassword = async (email: string) => {
-    console.log('AuthContext: Sending password reset email to:', email);
+    
     const redirectUrl = `${window.location.origin}/`;
     
     const { error } = await supabase.auth.resetPasswordForEmail(email, {

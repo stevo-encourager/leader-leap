@@ -25,14 +25,11 @@ export const useAssessmentInitialization = () => {
   // Initialize categories with default data - only run once
   useEffect(() => {
     if (!isInitialized) {
-      console.log("useAssessmentInitialization - Initializing categories");
       try {
         // Always start with fresh categories for new assessments
         // Local data preservation is now handled explicitly in useAssessment hook
-        console.log("useAssessmentInitialization - Starting with fresh categories for new assessment");
         const freshCategories = createFreshCategories();
         if (freshCategories && freshCategories.length > 0) {
-          console.log(`useAssessmentInitialization - Loaded ${freshCategories.length} fresh categories`);
           setCategories(freshCategories);
         } else {
           console.error("useAssessmentInitialization - Fresh categories are empty or invalid");
@@ -56,9 +53,6 @@ export const useAssessmentInitialization = () => {
       const existingData = getLocalAssessmentData();
       
       if (existingData && existingData.categories && existingData.categories.length > 0) {
-        console.log("useAssessmentInitialization - Loading existing local assessment data");
-        console.log("useAssessmentInitialization - Existing categories count:", existingData.categories.length);
-        
         // Check if the existing data has valid ratings
         const hasValidRatings = existingData.categories.some(cat => 
           cat && cat.skills && cat.skills.some(skill => 
@@ -69,7 +63,6 @@ export const useAssessmentInitialization = () => {
         );
         
         if (hasValidRatings) {
-          console.log("useAssessmentInitialization - Using existing data with valid ratings");
           setCategories(existingData.categories);
           return true; // Successfully loaded existing data
         }

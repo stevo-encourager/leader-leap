@@ -20,13 +20,17 @@ export interface AuthFormProps {
   defaultTab?: 'signin' | 'signup';
 }
 
-const authSchema = z.object({
+const signInSchema = z.object({
+  email: z.string().email({ message: "Please enter a valid email address" }),
+  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+});
+
+const signUpSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
   firstName: z.string().min(1, { message: "First name is required" }),
   surname: z.string().min(1, { message: "Surname is required" }),
   receiveEmails: z.boolean().optional(),
-  // gdprConsent is no longer required or checked at signup
 }).refine((data) => {
   return true;
 }, {
@@ -42,21 +46,26 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { signIn, signUp, signInWithGoogle, forgotPassword, loading } = useAuth();
   
-  const { register, handleSubmit, formState: { errors }, watch, setValue, reset } = useForm({
-    resolver: zodResolver(authSchema),
+  // Separate forms for sign-in and sign-up
+  const signInForm = useForm({
+    resolver: zodResolver(signInSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    }
+  });
+
+  const signUpForm = useForm({
+    resolver: zodResolver(signUpSchema),
     defaultValues: {
       email: '',
       password: '',
       firstName: '',
       surname: '',
-      // Remove receiveEmails and gdprConsent from defaultValues
     }
   });
 
-  // Removed gdprConsent and receiveEmails from watch
-
   const handleSignIn = async (data: any) => {
-    
     setIsSubmitting(true);
     
     try {
@@ -80,7 +89,6 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
   };
 
   const handleSignUp = async (data: any) => {
-    
     setIsSubmitting(true);
 
     try {
@@ -121,21 +129,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
     }
   };
 
-  const onSubmit = async (data: any) => {
-    try {
-      if (activeTab === 'signin') {
-        await handleSignIn(data);
-      } else if (activeTab === 'signup') {
-        await handleSignUp(data);
-      }
-    } catch (error) {
-      // Error handling is done in individual handlers
-    }
-  };
-
   const isLoading = loading || isSubmitting;
-
-
 
   return (
     <Tabs defaultValue={defaultTab} value={activeTab} onValueChange={setActiveTab}>
@@ -171,7 +165,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
           </form>
         ) : (
           <>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={signInForm.handleSubmit(handleSignIn)} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input 
@@ -179,9 +173,9 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
                   type="email"
                   placeholder="you@example.com"
                   autoComplete="email"
-                  {...register('email')}
+                  {...signInForm.register('email')}
                 />
-                {errors.email && <p className="text-sm text-red-500">{errors.email.message as string}</p>}
+                {signInForm.formState.errors.email && <p className="text-sm text-red-500">{signInForm.formState.errors.email.message as string}</p>}
               </div>
               
               <div className="space-y-2">
@@ -192,7 +186,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     autoComplete="current-password"
-                    {...register('password')}
+                    {...signInForm.register('password')}
                   />
                   <button 
                     type="button"
@@ -202,7 +196,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
-                {errors.password && <p className="text-sm text-red-500">{errors.password.message as string}</p>}
+                {signInForm.formState.errors.password && <p className="text-sm text-red-500">{signInForm.formState.errors.password.message as string}</p>}
               </div>
               
               <Button 
@@ -246,15 +240,15 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
       </TabsContent>
       
       <TabsContent value="signup">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="firstName">First Name</Label>
             <Input 
               id="firstName"
               placeholder="John"
-              {...register('firstName')}
+              {...signUpForm.register('firstName')}
             />
-            {errors.firstName && <p className="text-sm text-red-500">{errors.firstName.message as string}</p>}
+            {signUpForm.formState.errors.firstName && <p className="text-sm text-red-500">{signUpForm.formState.errors.firstName.message as string}</p>}
           </div>
           
           <div className="space-y-2">
@@ -262,9 +256,9 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
             <Input 
               id="surname"
               placeholder="Doe"
-              {...register('surname')}
+              {...signUpForm.register('surname')}
             />
-            {errors.surname && <p className="text-sm text-red-500">{errors.surname.message as string}</p>}
+            {signUpForm.formState.errors.surname && <p className="text-sm text-red-500">{signUpForm.formState.errors.surname.message as string}</p>}
           </div>
           
           <div className="space-y-2">
@@ -273,9 +267,9 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
               id="emailSignup"
               type="email"
               placeholder="you@example.com"
-              {...register('email')}
+              {...signUpForm.register('email')}
             />
-            {errors.email && <p className="text-sm text-red-500">{errors.email.message as string}</p>}
+            {signUpForm.formState.errors.email && <p className="text-sm text-red-500">{signUpForm.formState.errors.email.message as string}</p>}
           </div>
           
           <div className="space-y-2">
@@ -285,7 +279,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
                 id="passwordSignup"
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
-                {...register('password')}
+                {...signUpForm.register('password')}
               />
               <button 
                 type="button"
@@ -295,7 +289,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-            {errors.password && <p className="text-sm text-red-500">{errors.password.message as string}</p>}
+            {signUpForm.formState.errors.password && <p className="text-sm text-red-500">{signUpForm.formState.errors.password.message as string}</p>}
           </div>
           
           {/* Removed GDPR consent and receive emails checkboxes from signup form */}

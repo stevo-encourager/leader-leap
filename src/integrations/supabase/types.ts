@@ -19,67 +19,70 @@ export type Database = {
           ai_insights: string | null
           categories: Json
           completed: boolean | null
-          created_at: string
+          created_at: string | null
           demographics: Json | null
           id: string
+          updated_at: string | null
           user_id: string
         }
         Insert: {
           ai_insights?: string | null
           categories: Json
           completed?: boolean | null
-          created_at?: string
+          created_at?: string | null
           demographics?: Json | null
           id?: string
+          updated_at?: string | null
           user_id: string
         }
         Update: {
           ai_insights?: string | null
           categories?: Json
           completed?: boolean | null
-          created_at?: string
+          created_at?: string | null
           demographics?: Json | null
           id?: string
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
       }
       profiles: {
         Row: {
-          created_at: string
+          created_at: string | null
           email: string
-          full_name: string | null
           first_name: string | null
-          surname: string | null
-          id: string
-          receive_emails: boolean | null
+          full_name: string | null
           gdpr_consent: boolean | null
+          id: string
           is_admin: boolean | null
-          updated_at: string
+          receive_emails: boolean | null
+          surname: string | null
+          updated_at: string | null
         }
         Insert: {
-          created_at?: string
+          created_at?: string | null
           email: string
-          full_name?: string | null
           first_name?: string | null
-          surname?: string | null
-          id: string
-          receive_emails?: boolean | null
+          full_name?: string | null
           gdpr_consent?: boolean | null
+          id: string
           is_admin?: boolean | null
-          updated_at?: string
+          receive_emails?: boolean | null
+          surname?: string | null
+          updated_at?: string | null
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           email?: string
-          full_name?: string | null
           first_name?: string | null
-          surname?: string | null
-          id?: string
-          receive_emails?: boolean | null
+          full_name?: string | null
           gdpr_consent?: boolean | null
+          id?: string
           is_admin?: boolean | null
-          updated_at?: string
+          receive_emails?: boolean | null
+          surname?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -88,7 +91,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      split_full_name: {
+        Args: { full_name: string }
+        Returns: {
+          first_name: string
+          surname: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

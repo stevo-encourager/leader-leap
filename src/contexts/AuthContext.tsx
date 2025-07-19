@@ -55,8 +55,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const navigate = useNavigate();
 
   useEffect(() => {
-    
-    
     let mounted = true;
 
     // Set up auth state listener first
@@ -64,22 +62,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       async (event, session) => {
         if (!mounted) return;
         
-        
         setSession(session);
         setUser(session?.user ?? null);
-        
-        // Check super admin status for debugging
-        if (session?.user?.email) {
-          const superAdmins = ['steve@encourager.co.uk'];
-          const isSuperAdmin = superAdmins.some(
-            email => email.toLowerCase() === session.user.email.toLowerCase().trim()
-          );
-          console.log('AuthContext: Super admin check:', {
-            userEmail: session.user.email,
-            isSuperAdmin: isSuperAdmin,
-            superAdmins: superAdmins
-          });
-        }
         
         if (!initialized) {
           setInitialized(true);
@@ -87,8 +71,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Handle successful sign in
         if (event === 'SIGNED_IN' && session?.user) {
-          
-          
           // Check if this is a password reset flow
           const urlParams = new URLSearchParams(window.location.search);
           const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -97,7 +79,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const type = urlParams.get('type') || hashParams.get('type');
           
           if (accessToken && refreshToken && type === 'recovery') {
-            
             // This is a password reset flow, redirect to the reset page with preserved parameters
             const currentUrl = window.location.href;
             const resetUrl = currentUrl.replace('/?', '/reset-password?').replace('/#', '/reset-password#');
@@ -105,22 +86,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             return;
           }
           
-          // Debug: Check if there's local assessment data that should be preserved
-          try {
-            const localData = localStorage.getItem('assessment_categories');
-          } catch (error) {
-            // Silent error handling for local data check
-          }
-          
           toast({
             title: "Success",
             description: "Successfully signed in!",
           });
-        }
-
-        // Handle sign out
-        if (event === 'SIGNED_OUT') {
-          
         }
       }
     );
@@ -128,17 +97,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Get initial session
     const getInitialSession = async () => {
       try {
-        
         const { data: { session }, error } = await supabase.auth.getSession();
         if (!mounted) return;
         
         if (error) {
           console.error('AuthContext: Error getting initial session:', error);
         } else {
-          console.log('AuthContext: Initial session loaded:', {
-            hasSession: !!session,
-            userEmail: session?.user?.email || 'No session'
-          });
           setSession(session);
           setUser(session?.user ?? null);
         }
@@ -157,7 +121,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     return () => {
       mounted = false;
-      
       subscription.unsubscribe();
     };
   }, [initialized]);
@@ -195,13 +158,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .single();
         // Only redirect if consent is missing (null or false) or receive_emails is null
         if (!error && profile && (profile.gdpr_consent !== true || profile.receive_emails === null || typeof profile.receive_emails === 'undefined')) {
-          // Check local data before redirect
-          try {
-            const localData = localStorage.getItem('assessment_categories');
-          } catch (error) {
-            // Silent error handling for local data check
-          }
-          
           navigate('/consent');
         }
       };
@@ -210,30 +166,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [initialized, user, navigate]);
 
   const signIn = async (email: string, password: string) => {
-    
     setLoading(true);
     
     try {
-      
       const signInData = {
         email: email.trim(),
         password,
       };
       
-      
       const { data, error } = await supabase.auth.signInWithPassword(signInData);
-
-        hasSession: !!data?.session,
-        userEmail: data?.user?.email,
-        error: error?.message || 'No error'
-      });
 
       if (error) {
         console.error('AuthContext: Sign in error:', error);
-        console.error('AuthContext: Error details:', {
-          message: error.message,
-          status: error.status
-        });
         
         toast({
           title: "Error signing in",
@@ -246,14 +190,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (data?.user && data?.session) {
         // Don't show success toast here - it will be shown by the auth state change handler
       } else {
-        console.warn('AuthContext: Sign in completed but no user/session in response');
-        console.warn('AuthContext: Data object:', data);
         throw new Error('Sign in completed but no user session was created');
       }
     } catch (error) {
       console.error('AuthContext: Exception during sign in:', error);
-      console.error('AuthContext: Exception type:', typeof error);
-      console.error('AuthContext: Exception constructor:', error?.constructor?.name);
       throw error;
     } finally {
       setLoading(false);
@@ -261,13 +201,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signUp = async (email: string, password: string, firstName: string, surname: string, receiveEmails: boolean) => {
-    console.log('AuthContext: Signing up user with data:', {
-      email,
-      firstName,
-      surname,
-      receiveEmails,
-    });
-
     const redirectUrl = `${window.location.origin}/`;
     
     const { data, error } = await supabase.auth.signUp({
@@ -308,19 +241,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Only show success dialog if we have a user and no errors
     if (data.user && !error) {
-      console.log('AuthContext: User created successfully:', data.user.id);
-      console.log('AuthContext: User metadata after signup:', data.user.user_metadata);
-      
-      // The profile will be created automatically by the database trigger
-      // No need to manually upsert the profile
-      console.log('AuthContext: Profile will be created automatically by database trigger');
-
       setShowAccountCreatedDialog(true);
     }
   };
 
   const signOut = async () => {
-    
     const { error } = await supabase.auth.signOut();
     
     if (error) {
@@ -364,7 +289,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const forgotPassword = async (email: string) => {
-    
     const redirectUrl = `${window.location.origin}/`;
     
     const { error } = await supabase.auth.resetPasswordForEmail(email, {

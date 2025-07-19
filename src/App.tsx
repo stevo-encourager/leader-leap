@@ -15,7 +15,7 @@ import Admin from "./pages/Admin";
 import PrivacyNotice from "./pages/PrivacyNotice";
 import NotFound from "./pages/NotFound";
 import AITestPanel from './pages/AITestPanel';
-import React from 'react';
+import React, { useEffect } from 'react';
 import MyProfile from "./pages/MyProfile";
 import Consent from './pages/Consent';
 import ResetPassword from './pages/ResetPassword';
@@ -65,6 +65,44 @@ function SuperAdminRoute({ children }) {
   return children;
 }
 
+// Focus management component to handle iframe accessibility issues
+function FocusManager() {
+  useEffect(() => {
+    // Handle focus management for embedded iframes
+    const handleFocusIn = (event: FocusEvent) => {
+      const target = event.target as HTMLElement;
+      
+      // Check if the focused element is inside an iframe
+      if (target.closest('iframe')) {
+        // Ensure the iframe container doesn't have aria-hidden
+        const iframe = target.closest('iframe');
+        if (iframe && iframe.parentElement) {
+          const parent = iframe.parentElement;
+          if (parent.getAttribute('aria-hidden') === 'true') {
+            // Temporarily remove aria-hidden to allow focus
+            parent.removeAttribute('aria-hidden');
+            
+            // Restore aria-hidden after a short delay
+            setTimeout(() => {
+              if (parent && !parent.contains(document.activeElement)) {
+                parent.setAttribute('aria-hidden', 'true');
+              }
+            }, 100);
+          }
+        }
+      }
+    };
+
+    document.addEventListener('focusin', handleFocusIn);
+    
+    return () => {
+      document.removeEventListener('focusin', handleFocusIn);
+    };
+  }, []);
+
+  return null;
+}
+
 function App() {
   return (
     <HelmetProvider>
@@ -72,6 +110,7 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          <FocusManager />
           <BrowserRouter>
             <AuthProvider>
               <Routes>

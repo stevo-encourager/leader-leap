@@ -186,97 +186,166 @@ const MyProfile = () => {
             
             <div className="mb-8">
               <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-2 text-encourager">Personal Details</h2>
-              <div className="mb-4">
-                {userProfile?.full_name && (
-                  <div className="mb-2">
-                    <span className="font-medium">Name:</span> {userProfile.full_name}
+                                <div className="flex flex-col md:flex-row gap-6">
+                  <div className="flex-1">
+                    <h2 className="text-xl font-semibold mb-2 text-encourager">Personal Details</h2>
+                    <div className="mb-4">
+                      {userProfile?.full_name && (
+                        <div className="mb-2">
+                          <span className="font-medium">Name:</span> {userProfile.full_name}
+                        </div>
+                      )}
+                      <div className="mb-2">
+                        <span className="font-medium">Email:</span> {user?.email}
+                      </div>
+                    </div>
                   </div>
-                )}
-                <div className="mb-2">
-                  <span className="font-medium">Email:</span> {user?.email}
-                </div>
-              </div>
-              {demographics && (demographics.role || demographics.yearsOfExperience || demographics.industry) && (
-                <div className="mb-4">
-                  <h3 className="text-xl font-semibold mb-2 text-encourager">Current Profile</h3>
-                  {demographics.role && (
-                    <div className="mb-2">
-                      <span className="font-medium">Your Role:</span> {demographics.role}
-                    </div>
-                  )}
-                  {demographics.industry && (
-                    <div className="mb-2">
-                      <span className="font-medium">Industry:</span> {demographics.industry}
-                    </div>
-                  )}
-                  {demographics.yearsOfExperience && (
-                    <div className="mb-2">
-                      <span className="font-medium">Leadership Experience:</span> {demographics.yearsOfExperience}
+                  
+                  {demographics && (demographics.role || demographics.yearsOfExperience || demographics.industry) && (
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold mb-2 text-encourager">Current Profile</h3>
+                      {demographics.role && (
+                        <div className="mb-2">
+                          <span className="font-medium">Your Role:</span> {demographics.role}
+                        </div>
+                      )}
+                      {demographics.industry && (
+                        <div className="mb-2">
+                          <span className="font-medium">Industry:</span> {demographics.industry}
+                        </div>
+                      )}
+                      {demographics.yearsOfExperience && (
+                        <div className="mb-2">
+                          <span className="font-medium">Leadership Experience:</span> {demographics.yearsOfExperience}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
-              )}
-              <button
-                className="text-encourager underline text-sm mb-2 block"
-                onClick={() => setShowChangePassword((v) => !v)}
-              >
-                {showChangePassword ? 'Cancel' : 'Change Password'}
-              </button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
+                
+                <div className="mt-4 md:hidden">
                   <button
-                    className="text-red-600 underline text-sm"
-                    disabled={deleteLoading}
+                    className="text-encourager underline text-sm mb-2 block"
+                    onClick={() => setShowChangePassword((v) => !v)}
                   >
-                    {deleteLoading ? 'Deleting...' : 'Delete Account'}
+                    {showChangePassword ? 'Cancel' : 'Change Password'}
                   </button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Account</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to delete your account? This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={handleDeleteAccount}
-                      className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
-                    >
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-              {showChangePassword && (
-                <form onSubmit={handleChangePassword} className="mt-4 flex flex-col gap-2 max-w-xs">
-                  <input
-                    type="password"
-                    className="border rounded px-3 py-2"
-                    placeholder="New password"
-                    value={newPassword}
-                    onChange={e => setNewPassword(e.target.value)}
-                    minLength={6}
-                    required
-                  />
-                  <button
-                    type="submit"
-                    className="bg-encourager text-white rounded px-3 py-2 mt-1"
-                    disabled={passwordLoading}
-                  >
-                    {passwordLoading ? 'Updating...' : 'Update Password'}
-                  </button>
-                  {passwordMessage && (
-                    <div className="text-sm text-center mt-1 text-encourager">
-                      {passwordMessage}
-                    </div>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <button
+                        className="text-red-600 underline text-sm"
+                        disabled={deleteLoading}
+                      >
+                        {deleteLoading ? 'Deleting...' : 'Delete Account'}
+                      </button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Account</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete your account? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleDeleteAccount}
+                          className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                  {showChangePassword && (
+                    <form onSubmit={handleChangePassword} className="mt-4 flex flex-col gap-2 max-w-xs">
+                      <input
+                        type="password"
+                        className="border rounded px-3 py-2"
+                        placeholder="New password"
+                        value={newPassword}
+                        onChange={e => setNewPassword(e.target.value)}
+                        minLength={6}
+                        required
+                      />
+                      <button
+                        type="submit"
+                        className="bg-encourager text-white rounded px-3 py-2 mt-1"
+                        disabled={passwordLoading}
+                      >
+                        {passwordLoading ? 'Updating...' : 'Update Password'}
+                      </button>
+                      {passwordMessage && (
+                        <div className="text-sm text-center mt-1 text-encourager">
+                          {passwordMessage}
+                        </div>
+                      )}
+                    </form>
                   )}
-                </form>
-              )}
-            </div>
-          </div>
+                </div>
+                
+                <div className="hidden md:block">
+                  <button
+                    className="text-encourager underline text-sm mb-2 block"
+                    onClick={() => setShowChangePassword((v) => !v)}
+                  >
+                    {showChangePassword ? 'Cancel' : 'Change Password'}
+                  </button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <button
+                        className="text-red-600 underline text-sm"
+                        disabled={deleteLoading}
+                      >
+                        {deleteLoading ? 'Deleting...' : 'Delete Account'}
+                      </button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Delete Account</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Are you sure you want to delete your account? This action cannot be undone.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={handleDeleteAccount}
+                          className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                        >
+                          Delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                  {showChangePassword && (
+                    <form onSubmit={handleChangePassword} className="mt-4 flex flex-col gap-2 max-w-xs">
+                      <input
+                        type="password"
+                        className="border rounded px-3 py-2"
+                        placeholder="New password"
+                        value={newPassword}
+                        onChange={e => setNewPassword(e.target.value)}
+                        minLength={6}
+                        required
+                      />
+                      <button
+                        type="submit"
+                        className="bg-encourager text-white rounded px-3 py-2 mt-1"
+                        disabled={passwordLoading}
+                      >
+                        {passwordLoading ? 'Updating...' : 'Update Password'}
+                      </button>
+                      {passwordMessage && (
+                        <div className="text-sm text-center mt-1 text-encourager">
+                          {passwordMessage}
+                        </div>
+                      )}
+                    </form>
+                  )}
+                </div>
+             </div>
+           </div>
 
           <div className={`mb-8 ${isMobile ? 'flex justify-center' : 'flex justify-end'}`}>
             <Button 

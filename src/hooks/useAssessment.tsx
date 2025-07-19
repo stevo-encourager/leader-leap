@@ -54,7 +54,12 @@ export const useAssessment = () => {
     handleCloseAuthForm,
     handleShowSignupForm,
     currentAssessmentId
-  } = useResultsManagement();
+  } = useResultsManagement({
+    categories,
+    demographics,
+    onCategoriesUpdate: handleCategoriesUpdate,
+    onDemographicsUpdate: handleDemographicsUpdate
+  });
 
   const { user } = useAuth();
 

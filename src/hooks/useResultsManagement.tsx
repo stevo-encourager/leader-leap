@@ -4,10 +4,20 @@ import { useAuth } from '@/contexts/AuthContext';
 import { AssessmentCategory } from '@/types/assessment';
 import { storeLocalAssessmentData, getLocalAssessmentData, saveAssessmentResults, TEST_ASSESSMENT_ID } from '@/services/assessment';
 
-export const useResultsManagement = () => {
+interface UseResultsManagementProps {
+  categories: AssessmentCategory[];
+  demographics: any;
+  onCategoriesUpdate?: (categories: AssessmentCategory[]) => void;
+  onDemographicsUpdate?: (demographics: any) => void;
+}
+
+export const useResultsManagement = ({ 
+  categories, 
+  demographics, 
+  onCategoriesUpdate, 
+  onDemographicsUpdate 
+}: UseResultsManagementProps) => {
   const { user, initialized } = useAuth();
-  const [categories, setCategories] = useState<AssessmentCategory[]>([]);
-  const [demographics, setDemographics] = useState<any>(null);
   const [hasValidRatings, setHasValidRatings] = useState(false);
   const [savedToSupabase, setSavedToSupabase] = useState(false);
   const [showAuthForm, setShowAuthForm] = useState(false);
@@ -61,12 +71,16 @@ export const useResultsManagement = () => {
   }, [categories, demographics, hasValidRatings, initialized]);
 
   const updateCategories = useCallback((newCategories: AssessmentCategory[]) => {
-    setCategories(newCategories);
-  }, []);
+    if (onCategoriesUpdate) {
+      onCategoriesUpdate(newCategories);
+    }
+  }, [onCategoriesUpdate]);
 
   const updateDemographics = useCallback((newDemographics: any) => {
-    setDemographics(newDemographics);
-  }, []);
+    if (onDemographicsUpdate) {
+      onDemographicsUpdate(newDemographics);
+    }
+  }, [onDemographicsUpdate]);
 
   const markAsSaved = useCallback(() => {
     setSavedToSupabase(true);

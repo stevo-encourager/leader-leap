@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import DataSchemaViewer from '@/components/admin/DataSchemaViewer';
 import SystemStatusViewer from '@/components/admin/SystemStatusViewer';
 import UserManagement from '@/components/admin/UserManagement';
+import AnalyticsDashboard from '@/components/admin/AnalyticsDashboard';
 import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
@@ -28,9 +29,10 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="status" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="status">System Status</TabsTrigger>
             <TabsTrigger value="users">User Management</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="schema">Data Schema</TabsTrigger>
           </TabsList>
           
@@ -50,6 +52,10 @@ const Admin = () => {
           
           <TabsContent value="users" className="mt-6">
             <UserManagement />
+          </TabsContent>
+          
+          <TabsContent value="analytics" className="mt-6">
+            <AnalyticsDashboard />
           </TabsContent>
           
           <TabsContent value="schema" className="mt-6">

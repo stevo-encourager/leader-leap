@@ -192,6 +192,19 @@ const Consent: React.FC = () => {
         // User has assessment data, save it to the database first
         try {
           console.log('Consent page - Saving assessment to database...');
+          console.log('Consent page - Local data categories:', localData.categories?.length);
+          console.log('Consent page - Local data demographics:', localData.demographics);
+          
+          // Debug: Check if categories have ratings
+          if (localData.categories) {
+            localData.categories.forEach((cat, catIndex) => {
+              console.log(`Consent page - Category ${catIndex}:`, cat.title, 'skills:', cat.skills?.length);
+              cat.skills?.forEach((skill, skillIndex) => {
+                console.log(`Consent page - Skill ${skillIndex}:`, skill.name, 'ratings:', skill.ratings);
+              });
+            });
+          }
+          
           const result = await saveAssessmentResults(localData.categories, localData.demographics);
           console.log('Consent page - Save result:', result);
           

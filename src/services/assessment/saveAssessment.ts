@@ -105,22 +105,34 @@ export const saveAssessmentResults = async (
   let totalSkills = 0;
   let skillsWithBothRatings = 0;
   
-  categories.forEach((category) => {
+  console.log('saveAssessmentResults - Validating categories:', categories.length);
+  
+  categories.forEach((category, categoryIndex) => {
     if (category && category.skills && Array.isArray(category.skills)) {
-      category.skills.forEach((skill) => {
+      console.log(`saveAssessmentResults - Category ${categoryIndex}:`, category.title, 'skills:', category.skills.length);
+      
+      category.skills.forEach((skill, skillIndex) => {
         totalSkills++;
         
         if (skill && skill.ratings) {
           const currentRating = Number(skill.ratings.current) || 0;
           const desiredRating = Number(skill.ratings.desired) || 0;
           
+          console.log(`saveAssessmentResults - Skill ${skillIndex}:`, skill.name, 'current:', currentRating, 'desired:', desiredRating);
+          
           if (currentRating > 0 && desiredRating > 0) {
             skillsWithBothRatings++;
           }
+        } else {
+          console.log(`saveAssessmentResults - Skill ${skillIndex}:`, skill.name, 'NO RATINGS');
         }
       });
+    } else {
+      console.log(`saveAssessmentResults - Category ${categoryIndex}: Invalid category or skills`);
     }
   });
+  
+  console.log('saveAssessmentResults - Validation results:', { totalSkills, skillsWithBothRatings, isComplete: totalSkills > 0 && skillsWithBothRatings === totalSkills });
 
   // Check if the assessment is complete (all skills have both ratings)
   const isComplete = totalSkills > 0 && skillsWithBothRatings === totalSkills;

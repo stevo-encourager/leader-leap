@@ -135,7 +135,18 @@ export const saveAssessmentResults = async (
       skillsIsArray: Array.isArray(category?.skills)
     });
     
+    console.log(`🔍 CATEGORY SKILLS CHECK:`, {
+      categoryIndex: categoryIndex,
+      categoryId: category?.id,
+      hasSkills: !!category?.skills,
+      skillsType: typeof category?.skills,
+      skillsIsArray: Array.isArray(category?.skills),
+      skillsLength: category?.skills?.length,
+      firstSkill: category?.skills?.[0]
+    });
+    
     if (category && category.skills && Array.isArray(category.skills)) {
+      console.log(`🔍 ENTERING SKILLS LOOP for category ${categoryIndex}`);
       category.skills.forEach((skill, skillIndex) => {
         totalSkills++;
         

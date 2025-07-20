@@ -9,6 +9,10 @@ export const useAssessmentCompletion = (
   completeHandler: () => void
 ) => {
   const handleCompleteAssessment = () => {
+    console.log('handleCompleteAssessment called', { 
+      categoriesCount: categories?.length,
+      demographicsPresent: !!demographics 
+    });
     
     // Check if we have valid category data before completing
     if (!categories || !Array.isArray(categories) || categories.length === 0) {
@@ -25,17 +29,34 @@ export const useAssessmentCompletion = (
     let totalSkills = 0;
     let skillsWithBothRatings = 0;
     
-    categories.forEach(category => {
+    categories.forEach((category, catIndex) => {
       if (category && category.skills) {
-        category.skills.forEach(skill => {
+        category.skills.forEach((skill, skillIndex) => {
           totalSkills++;
-          if (skill && skill.ratings && 
+          const hasValidRatings = skill && skill.ratings && 
              (typeof skill.ratings.current === 'number' && skill.ratings.current > 0) &&
-             (typeof skill.ratings.desired === 'number' && skill.ratings.desired > 0)) {
+             (typeof skill.ratings.desired === 'number' && skill.ratings.desired > 0);
+          
+          if (hasValidRatings) {
             skillsWithBothRatings++;
+          } else {
+            console.log(`Skill missing ratings:`, {
+              categoryIndex: catIndex,
+              categoryTitle: category.title,
+              skillIndex,
+              skillName: skill?.name,
+              currentRating: skill?.ratings?.current,
+              desiredRating: skill?.ratings?.desired
+            });
           }
         });
       }
+    });
+    
+    console.log('Skills rating validation:', {
+      totalSkills,
+      skillsWithBothRatings,
+      completionPercentage: Math.round((skillsWithBothRatings / totalSkills) * 100)
     });
     
     // Check if all skills have been rated
@@ -49,9 +70,13 @@ export const useAssessmentCompletion = (
       return;
     }
     
+    console.log('Assessment completion validation passed');
+    
     // CRITICAL FIX: Store assessment data locally before changing page
+    console.log('Storing assessment data locally');
     storeLocalAssessmentData(categories, demographics);
     
+    console.log('Calling completeHandler');
     // Call the original handler
     completeHandler();
   };

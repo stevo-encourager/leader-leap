@@ -15,6 +15,8 @@ import SEO from '@/components/SEO';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { getLatestAssessmentResults } from '@/services/assessment/fetchAssessment';
 import { Demographics } from '@/utils/assessmentTypes';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -52,6 +54,8 @@ const MyProfile = () => {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [demographics, setDemographics] = useState<Demographics | null>(null);
   const [demographicsLoading, setDemographicsLoading] = useState(false);
+  const [receiveEmails, setReceiveEmails] = useState(true);
+  const [emailPreferencesLoading, setEmailPreferencesLoading] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -79,6 +83,13 @@ const MyProfile = () => {
     fetchDemographics();
   }, [user, navigate]);
 
+  // Load current email preferences
+  useEffect(() => {
+    if (userProfile) {
+      setReceiveEmails(userProfile.receive_emails ?? true);
+    }
+  }, [userProfile]);
+
   const handleRefresh = () => {
     fetchAssessments();
     setLastRefreshed(new Date().toISOString());
@@ -101,6 +112,73 @@ const MyProfile = () => {
       setPasswordMessage(err.message || 'Failed to update password.');
     } finally {
       setPasswordLoading(false);
+    }
+  };
+
+  const handleEmailPreferencesChange = async (newValue: boolean) => {
+    if (!user) return;
+    
+    setEmailPreferencesLoading(true);
+    try {
+      // Update the database
+      const { error } = await supabase
+        .from('profiles')
+        .update({ receive_emails: newValue })
+        .eq('id', user.id);
+      
+      if (error) throw error;
+      
+      // Update Brevo subscription
+      if (newValue) {
+        // Subscribe to Brevo
+        const { data, error: brevoError } = await supabase.functions.invoke('brevo-subscribe', {
+          body: { email: user.email }
+        });
+        
+        if (brevoError) {
+          console.error('Brevo subscription error:', brevoError);
+          toast({
+            title: 'Email preferences updated',
+            description: 'Your preferences were saved, but there was an issue with the email subscription.',
+            variant: 'destructive',
+          });
+        } else if (data?.success) {
+          toast({
+            title: 'Email preferences updated',
+            description: 'You will now receive leadership tips and updates.',
+          });
+        }
+      } else {
+        // Unsubscribe from Brevo (you'll need to create this function)
+        const { data, error: brevoError } = await supabase.functions.invoke('brevo-unsubscribe', {
+          body: { email: user.email }
+        });
+        
+        if (brevoError) {
+          console.error('Brevo unsubscription error:', brevoError);
+          toast({
+            title: 'Email preferences updated',
+            description: 'Your preferences were saved, but there was an issue with the email unsubscription.',
+            variant: 'destructive',
+          });
+        } else if (data?.success) {
+          toast({
+            title: 'Email preferences updated',
+            description: 'You have been unsubscribed from marketing emails.',
+          });
+        }
+      }
+      
+      setReceiveEmails(newValue);
+      
+    } catch (err: any) {
+      toast({
+        title: 'Error updating preferences',
+        description: err.message || 'Failed to update email preferences.',
+        variant: 'destructive',
+      });
+    } finally {
+      setEmailPreferencesLoading(false);
     }
   };
 
@@ -186,7 +264,7 @@ const MyProfile = () => {
             
             <div className="mb-8">
               <div className="bg-white rounded-lg shadow p-6">
-                                <div className="flex flex-col md:flex-row gap-6">
+                <div className="flex flex-col md:flex-row gap-6">
                   <div className="flex-1">
                     <h2 className="text-xl font-semibold mb-2 text-encourager">Personal Details</h2>
                     <div className="mb-4">
@@ -198,6 +276,66 @@ const MyProfile = () => {
                       <div className="mb-2">
                         <span className="font-medium">Email:</span> {user?.email}
                       </div>
+                    </div>
+                    <div className="mt-4 hidden md:block">
+                      <button
+                        className="text-encourager underline text-sm mb-2 block"
+                        onClick={() => setShowChangePassword((v) => !v)}
+                      >
+                        {showChangePassword ? 'Cancel' : 'Change Password'}
+                      </button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <button
+                            className="text-red-600 underline text-sm"
+                            disabled={deleteLoading}
+                          >
+                            {deleteLoading ? 'Deleting...' : 'Delete Account'}
+                          </button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Account</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete your account? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={handleDeleteAccount}
+                              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                            >
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                      {showChangePassword && (
+                        <form onSubmit={handleChangePassword} className="mt-4 flex flex-col gap-2 max-w-xs">
+                          <input
+                            type="password"
+                            className="border rounded px-3 py-2"
+                            placeholder="New password"
+                            value={newPassword}
+                            onChange={e => setNewPassword(e.target.value)}
+                            minLength={6}
+                            required
+                          />
+                          <button
+                            type="submit"
+                            className="bg-encourager text-white rounded px-3 py-2 mt-1"
+                            disabled={passwordLoading}
+                          >
+                            {passwordLoading ? 'Updating...' : 'Update Password'}
+                          </button>
+                          {passwordMessage && (
+                            <div className="text-sm text-center mt-1 text-encourager">
+                              {passwordMessage}
+                            </div>
+                          )}
+                        </form>
+                      )}
                     </div>
                   </div>
                   
@@ -223,127 +361,90 @@ const MyProfile = () => {
                   )}
                 </div>
                 
-                <div className="mt-4 md:hidden">
-                  <button
-                    className="text-encourager underline text-sm mb-2 block"
-                    onClick={() => setShowChangePassword((v) => !v)}
-                  >
-                    {showChangePassword ? 'Cancel' : 'Change Password'}
-                  </button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <button
-                        className="text-red-600 underline text-sm"
-                        disabled={deleteLoading}
-                      >
-                        {deleteLoading ? 'Deleting...' : 'Delete Account'}
-                      </button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Account</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to delete your account? This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={handleDeleteAccount}
-                          className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
-                        >
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                  {showChangePassword && (
-                    <form onSubmit={handleChangePassword} className="mt-4 flex flex-col gap-2 max-w-xs">
-                      <input
-                        type="password"
-                        className="border rounded px-3 py-2"
-                        placeholder="New password"
-                        value={newPassword}
-                        onChange={e => setNewPassword(e.target.value)}
-                        minLength={6}
-                        required
-                      />
-                      <button
-                        type="submit"
-                        className="bg-encourager text-white rounded px-3 py-2 mt-1"
-                        disabled={passwordLoading}
-                      >
-                        {passwordLoading ? 'Updating...' : 'Update Password'}
-                      </button>
-                      {passwordMessage && (
-                        <div className="text-sm text-center mt-1 text-encourager">
-                          {passwordMessage}
-                        </div>
-                      )}
-                    </form>
+                {/* Email Preferences Section */}
+                <div className="mt-6 pt-6 border-t border-gray-200">
+                  <h3 className="text-xl font-semibold mb-4 text-encourager">Email Preferences</h3>
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="email-preferences"
+                      checked={receiveEmails}
+                      onCheckedChange={handleEmailPreferencesChange}
+                      disabled={emailPreferencesLoading}
+                    />
+                    <Label htmlFor="email-preferences" className="text-sm">
+                      Receive leadership tips and updates (max one email per month)
+                    </Label>
+                  </div>
+                  {emailPreferencesLoading && (
+                    <p className="text-sm text-slate-500 mt-2">Updating preferences...</p>
                   )}
+                  
+                  {/* Mobile-only account actions */}
+                  <div className="md:hidden mt-4 pt-4 border-t border-gray-200">
+                    <button
+                      className="text-encourager underline text-sm mb-2 block"
+                      onClick={() => setShowChangePassword((v) => !v)}
+                    >
+                      {showChangePassword ? 'Cancel' : 'Change Password'}
+                    </button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <button
+                          className="text-red-600 underline text-sm"
+                          disabled={deleteLoading}
+                        >
+                          {deleteLoading ? 'Deleting...' : 'Delete Account'}
+                        </button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Account</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete your account? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={handleDeleteAccount}
+                            className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                    {showChangePassword && (
+                      <form onSubmit={handleChangePassword} className="mt-4 flex flex-col gap-2 max-w-xs">
+                        <input
+                          type="password"
+                          className="border rounded px-3 py-2"
+                          placeholder="New password"
+                          value={newPassword}
+                          onChange={e => setNewPassword(e.target.value)}
+                          minLength={6}
+                          required
+                        />
+                        <button
+                          type="submit"
+                          className="bg-encourager text-white rounded px-3 py-2 mt-1"
+                          disabled={passwordLoading}
+                        >
+                          {passwordLoading ? 'Updating...' : 'Update Password'}
+                        </button>
+                        {passwordMessage && (
+                          <div className="text-sm text-center mt-1 text-encourager">
+                            {passwordMessage}
+                          </div>
+                        )}
+                      </form>
+                    )}
+                  </div>
                 </div>
                 
-                <div className="hidden md:block">
-                  <button
-                    className="text-encourager underline text-sm mb-2 block"
-                    onClick={() => setShowChangePassword((v) => !v)}
-                  >
-                    {showChangePassword ? 'Cancel' : 'Change Password'}
-                  </button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <button
-                        className="text-red-600 underline text-sm"
-                        disabled={deleteLoading}
-                      >
-                        {deleteLoading ? 'Deleting...' : 'Delete Account'}
-                      </button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete Account</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Are you sure you want to delete your account? This action cannot be undone.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={handleDeleteAccount}
-                          className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
-                        >
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                  {showChangePassword && (
-                    <form onSubmit={handleChangePassword} className="mt-4 flex flex-col gap-2 max-w-xs">
-                      <input
-                        type="password"
-                        className="border rounded px-3 py-2"
-                        placeholder="New password"
-                        value={newPassword}
-                        onChange={e => setNewPassword(e.target.value)}
-                        minLength={6}
-                        required
-                      />
-                      <button
-                        type="submit"
-                        className="bg-encourager text-white rounded px-3 py-2 mt-1"
-                        disabled={passwordLoading}
-                      >
-                        {passwordLoading ? 'Updating...' : 'Update Password'}
-                      </button>
-                      {passwordMessage && (
-                        <div className="text-sm text-center mt-1 text-encourager">
-                          {passwordMessage}
-                        </div>
-                      )}
-                    </form>
-                  )}
-                </div>
+
+                
+
              </div>
            </div>
 

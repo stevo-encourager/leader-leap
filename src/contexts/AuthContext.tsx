@@ -18,6 +18,7 @@ interface UserProfile {
   email: string;
   full_name?: string;
   is_admin?: boolean;
+  receive_emails?: boolean;
   [key: string]: any;
 }
 

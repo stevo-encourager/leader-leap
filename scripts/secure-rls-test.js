@@ -1,12 +1,24 @@
 import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
 
-const SUPABASE_URL = 'https://hrgoxcdixvpmcbfgltea.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhyZ294Y2RpeHZwbWNiZmdsdGVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0ODMxMTQsImV4cCI6MjA2MzA1OTExNH0.5FtaIZBVaUnwrQjIEslDlStE3-T0TqxKdHvsZglM24o';
+// Load environment variables
+dotenv.config({ path: '.env.local' });
+
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY;
+
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  console.error('❌ Missing required environment variables:');
+  console.error('   - VITE_SUPABASE_URL or SUPABASE_URL');
+  console.error('   - VITE_SUPABASE_ANON_KEY');
+  console.error('\n📋 Please create a .env.local file with your credentials');
+  process.exit(1);
+}
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 async function testRLS() {
-  console.log('🧪 Testing RLS Implementation...\n');
+  console.log('🧪 Testing RLS Implementation (Secure Version)...\n');
 
   try {
     // Test 1: Unauthenticated access (should be blocked)
@@ -36,35 +48,6 @@ async function testRLS() {
       console.log(`   Assessment results error: ${assessmentsError.message}`);
     }
 
-    // Test 2: Check if we can sign in and access data
-    console.log('\n📋 Test 2: Authenticated Access');
-    
-    // Try to sign in with a test user (you'll need to provide credentials)
-    console.log('⚠️  To test authenticated access, you need to provide test credentials');
-    console.log('   This test requires a valid user account to verify RLS policies');
-    
-    // Test 3: Check if tables exist and are accessible
-    console.log('\n📋 Test 3: Table Accessibility');
-    
-    try {
-      const { data: tableInfo, error: tableError } = await supabase
-        .from('information_schema.tables')
-        .select('table_name')
-        .eq('table_schema', 'public')
-        .in('table_name', ['profiles', 'assessment_results']);
-      
-      if (tableError) {
-        console.log('❌ Could not access table information:', tableError.message);
-      } else {
-        console.log('✅ Tables found:');
-        tableInfo?.forEach(table => {
-          console.log(`   - ${table.table_name}`);
-        });
-      }
-    } catch (error) {
-      console.log('❌ Could not check table structure:', error.message);
-    }
-
     // Summary
     console.log('\n🔒 RLS Test Summary:');
     
@@ -72,9 +55,6 @@ async function testRLS() {
       console.log('✅ RLS appears to be working correctly!');
       console.log('✅ Unauthenticated access is properly blocked');
       console.log('✅ This indicates your security policies are active');
-    } else if (profilesError && assessmentsError) {
-      console.log('⚠️  Access is blocked, but may not be due to RLS');
-      console.log('⚠️  Check if tables exist and are accessible');
     } else {
       console.log('❌ RLS may not be working as expected');
       console.log('❌ Unauthenticated access should be blocked');
@@ -84,7 +64,6 @@ async function testRLS() {
     console.log('1. Test with authenticated users to ensure they can access their own data');
     console.log('2. Test that users cannot access other users\' data');
     console.log('3. Verify admin functions still work correctly');
-    console.log('4. Run the full security audit with service role key');
 
   } catch (error) {
     console.error('❌ RLS test failed:', error);

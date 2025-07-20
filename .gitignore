@@ -24,3 +24,13 @@ dist-ssr
 *.sw?
 
 .env
+env
+
+# Security: Scripts with hardcoded API keys
+scripts/direct-sql-check.js
+scripts/security-audit.js
+scripts/verify-rls.js
+scripts/test-rls.js
+
+# Supabase
+.supabase/

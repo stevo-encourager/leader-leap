@@ -219,7 +219,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     });
 
-    console.log('AuthContext: Signup response:', { data, error, hasUser: !!data?.user, userConfirmedAt: data?.user?.email_confirmed_at });
+    console.log('AuthContext: Signup response:', { 
+      data, 
+      error, 
+      hasUser: !!data?.user, 
+      userConfirmedAt: data?.user?.email_confirmed_at,
+      identitiesLength: data?.user?.identities?.length,
+      confirmationSentAt: data?.user?.confirmation_sent_at
+    });
 
     // First check: If there's no error AND no user, this means the email already exists
     if (!error && !data?.user) {
@@ -245,6 +252,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                              error.status === 400; // Another common status for validation errors
       
       if (isExistingEmail) {
+        console.log('AuthContext: Error indicates existing email');
         setShowAccountExistsDialog(true);
       } else {
         toast({
@@ -256,7 +264,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw error;
     }
 
-    // Third check: For existing confirmed emails, Supabase might return a user with email_confirmed_at already set
+    // Third check: Detect duplicate signup by checking for empty identities array
+    // When Supabase creates a duplicate unconfirmed user, it has empty identities
+    if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+      console.log('AuthContext: User has empty identities array - likely duplicate signup');
+      setShowAccountExistsDialog(true);
+      return;
+    }
+
+    // Fourth check: For existing confirmed emails, Supabase might return a user with email_confirmed_at already set
     if (data?.user?.email_confirmed_at) {
       console.log('AuthContext: User email already confirmed, likely existing account');
       setShowAccountExistsDialog(true);

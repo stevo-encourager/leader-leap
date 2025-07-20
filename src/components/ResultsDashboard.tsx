@@ -220,10 +220,16 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
       }
       
       // Create and trigger download
+      const currentDate = new Date();
+      const day = String(currentDate.getDate()).padStart(2, '0');
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const year = currentDate.getFullYear();
+      const ukDateString = `${day}-${month}-${year}`;
+      
       const url = URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'leader-leap-assessment-results.pdf';
+      link.download = `leader-leap-assessment-results - ${ukDateString}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);

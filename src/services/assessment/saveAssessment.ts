@@ -107,28 +107,88 @@ export const saveAssessmentResults = async (
   // Count and validate skills with ratings
   let totalSkills = 0;
   let skillsWithBothRatings = 0;
+  let skillsWithPartialRatings = 0;
+  let skillsWithNoRatings = 0;
   
-  categories.forEach((category) => {
+  // Detailed validation with debugging
+  console.log("DEBUG [saveAssessment] Starting validation", {
+    categoriesCount: categories.length,
+    categoriesType: typeof categories,
+    isArray: Array.isArray(categories)
+  });
+
+  categories.forEach((category, categoryIndex) => {
+    console.log(`DEBUG [saveAssessment] Processing category ${categoryIndex}:`, {
+      categoryId: category?.id,
+      categoryTitle: category?.title,
+      skillsCount: category?.skills?.length,
+      skillsIsArray: Array.isArray(category?.skills)
+    });
+    
     if (category && category.skills && Array.isArray(category.skills)) {
-      category.skills.forEach((skill) => {
+      category.skills.forEach((skill, skillIndex) => {
         totalSkills++;
+        
+        const skillDebug: any = {
+          skillIndex,
+          skillId: skill?.id,
+          skillName: skill?.name,
+          hasRatings: !!skill?.ratings,
+          currentType: typeof skill?.ratings?.current,
+          currentValue: skill?.ratings?.current,
+          desiredType: typeof skill?.ratings?.desired,
+          desiredValue: skill?.ratings?.desired
+        };
         
         if (skill && skill.ratings) {
           const currentRating = Number(skill.ratings.current) || 0;
           const desiredRating = Number(skill.ratings.desired) || 0;
           
+          skillDebug.currentConverted = currentRating;
+          skillDebug.desiredConverted = desiredRating;
+          
           if (currentRating > 0 && desiredRating > 0) {
             skillsWithBothRatings++;
+            skillDebug.status = "complete";
+          } else if (currentRating > 0 || desiredRating > 0) {
+            skillsWithPartialRatings++;
+            skillDebug.status = "partial";
+          } else {
+            skillsWithNoRatings++;
+            skillDebug.status = "empty";
           }
+        } else {
+          skillsWithNoRatings++;
+          skillDebug.status = "no_ratings_object";
+        }
+        
+        // Only log problematic skills to avoid console spam
+        if (skillDebug.status !== "complete") {
+          console.log(`DEBUG [saveAssessment] Skill validation:`, skillDebug);
         }
       });
     }
+  });
+
+  console.log("DEBUG [saveAssessment] Validation summary:", {
+    totalSkills,
+    skillsWithBothRatings,
+    skillsWithPartialRatings,
+    skillsWithNoRatings,
+    isComplete: totalSkills > 0 && skillsWithBothRatings === totalSkills
   });
 
   // Check if the assessment is complete (all skills have both ratings)
   const isComplete = totalSkills > 0 && skillsWithBothRatings === totalSkills;
   
   if (!isComplete) {
+    console.error("DEBUG [saveAssessment] Assessment failed validation:", {
+      totalSkills,
+      skillsWithBothRatings,
+      skillsWithPartialRatings,
+      skillsWithNoRatings,
+      message: "Assessment is incomplete. All skills must be rated."
+    });
     return { success: false, error: "Assessment is incomplete. All skills must be rated." };
   }
 

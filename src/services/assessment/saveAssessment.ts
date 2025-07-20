@@ -99,8 +99,18 @@ export const saveAssessmentResults = async (
   assessmentId?: string // Optionally pass the assessmentId for test assessment updates
 ): Promise<SaveAssessmentResult> => {
   
+  console.log("🚨 saveAssessmentResults CALLED - START OF FUNCTION");
+  console.log("🚨 Input parameters:", { 
+    categoriesLength: categories?.length, 
+    categoriesType: typeof categories,
+    demographics: !!demographics,
+    forceNew, 
+    assessmentId 
+  });
+  
   // Validate input data
   if (!categories || !Array.isArray(categories) || categories.length === 0) {
+    console.log("🚨 saveAssessmentResults - EARLY RETURN: Invalid categories data");
     return { success: false, error: "Invalid categories data" };
   }
 

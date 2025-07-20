@@ -60,10 +60,8 @@ const CustomTick = (props: any) => {
   if (labelX > cx + 5) anchor = 'start';
   else if (labelX < cx - 5) anchor = 'end';
   
-  // Shorter labels for PDF to prevent overlap
-  const displayText = isPDF && payload.value.length > 12 
-    ? payload.value.substring(0, 10) + '...' 
-    : payload.value;
+  // Always show full labels to ensure consistency across environments
+  const displayText = payload.value;
   
   return (
     <text
@@ -169,9 +167,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
       if (validSkillCount > 0) {
         const avgCurrent = parseFloat((totalCurrent / validSkillCount).toFixed(1));
         const avgDesired = parseFloat((totalDesired / validSkillCount).toFixed(1));
-        const displayTitle = isPDF && category.title && category.title.length > 15 
-          ? category.title.substring(0, 12) + '...' 
-          : category.title || "Unknown Category";
+        const displayTitle = category.title || "Unknown Category";
         result.push({
           subject: displayTitle,
           current: avgCurrent,

@@ -203,6 +203,23 @@ const Consent: React.FC = () => {
         // User has assessment data, save it to the database first
         try {
           console.log('Consent: Saving assessment to database...');
+          console.log('DEBUG [Consent] Assessment data before save:', {
+            categoriesLength: localData.categories.length,
+            categoriesType: typeof localData.categories,
+            isArray: Array.isArray(localData.categories),
+            demographics: localData.demographics,
+            firstCategory: localData.categories[0] ? {
+              id: localData.categories[0].id,
+              title: localData.categories[0].title,
+              skillsCount: localData.categories[0].skills?.length,
+              firstSkill: localData.categories[0].skills?.[0] ? {
+                id: localData.categories[0].skills[0].id,
+                name: localData.categories[0].skills[0].name,
+                ratings: localData.categories[0].skills[0].ratings
+              } : null
+            } : null
+          });
+          
           const result = await saveAssessmentResults(localData.categories, localData.demographics || {});
           console.log('Consent: Save result:', result);
           

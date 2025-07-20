@@ -226,7 +226,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                              errorMessage.includes('already exists') ||
                              errorMessage.includes('user already registered') ||
                              errorMessage.includes('email already exists') ||
-                             error.status === 422; // Common status for existing email
+                             errorMessage.includes('email address not confirmed') ||
+                             errorMessage.includes('email not confirmed') ||
+                             errorMessage.includes('signup is disabled') ||
+                             error.status === 422 || // Common status for existing email
+                             error.status === 400; // Another common status for validation errors
       
       if (isExistingEmail) {
         setShowAccountExistsDialog(true);
@@ -238,6 +242,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
       }
       throw error;
+    }
+
+    // Check if signup was successful but user is null (indicates existing confirmed email)
+    if (!error && !data.user) {
+      // This indicates the email already exists and is confirmed
+      setShowAccountExistsDialog(true);
+      return;
     }
 
     // Only show success dialog if we have a user and no errors

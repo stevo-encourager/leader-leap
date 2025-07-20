@@ -204,6 +204,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (email: string, password: string, firstName: string, surname: string, receiveEmails: boolean) => {
     const redirectUrl = `${window.location.origin}/`;
     
+    console.log('AuthContext: Attempting signup for:', email);
+    
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -216,6 +218,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       }
     });
+
+    console.log('AuthContext: Signup response:', { data, error, hasUser: !!data?.user, userConfirmedAt: data?.user?.email_confirmed_at });
 
     if (error) {
       console.error('AuthContext: Sign up error:', error);
@@ -244,8 +248,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw error;
     }
 
+    // For existing confirmed emails, Supabase returns success but the user will have email_confirmed_at set
+    // and the signup essentially becomes a no-op
+    if (data?.user?.email_confirmed_at) {
+      console.log('AuthContext: User email already confirmed, likely existing account');
+      setShowAccountExistsDialog(true);
+      return;
+    }
+
     // Check if signup was successful but user is null (indicates existing confirmed email)
     if (!error && !data.user) {
+      console.log('AuthContext: No user returned, likely existing account');
       // This indicates the email already exists and is confirmed
       setShowAccountExistsDialog(true);
       return;
@@ -253,6 +266,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Only show success dialog if we have a user and no errors
     if (data.user && !error) {
+      console.log('AuthContext: Showing account created dialog');
       setShowAccountCreatedDialog(true);
     }
   };

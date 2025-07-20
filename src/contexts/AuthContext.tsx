@@ -254,6 +254,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // If session is missing, that means user is already signed out
         if (error.message === 'Auth session missing!') {
           console.log('AuthContext: Session already missing, clearing local state');
+          // Clear local state manually since Supabase can't do it
+          setUser(null);
+          setSession(null);
+          setUserProfile(null);
         } else {
           console.error('AuthContext: Sign out error:', error);
           toast({
@@ -264,6 +268,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // Don't throw for session missing error, but do throw for other errors
           throw error;
         }
+      } else {
+        // Successful logout - state will be cleared by onAuthStateChange
+        // but clear it immediately to ensure UI updates
+        setUser(null);
+        setSession(null);
+        setUserProfile(null);
       }
 
       toast({
@@ -289,8 +299,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
     
-    // Navigate to home page after sign out (successful or session missing)
-    navigate('/');
+    // Navigate to login page after sign out (successful or session missing)
+    navigate('/login');
   };
 
   const signInWithGoogle = async () => {

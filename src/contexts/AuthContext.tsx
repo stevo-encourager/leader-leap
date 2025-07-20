@@ -299,8 +299,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
     
-    // Navigate to login page after sign out (successful or session missing)
-    navigate('/login');
+    // Navigate to home page after sign out (successful or session missing)
+    navigate('/');
   };
 
   const signInWithGoogle = async () => {

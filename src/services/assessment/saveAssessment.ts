@@ -172,9 +172,17 @@ export const saveAssessmentResults = async (
           skillDebug.status = "no_ratings_object";
         }
         
-        // Only log problematic skills to avoid console spam
-        if (skillDebug.status !== "complete") {
-          console.log(`DEBUG [saveAssessment] Skill validation:`, skillDebug);
+        // Always log the first few skills to see actual values
+        if (skillIndex < 3 || skillDebug.status !== "complete") {
+          console.log(`🔍 SKILL VALUES [${skillIndex}]:`, {
+            name: skill.name,
+            ratingsObject: skill.ratings,
+            currentRating: skill.ratings?.current,
+            desiredRating: skill.ratings?.desired,
+            currentType: typeof skill.ratings?.current,
+            desiredType: typeof skill.ratings?.desired,
+            status: skillDebug.status
+          });
         }
       });
     }

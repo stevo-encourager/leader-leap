@@ -99,7 +99,7 @@ export const saveAssessmentResults = async (
   assessmentId?: string // Optionally pass the assessmentId for test assessment updates
 ): Promise<SaveAssessmentResult> => {
   
-  console.log("🚨 saveAssessmentResults CALLED - START OF FUNCTION");
+  console.log("🚨🚨🚨 saveAssessmentResults CALLED - START OF FUNCTION - TIMESTAMP:", new Date().toISOString());
   console.log("🚨 Input parameters:", { 
     categoriesLength: categories?.length, 
     categoriesType: typeof categories,

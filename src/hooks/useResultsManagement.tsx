@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { AssessmentCategory } from '@/types/assessment';
 import { storeLocalAssessmentData, getLocalAssessmentData, saveAssessmentResults, TEST_ASSESSMENT_ID } from '@/services/assessment';
+import { assessmentLogger } from '@/utils/logger';
 
 interface UseResultsManagementProps {
   categories: AssessmentCategory[];
@@ -28,7 +29,7 @@ export const useResultsManagement = ({
   useEffect(() => {
     if (!initialized) return;
     
-    console.log('useResultsManagement - Categories updated:', {
+    assessmentLogger.debug('Categories updated', {
       length: categories.length,
       isArray: Array.isArray(categories)
     });
@@ -47,8 +48,10 @@ export const useResultsManagement = ({
         )
       );
       
-      console.log('useResultsManagement - Categories contain', skillsWithRatings.length, 'skills with ratings', 
-        `(${skillsWithRatings.length * 2} total rating values)`);
+      assessmentLogger.debug('Categories contain skills with ratings', {
+        skillsWithRatings: skillsWithRatings.length,
+        totalRatingValues: skillsWithRatings.length * 2
+      });
       
       setHasValidRatings(skillsWithRatings.length > 0);
     };
@@ -124,10 +127,10 @@ export const useResultsManagement = ({
   }, [user, hasValidRatings, savedToSupabase, categories, demographics, currentAssessmentId]);
 
   const handleLoadPreviousResults = useCallback(() => {
-    console.log('useResultsManagement - handleLoadPreviousResults called');
     setLoadingPreviousResults(true);
-    // TODO: Implement load previous results logic
-    setTimeout(() => setLoadingPreviousResults(false), 1000); // Mock loading
+    // NOTE: Load previous results functionality deferred pending assessment history refactor
+    // This will be implemented when the assessment history management is unified
+    setTimeout(() => setLoadingPreviousResults(false), 1000); // Temporary mock
   }, []);
 
   const handleCloseAuthForm = useCallback(() => {

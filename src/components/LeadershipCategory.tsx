@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { CircleHelp } from 'lucide-react';
 import { 
@@ -8,6 +8,7 @@ import {
   TooltipTrigger 
 } from './ui/tooltip';
 import { Category, Skill } from '../utils/assessmentTypes';
+import { assessmentLogger } from '@/utils/logger';
 
 interface LeadershipCategoryProps {
   category: Category;
@@ -28,12 +29,12 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
     // Ensure value is a valid number
     const numericValue = Number(value);
     if (isNaN(numericValue)) {
-      console.error(`LeadershipCategory - Invalid rating value: ${value}`);
+      assessmentLogger.error('Invalid rating value', { value, skillId, ratingType });
       return;
     }
     
     // Log rating change for debugging
-    console.log(`LeadershipCategory - Setting ${ratingType} rating for skill ${skillId} to ${numericValue}`);
+    assessmentLogger.debug('Setting rating', { ratingType, skillId, value: numericValue });
     
     if (onSkillRating) {
       // Use the onSkillRating prop if provided (new approach)

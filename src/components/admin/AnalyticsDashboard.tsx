@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -20,6 +20,7 @@ import {
   Pie,
   Cell
 } from 'recharts';
+import { adminLogger } from '@/utils/logger';
 
 interface AnalyticsData {
   competencyAverages: {
@@ -64,17 +65,17 @@ const AnalyticsDashboard = () => {
   const fetchAnalytics = async () => {
     setIsLoading(true);
     setError(null);
-    console.log("AnalyticsDashboard: Fetching analytics data...");
+    adminLogger.info("Fetching analytics data...");
     
     try {
       const { data: analyticsResponse, error: analyticsError } = await supabase.functions.invoke('analytics-aggregated-data');
       
       if (analyticsError) {
-        console.error("AnalyticsDashboard: Error getting analytics:", analyticsError);
+        adminLogger.error("Error getting analytics", analyticsError);
         throw new Error(`Error getting analytics: ${analyticsError.message}`);
       }
       
-      console.log("AnalyticsDashboard: Analytics response:", analyticsResponse);
+      adminLogger.debug("Analytics response", analyticsResponse);
       
       if (!analyticsResponse.success) {
         throw new Error(analyticsResponse.error || "Failed to get analytics data");
@@ -83,10 +84,10 @@ const AnalyticsDashboard = () => {
       setAnalyticsData(analyticsResponse.data);
       setLastUpdated(new Date().toLocaleString());
       
-      console.log("AnalyticsDashboard: Analytics data loaded successfully");
+      adminLogger.info("Analytics data loaded successfully");
       
     } catch (error: any) {
-      console.error('AnalyticsDashboard: Error fetching analytics:', error);
+      adminLogger.error('Error fetching analytics', error);
       setError(error.message);
     } finally {
       setIsLoading(false);
@@ -94,7 +95,7 @@ const AnalyticsDashboard = () => {
   };
 
   useEffect(() => {
-    console.log("AnalyticsDashboard: Component mounted, fetching analytics...");
+    adminLogger.info("Component mounted, fetching analytics...");
     fetchAnalytics();
   }, []);
 
@@ -150,7 +151,7 @@ const AnalyticsDashboard = () => {
     return null;
   };
 
-  console.log("AnalyticsDashboard: Rendering with data:", analyticsData, "isLoading:", isLoading);
+  adminLogger.debug("Rendering with data", { analyticsData, isLoading });
 
   return (
     <div className="space-y-6">

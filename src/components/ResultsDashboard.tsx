@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Category, Demographics } from '../utils/assessmentTypes';
 import DetailedAnalysis from './dashboard/DetailedAnalysis';
@@ -17,6 +17,7 @@ import { captureRadarChartAsPNG } from '@/utils/chartCapture';
 import SkillGapChart from './SkillGapChart';
 import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
 import { useAuth } from '@/contexts/AuthContext';
+import { chartLogger, pdfLogger } from '@/utils/logger';
 
 interface ResultsDashboardProps {
   categories: Category[];

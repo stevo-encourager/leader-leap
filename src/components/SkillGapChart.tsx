@@ -1,5 +1,5 @@
 
-import React, { useMemo, useRef, useEffect } from 'react';
+import { useMemo, useRef, useEffect } from 'react';
 import { 
   ResponsiveContainer,
   RadarChart, 
@@ -12,6 +12,7 @@ import {
 import { Category } from '@/utils/assessmentTypes';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { chartLogger } from '@/utils/logger';
 
 interface SkillGapChartProps {
   categories: Category[];
@@ -107,7 +108,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
   const chartData = useMemo(() => {
     
     if (!safeCategories || safeCategories.length === 0) {
-      console.warn("SkillGapChart - No categories provided");
+      chartLogger.warn("No categories provided");
       return [];
     }
     
@@ -115,7 +116,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
     
     for (const category of safeCategories) {
       if (!category || !category.skills || !Array.isArray(category.skills)) {
-        console.log(`SkillGapChart - Skipping invalid category: ${category?.title || 'unknown'}`);
+        chartLogger.debug('Skipping invalid category', { title: category?.title || 'unknown' });
         continue;
       }
       
@@ -125,7 +126,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
       
       for (const skill of category.skills) {
         if (!skill || !skill.ratings) {
-          console.log(`SkillGapChart - Skipping invalid skill (no ratings): ${skill?.name || 'unknown'}`);
+          chartLogger.debug('Skipping invalid skill (no ratings)', { name: skill?.name || 'unknown' });
           continue;
         }
         
@@ -138,7 +139,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
           try {
             current = parseFloat(String(skill.ratings.current));
           } catch (e) {
-            console.warn(`SkillGapChart - Error parsing current rating for ${skill.name}:`, e);
+            chartLogger.warn('Error parsing current rating', { skillName: skill.name, error: e });
           }
         }
         
@@ -148,7 +149,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
           try {
             desired = parseFloat(String(skill.ratings.desired));
           } catch (e) {
-            console.warn(`SkillGapChart - Error parsing desired rating for ${skill.name}:`, e);
+            chartLogger.warn('Error parsing desired rating', { skillName: skill.name, error: e });
           }
         }
         
@@ -161,7 +162,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
           validSkillCount++;
   
         } else {
-          console.log(`SkillGapChart - Skill with zero ratings: ${skill.name}`);
+          chartLogger.debug('Skill with zero ratings', { name: skill.name });
         }
       }
       
@@ -181,7 +182,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
         
 
       } else {
-        console.log(`SkillGapChart - Category ${category.title || 'Unknown'} has no valid skills with ratings`);
+        chartLogger.debug('Category has no valid skills with ratings', { title: category.title || 'Unknown' });
       }
     }
     
@@ -201,7 +202,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
 
   
   if (validChartData.length === 0) {
-    console.warn("SkillGapChart - No valid chart data to display");
+    chartLogger.warn("No valid chart data to display");
     return (
       <div className={`flex flex-col items-center justify-center h-full bg-slate-50 rounded-lg p-6 ${className}`}>
         <p className="text-gray-500 text-center mb-3">
@@ -371,4 +372,4 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
   );
 };
 
-export default React.memo(SkillGapChart);
+export default SkillGapChart;

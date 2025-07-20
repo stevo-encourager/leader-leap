@@ -11,6 +11,7 @@ import ValidationErrorDisplay from './assessment/ValidationErrorDisplay';
 import HelpButton from './assessment/HelpButton';
 import { useAssessmentForm } from '@/hooks/useAssessmentForm';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { assessmentLogger } from '@/utils/logger';
 
 interface AssessmentFormProps {
   categories: Category[];
@@ -42,11 +43,11 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
 
 
   const handleSkillRating = (categoryId: string, skillId: string, type: 'current' | 'desired', value: number) => {
-    console.log(`Updating skill rating: category=${categoryId}, skill=${skillId}, type=${type}, value=${value}`);
+    assessmentLogger.debug('Updating skill rating', { categoryId, skillId, type, value });
     
     // Add safety check for categories
     if (!categories || !Array.isArray(categories)) {
-      console.error("AssessmentForm - handleSkillRating: categories is not an array");
+      assessmentLogger.error("handleSkillRating: categories is not an array");
       return;
     }
     
@@ -57,7 +58,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
         if (category.id === categoryId) {
           // Safety check for skills array
           if (!category.skills || !Array.isArray(category.skills)) {
-            console.error(`AssessmentForm - handleSkillRating: category ${categoryId} has no skills array`);
+            assessmentLogger.error(`handleSkillRating: category ${categoryId} has no skills array`);
             return category;
           }
           

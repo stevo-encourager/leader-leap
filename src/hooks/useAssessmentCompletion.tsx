@@ -2,17 +2,16 @@
 import { toast } from './use-toast';
 import { storeLocalAssessmentData } from '@/services/assessment/manageAssessmentHistory';
 import { Category, Demographics } from '@/utils/assessmentTypes';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const useAssessmentCompletion = (
   categories: Category[],
   demographics: Demographics,
-  completeHandler: () => void
+  completeHandler: () => void,
+  onShowSignupForm?: () => void
 ) => {
+  const { user } = useAuth();
   const handleCompleteAssessment = () => {
-    console.log('handleCompleteAssessment called', { 
-      categoriesCount: categories?.length,
-      demographicsPresent: !!demographics 
-    });
     
     // Check if we have valid category data before completing
     if (!categories || !Array.isArray(categories) || categories.length === 0) {
@@ -39,24 +38,9 @@ export const useAssessmentCompletion = (
           
           if (hasValidRatings) {
             skillsWithBothRatings++;
-          } else {
-            console.log(`Skill missing ratings:`, {
-              categoryIndex: catIndex,
-              categoryTitle: category.title,
-              skillIndex,
-              skillName: skill?.name,
-              currentRating: skill?.ratings?.current,
-              desiredRating: skill?.ratings?.desired
-            });
           }
         });
       }
-    });
-    
-    console.log('Skills rating validation:', {
-      totalSkills,
-      skillsWithBothRatings,
-      completionPercentage: Math.round((skillsWithBothRatings / totalSkills) * 100)
     });
     
     // Check if all skills have been rated
@@ -70,15 +54,20 @@ export const useAssessmentCompletion = (
       return;
     }
     
-    console.log('Assessment completion validation passed');
-    
-    // CRITICAL FIX: Store assessment data locally before changing page
-    console.log('Storing assessment data locally');
+    // Store assessment data locally before completing
     storeLocalAssessmentData(categories, demographics);
     
-    console.log('Calling completeHandler');
-    // Call the original handler
-    completeHandler();
+    // Check if user is logged in
+    if (user) {
+      completeHandler();
+    } else {
+      if (onShowSignupForm) {
+        onShowSignupForm();
+      } else {
+        // Fallback to original handler
+        completeHandler();
+      }
+    }
   };
 
   return {

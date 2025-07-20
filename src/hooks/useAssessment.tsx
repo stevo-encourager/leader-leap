@@ -32,9 +32,6 @@ export const useAssessment = () => {
     resetAssessment 
   } = useAssessmentState(initializedCategories);
 
-  const { handleCompleteAssessment: wrappedHandleCompleteAssessment } = 
-    useAssessmentCompletion(categories, demographics, handleCompleteAssessment);
-
   // Reset all categories to default values when starting a new assessment
   const handleStartNewAssessment = () => {
     // Clear local storage FIRST to ensure we don't preserve any old data
@@ -76,6 +73,10 @@ export const useAssessment = () => {
   });
 
   const { user } = useAuth();
+
+  // Create the wrapped completion handler after we have handleShowSignupForm
+  const { handleCompleteAssessment: wrappedHandleCompleteAssessment } = 
+    useAssessmentCompletion(categories, demographics, handleCompleteAssessment, handleShowSignupForm);
 
   // Effect to handle result saving when user logs in
   useEffect(() => {

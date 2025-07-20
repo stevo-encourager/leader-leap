@@ -51,28 +51,10 @@ export const useAssessmentForm = (categories: Category[], initialActiveCategory?
   }, [activeCategory, categories, midpointDialogShown]);
 
   const handleNextCategory = (onComplete: () => void) => {
-    console.log('handleNextCategory called', { 
-      activeCategory, 
-      totalCategories: categories.length,
-      isLastCategory: activeCategory === categories.length - 1 
-    });
     
     // Check if the current category is fully completed before proceeding
     const currentCategory = categories[activeCategory];
     const isCategoryComplete = isCategoryCompleted(currentCategory);
-    
-    console.log('Category completion check:', {
-      categoryId: currentCategory?.id,
-      categoryTitle: currentCategory?.title,
-      isCategoryComplete,
-      skills: currentCategory?.skills?.map(skill => ({
-        id: skill.id,
-        name: skill.name,
-        currentRating: skill.ratings?.current,
-        desiredRating: skill.ratings?.desired,
-        hasValidRatings: skill.ratings?.current > 0 && skill.ratings?.desired > 0
-      }))
-    });
     
     if (!isCategoryComplete) {
       toast({
@@ -84,25 +66,12 @@ export const useAssessmentForm = (categories: Category[], initialActiveCategory?
     }
     
     if (activeCategory < categories.length - 1) {
-      console.log('Moving to next category');
       setActiveCategory(activeCategory + 1);
       window.scrollTo(0, 0);
     } else {
-      console.log('Last category - checking all categories completion');
       // Verify all categories are completed before finishing assessment
-      const completionStatus = categories.map((cat, index) => ({
-        index,
-        id: cat.id,
-        title: cat.title,
-        isComplete: isCategoryCompleted(cat)
-      }));
-      
-      console.log('All categories completion status:', completionStatus);
-      
       const allCompleted = categories.every(isCategoryCompleted);
       if (!allCompleted) {
-        const incompleteCategories = completionStatus.filter(cat => !cat.isComplete);
-        console.log('Incomplete categories found:', incompleteCategories);
         toast({
           title: "Incomplete assessment",
           description: "Please ensure all skills in all categories have ratings before completing.",
@@ -111,8 +80,6 @@ export const useAssessmentForm = (categories: Category[], initialActiveCategory?
         return;
       }
       
-      console.log('All validation passed - calling onComplete');
-      // Log categories before completing to verify data
       onComplete();
     }
   };

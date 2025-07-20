@@ -43,6 +43,13 @@ serve(async (req) => {
         JSON.stringify({ success: true }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    } else if (response.status === 400 && responseBody.includes('duplicate_parameter')) {
+      // Email already exists in Brevo - treat as success
+      console.log('[Brevo] Email already exists, treating as success');
+      return new Response(
+        JSON.stringify({ success: true, message: 'Email already subscribed' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     } else {
       return new Response(
         JSON.stringify({ error: responseBody }),

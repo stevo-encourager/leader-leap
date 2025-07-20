@@ -187,23 +187,30 @@ const Consent: React.FC = () => {
       
       // Check if user has local assessment data that needs to be saved
       const localData = getLocalAssessmentData();
+      console.log('Consent page - Local data found:', !!localData);
       if (localData && localData.categories && localData.categories.length > 0) {
         // User has assessment data, save it to the database first
         try {
+          console.log('Consent page - Saving assessment to database...');
           const result = await saveAssessmentResults(localData.categories, localData.demographics);
+          console.log('Consent page - Save result:', result);
           
           if (result.success && result.data && result.data[0]?.id) {
+            console.log('Consent page - Redirecting to specific assessment:', result.data[0].id);
             // Redirect to the specific assessment results page
             navigate(`/results/${result.data[0].id}`);
           } else {
+            console.log('Consent page - No assessment ID, redirecting to general results');
             // Still redirect to results page, it will handle loading from local storage
             navigate('/results');
           }
         } catch (error) {
+          console.error('Consent page - Error saving assessment:', error);
           // Still redirect to results page, it will handle loading from local storage
           navigate('/results');
         }
       } else {
+        console.log('Consent page - No local data, redirecting to home');
         // No assessment data, redirect to home
         navigate('/');
       }

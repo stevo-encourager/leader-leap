@@ -191,6 +191,7 @@ interface ReactPDFDocumentProps {
   demographics: Demographics;
   insights: string;
   chartImageDataUrl?: string;
+  userName?: string;
 }
 
 // Add a helper to render markdown links in summary
@@ -231,7 +232,8 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
   categories,
   demographics,
   insights,
-  chartImageDataUrl
+  chartImageDataUrl,
+  userName
 }) => {
   const averageGap = calculateAverageGap(categories);
   const currentDate = new Date().toLocaleDateString('en-US', {
@@ -373,6 +375,9 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
           <Text style={styles.subtitle}>Generated on {currentDate}</Text>
         </View>
         <Text style={styles.sectionTitle}>Profile Summary</Text>
+        {userName && (
+          <Text style={styles.text}><Text style={styles.boldText}>Name:</Text> {userName}</Text>
+        )}
         {demographics?.role && (
           <Text style={styles.text}><Text style={styles.boldText}>Role:</Text> {demographics.role}</Text>
         )}

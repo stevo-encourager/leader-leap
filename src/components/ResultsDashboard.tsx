@@ -36,7 +36,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   assessmentId
 }) => {
   const isMobile = useIsMobile();
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   
   // Debug received categories with more detailed logging
   useEffect(() => {
@@ -208,6 +208,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
           demographics={demographics}
           insights={insights || ''}
           chartImageDataUrl={chartImageDataUrl || undefined}
+          userName={userProfile?.full_name}
         />
       );
       

@@ -32,7 +32,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
 }) => {
 
 
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const isMobile = useIsMobile();
   const [isDownloading, setIsDownloading] = useState(false);
   const [isExportingPDF, setIsExportingPDF] = useState(false);
@@ -170,6 +170,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
           demographics={demographics}
           insights={insights || ''}
           chartImageDataUrl={chartImageDataUrl || undefined}
+          userName={userProfile?.full_name}
         />
       );
       

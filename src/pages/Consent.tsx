@@ -192,7 +192,7 @@ const Consent: React.FC = () => {
       
       // Check if user has local assessment data that needs to be saved
       const localData = getLocalAssessmentData();
-      console.log('Consent: Local assessment data check:', {
+      console.log('🟢 Consent: Local assessment data check:', {
         hasData: !!localData,
         hasCategories: !!(localData?.categories),
         categoriesLength: localData?.categories?.length,
@@ -200,6 +200,7 @@ const Consent: React.FC = () => {
       });
       
       if (localData && localData.categories && localData.categories.length > 0) {
+        console.log('🟢 Consent: About to save assessment - local data exists');
         // User has assessment data, save it to the database first
         try {
           console.log('Consent: Saving assessment to database...');

@@ -156,10 +156,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           .from('profiles')
           .select('gdpr_consent, receive_emails')
           .eq('id', user.id)
-          .single();
-        // Only redirect if consent is missing (null or false) or receive_emails is null
-        if (!error && profile && (profile.gdpr_consent !== true || profile.receive_emails === null || typeof profile.receive_emails === 'undefined')) {
-          navigate('/consent');
+          .maybeSingle();
+        // Only redirect if consent is missing (null or false) or receive_emails is null  
+        if (!error && profile) {
+          const profileData = profile as any;
+          if (profileData.gdpr_consent !== true || profileData.receive_emails === null || typeof profileData.receive_emails === 'undefined') {
+            navigate('/consent');
+          }
+        } else if (error) {
+          console.error('AuthContext: Error checking consent:', error);
         }
       };
       checkConsent();

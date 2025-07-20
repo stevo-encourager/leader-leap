@@ -69,7 +69,7 @@ const MyProfile = () => {
     const fetchDemographics = async () => {
       setDemographicsLoading(true);
       try {
-        const result = await getLatestAssessmentResults();
+        const result = await getLatestAssessmentResults(user?.id || '');
         if (result.success && result.data) {
           setDemographics(result.data.demographics);
         }

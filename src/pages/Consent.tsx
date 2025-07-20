@@ -135,6 +135,11 @@ const Consent: React.FC = () => {
     
     // Debug: Check local data before saving preferences
     const localDataBefore = getLocalAssessmentData();
+    console.log('Consent: Local data before submission:', {
+      hasData: !!localDataBefore,
+      categoriesLength: localDataBefore?.categories?.length,
+      demographics: !!localDataBefore?.demographics
+    });
 
     try {
       // Update the user's profile with consent and email preferences
@@ -187,24 +192,37 @@ const Consent: React.FC = () => {
       
       // Check if user has local assessment data that needs to be saved
       const localData = getLocalAssessmentData();
+      console.log('Consent: Local assessment data check:', {
+        hasData: !!localData,
+        hasCategories: !!(localData?.categories),
+        categoriesLength: localData?.categories?.length,
+        demographics: !!localData?.demographics
+      });
+      
       if (localData && localData.categories && localData.categories.length > 0) {
         // User has assessment data, save it to the database first
         try {
-          const result = await saveAssessmentResults(localData.categories, localData.demographics);
+          console.log('Consent: Saving assessment to database...');
+          const result = await saveAssessmentResults(localData.categories, localData.demographics || {});
+          console.log('Consent: Save result:', result);
           
           if (result.success && result.data && result.data[0]?.id) {
             // Redirect to the specific assessment results page
+            console.log('Consent: Redirecting to results with ID:', result.data[0].id);
             navigate(`/results/${result.data[0].id}`);
           } else {
             // Still redirect to results page, it will handle loading from local storage
+            console.log('Consent: Redirecting to general results page');
             navigate('/results');
           }
         } catch (error) {
+          console.error('Consent: Error saving assessment:', error);
           // Still redirect to results page, it will handle loading from local storage
           navigate('/results');
         }
       } else {
         // No assessment data, redirect to home
+        console.log('Consent: No assessment data found, redirecting to home');
         navigate('/');
       }
     } catch (err: any) {
@@ -277,4 +295,4 @@ const Consent: React.FC = () => {
   );
 };
 
-export default Consent; 
+export default Consent;

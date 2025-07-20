@@ -72,7 +72,7 @@ const AITestPanel = () => {
 
     try {
   
-      const result = await getSpecificAssessmentResults(TEST_ASSESSMENT_ID);
+      const result = await getSpecificAssessmentResults(TEST_ASSESSMENT_ID, 'test-user');
 
       if (result.success && result.data) {
         setCategories(result.data.categories);

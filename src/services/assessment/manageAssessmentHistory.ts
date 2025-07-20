@@ -113,7 +113,7 @@ export const getAssessmentHistory = async (): Promise<{
     
     return { 
       success: true, 
-      data: assessments as AssessmentRecord[]
+      data: ((assessments || []) as unknown) as AssessmentRecord[]
     };
   } catch (error) {
     return { success: false, error: 'Failed to fetch assessment history' };

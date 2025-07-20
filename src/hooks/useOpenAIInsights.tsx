@@ -170,19 +170,21 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
 
         if (dbError) {
           // Database error, continue to generate new insights
-        } else if (assessment && 
-                   assessment.ai_insights && 
-                   assessment.ai_insights.trim() !== '' &&
-                   assessment.ai_insights.trim().length > 100) {
-          updateState({
-            insights: assessment.ai_insights,
-            isLoading: false,
-            error: null,
-            isInitialized: true
-          }, 'Loaded existing insights from database');
-          initializationCompleteRef.current = true;
-          isOperationInProgressRef.current = false;
-          return; // Exit early - use cached data
+        } else if (assessment) {
+          const assessmentData = assessment as any;
+          if (assessmentData.ai_insights && 
+              assessmentData.ai_insights.trim() !== '' &&
+              assessmentData.ai_insights.trim().length > 100) {
+            updateState({
+              insights: assessmentData.ai_insights,
+              isLoading: false,
+              error: null,
+              isInitialized: true
+            }, 'Loaded existing insights from database');
+            initializationCompleteRef.current = true;
+            isOperationInProgressRef.current = false;
+            return; // Exit early - use cached data
+          }
         }
       }
 

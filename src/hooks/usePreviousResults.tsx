@@ -113,7 +113,7 @@ export const usePreviousResults = (
       }
       
       // User is authenticated, try to load from database
-      const result = await getLatestAssessmentResults();
+      const result = await getLatestAssessmentResults(user.id);
       
       if (result.success && result.data) {
         const categoriesData = result.data.categories;

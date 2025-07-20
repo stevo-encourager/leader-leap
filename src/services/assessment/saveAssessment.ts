@@ -55,20 +55,23 @@ const checkForDuplicateAssessment = async (
       let assessmentCategories: Category[] = [];
       let assessmentDemographics: Demographics = {};
       
+      // Type assertion after error check
+      const assessmentData = assessment as any;
+      
       // Handle categories - convert from Supabase Json type
-      if (typeof assessment.categories === 'string') {
-        assessmentCategories = JSON.parse(assessment.categories);
-      } else if (Array.isArray(assessment.categories)) {
+      if (typeof assessmentData.categories === 'string') {
+        assessmentCategories = JSON.parse(assessmentData.categories);
+      } else if (Array.isArray(assessmentData.categories)) {
         // Safely convert from Json[] to Category[] through unknown
-        assessmentCategories = assessment.categories as unknown as Category[];
+        assessmentCategories = assessmentData.categories as unknown as Category[];
       }
       
       // Handle demographics - convert from Supabase Json type
-      if (typeof assessment.demographics === 'string') {
-        assessmentDemographics = JSON.parse(assessment.demographics);
-      } else if (assessment.demographics && typeof assessment.demographics === 'object') {
+      if (typeof assessmentData.demographics === 'string') {
+        assessmentDemographics = JSON.parse(assessmentData.demographics);
+      } else if (assessmentData.demographics && typeof assessmentData.demographics === 'object') {
         // Safely convert from Json to Demographics through unknown
-        assessmentDemographics = assessment.demographics as unknown as Demographics;
+        assessmentDemographics = assessmentData.demographics as unknown as Demographics;
       }
       
       const existingSignature = generateAssessmentSignature(
@@ -77,7 +80,7 @@ const checkForDuplicateAssessment = async (
       );
       
       if (existingSignature === assessmentSignature) {
-        return { exists: true, assessmentId: assessment.id };
+        return { exists: true, assessmentId: assessmentData.id };
       }
     } catch (error) {
       continue;

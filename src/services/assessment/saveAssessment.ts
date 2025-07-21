@@ -29,15 +29,16 @@ const checkForDuplicateAssessment = async (
   assessmentSignature: string
 ): Promise<{ exists: boolean; assessmentId?: string }> => {
   try {
-    // Check for assessments within the last 24 hours
-    const twentyFourHoursAgo = new Date();
-    twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+    // Check for assessments within the last 2 hours (reduced from 24 hours for testing)
+    // This allows the same user to submit multiple test assessments
+    const twoHoursAgo = new Date();
+    twoHoursAgo.setHours(twoHoursAgo.getHours() - 2);
 
     const { data, error } = await supabase
       .from('assessment_results')
       .select('id, categories, demographics, created_at')
       .eq('user_id', userId)
-      .gte('created_at', twentyFourHoursAgo.toISOString())
+      .gte('created_at', twoHoursAgo.toISOString())
       .order('created_at', { ascending: false });
 
     if (error) {

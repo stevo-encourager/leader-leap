@@ -216,13 +216,11 @@ const Results = () => {
         )
       );
       
-      if (hasValidRatings) {
+      if (hasValidRatings && !saveTriggeredRef.current) {
         saveTriggeredRef.current = true;
         
-        // Delay to ensure all state is properly set
-        setTimeout(() => {
-          handleSaveResults();
-        }, 300);
+        // Save immediately to get assessment ID for insights
+        handleSaveResults();
       } else {
         // Try one more time to load from local storage
         const localData = getLocalAssessmentData();

@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/contexts/AuthContext';
+import { preserveAssessmentDataForVerification } from '@/services/assessment/manageAssessmentHistory';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -92,6 +93,10 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
     setIsSubmitting(true);
 
     try {
+      // Preserve assessment data before email verification process
+      console.log('AuthForm: Preserving assessment data before signup');
+      preserveAssessmentDataForVerification();
+      
       await signUp(data.email, data.password, data.firstName, data.surname, null); // Pass null for receiveEmails so user gets redirected to consent page
       // Don't call onSuccess here as the user needs to verify their email
     } catch (error) {

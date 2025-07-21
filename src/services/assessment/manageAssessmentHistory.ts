@@ -88,6 +88,65 @@ export const getLocalAssessmentData = (): LocalAssessmentData | null => {
 };
 
 /**
+ * Preserve assessment data before email verification
+ * Stores data with a special key that survives email verification redirects
+ */
+export const preserveAssessmentDataForVerification = (): boolean => {
+  try {
+    const localData = getLocalAssessmentData();
+    if (!localData) {
+      console.log('preserveAssessmentDataForVerification - No local data to preserve');
+      return false;
+    }
+    
+    // Store in a verification-specific key
+    localStorage.setItem('assessment_verification_backup', JSON.stringify(localData));
+    sessionStorage.setItem('assessment_verification_backup', JSON.stringify(localData));
+    console.log('preserveAssessmentDataForVerification - Data preserved for verification');
+    return true;
+  } catch (error) {
+    console.error('preserveAssessmentDataForVerification - Error:', error);
+    return false;
+  }
+};
+
+/**
+ * Restore assessment data after email verification
+ * Checks for preserved data and restores it to the main localStorage keys
+ */
+export const restoreAssessmentDataAfterVerification = (): boolean => {
+  try {
+    // Check both localStorage and sessionStorage for backup data
+    let backupData = localStorage.getItem('assessment_verification_backup');
+    if (!backupData) {
+      backupData = sessionStorage.getItem('assessment_verification_backup');
+    }
+    
+    if (!backupData) {
+      console.log('restoreAssessmentDataAfterVerification - No backup data found');
+      return false;
+    }
+    
+    const parsedData = JSON.parse(backupData);
+    
+    // Restore to main localStorage keys
+    localStorage.setItem('assessment_categories', JSON.stringify(parsedData.categories));
+    localStorage.setItem('assessment_demographics', JSON.stringify(parsedData.demographics));
+    localStorage.setItem('assessment_timestamp', parsedData.timestamp);
+    
+    // Clean up backup data
+    localStorage.removeItem('assessment_verification_backup');
+    sessionStorage.removeItem('assessment_verification_backup');
+    
+    console.log('restoreAssessmentDataAfterVerification - Data restored successfully');
+    return true;
+  } catch (error) {
+    console.error('restoreAssessmentDataAfterVerification - Error:', error);
+    return false;
+  }
+};
+
+/**
  * Clear local assessment data when no longer needed
  */
 export const clearLocalAssessmentData = (): boolean => {

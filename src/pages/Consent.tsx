@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { getLocalAssessmentData } from '@/services/assessment/manageAssessmentHistory';
+import { getLocalAssessmentData, restoreAssessmentDataAfterVerification } from '@/services/assessment/manageAssessmentHistory';
 import { saveAssessmentResults } from '@/services/assessment/saveAssessment';
 import {
   Dialog,
@@ -123,6 +123,17 @@ const Consent: React.FC = () => {
   const [receiveEmails, setReceiveEmails] = useState(true);
   const [loading, setLoading] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
+
+  // Restore assessment data when consent page loads (after email verification)
+  useEffect(() => {
+    console.log('Consent: Attempting to restore assessment data after verification');
+    const restored = restoreAssessmentDataAfterVerification();
+    if (restored) {
+      console.log('Consent: Assessment data restored successfully');
+    } else {
+      console.log('Consent: No assessment data to restore or restore failed');
+    }
+  }, []);
 
   if (!user) {
     navigate('/login');

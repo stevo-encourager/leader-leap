@@ -129,8 +129,7 @@ export const saveAssessmentResults = async (
   const isComplete = skillsWithBothRatings === totalSkills && totalSkills > 0;
 
   if (!isComplete) {
-    // ADD ALERT FOR TESTING
-    alert(`Assessment incomplete: ${totalSkills} total skills, ${skillsWithBothRatings} with both ratings`);
+    console.log('saveAssessmentResults - Assessment incomplete:', { totalSkills, skillsWithBothRatings });
     return { success: false, error: "Assessment is incomplete. All skills must be rated." };
   }
 
@@ -162,10 +161,13 @@ export const saveAssessmentResults = async (
   }
 
   try {
-    // Check authentication
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      return { success: false, error: "You must be signed in to save assessment results" };
+    // Check authentication for authenticated users only
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    const isAuthenticatedUser = !!authUser;
+    
+    // For authenticated users, use their actual user ID
+    if (isAuthenticatedUser && authUser.id) {
+      userId = authUser.id;
     }
 
     // Special case: Handle update for test assessment
@@ -206,7 +208,7 @@ export const saveAssessmentResults = async (
           updated_at: new Date().toISOString()
         })
         .eq('id', assessmentId)
-        .eq('user_id', user.id)
+        .eq('user_id', authUser.id)
         .select();
 
       if (updateError) {
@@ -222,10 +224,10 @@ export const saveAssessmentResults = async (
       };
     }
 
-    // Check for duplicate assessment within last 24 hours
-    if (!forceNew) {
+    // Check for duplicate assessment within last 24 hours (only for authenticated users)
+    if (!forceNew && isAuthenticatedUser && authUser) {
       const assessmentSignature = generateAssessmentSignature(categories, demographics);
-      const duplicateCheck = await checkForDuplicateAssessment(user.id, assessmentSignature);
+      const duplicateCheck = await checkForDuplicateAssessment(authUser.id, assessmentSignature);
       
       if (duplicateCheck.exists) {
         return { 

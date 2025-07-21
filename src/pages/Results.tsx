@@ -83,7 +83,7 @@ const Results = () => {
     if (user && !assessmentId && (!categories || categories.length === 0) && !localDataLoadedRef.current) {
       console.log("Results page - Authenticated user with no data, fetching latest assessment");
       import('@/services/assessment/fetchAssessment').then(({ getLatestAssessmentResults }) => {
-        getLatestAssessmentResults().then(result => {
+        getLatestAssessmentResults(user.id).then(result => {
           if (result.success && result.data) {
             console.log("Results page - Latest assessment found:", result.data.id);
             // Redirect to the specific assessment

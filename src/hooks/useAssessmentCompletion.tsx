@@ -50,8 +50,14 @@ export const useAssessmentCompletion = (
       return;
     }
     // CRITICAL FIX: Save assessment to Supabase immediately (with temp user ID if not logged in)
+    console.log('useAssessmentCompletion - Attempting to save assessment to Supabase');
     const saveResult = await saveAssessmentResults(categories, demographics);
     console.log('useAssessmentCompletion - Save to Supabase result:', saveResult);
+    
+    if (!saveResult.success) {
+      console.error('useAssessmentCompletion - Failed to save assessment:', saveResult.error);
+      // Don't block the flow, but log the error
+    }
     // Check if user is logged in
     if (user) {
       completeHandler();

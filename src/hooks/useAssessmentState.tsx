@@ -10,19 +10,9 @@ export const useAssessmentState = (initialCategories: Category[] = []) => {
   // Initialize categories when initialCategories becomes available
   useEffect(() => {
     if (initialCategories && initialCategories.length > 0 && categories.length === 0) {
-      // Check if current categories have valid ratings - if so, don't override
-      const currentHasValidRatings = categories.some(cat => 
-        cat?.skills?.some(skill => 
-          skill?.ratings?.current > 0 && skill?.ratings?.desired > 0
-        )
-      );
-      
-      // Only set initial categories if current ones don't have valid ratings
-      if (!currentHasValidRatings) {
-        setCategories(initialCategories);
-      }
+      setCategories(initialCategories);
     }
-  }, [initialCategories, categories]);
+  }, [initialCategories]);
 
   const handleCategoriesUpdate = (updatedCategories: Category[]) => {
     setCategories(updatedCategories);

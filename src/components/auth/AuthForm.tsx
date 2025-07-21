@@ -94,7 +94,6 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
 
     try {
       // Preserve assessment data before email verification process
-      console.log('AuthForm: Preserving assessment data before signup');
       await preserveAssessmentDataForVerification(data.email);
       
       await signUp(data.email, data.password, data.firstName, data.surname, null); // Pass null for receiveEmails so user gets redirected to consent page

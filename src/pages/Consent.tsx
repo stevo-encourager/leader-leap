@@ -127,13 +127,8 @@ const Consent: React.FC = () => {
   // Restore assessment data when consent page loads (after email verification)
   useEffect(() => {
     const restoreData = async () => {
-      console.log('Consent: Attempting to restore assessment data after verification');
-      const restored = await restoreAssessmentDataAfterVerification(user.email);
-      if (restored) {
-        console.log('Consent: Assessment data restored successfully from database');
-      } else {
-        console.log('Consent: No assessment data to restore or restore failed');
-      }
+      // Try to restore assessment data after email verification
+      await restoreAssessmentDataAfterVerification(user.email);
     };
     
     restoreData();
@@ -148,14 +143,6 @@ const Consent: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     
-    // Debug: Check local data before saving preferences
-    const localDataBefore = getLocalAssessmentData();
-    console.log('Consent: Local data before submission:', {
-      hasData: !!localDataBefore,
-      categoriesLength: localDataBefore?.categories?.length,
-      demographics: !!localDataBefore?.demographics
-    });
-
     try {
       // Update the user's profile with consent and email preferences
       const { error } = await supabase
@@ -207,66 +194,23 @@ const Consent: React.FC = () => {
       
       // Check if user has local assessment data that needs to be saved
       const localData = getLocalAssessmentData();
-      console.log('Consent page - Local data found:', !!localData);
-      // ADD SIMPLE ALERT TO SHOW LOCAL DATA
-      alert(`Local data found: ${!!localData}\nCategories: ${localData?.categories?.length || 0}\nFirst category skills: ${localData?.categories?.[0]?.skills?.length || 0}`);
       if (localData && localData.categories && localData.categories.length > 0) {
-        console.log('🟢 Consent: About to save assessment - local data exists');
         // User has assessment data, save it to the database first
         try {
-          console.log('Consent page - Saving assessment to database...');
-          console.log('Consent page - Local data categories:', localData.categories?.length);
-          console.log('Consent page - Local data demographics:', localData.demographics);
-          // ADD DETAILED DEBUGGING
-          console.log('Consent page - Full local data:', JSON.stringify(localData, null, 2));
-          // ADD RATING DEBUGGING
-          let totalSkills = 0;
-          let skillsWithRatings = 0;
-          if (localData.categories) {
-            localData.categories.forEach((cat, catIndex) => {
-              cat.skills?.forEach((skill, skillIndex) => {
-                totalSkills++;
-                if (skill.ratings?.current > 0 && skill.ratings?.desired > 0) {
-                  skillsWithRatings++;
-                }
-              });
-            });
-          }
-          alert(`Rating check: ${skillsWithRatings}/${totalSkills} skills have both ratings > 0`);
-          // Debug: Check if categories have ratings
-          if (localData.categories) {
-            localData.categories.forEach((cat, catIndex) => {
-              console.log(`Consent page - Category ${catIndex}:`, cat.title, 'skills:', cat.skills?.length);
-              cat.skills?.forEach((skill, skillIndex) => {
-                console.log(`Consent page - Skill ${skillIndex}:`, skill.name, 'ratings:', skill.ratings);
-              });
-            });
-          }
           const result = await saveAssessmentResults(localData.categories, localData.demographics);
-          console.log('Consent page - Save result:', result);
-          // ADD SIMPLE ALERT FOR TESTING
-          alert(`Save result: ${JSON.stringify(result, null, 2)}`);
           if (result.success && result.data && result.data[0]?.id) {
-            console.log('Consent page - Redirecting to specific assessment:', result.data[0].id);
             // Redirect to the specific assessment results page
-            console.log('Consent: Redirecting to results with ID:', result.data[0].id);
             navigate(`/results/${result.data[0].id}`);
           } else {
-            console.log('Consent page - Save failed or no data returned:', result);
-            console.log('Consent page - Error details:', result.error);
             // Still redirect to results page, it will handle loading from local storage
-            console.log('Consent: Redirecting to general results page');
             navigate('/results');
           }
         } catch (error) {
-          console.error('Consent page - Error saving assessment:', error);
           // Still redirect to results page, it will handle loading from local storage
           navigate('/results');
         }
       } else {
-        console.log('Consent page - No local data, redirecting to home');
         // No assessment data, redirect to home
-        console.log('Consent: No assessment data found, redirecting to home');
         navigate('/');
       }
 
@@ -280,9 +224,6 @@ const Consent: React.FC = () => {
           .eq('user_id', tempUserId);
         if (!updateError) {
           localStorage.removeItem('temp_user_id');
-          console.log('Consent page - Migrated assessments from temp user to real user:', tempUserId, '→', user.id);
-        } else {
-          console.error('Consent page - Failed to migrate assessments:', updateError);
         }
       }
     } catch (err: any) {

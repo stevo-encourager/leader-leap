@@ -95,15 +95,10 @@ export const getLocalAssessmentData = (): LocalAssessmentData | null => {
 export const preserveAssessmentDataForVerification = async (email: string): Promise<boolean> => {
   try {
     const localData = getLocalAssessmentData();
-    console.log('preserveAssessmentDataForVerification - Local data found:', !!localData);
-    console.log('preserveAssessmentDataForVerification - Local data categories:', localData?.categories?.length);
     
     if (!localData) {
-      console.log('preserveAssessmentDataForVerification - No local data to preserve');
       return false;
     }
-    
-    console.log('preserveAssessmentDataForVerification - Storing data for email:', email);
     
     // Store in database temp table
     const { error } = await supabase
@@ -119,7 +114,6 @@ export const preserveAssessmentDataForVerification = async (email: string): Prom
       return false;
     }
     
-    console.log('preserveAssessmentDataForVerification - Data preserved successfully in database');
     return true;
   } catch (error) {
     console.error('preserveAssessmentDataForVerification - Error:', error);
@@ -133,8 +127,6 @@ export const preserveAssessmentDataForVerification = async (email: string): Prom
  */
 export const restoreAssessmentDataAfterVerification = async (email: string): Promise<boolean> => {
   try {
-    console.log('restoreAssessmentDataAfterVerification - Starting restoration process for email:', email);
-    
     // Retrieve the data from database using email
     const { data, error } = await supabase
       .from('temp_assessment_data')
@@ -142,19 +134,12 @@ export const restoreAssessmentDataAfterVerification = async (email: string): Pro
       .eq('email', email)
       .single();
     
-    if (error) {
-      console.error('restoreAssessmentDataAfterVerification - Database error:', error);
-      return false;
-    }
-    
-    if (!data) {
-      console.log('restoreAssessmentDataAfterVerification - No temp data found in database');
+    if (error || !data) {
       return false;
     }
     
     // Cast to unknown first then to our expected type
     const tempData = (data as unknown) as { categories: any; demographics: any };
-    console.log('restoreAssessmentDataAfterVerification - Found temp data with categories:', tempData.categories?.length);
     
     // Restore to localStorage
     localStorage.setItem('assessment_categories', JSON.stringify(tempData.categories));
@@ -167,7 +152,6 @@ export const restoreAssessmentDataAfterVerification = async (email: string): Pro
       .delete()
       .eq('email', email);
     
-    console.log('restoreAssessmentDataAfterVerification - Data restored successfully from database');
     return true;
   } catch (error) {
     console.error('restoreAssessmentDataAfterVerification - Error:', error);
@@ -183,7 +167,6 @@ export const clearLocalAssessmentData = (): boolean => {
     localStorage.removeItem('assessment_categories');
     localStorage.removeItem('assessment_demographics');
     localStorage.removeItem('assessment_timestamp');
-    console.log('clearLocalAssessmentData - Successfully cleared local storage');
     return true;
   } catch (error) {
     console.error('clearLocalAssessmentData - Error clearing localStorage:', error);

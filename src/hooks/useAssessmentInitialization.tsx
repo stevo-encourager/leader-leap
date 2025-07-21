@@ -7,6 +7,7 @@ import { toast } from './use-toast';
 export const useAssessmentInitialization = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isFreshAssessment, setIsFreshAssessment] = useState(false);
 
   // Function to create fresh categories with all ratings reset to 0
   const createFreshCategories = () => {
@@ -70,7 +71,8 @@ export const useAssessmentInitialization = () => {
         console.error("useAssessmentInitialization - Error initializing categories:", error);
         setIsInitialized(true);
       }
-    } else {
+    } else if (!isFreshAssessment) {
+      // Only restore existing data if we haven't explicitly started a fresh assessment
       // If already initialized, check if we need to preserve existing valid data
       const currentHasValidRatings = categories.some(cat => 
         cat && cat.skills && cat.skills.some(skill => 
@@ -131,6 +133,7 @@ export const useAssessmentInitialization = () => {
   // Function to explicitly start a fresh assessment (ignoring any existing data)
   const startFreshAssessment = () => {
     console.log('useAssessmentInitialization - Starting fresh assessment with zero ratings');
+    setIsFreshAssessment(true);
     const freshCategories = createFreshCategories();
     if (freshCategories && freshCategories.length > 0) {
       setCategories(freshCategories);

@@ -27,42 +27,51 @@ export const useAssessmentInitialization = () => {
   useEffect(() => {
     if (!isInitialized) {
       try {
-        // FIRST, check if we have valid local storage data to preserve
-        const existingData = getLocalAssessmentData();
-        let shouldUseExistingData = false;
-        
-        if (existingData && existingData.categories && existingData.categories.length > 0) {
-          // Check if the existing data has valid ratings
-          const hasValidRatings = existingData.categories.some(cat => 
-            cat && cat.skills && cat.skills.some(skill => 
-              skill && skill.ratings && 
-              skill.ratings.current > 0 && 
-              skill.ratings.desired > 0
-            )
-          );
-          
-          console.log('useAssessmentInitialization - Found local data with valid ratings:', hasValidRatings);
-          
-          if (hasValidRatings) {
-            console.log('useAssessmentInitialization - Using existing data with valid ratings');
-            setCategories(existingData.categories);
-            shouldUseExistingData = true;
-          }
-        }
-        
-        // Only create fresh categories if we don't have valid existing data
-        if (!shouldUseExistingData) {
-          console.log('useAssessmentInitialization - Creating fresh categories');
+        // If this is a fresh assessment, skip restoration and use fresh categories
+        if (isFreshAssessment) {
+          console.log('useAssessmentInitialization - Fresh assessment requested, using zero ratings');
           const freshCategories = createFreshCategories();
           if (freshCategories && freshCategories.length > 0) {
             setCategories(freshCategories);
-          } else {
-            console.error("useAssessmentInitialization - Fresh categories are empty or invalid");
-            toast({
-              title: "Error loading categories",
-              description: "Could not load assessment categories. Please refresh the page.",
-              variant: "destructive",
-            });
+          }
+        } else {
+          // FIRST, check if we have valid local storage data to preserve
+          const existingData = getLocalAssessmentData();
+          let shouldUseExistingData = false;
+          
+          if (existingData && existingData.categories && existingData.categories.length > 0) {
+            // Check if the existing data has valid ratings
+            const hasValidRatings = existingData.categories.some(cat => 
+              cat && cat.skills && cat.skills.some(skill => 
+                skill && skill.ratings && 
+                skill.ratings.current > 0 && 
+                skill.ratings.desired > 0
+              )
+            );
+            
+            console.log('useAssessmentInitialization - Found local data with valid ratings:', hasValidRatings);
+            
+            if (hasValidRatings) {
+              console.log('useAssessmentInitialization - Using existing data with valid ratings');
+              setCategories(existingData.categories);
+              shouldUseExistingData = true;
+            }
+          }
+          
+          // Only create fresh categories if we don't have valid existing data
+          if (!shouldUseExistingData) {
+            console.log('useAssessmentInitialization - Creating fresh categories');
+            const freshCategories = createFreshCategories();
+            if (freshCategories && freshCategories.length > 0) {
+              setCategories(freshCategories);
+            } else {
+              console.error("useAssessmentInitialization - Fresh categories are empty or invalid");
+              toast({
+                title: "Error loading categories",
+                description: "Could not load assessment categories. Please refresh the page.",
+                variant: "destructive",
+              });
+            }
           }
         }
         

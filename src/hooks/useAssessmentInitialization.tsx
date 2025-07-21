@@ -11,7 +11,8 @@ export const useAssessmentInitialization = () => {
 
   // Function to create fresh categories with all ratings reset to 0
   const createFreshCategories = () => {
-    return JSON.parse(JSON.stringify(allCategories)).map((category: Category) => ({
+    console.log('createFreshCategories - Creating completely fresh categories with zero ratings');
+    return allCategories.map((category: Category) => ({
       ...category,
       skills: category.skills.map(skill => ({
         ...skill,

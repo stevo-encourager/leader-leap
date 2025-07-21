@@ -152,6 +152,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (initialized && user) {
       // Check if user is missing consent or preferences
       const checkConsent = async () => {
+        // Don't redirect if user is already on consent page
+        if (window.location.pathname === '/consent') {
+          return;
+        }
+        
         const { data: profile, error } = await supabase
           .from('profiles')
           .select('gdpr_consent, receive_emails')

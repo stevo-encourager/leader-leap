@@ -22,7 +22,7 @@ export const useAssessmentInitialization = () => {
     }));
   };
 
-  // Initialize categories with default data - only run once
+  // Initialize categories with default data - only run once and preserve valid data
   useEffect(() => {
     if (!isInitialized) {
       try {
@@ -70,8 +70,36 @@ export const useAssessmentInitialization = () => {
         console.error("useAssessmentInitialization - Error initializing categories:", error);
         setIsInitialized(true);
       }
+    } else {
+      // If already initialized, check if we need to preserve existing valid data
+      const currentHasValidRatings = categories.some(cat => 
+        cat && cat.skills && cat.skills.some(skill => 
+          skill && skill.ratings && 
+          skill.ratings.current > 0 && 
+          skill.ratings.desired > 0
+        )
+      );
+      
+      if (!currentHasValidRatings) {
+        // Current categories have no valid ratings, check if local storage has better data
+        const existingData = getLocalAssessmentData();
+        if (existingData && existingData.categories && existingData.categories.length > 0) {
+          const hasValidRatings = existingData.categories.some(cat => 
+            cat && cat.skills && cat.skills.some(skill => 
+              skill && skill.ratings && 
+              skill.ratings.current > 0 && 
+              skill.ratings.desired > 0
+            )
+          );
+          
+          if (hasValidRatings) {
+            console.log('useAssessmentInitialization - Restoring valid data from localStorage after reinitialization');
+            setCategories(existingData.categories);
+          }
+        }
+      }
     }
-  }, [isInitialized]);
+  }, [isInitialized, categories]);
 
   // Function to load existing data when explicitly requested (e.g., continuing assessment)
   const loadExistingData = () => {

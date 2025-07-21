@@ -174,7 +174,23 @@ export const saveAssessmentResults = async (
         console.log('saveAssessmentResults - User verified successfully:', verifiedUser.id);
       }
     } else {
-      console.log('saveAssessmentResults - No session found');
+      console.log('saveAssessmentResults - No session found, but checking if user should be authenticated');
+      
+      // If we have a userId but no session, this indicates a session sync issue
+      // Try to refresh the session
+      const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
+      
+      if (refreshedSession?.user && !refreshError) {
+        console.log('saveAssessmentResults - Session refreshed successfully');
+        user = refreshedSession.user;
+        userId = refreshedSession.user.id;
+      } else {
+        console.log('saveAssessmentResults - Session refresh failed, user needs to re-authenticate');
+        return { 
+          success: false, 
+          error: "Your session has expired. Please sign in again to save your assessment results." 
+        };
+      }
     }
   } catch (error) {
     authError = error;

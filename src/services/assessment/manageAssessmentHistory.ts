@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { Json } from '@/integrations/supabase/types';
@@ -20,9 +19,15 @@ interface AssessmentRecord {
  */
 export const storeLocalAssessmentData = (categories: Category[], demographics: Demographics): boolean => {
   try {
-
+    console.log('storeLocalAssessmentData - Storing categories:', categories.length);
     
-
+    // Debug: Log rating data for first few skills
+    categories.slice(0, 2).forEach((cat, catIndex) => {
+      console.log(`storeLocalAssessmentData - Category ${catIndex}:`, cat.title, 'skills:', cat.skills?.length);
+      cat.skills?.slice(0, 2).forEach((skill, skillIndex) => {
+        console.log(`storeLocalAssessmentData - Skill ${skillIndex}:`, skill.name, 'ratings:', skill.ratings);
+      });
+    });
     
     // Ensure we have a deep copy to avoid reference issues
     const categoriesToStore = JSON.parse(JSON.stringify(categories));
@@ -32,10 +37,11 @@ export const storeLocalAssessmentData = (categories: Category[], demographics: D
     localStorage.setItem('assessment_demographics', JSON.stringify(demographics));
     localStorage.setItem('assessment_timestamp', new Date().toISOString());
     
-
+    console.log('storeLocalAssessmentData - Successfully stored to localStorage');
     
     return true;
   } catch (error) {
+    console.error('storeLocalAssessmentData - Error storing to localStorage:', error);
     return false;
   }
 };
@@ -49,14 +55,26 @@ export const getLocalAssessmentData = (): LocalAssessmentData | null => {
     const demographicsStr = localStorage.getItem('assessment_demographics');
     const timestamp = localStorage.getItem('assessment_timestamp');
     
+    console.log('getLocalAssessmentData - Retrieved from localStorage:', {
+      hasCategoriesStr: !!categoriesStr,
+      categoriesLength: categoriesStr ? categoriesStr.length : 0,
+      hasDemographicsStr: !!demographicsStr,
+      timestamp
+    });
+    
     if (!categoriesStr) {
+      console.log('getLocalAssessmentData - No categories found in localStorage');
       return null;
     }
     
     const categories = JSON.parse(categoriesStr);
     const demographics = demographicsStr ? JSON.parse(demographicsStr) : {};
     
-
+    console.log('getLocalAssessmentData - Parsed data:', {
+      categoriesCount: categories.length,
+      firstCategoryTitle: categories[0]?.title,
+      firstSkillRating: categories[0]?.skills?.[0]?.ratings
+    });
     
     return { 
       categories, 
@@ -64,6 +82,7 @@ export const getLocalAssessmentData = (): LocalAssessmentData | null => {
       timestamp: timestamp || new Date().toISOString() 
     };
   } catch (error) {
+    console.error('getLocalAssessmentData - Error retrieving from localStorage:', error);
     return null;
   }
 };
@@ -76,8 +95,10 @@ export const clearLocalAssessmentData = (): boolean => {
     localStorage.removeItem('assessment_categories');
     localStorage.removeItem('assessment_demographics');
     localStorage.removeItem('assessment_timestamp');
+    console.log('clearLocalAssessmentData - Successfully cleared local storage');
     return true;
   } catch (error) {
+    console.error('clearLocalAssessmentData - Error clearing localStorage:', error);
     return false;
   }
 };

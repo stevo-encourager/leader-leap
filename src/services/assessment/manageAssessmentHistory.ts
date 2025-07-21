@@ -135,16 +135,37 @@ export const restoreAssessmentDataAfterVerification = async (email: string): Pro
       .single();
     
     if (error || !data) {
+      console.log('restoreAssessmentDataAfterVerification - No temp data found for email:', email);
       return false;
     }
     
     // Cast to unknown first then to our expected type
     const tempData = (data as unknown) as { categories: any; demographics: any };
     
-    // Restore to localStorage
-    localStorage.setItem('assessment_categories', JSON.stringify(tempData.categories));
-    localStorage.setItem('assessment_demographics', JSON.stringify(tempData.demographics || {}));
-    localStorage.setItem('assessment_timestamp', new Date().toISOString());
+    console.log('restoreAssessmentDataAfterVerification - Found temp data, saving to assessment_results');
+    
+    // Instead of restoring to localStorage, save directly to assessment_results
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      console.error('restoreAssessmentDataAfterVerification - No authenticated user');
+      return false;
+    }
+    
+    // Save the assessment results to the database
+    const { error: saveError } = await supabase
+      .from('assessment_results')
+      .insert({
+        user_id: user.id,
+        categories: tempData.categories as Json,
+        demographics: tempData.demographics as Json,
+        completed: true
+      });
+    
+    if (saveError) {
+      console.error('restoreAssessmentDataAfterVerification - Error saving to assessment_results:', saveError);
+      return false;
+    }
     
     // Clean up - delete the temp record from database
     await supabase
@@ -152,6 +173,7 @@ export const restoreAssessmentDataAfterVerification = async (email: string): Pro
       .delete()
       .eq('email', email);
     
+    console.log('restoreAssessmentDataAfterVerification - Successfully restored and saved assessment data');
     return true;
   } catch (error) {
     console.error('restoreAssessmentDataAfterVerification - Error:', error);

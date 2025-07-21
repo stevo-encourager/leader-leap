@@ -22,21 +22,47 @@ export const useAssessmentInitialization = () => {
     }));
   };
 
-  // Initialize categories with fresh data - always start with zero ratings
+  // Initialize categories with default data - only run once and preserve valid data
   useEffect(() => {
     if (!isInitialized) {
       try {
-        console.log('useAssessmentInitialization - Creating fresh categories');
-        const freshCategories = createFreshCategories();
-        if (freshCategories && freshCategories.length > 0) {
-          setCategories(freshCategories);
-        } else {
-          console.error("useAssessmentInitialization - Fresh categories are empty or invalid");
-          toast({
-            title: "Error loading categories",
-            description: "Could not load assessment categories. Please refresh the page.",
-            variant: "destructive",
-          });
+        // FIRST, check if we have valid local storage data to preserve
+        const existingData = getLocalAssessmentData();
+        let shouldUseExistingData = false;
+        
+        if (existingData && existingData.categories && existingData.categories.length > 0) {
+          // Check if the existing data has valid ratings
+          const hasValidRatings = existingData.categories.some(cat => 
+            cat && cat.skills && cat.skills.some(skill => 
+              skill && skill.ratings && 
+              skill.ratings.current > 0 && 
+              skill.ratings.desired > 0
+            )
+          );
+          
+          console.log('useAssessmentInitialization - Found local data with valid ratings:', hasValidRatings);
+          
+          if (hasValidRatings) {
+            console.log('useAssessmentInitialization - Using existing data with valid ratings');
+            setCategories(existingData.categories);
+            shouldUseExistingData = true;
+          }
+        }
+        
+        // Only create fresh categories if we don't have valid existing data
+        if (!shouldUseExistingData) {
+          console.log('useAssessmentInitialization - Creating fresh categories');
+          const freshCategories = createFreshCategories();
+          if (freshCategories && freshCategories.length > 0) {
+            setCategories(freshCategories);
+          } else {
+            console.error("useAssessmentInitialization - Fresh categories are empty or invalid");
+            toast({
+              title: "Error loading categories",
+              description: "Could not load assessment categories. Please refresh the page.",
+              variant: "destructive",
+            });
+          }
         }
         
         setIsInitialized(true);
@@ -44,8 +70,36 @@ export const useAssessmentInitialization = () => {
         console.error("useAssessmentInitialization - Error initializing categories:", error);
         setIsInitialized(true);
       }
+    } else {
+      // If already initialized, check if we need to preserve existing valid data
+      const currentHasValidRatings = categories.some(cat => 
+        cat && cat.skills && cat.skills.some(skill => 
+          skill && skill.ratings && 
+          skill.ratings.current > 0 && 
+          skill.ratings.desired > 0
+        )
+      );
+      
+      if (!currentHasValidRatings) {
+        // Current categories have no valid ratings, check if local storage has better data
+        const existingData = getLocalAssessmentData();
+        if (existingData && existingData.categories && existingData.categories.length > 0) {
+          const hasValidRatings = existingData.categories.some(cat => 
+            cat && cat.skills && cat.skills.some(skill => 
+              skill && skill.ratings && 
+              skill.ratings.current > 0 && 
+              skill.ratings.desired > 0
+            )
+          );
+          
+          if (hasValidRatings) {
+            console.log('useAssessmentInitialization - Restoring valid data from localStorage after reinitialization');
+            setCategories(existingData.categories);
+          }
+        }
+      }
     }
-  }, [isInitialized]);
+  }, [isInitialized, categories]);
 
   // Function to load existing data when explicitly requested (e.g., continuing assessment)
   const loadExistingData = () => {

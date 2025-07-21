@@ -94,6 +94,8 @@ export const getLocalAssessmentData = (): LocalAssessmentData | null => {
 export const preserveAssessmentDataForVerification = (): boolean => {
   try {
     const localData = getLocalAssessmentData();
+    console.log('preserveAssessmentDataForVerification - Local data found:', !!localData);
+    console.log('preserveAssessmentDataForVerification - Local data categories:', localData?.categories?.length);
     if (!localData) {
       console.log('preserveAssessmentDataForVerification - No local data to preserve');
       return false;
@@ -102,7 +104,7 @@ export const preserveAssessmentDataForVerification = (): boolean => {
     // Store in a verification-specific key
     localStorage.setItem('assessment_verification_backup', JSON.stringify(localData));
     sessionStorage.setItem('assessment_verification_backup', JSON.stringify(localData));
-    console.log('preserveAssessmentDataForVerification - Data preserved for verification');
+    console.log('preserveAssessmentDataForVerification - Data preserved successfully');
     return true;
   } catch (error) {
     console.error('preserveAssessmentDataForVerification - Error:', error);
@@ -116,18 +118,25 @@ export const preserveAssessmentDataForVerification = (): boolean => {
  */
 export const restoreAssessmentDataAfterVerification = (): boolean => {
   try {
+    console.log('restoreAssessmentDataAfterVerification - Starting restoration process');
+    
     // Check both localStorage and sessionStorage for backup data
     let backupData = localStorage.getItem('assessment_verification_backup');
+    console.log('restoreAssessmentDataAfterVerification - localStorage backup found:', !!backupData);
+    
     if (!backupData) {
       backupData = sessionStorage.getItem('assessment_verification_backup');
+      console.log('restoreAssessmentDataAfterVerification - sessionStorage backup found:', !!backupData);
     }
     
     if (!backupData) {
-      console.log('restoreAssessmentDataAfterVerification - No backup data found');
+      console.log('restoreAssessmentDataAfterVerification - No backup data found in either storage');
       return false;
     }
     
+    console.log('restoreAssessmentDataAfterVerification - Backup data length:', backupData.length);
     const parsedData = JSON.parse(backupData);
+    console.log('restoreAssessmentDataAfterVerification - Parsed data categories:', parsedData.categories?.length);
     
     // Restore to main localStorage keys
     localStorage.setItem('assessment_categories', JSON.stringify(parsedData.categories));

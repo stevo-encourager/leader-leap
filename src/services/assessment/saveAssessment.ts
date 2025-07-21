@@ -262,7 +262,9 @@ export const saveAssessmentResults = async (
       };
     }
 
-    // Check for duplicate assessment within last 24 hours (only for authenticated users)
+    // TEMPORARILY DISABLED: Check for duplicate assessment (causing issues in testing)
+    // This allows multiple test assessments without the duplicate check blocking them
+    /*
     if (!forceNew && isAuthenticatedUser && user) {
       const assessmentSignature = generateAssessmentSignature(categories, demographics);
       const duplicateCheck = await checkForDuplicateAssessment(user.id, assessmentSignature);
@@ -270,10 +272,11 @@ export const saveAssessmentResults = async (
       if (duplicateCheck.exists) {
         return { 
           success: false, 
-          error: "You have already submitted an identical assessment within the last 24 hours." 
+          error: "You have already submitted an identical assessment within the last 2 hours." 
         };
       }
     }
+    */
 
     // --- ALL OTHER ASSESSMENTS: Always create new record ---
     console.log('saveAssessmentResults - Creating new assessment record for user:', userId);

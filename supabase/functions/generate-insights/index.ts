@@ -102,6 +102,12 @@ serve(async (req) => {
     });
     
   } catch (error) {
+    console.error('🚨 CRITICAL ERROR in generate-insights:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+      requestData: { categories: categories?.length, averageGap, assessmentId }
+    });
     
     // Provide user-friendly error message without exposing internal details
     const userMessage = error.message.includes('OpenAI') 

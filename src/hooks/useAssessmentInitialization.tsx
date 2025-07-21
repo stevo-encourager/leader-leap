@@ -101,7 +101,7 @@ export const useAssessmentInitialization = () => {
         }
       }
     }
-  }, [isInitialized, categories]);
+  }, [isInitialized]);
 
   // Function to load existing data when explicitly requested (e.g., continuing assessment)
   const loadExistingData = () => {
@@ -133,6 +133,10 @@ export const useAssessmentInitialization = () => {
   // Function to explicitly start a fresh assessment (ignoring any existing data)
   const startFreshAssessment = () => {
     console.log('useAssessmentInitialization - Starting fresh assessment with zero ratings');
+    
+    // Clear localStorage first to prevent restoration
+    localStorage.removeItem('assessmentData');
+    
     setIsFreshAssessment(true);
     const freshCategories = createFreshCategories();
     if (freshCategories && freshCategories.length > 0) {

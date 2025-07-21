@@ -1,5 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Demographics } from '@/utils/assessmentTypes';
+import { storeLocalAssessmentData } from './manageAssessmentHistory';
+import { v4 as uuidv4 } from 'uuid';
 
 // Define the return type for save operations
 interface SaveAssessmentResult {
@@ -73,8 +75,9 @@ const checkForDuplicateAssessment = async (
 export const saveAssessmentResults = async (
   categories: Category[], 
   demographics: Demographics,
-  forceNew: boolean = false,
-  assessmentId?: string
+  forceNew: boolean = false, // Allow forcing a new assessment if needed
+  assessmentId?: string, // Optionally pass the assessmentId for test assessment updates
+  overrideUserId?: string // Optionally pass a user_id (for anonymous/temporary users)
 ): Promise<SaveAssessmentResult> => {
   
   // Validate input data
@@ -88,9 +91,13 @@ export const saveAssessmentResults = async (
   let skillsWithPartialRatings = 0;
   let skillsWithNoRatings = 0;
   
-  categories.forEach((category) => {
+  console.log('saveAssessmentResults - Validating categories:', categories.length);
+  
+  categories.forEach((category, categoryIndex) => {
     if (category && category.skills && Array.isArray(category.skills)) {
-      category.skills.forEach((skill) => {
+      console.log(`saveAssessmentResults - Category ${categoryIndex}:`, category.title, 'skills:', category.skills.length);
+      
+      category.skills.forEach((skill, skillIndex) => {
         totalSkills++;
         
         if (skill && skill.ratings) {
@@ -99,7 +106,9 @@ export const saveAssessmentResults = async (
           const hasCurrentRating = currentRating > 0;
           const hasDesiredRating = desiredRating > 0;
           
-          if (hasCurrentRating && hasDesiredRating) {
+          console.log(`saveAssessmentResults - Skill ${skillIndex}:`, skill.name, 'current:', currentRating, 'desired:', desiredRating);
+          
+          if (currentRating > 0 && desiredRating > 0) {
             skillsWithBothRatings++;
           } else if (hasCurrentRating || hasDesiredRating) {
             skillsWithPartialRatings++;
@@ -107,19 +116,49 @@ export const saveAssessmentResults = async (
             skillsWithNoRatings++;
           }
         } else {
-          skillsWithNoRatings++;
+          console.log(`saveAssessmentResults - Skill ${skillIndex}:`, skill.name, 'NO RATINGS');
         }
       });
+    } else {
+      console.log(`saveAssessmentResults - Category ${categoryIndex}: Invalid category or skills`);
     }
   });
+  
+  console.log('saveAssessmentResults - Validation results:', { totalSkills, skillsWithBothRatings, isComplete: totalSkills > 0 && skillsWithBothRatings === totalSkills });
 
   const isComplete = skillsWithBothRatings === totalSkills && totalSkills > 0;
 
   if (!isComplete) {
-    return { 
-      success: false, 
-      error: 'Assessment is incomplete. All skills must be rated.'
-    };
+    // ADD ALERT FOR TESTING
+    alert(`Assessment incomplete: ${totalSkills} total skills, ${skillsWithBothRatings} with both ratings`);
+    return { success: false, error: "Assessment is incomplete. All skills must be rated." };
+  }
+
+  // Always store locally first as a backup
+  try {
+    storeLocalAssessmentData(categories, demographics);
+  } catch (localError) {
+    // Silent fail for local storage
+  }
+
+  // Check if user is authenticated
+  let user = null;
+  let authError = null;
+  let userId = overrideUserId;
+  try {
+    const authResult = await supabase.auth.getUser();
+    user = authResult.data.user;
+    authError = authResult.error;
+    if (user && user.id) {
+      userId = user.id;
+    }
+  } catch (error) {
+    authError = error;
+  }
+  // If no userId, generate a temporary one and store in localStorage
+  if (!userId) {
+    userId = localStorage.getItem('temp_user_id') || uuidv4();
+    localStorage.setItem('temp_user_id', userId);
   }
 
   try {
@@ -196,24 +235,29 @@ export const saveAssessmentResults = async (
       }
     }
 
-    // Insert new assessment
-    const { data, error } = await supabase
+    // --- ALL OTHER ASSESSMENTS: Always create new record ---
+    console.log('saveAssessmentResults - Creating new assessment record for user:', userId);
+    const result = await supabase
       .from('assessment_results')
       .insert({
-        user_id: user.id,
+        user_id: userId,
         categories: categories as any,
         demographics: demographics as any,
-        completed: true
+        completed: isComplete,
+        ai_insights: null // Will be generated once on first access
       })
       .select();
 
+    const { data, error } = result;
+    console.log('saveAssessmentResults - Insert result:', { data, error });
+
     if (error) {
-      console.error('Error inserting assessment:', error);
-      return { success: false, error: `Failed to save assessment: ${error.message}` };
+      console.log('saveAssessmentResults - Database error:', error);
+      return { success: false, error: error.message };
     }
 
-    console.log('Assessment saved successfully:', data);
-    return { success: true, data: data?.[0] };
+    console.log('saveAssessmentResults - Successfully saved assessment:', data);
+    return { success: true, data, isUpdate: false };
 
   } catch (error: any) {
     console.error('Unexpected error in saveAssessmentResults:', error);

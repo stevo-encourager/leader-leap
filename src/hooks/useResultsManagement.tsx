@@ -102,6 +102,20 @@ export const useResultsManagement = ({
       console.log('useResultsManagement - Already saved, skipping duplicate save');
       return;
     }
+    
+    // Additional validation: check if we actually have valid ratings
+    const hasValidRatingsData = categories.some(cat => 
+      cat && cat.skills && cat.skills.some(skill => 
+        skill && skill.ratings && 
+        Number(skill.ratings.current) > 0 && 
+        Number(skill.ratings.desired) > 0
+      )
+    );
+    
+    if (!hasValidRatingsData) {
+      console.log('useResultsManagement - Double-check failed: no valid ratings found');
+      return;
+    }
     try {
       let result;
       if (currentAssessmentId === TEST_ASSESSMENT_ID) {

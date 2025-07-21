@@ -23,38 +23,30 @@ export const fetchAssessmentById = async (assessmentId: string): Promise<{
     if (!assessmentId || typeof assessmentId !== 'string') {
       return { success: false, error: "Invalid assessment ID" };
     }
-
     console.log(`Assessment Service: Fetching assessment ${assessmentId}`);
-    
     const { data, error } = await supabase
       .from('assessment_results')
       .select('*')
       .eq('id', assessmentId)
       .maybeSingle();
-
     if (error) {
       console.error('Assessment Service: Database error:', error);
       return { success: false, error: error.message };
     }
-
     if (!data) {
       console.log('Assessment Service: Assessment not found');
       return { success: false, error: "Assessment not found" };
     }
-
     // Type assertion after null check
     const assessment = data as any;
-
     // Validate and normalize the categories data
     const rawCategories = assessment.categories;
     if (!rawCategories || !Array.isArray(rawCategories)) {
       return { success: false, error: "Invalid assessment data format" };
     }
-
     // Normalize the data to ensure consistent format
     const normalizedCategories = normalizeCategories(rawCategories);
     const normalizedDemographics = normalizeDemographics(assessment.demographics);
-
     // Validate that we have meaningful data after normalization
     const validCategories = normalizedCategories.filter(cat => 
       cat && cat.skills && cat.skills.length > 0 &&
@@ -63,11 +55,9 @@ export const fetchAssessmentById = async (assessmentId: string): Promise<{
         (skill.ratings.current > 0 || skill.ratings.desired > 0)
       )
     );
-
     if (validCategories.length === 0) {
       return { success: false, error: "Assessment contains no valid rating data" };
     }
-
     const result: AssessmentResult = {
       id: assessment.id,
       categories: validCategories,
@@ -75,9 +65,7 @@ export const fetchAssessmentById = async (assessmentId: string): Promise<{
       created_at: assessment.created_at,
       completed: assessment.completed
     };
-
     return { success: true, data: result };
-
   } catch (error) {
     console.error('Assessment Service: Exception in fetchAssessmentById:', error);
     return { success: false, error: "Failed to fetch assessment" };
@@ -93,6 +81,7 @@ export const fetchLatestAssessmentByUserId = async (userId: string): Promise<{
   error?: string;
 }> => {
   try {
+    // safe-cleanup version preferred
     if (!userId || typeof userId !== 'string') {
       return { success: false, error: "Invalid user ID" };
     }

@@ -81,7 +81,21 @@ export const useAssessment = () => {
   // Effect to handle result saving when user logs in
   useEffect(() => {
     if (user && currentStep === 'results' && categories && categories.length > 0) {
-      handleSaveResults();
+      // Only save if we have valid ratings
+      const hasValidRatings = categories.some(cat => 
+        cat && cat.skills && cat.skills.some(skill => 
+          skill && skill.ratings && 
+          Number(skill.ratings.current) > 0 && 
+          Number(skill.ratings.desired) > 0
+        )
+      );
+      
+      if (hasValidRatings) {
+        console.log('useAssessment - Saving results with valid ratings');
+        handleSaveResults();
+      } else {
+        console.log('useAssessment - Skipping save, no valid ratings found');
+      }
     }
   }, [user, currentStep, handleSaveResults, categories]);
 

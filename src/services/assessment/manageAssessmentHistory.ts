@@ -197,7 +197,7 @@ export const deleteAllAssessments = async (): Promise<{
       .from('assessment_results')
       .delete()
       .eq('user_id', user.id)
-      .neq('id', 'db860913-600f-49b2-b9b2-d6fbc47cda2b');
+      .neq('id', '08a5f01a-db17-474d-a3e8-c53bedbc34c8');
       
     if (error) {
       return { success: false, error: error.message };

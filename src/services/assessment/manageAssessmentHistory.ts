@@ -90,9 +90,9 @@ export const getLocalAssessmentData = (): LocalAssessmentData | null => {
 
 /**
  * Preserve assessment data before email verification by storing in database
- * Creates a temporary record that can survive browser redirects
+ * Links the data to the email address so it can be retrieved after verification
  */
-export const preserveAssessmentDataForVerification = async (): Promise<string | null> => {
+export const preserveAssessmentDataForVerification = async (email: string): Promise<boolean> => {
   try {
     const localData = getLocalAssessmentData();
     console.log('preserveAssessmentDataForVerification - Local data found:', !!localData);

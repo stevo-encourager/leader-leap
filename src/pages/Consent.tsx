@@ -128,7 +128,7 @@ const Consent: React.FC = () => {
   useEffect(() => {
     const restoreData = async () => {
       console.log('Consent: Attempting to restore assessment data after verification');
-      const restored = await restoreAssessmentDataAfterVerification();
+      const restored = await restoreAssessmentDataAfterVerification(user.email);
       if (restored) {
         console.log('Consent: Assessment data restored successfully from database');
       } else {

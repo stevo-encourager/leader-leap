@@ -100,36 +100,30 @@ export const preserveAssessmentDataForVerification = async (email: string): Prom
     
     if (!localData) {
       console.log('preserveAssessmentDataForVerification - No local data to preserve');
-      return null;
+      return false;
     }
     
-    // Generate a unique temp user ID
-    const tempUserId = uuidv4();
-    console.log('preserveAssessmentDataForVerification - Generated temp user ID:', tempUserId);
+    console.log('preserveAssessmentDataForVerification - Storing data for email:', email);
     
     // Store in database temp table
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('temp_assessment_data')
       .insert({
-        temp_user_id: tempUserId,
+        email: email,
         categories: JSON.parse(JSON.stringify(localData.categories)) as Json,
         demographics: JSON.parse(JSON.stringify(localData.demographics)) as Json
-      })
-      .select()
-      .single();
+      });
     
     if (error) {
       console.error('preserveAssessmentDataForVerification - Database error:', error);
-      return null;
+      return false;
     }
     
-    // Store the temp user ID in localStorage so we can retrieve it later
-    localStorage.setItem('temp_user_id', tempUserId);
     console.log('preserveAssessmentDataForVerification - Data preserved successfully in database');
-    return tempUserId;
+    return true;
   } catch (error) {
     console.error('preserveAssessmentDataForVerification - Error:', error);
-    return null;
+    return false;
   }
 };
 
@@ -137,24 +131,15 @@ export const preserveAssessmentDataForVerification = async (email: string): Prom
  * Restore assessment data after email verification from database
  * Retrieves the temporarily stored data and restores it to localStorage
  */
-export const restoreAssessmentDataAfterVerification = async (): Promise<boolean> => {
+export const restoreAssessmentDataAfterVerification = async (email: string): Promise<boolean> => {
   try {
-    console.log('restoreAssessmentDataAfterVerification - Starting restoration process');
+    console.log('restoreAssessmentDataAfterVerification - Starting restoration process for email:', email);
     
-    // Get the temp user ID from localStorage
-    const tempUserId = localStorage.getItem('temp_user_id');
-    console.log('restoreAssessmentDataAfterVerification - Temp user ID found:', !!tempUserId);
-    
-    if (!tempUserId) {
-      console.log('restoreAssessmentDataAfterVerification - No temp user ID found');
-      return false;
-    }
-    
-    // Retrieve the data from database
+    // Retrieve the data from database using email
     const { data, error } = await supabase
       .from('temp_assessment_data')
       .select('categories, demographics')
-      .eq('temp_user_id', tempUserId)
+      .eq('email', email)
       .single();
     
     if (error) {
@@ -180,7 +165,7 @@ export const restoreAssessmentDataAfterVerification = async (): Promise<boolean>
     await supabase
       .from('temp_assessment_data')
       .delete()
-      .eq('temp_user_id', tempUserId);
+      .eq('email', email);
     
     console.log('restoreAssessmentDataAfterVerification - Data restored successfully from database');
     return true;

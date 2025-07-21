@@ -91,25 +91,25 @@ export type Database = {
           categories: Json
           created_at: string
           demographics: Json | null
+          email: string
           expires_at: string
           id: string
-          temp_user_id: string
         }
         Insert: {
           categories: Json
           created_at?: string
           demographics?: Json | null
+          email: string
           expires_at?: string
           id?: string
-          temp_user_id: string
         }
         Update: {
           categories?: Json
           created_at?: string
           demographics?: Json | null
+          email?: string
           expires_at?: string
           id?: string
-          temp_user_id?: string
         }
         Relationships: []
       }

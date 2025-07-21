@@ -126,13 +126,17 @@ const Consent: React.FC = () => {
 
   // Restore assessment data when consent page loads (after email verification)
   useEffect(() => {
-    console.log('Consent: Attempting to restore assessment data after verification');
-    const restored = restoreAssessmentDataAfterVerification();
-    if (restored) {
-      console.log('Consent: Assessment data restored successfully');
-    } else {
-      console.log('Consent: No assessment data to restore or restore failed');
-    }
+    const restoreData = async () => {
+      console.log('Consent: Attempting to restore assessment data after verification');
+      const restored = await restoreAssessmentDataAfterVerification();
+      if (restored) {
+        console.log('Consent: Assessment data restored successfully from database');
+      } else {
+        console.log('Consent: No assessment data to restore or restore failed');
+      }
+    };
+    
+    restoreData();
   }, []);
 
   if (!user) {

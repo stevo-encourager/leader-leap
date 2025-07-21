@@ -86,11 +86,42 @@ export type Database = {
         }
         Relationships: []
       }
+      temp_assessment_data: {
+        Row: {
+          categories: Json
+          created_at: string
+          demographics: Json | null
+          expires_at: string
+          id: string
+          temp_user_id: string
+        }
+        Insert: {
+          categories: Json
+          created_at?: string
+          demographics?: Json | null
+          expires_at?: string
+          id?: string
+          temp_user_id: string
+        }
+        Update: {
+          categories?: Json
+          created_at?: string
+          demographics?: Json | null
+          expires_at?: string
+          id?: string
+          temp_user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      cleanup_expired_temp_assessment_data: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       split_full_name: {
         Args: { full_name: string }
         Returns: {

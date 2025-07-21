@@ -5,6 +5,7 @@ import {
   AssessmentSummary, 
   LocalAssessmentData 
 } from '@/types/assessment';
+import { v4 as uuidv4 } from 'uuid';
 
 // Update the AssessmentSummary interface in this file or ensure it's properly defined in types/assessment.ts
 interface AssessmentRecord {
@@ -88,66 +89,100 @@ export const getLocalAssessmentData = (): LocalAssessmentData | null => {
 };
 
 /**
- * Preserve assessment data before email verification
- * Stores data with a special key that survives email verification redirects
+ * Preserve assessment data before email verification by storing in database
+ * Creates a temporary record that can survive browser redirects
  */
-export const preserveAssessmentDataForVerification = (): boolean => {
+export const preserveAssessmentDataForVerification = async (): Promise<string | null> => {
   try {
     const localData = getLocalAssessmentData();
     console.log('preserveAssessmentDataForVerification - Local data found:', !!localData);
     console.log('preserveAssessmentDataForVerification - Local data categories:', localData?.categories?.length);
+    
     if (!localData) {
       console.log('preserveAssessmentDataForVerification - No local data to preserve');
-      return false;
+      return null;
     }
     
-    // Store in a verification-specific key
-    localStorage.setItem('assessment_verification_backup', JSON.stringify(localData));
-    sessionStorage.setItem('assessment_verification_backup', JSON.stringify(localData));
-    console.log('preserveAssessmentDataForVerification - Data preserved successfully');
-    return true;
+    // Generate a unique temp user ID
+    const tempUserId = uuidv4();
+    console.log('preserveAssessmentDataForVerification - Generated temp user ID:', tempUserId);
+    
+    // Store in database temp table
+    const { data, error } = await supabase
+      .from('temp_assessment_data')
+      .insert({
+        temp_user_id: tempUserId,
+        categories: JSON.parse(JSON.stringify(localData.categories)) as Json,
+        demographics: JSON.parse(JSON.stringify(localData.demographics)) as Json
+      })
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('preserveAssessmentDataForVerification - Database error:', error);
+      return null;
+    }
+    
+    // Store the temp user ID in localStorage so we can retrieve it later
+    localStorage.setItem('temp_user_id', tempUserId);
+    console.log('preserveAssessmentDataForVerification - Data preserved successfully in database');
+    return tempUserId;
   } catch (error) {
     console.error('preserveAssessmentDataForVerification - Error:', error);
-    return false;
+    return null;
   }
 };
 
 /**
- * Restore assessment data after email verification
- * Checks for preserved data and restores it to the main localStorage keys
+ * Restore assessment data after email verification from database
+ * Retrieves the temporarily stored data and restores it to localStorage
  */
-export const restoreAssessmentDataAfterVerification = (): boolean => {
+export const restoreAssessmentDataAfterVerification = async (): Promise<boolean> => {
   try {
     console.log('restoreAssessmentDataAfterVerification - Starting restoration process');
     
-    // Check both localStorage and sessionStorage for backup data
-    let backupData = localStorage.getItem('assessment_verification_backup');
-    console.log('restoreAssessmentDataAfterVerification - localStorage backup found:', !!backupData);
+    // Get the temp user ID from localStorage
+    const tempUserId = localStorage.getItem('temp_user_id');
+    console.log('restoreAssessmentDataAfterVerification - Temp user ID found:', !!tempUserId);
     
-    if (!backupData) {
-      backupData = sessionStorage.getItem('assessment_verification_backup');
-      console.log('restoreAssessmentDataAfterVerification - sessionStorage backup found:', !!backupData);
-    }
-    
-    if (!backupData) {
-      console.log('restoreAssessmentDataAfterVerification - No backup data found in either storage');
+    if (!tempUserId) {
+      console.log('restoreAssessmentDataAfterVerification - No temp user ID found');
       return false;
     }
     
-    console.log('restoreAssessmentDataAfterVerification - Backup data length:', backupData.length);
-    const parsedData = JSON.parse(backupData);
-    console.log('restoreAssessmentDataAfterVerification - Parsed data categories:', parsedData.categories?.length);
+    // Retrieve the data from database
+    const { data, error } = await supabase
+      .from('temp_assessment_data')
+      .select('categories, demographics')
+      .eq('temp_user_id', tempUserId)
+      .single();
     
-    // Restore to main localStorage keys
-    localStorage.setItem('assessment_categories', JSON.stringify(parsedData.categories));
-    localStorage.setItem('assessment_demographics', JSON.stringify(parsedData.demographics));
-    localStorage.setItem('assessment_timestamp', parsedData.timestamp);
+    if (error) {
+      console.error('restoreAssessmentDataAfterVerification - Database error:', error);
+      return false;
+    }
     
-    // Clean up backup data
-    localStorage.removeItem('assessment_verification_backup');
-    sessionStorage.removeItem('assessment_verification_backup');
+    if (!data) {
+      console.log('restoreAssessmentDataAfterVerification - No temp data found in database');
+      return false;
+    }
     
-    console.log('restoreAssessmentDataAfterVerification - Data restored successfully');
+    // Cast to unknown first then to our expected type
+    const tempData = (data as unknown) as { categories: any; demographics: any };
+    console.log('restoreAssessmentDataAfterVerification - Found temp data with categories:', tempData.categories?.length);
+    
+    // Restore to localStorage
+    localStorage.setItem('assessment_categories', JSON.stringify(tempData.categories));
+    localStorage.setItem('assessment_demographics', JSON.stringify(tempData.demographics || {}));
+    localStorage.setItem('assessment_timestamp', new Date().toISOString());
+    
+    // Clean up - delete the temp record from database
+    await supabase
+      .from('temp_assessment_data')
+      .delete()
+      .eq('temp_user_id', tempUserId);
+    
+    console.log('restoreAssessmentDataAfterVerification - Data restored successfully from database');
     return true;
   } catch (error) {
     console.error('restoreAssessmentDataAfterVerification - Error:', error);

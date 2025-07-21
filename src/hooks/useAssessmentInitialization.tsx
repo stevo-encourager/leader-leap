@@ -128,11 +128,23 @@ export const useAssessmentInitialization = () => {
     }
   };
 
+  // Function to explicitly start a fresh assessment (ignoring any existing data)
+  const startFreshAssessment = () => {
+    console.log('useAssessmentInitialization - Starting fresh assessment with zero ratings');
+    const freshCategories = createFreshCategories();
+    if (freshCategories && freshCategories.length > 0) {
+      setCategories(freshCategories);
+      return true;
+    }
+    return false;
+  };
+
   return {
     categories,
     setCategories,
     createFreshCategories,
     loadExistingData,
+    startFreshAssessment,
     isInitialized
   };
 };

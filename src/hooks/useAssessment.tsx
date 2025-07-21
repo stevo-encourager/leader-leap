@@ -21,7 +21,7 @@ export const useAssessment = () => {
   } = useNavigationState();
 
   // Initialize categories first
-  const { categories: initializedCategories, createFreshCategories, loadExistingData, isInitialized } = useAssessmentInitialization();
+  const { categories: initializedCategories, createFreshCategories, loadExistingData, startFreshAssessment, isInitialized } = useAssessmentInitialization();
 
   // Use our hooks for managing assessment state - pass the initialized categories
   const { 
@@ -34,26 +34,8 @@ export const useAssessment = () => {
 
   // Reset all categories to default values when starting a new assessment
   const handleStartNewAssessment = () => {
-    // Only clear local storage if there's no valid assessment data
-    const existingData = getLocalAssessmentData();
-    const hasValidRatings = existingData?.categories?.some(cat => 
-      cat?.skills?.some(skill => 
-        skill?.ratings?.current > 0 && skill?.ratings?.desired > 0
-      )
-    );
-    
-    if (!hasValidRatings) {
-      // Clear local storage FIRST to ensure we don't preserve any old data
-      clearLocalAssessmentData();
-    }
-    
-    // Create completely fresh copy of default categories with all ratings reset to 0
-    const freshCategories = createFreshCategories();
-    
-    // Reset assessment state with fresh categories only if no valid data exists
-    if (!hasValidRatings) {
-      resetAssessment(freshCategories);
-    }
+    // Force fresh categories with zero ratings
+    startFreshAssessment();
     
     // Call the original handler to navigate
     handleStartAssessment();

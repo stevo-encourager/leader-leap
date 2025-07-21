@@ -148,8 +148,17 @@ export const saveAssessmentResults = async (
     // Get the current session to ensure we have a valid JWT token
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     
+    console.log('saveAssessmentResults - Session check:', {
+      hasSession: !!session,
+      hasUser: !!session?.user,
+      sessionUserId: session?.user?.id,
+      accessToken: session?.access_token ? 'present' : 'missing',
+      sessionError: sessionError?.message
+    });
+    
     if (sessionError) {
       authError = sessionError;
+      console.error('saveAssessmentResults - Session error:', sessionError);
     } else if (session?.user) {
       user = session.user;
       userId = session.user.id;
@@ -157,13 +166,19 @@ export const saveAssessmentResults = async (
       // Verify the session is still valid by checking with the server
       const { data: { user: verifiedUser }, error: userError } = await supabase.auth.getUser();
       if (userError || !verifiedUser) {
+        console.error('saveAssessmentResults - User verification failed:', userError);
         authError = userError || new Error('Session verification failed');
         user = null;
         userId = overrideUserId;
+      } else {
+        console.log('saveAssessmentResults - User verified successfully:', verifiedUser.id);
       }
+    } else {
+      console.log('saveAssessmentResults - No session found');
     }
   } catch (error) {
     authError = error;
+    console.error('saveAssessmentResults - Auth check exception:', error);
   }
   
   const isAuthenticatedUser = !!user;

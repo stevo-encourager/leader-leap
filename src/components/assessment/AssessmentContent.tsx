@@ -7,7 +7,7 @@ import ResultsDisplay from './ResultsDisplay';
 import AssessmentInstructions from '../AssessmentInstructions';
 import { AssessmentStep, Category, Demographics } from '../../utils/assessmentData';
 import { useState } from 'react';
-import { saveAssessmentResults, TEST_ASSESSMENT_ID } from '@/services/assessment';
+import { saveAssessmentResults, TEST_ASSESSMENT_ID, storeLocalAssessmentData } from '@/services/assessment';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface AssessmentContentProps {
@@ -83,11 +83,20 @@ const AssessmentContent: React.FC<AssessmentContentProps> = ({
         categories={categories}
         onCategoriesUpdate={onCategoriesUpdate}
         onComplete={async () => {
+          // For guest users, just store locally and navigate to results
+          if (!user) {
+            console.log('AssessmentContent - Guest user completing assessment, storing locally');
+            storeLocalAssessmentData(categories, demographics);
+            navigate('/results');
+            return;
+          }
+
+          // For authenticated users, save to database
           setIsSaving(true);
           setSaveError(null);
           try {
             let result;
-            if (user && user.id === TEST_ASSESSMENT_ID) {
+            if (user.id === TEST_ASSESSMENT_ID) {
               result = await saveAssessmentResults(categories, demographics, false, TEST_ASSESSMENT_ID);
             } else {
               result = await saveAssessmentResults(categories, demographics);
@@ -95,10 +104,10 @@ const AssessmentContent: React.FC<AssessmentContentProps> = ({
             if (result.success) {
               setIsSaving(false);
               if (result.data && result.data[0]?.id) {
-                // User is authenticated and data was saved to database
+                // Data was saved to database
                 navigate(`/results/${result.data[0].id}`);
               } else {
-                // User is not authenticated, data saved locally only
+                // Fallback to local results
                 navigate('/results');
               }
             } else {

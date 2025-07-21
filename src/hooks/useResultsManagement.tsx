@@ -92,7 +92,9 @@ export const useResultsManagement = ({
 
   const handleSaveResults = useCallback(async () => {
     if (!user) {
-      console.log('useResultsManagement - No user, skipping save to Supabase');
+      console.log('useResultsManagement - No user, storing locally only (guest user)');
+      // For guest users, just store locally and don't attempt database save
+      storeLocalAssessmentData(categories, demographics);
       return;
     }
     if (!hasValidRatings) {

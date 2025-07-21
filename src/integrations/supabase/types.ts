@@ -23,7 +23,7 @@ export type Database = {
           demographics: Json | null
           id: string
           updated_at: string | null
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           ai_insights?: string | null
@@ -33,7 +33,7 @@ export type Database = {
           demographics?: Json | null
           id?: string
           updated_at?: string | null
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           ai_insights?: string | null
@@ -43,7 +43,7 @@ export type Database = {
           demographics?: Json | null
           id?: string
           updated_at?: string | null
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }

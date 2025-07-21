@@ -26,23 +26,16 @@ export const useAssessmentState = (initialCategories: Category[] = []) => {
 
   const handleCategoriesUpdate = (updatedCategories: Category[]) => {
     setCategories(updatedCategories);
-    
-    // Save to local storage for persistence
-    storeLocalAssessmentData(updatedCategories, demographics);
+    // Local storage removed - assessments now saved to Supabase
   };
 
   const handleDemographicsUpdate = (updatedDemographics: Demographics) => {
     setDemographics(updatedDemographics);
-    
-    // Save to local storage for persistence
-    storeLocalAssessmentData(categories, updatedDemographics);
+    // Local storage removed - assessments now saved to Supabase
   };
 
   const resetAssessment = (freshCategories?: Category[]) => {
-    // Clear local storage first
-    clearLocalAssessmentData();
-    
-    // Reset state
+    // Reset state - no local storage clearing needed
     if (freshCategories && freshCategories.length > 0) {
       setCategories(freshCategories);
     } else if (initialCategories && initialCategories.length > 0) {

@@ -79,6 +79,22 @@ const Results = () => {
       localDataLoaded: localDataLoadedRef.current
     });
     
+    // Always fetch latest assessment for authenticated user if no assessmentId
+    if (user && !assessmentId && (!categories || categories.length === 0) && !localDataLoadedRef.current) {
+      console.log("Results page - Authenticated user with no data, fetching latest assessment");
+      import('@/services/assessment/fetchAssessment').then(({ getLatestAssessmentResults }) => {
+        getLatestAssessmentResults().then(result => {
+          if (result.success && result.data) {
+            console.log("Results page - Latest assessment found:", result.data.id);
+            // Redirect to the specific assessment
+            navigate(`/results/${result.data.id}`);
+          } else {
+            console.log("Results page - No latest assessment found");
+          }
+        });
+      });
+    }
+    
     // Try to load local data if categories are empty AND we're not viewing a specific assessment
     if ((!categories || categories.length === 0) && !localDataLoadedRef.current && !assessmentId) {
       console.log("Results page - Trying to load from local storage");
@@ -113,23 +129,6 @@ const Results = () => {
           localDataLoadedRef.current = true;
         }
       }
-    }
-    
-    // CRITICAL FIX: For authenticated users with no assessment ID, try to fetch latest assessment
-    if (user && !assessmentId && (!categories || categories.length === 0) && !localDataLoadedRef.current) {
-      console.log("Results page - Authenticated user with no data, fetching latest assessment");
-      // Import the function to fetch latest assessment
-      import('@/services/assessment/fetchAssessment').then(({ getLatestAssessmentResults }) => {
-        getLatestAssessmentResults().then(result => {
-          if (result.success && result.data) {
-            console.log("Results page - Latest assessment found:", result.data.id);
-            // Redirect to the specific assessment
-            navigate(`/results/${result.data.id}`);
-          } else {
-            console.log("Results page - No latest assessment found");
-          }
-        });
-      });
     }
     
     setIsInitialDataChecked(true);

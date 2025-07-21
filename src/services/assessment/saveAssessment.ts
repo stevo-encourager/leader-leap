@@ -2,6 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { storeLocalAssessmentData } from './manageAssessmentHistory';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface SaveAssessmentResult {
   success: boolean;
@@ -93,7 +94,8 @@ export const saveAssessmentResults = async (
   categories: Category[], 
   demographics: Demographics,
   forceNew: boolean = false, // Allow forcing a new assessment if needed
-  assessmentId?: string // Optionally pass the assessmentId for test assessment updates
+  assessmentId?: string, // Optionally pass the assessmentId for test assessment updates
+  overrideUserId?: string // Optionally pass a user_id (for anonymous/temporary users)
 ): Promise<SaveAssessmentResult> => {
   
   // Validate input data
@@ -138,6 +140,8 @@ export const saveAssessmentResults = async (
   const isComplete = totalSkills > 0 && skillsWithBothRatings === totalSkills;
   
   if (!isComplete) {
+    // ADD ALERT FOR TESTING
+    alert(`Assessment incomplete: ${totalSkills} total skills, ${skillsWithBothRatings} with both ratings`);
     return { success: false, error: "Assessment is incomplete. All skills must be rated." };
   }
 
@@ -151,17 +155,21 @@ export const saveAssessmentResults = async (
   // Check if user is authenticated
   let user = null;
   let authError = null;
-  
+  let userId = overrideUserId;
   try {
     const authResult = await supabase.auth.getUser();
     user = authResult.data.user;
     authError = authResult.error;
+    if (user && user.id) {
+      userId = user.id;
+    }
   } catch (error) {
     authError = error;
   }
-  
-  if (authError || !user) {
-    return { success: true, data: [] }; // Return success for local storage save
+  // If no userId, generate a temporary one and store in localStorage
+  if (!userId) {
+    userId = localStorage.getItem('temp_user_id') || uuidv4();
+    localStorage.setItem('temp_user_id', userId);
   }
 
   try {
@@ -202,10 +210,11 @@ export const saveAssessmentResults = async (
     }
 
     // --- ALL OTHER ASSESSMENTS: Always create new record ---
+    console.log('saveAssessmentResults - Creating new assessment record for user:', userId);
     const result = await supabase
       .from('assessment_results')
       .insert({
-        user_id: user.id,
+        user_id: userId,
         categories: processedCategories,
         demographics: demographicsObject,
         completed: isComplete,
@@ -214,11 +223,14 @@ export const saveAssessmentResults = async (
       .select();
 
     const { data, error } = result;
+    console.log('saveAssessmentResults - Insert result:', { data, error });
 
     if (error) {
+      console.log('saveAssessmentResults - Database error:', error);
       return { success: false, error: error.message };
     }
 
+    console.log('saveAssessmentResults - Successfully saved assessment:', data);
     return { success: true, data, isUpdate: false };
 
   } catch (error) {

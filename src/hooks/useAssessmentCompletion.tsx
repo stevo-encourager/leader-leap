@@ -1,6 +1,7 @@
 
 import { toast } from './use-toast';
 import { storeLocalAssessmentData } from '@/services/assessment/manageAssessmentHistory';
+import { saveAssessmentResults } from '@/services/assessment/saveAssessment';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 
 export const useAssessmentCompletion = (
@@ -8,7 +9,7 @@ export const useAssessmentCompletion = (
   demographics: Demographics,
   completeHandler: () => void
 ) => {
-  const handleCompleteAssessment = () => {
+  const handleCompleteAssessment = async () => {
     
     // Check if we have valid category data before completing
     if (!categories || !Array.isArray(categories) || categories.length === 0) {
@@ -49,8 +50,9 @@ export const useAssessmentCompletion = (
       return;
     }
     
-    // CRITICAL FIX: Store assessment data locally before changing page
-    storeLocalAssessmentData(categories, demographics);
+    // CRITICAL FIX: Save assessment to Supabase immediately (with temp user ID if not logged in)
+    const saveResult = await saveAssessmentResults(categories, demographics);
+    console.log('useAssessmentCompletion - Save to Supabase result:', saveResult);
     
     // Call the original handler
     completeHandler();

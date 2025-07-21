@@ -95,8 +95,6 @@ export const getSpecificAssessmentResults = async (assessmentId: string): Promis
   
   try {
     // Fetch the specific assessment - for test assessments, don't require completed=true
-    const TEST_ASSESSMENT_ID = 'db860913-600f-49b2-b9b2-d6fbc47cda2b';
-    const isTestAssessment = assessmentId === TEST_ASSESSMENT_ID;
     
     // For test assessments, don't filter by completed status at all
     let query = supabase

@@ -44,6 +44,9 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
   const handleSkillRating = (categoryId: string, skillId: string, type: 'current' | 'desired', value: number) => {
     console.log(`Updating skill rating: category=${categoryId}, skill=${skillId}, type=${type}, value=${value}`);
     
+    // ADD ALERT FOR TESTING
+    alert(`Rating update: ${skillId} ${type} = ${value}`);
+    
     // Add safety check for categories
     if (!categories || !Array.isArray(categories)) {
       console.error("AssessmentForm - handleSkillRating: categories is not an array");

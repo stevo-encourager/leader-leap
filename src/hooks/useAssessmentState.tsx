@@ -9,7 +9,16 @@ export const useAssessmentState = (initialCategories: Category[] = []) => {
 
   // Initialize categories when initialCategories becomes available
   useEffect(() => {
+    console.log('useAssessmentState - initialCategories changed:', { 
+      initialLength: initialCategories?.length, 
+      currentLength: categories.length,
+      hasInitialRatings: initialCategories?.some(cat => 
+        cat?.skills?.some(skill => skill?.ratings?.current > 0)
+      )
+    });
+    
     if (initialCategories && initialCategories.length > 0 && categories.length === 0) {
+      console.log('useAssessmentState - Setting categories from initial');
       setCategories(initialCategories);
     }
   }, [initialCategories]);

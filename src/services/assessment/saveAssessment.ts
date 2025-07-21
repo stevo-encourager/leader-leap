@@ -140,20 +140,34 @@ export const saveAssessmentResults = async (
     // Silent fail for local storage
   }
 
-  // Check if user is authenticated
+  // Check if user is authenticated and ensure session is valid
   let user = null;
   let authError = null;
   let userId = overrideUserId;
   try {
-    const authResult = await supabase.auth.getUser();
-    user = authResult.data.user;
-    authError = authResult.error;
-    if (user && user.id) {
-      userId = user.id;
+    // Get the current session to ensure we have a valid JWT token
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError) {
+      authError = sessionError;
+    } else if (session?.user) {
+      user = session.user;
+      userId = session.user.id;
+      
+      // Verify the session is still valid by checking with the server
+      const { data: { user: verifiedUser }, error: userError } = await supabase.auth.getUser();
+      if (userError || !verifiedUser) {
+        authError = userError || new Error('Session verification failed');
+        user = null;
+        userId = overrideUserId;
+      }
     }
   } catch (error) {
     authError = error;
   }
+  
+  const isAuthenticatedUser = !!user;
+  
   // If no userId, generate a temporary one and store in localStorage
   if (!userId) {
     userId = localStorage.getItem('temp_user_id') || uuidv4();
@@ -161,14 +175,6 @@ export const saveAssessmentResults = async (
   }
 
   try {
-    // Check authentication for authenticated users only
-    const { data: { user: authUser } } = await supabase.auth.getUser();
-    const isAuthenticatedUser = !!authUser;
-    
-    // For authenticated users, use their actual user ID
-    if (isAuthenticatedUser && authUser.id) {
-      userId = authUser.id;
-    }
 
     // Special case: Handle update for test assessment
     if (assessmentId === '2631edf1-a358-4303-83c1-deb9664b53e2') {
@@ -198,7 +204,7 @@ export const saveAssessmentResults = async (
     }
 
     // Handle update for specific assessment ID
-    if (assessmentId && !forceNew) {
+    if (assessmentId && !forceNew && user) {
       const { data: updateData, error: updateError } = await supabase
         .from('assessment_results')
         .update({
@@ -208,7 +214,7 @@ export const saveAssessmentResults = async (
           updated_at: new Date().toISOString()
         })
         .eq('id', assessmentId)
-        .eq('user_id', authUser.id)
+        .eq('user_id', user.id)
         .select();
 
       if (updateError) {
@@ -225,9 +231,9 @@ export const saveAssessmentResults = async (
     }
 
     // Check for duplicate assessment within last 24 hours (only for authenticated users)
-    if (!forceNew && isAuthenticatedUser && authUser) {
+    if (!forceNew && isAuthenticatedUser && user) {
       const assessmentSignature = generateAssessmentSignature(categories, demographics);
-      const duplicateCheck = await checkForDuplicateAssessment(authUser.id, assessmentSignature);
+      const duplicateCheck = await checkForDuplicateAssessment(user.id, assessmentSignature);
       
       if (duplicateCheck.exists) {
         return { 

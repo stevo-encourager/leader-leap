@@ -143,13 +143,18 @@ export const useAssessmentInitialization = () => {
   const startFreshAssessment = () => {
     console.log('useAssessmentInitialization - Starting fresh assessment with zero ratings');
     
-    // Clear localStorage first to prevent restoration
+    // Clear localStorage first to prevent any restoration
     localStorage.removeItem('assessmentData');
     
+    // Set the flag to prevent useEffect from overriding
     setIsFreshAssessment(true);
+    
+    // IMMEDIATELY create and set fresh categories - don't wait for useEffect
     const freshCategories = createFreshCategories();
     if (freshCategories && freshCategories.length > 0) {
+      console.log('useAssessmentInitialization - DIRECTLY setting fresh categories');
       setCategories(freshCategories);
+      setIsInitialized(true); // Mark as initialized to prevent useEffect override
       return true;
     }
     return false;

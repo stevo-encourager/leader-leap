@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Bot, AlertCircle, Target, TrendingUp, ExternalLink } from 'lucide-react';
-import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
+import { useInsights } from '@/hooks/InsightsProvider';
 import { FormattedSummary } from '@/components/FormattedSummary';
 import type { Category, Demographics } from '@/utils/assessmentTypes';
 
@@ -40,12 +40,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({
   assessmentId,
   onRegenerateCallback 
 }) => {
-  const { insights, isLoading, error, regenerateInsights } = useOpenAIInsights({
-    categories,
-    demographics,
-    averageGap,
-    assessmentId
-  });
+  const { insights, isLoading, error, regenerateInsights } = useInsights();
 
 
 

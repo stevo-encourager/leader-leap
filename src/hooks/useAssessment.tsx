@@ -79,6 +79,8 @@ export const useAssessment = () => {
     useAssessmentCompletion(categories, demographics, handleCompleteAssessment, handleShowSignupForm);
 
   // Effect to handle result saving when user logs in
+  // DISABLED: This was causing multiple saves. Assessment is now saved only in useAssessmentCompletion
+  /*
   useEffect(() => {
     if (user && currentStep === 'results' && categories && categories.length > 0) {
       // Only save if we have valid ratings
@@ -98,6 +100,7 @@ export const useAssessment = () => {
       }
     }
   }, [user, currentStep, handleSaveResults, categories]);
+  */
 
   return {
     // Navigation state

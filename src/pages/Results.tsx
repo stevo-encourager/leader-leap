@@ -181,6 +181,8 @@ const Results = () => {
 
   // CRITICAL FIX: Only save for NEW assessments, never for existing ones being viewed
   // Also ensure we don't save multiple times in the same session
+  // DISABLED: This was causing multiple saves. Assessment is now saved only in useAssessmentCompletion
+  /*
   useEffect(() => {
     // IMMEDIATELY RETURN if we're viewing an existing assessment
     if (assessmentId) {
@@ -250,6 +252,7 @@ const Results = () => {
       saveTriggeredRef.current = true;
     }
   }, [user, currentStep, assessmentId, categories, handleSaveResults, handleCategoriesUpdate, handleDemographicsUpdate, isPageReady, isInitialDataChecked]);
+  */
 
   // Wait for auth, data, and page readiness before rendering
   if (loading || !isPageReady || (!isInitialDataChecked && !assessmentId)) {

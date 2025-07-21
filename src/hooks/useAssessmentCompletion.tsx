@@ -58,6 +58,7 @@ export const useAssessmentCompletion = (
       console.error('useAssessmentCompletion - Failed to save assessment:', saveResult.error);
       // Don't block the flow, but log the error
     }
+    
     // Check if user is logged in
     if (user) {
       completeHandler();

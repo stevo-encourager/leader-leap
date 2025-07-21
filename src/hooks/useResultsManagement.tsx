@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { AssessmentCategory } from '@/types/assessment';
 import { storeLocalAssessmentData, getLocalAssessmentData, saveAssessmentResults, TEST_ASSESSMENT_ID } from '@/services/assessment';
@@ -22,10 +22,11 @@ export const useResultsManagement = ({
   const { user, initialized } = useAuth();
   const [hasValidRatings, setHasValidRatings] = useState(false);
   const [savedToSupabase, setSavedToSupabase] = useState(false);
+  const [currentAssessmentId, setCurrentAssessmentId] = useState<string | null>(null);
   const [showAuthForm, setShowAuthForm] = useState(false);
   const [loadingPreviousResults, setLoadingPreviousResults] = useState(false);
-  const [currentAssessmentId, setCurrentAssessmentId] = useState<string | undefined>();
-
+  const [isSaving, setIsSaving] = useState(false);
+  
   // Only check for ratings when auth is initialized
   useEffect(() => {
     if (!initialized) return;
@@ -105,6 +106,10 @@ export const useResultsManagement = ({
       console.log('useResultsManagement - Already saved, skipping duplicate save');
       return;
     }
+    if (isSaving) {
+      console.log('useResultsManagement - Already saving, skipping duplicate save');
+      return;
+    }
     
     // Additional validation: check if we actually have valid ratings
     const hasValidRatingsData = categories.some(cat => 
@@ -119,6 +124,8 @@ export const useResultsManagement = ({
       console.log('useResultsManagement - Double-check failed: no valid ratings found');
       return;
     }
+    
+    setIsSaving(true);
     try {
       let result;
       if (currentAssessmentId === TEST_ASSESSMENT_ID) {
@@ -128,9 +135,11 @@ export const useResultsManagement = ({
         // Always create a new record for normal assessments
         result = await saveAssessmentResults(categories, demographics);
       }
+      
       if (result.success && result.data && result.data[0]?.id) {
         setCurrentAssessmentId(result.data[0].id);
         setSavedToSupabase(true);
+        
         console.log('useResultsManagement - Assessment saved successfully:', result.data[0].id);
         
         toast({
@@ -167,8 +176,10 @@ export const useResultsManagement = ({
         description: "An unexpected error occurred while saving. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsSaving(false);
     }
-  }, [user, hasValidRatings, savedToSupabase, categories, demographics, currentAssessmentId]);
+  }, [user, hasValidRatings, savedToSupabase, isSaving, categories, demographics, currentAssessmentId]);
 
   const handleLoadPreviousResults = useCallback(() => {
     setLoadingPreviousResults(true);

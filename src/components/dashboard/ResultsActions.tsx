@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Category, Demographics } from '@/utils/assessmentTypes';
-import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
+import { useInsights } from '@/hooks/InsightsProvider';
 import { calculateAverageGap } from '@/utils/assessmentCalculations/averages';
 import { pdf } from '@react-pdf/renderer';
 import ReactPDFDocument from '../pdf/ReactPDFDocument';
@@ -47,12 +47,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
   const averageGap = categories.length > 0 ? calculateAverageGap(categories) : 0;
   
   // Use the insights hook DIRECTLY to get regenerateInsights function
-  const { insights, isLoading: insightsLoading, error: insightsError, regenerateInsights } = useOpenAIInsights({
-    categories,
-    demographics,
-    averageGap,
-    assessmentId
-  });
+  const { insights, isLoading: insightsLoading, error: insightsError, regenerateInsights } = useInsights();
 
 
 

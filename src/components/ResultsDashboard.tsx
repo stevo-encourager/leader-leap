@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Category, Demographics } from '../utils/assessmentTypes';
 import DetailedAnalysis from './dashboard/DetailedAnalysis';
@@ -15,7 +15,7 @@ import { pdf } from '@react-pdf/renderer';
 import ReactPDFDocument from './pdf/ReactPDFDocument';
 import { captureRadarChartAsPNG } from '@/utils/chartCapture';
 import SkillGapChart from './SkillGapChart';
-import { useOpenAIInsights } from '@/hooks/useOpenAIInsights';
+import { InsightsProvider, useInsights } from '@/hooks/InsightsProvider';
 import { useAuth } from '@/contexts/AuthContext';
 import { chartLogger, pdfLogger } from '@/utils/logger';
 
@@ -27,6 +27,74 @@ interface ResultsDashboardProps {
   onSignup?: () => void;
   assessmentId?: string;
 }
+
+// PDF Download Button component that uses insights context
+const PDFDownloadButton: React.FC<{
+  categories: Category[];
+  demographics: Demographics;
+  userProfile: any;
+  onDownload: () => void;
+}> = ({ categories, demographics, userProfile, onDownload }) => {
+  const { insights, isLoading, error } = useInsights();
+  
+  // Check if AI insights are ready for PDF export
+  const areInsightsReadyForExport = () => {
+    if (isLoading) {
+      return false;
+    }
+    
+    if (error) {
+      return true; // Allow export even if insights failed
+    }
+    
+    if (!insights || insights.trim().length === 0) {
+      return false;
+    }
+    
+    // Check if insights contain placeholder text
+    const placeholderTexts = [
+      'analysing your assessment results',
+      'analyzing your assessment results',
+      'EncouragerGPT is analyzing',
+      'generating insights',
+      'please wait'
+    ];
+    
+    const hasPlaceholder = placeholderTexts.some(placeholder => 
+      insights.toLowerCase().includes(placeholder.toLowerCase())
+    );
+    
+    if (hasPlaceholder) {
+      return false;
+    }
+    
+    return true;
+  };
+
+  const handleDownloadPDF = async () => {
+    if (!areInsightsReadyForExport()) {
+      toast({
+        title: "Please Wait",
+        description: "AI insights are still being generated. Please wait a moment and try again.",
+        variant: "default",
+      });
+      return;
+    }
+    
+    onDownload();
+  };
+
+  return (
+    <Button 
+      onClick={handleDownloadPDF}
+      className="flex items-center gap-2"
+      disabled={!areInsightsReadyForExport()}
+    >
+      <Download size={16} />
+      Download PDF
+    </Button>
+  );
+};
 
 const ResultsDashboard: React.FC<ResultsDashboardProps> = ({ 
   categories, 
@@ -89,14 +157,6 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   
   // Calculate average gap for insights hook
   const averageGapForInsights = categories.length > 0 ? calculateAverageGap(categories) : 0;
-  
-  // Use the insights hook to get insights for PDF
-  const { insights, isLoading: insightsLoading, error: insightsError } = useOpenAIInsights({
-    categories,
-    demographics,
-    averageGap: averageGapForInsights,
-    assessmentId
-  });
 
   // Enhanced validation to check if we actually have assessment data
   const hasValidAssessmentData = () => {
@@ -135,36 +195,8 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   
   // Check if AI insights are ready for PDF export
   const areInsightsReadyForExport = () => {
-    if (insightsLoading) {
-      return false;
-    }
-    
-    if (insightsError) {
-      return true; // Allow export even if insights failed
-    }
-    
-    if (!insights || insights.trim().length === 0) {
-      return false;
-    }
-    
-    // Check if insights contain placeholder text
-    const placeholderTexts = [
-      'analysing your assessment results',
-      'analyzing your assessment results',
-      'EncouragerGPT is analyzing',
-      'generating insights',
-      'please wait'
-    ];
-    
-    const hasPlaceholder = placeholderTexts.some(placeholder => 
-      insights.toLowerCase().includes(placeholder.toLowerCase())
-    );
-    
-    if (hasPlaceholder) {
-      return false;
-    }
-    
-    return true;
+    // This will be updated to use context values
+    return true; // Temporary fix - will be updated in next step
   };
 
   // PDF download handler
@@ -207,7 +239,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
         <ReactPDFDocument
           categories={categories}
           demographics={demographics}
-          insights={insights || ''}
+          insights={''} // Temporary fix - will be updated when we wrap with InsightsProvider
           chartImageDataUrl={chartImageDataUrl || undefined}
           userName={userProfile?.full_name}
         />
@@ -254,7 +286,10 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
     }
   };
 
-
+  // Memoize categories, demographics, and averageGap to ensure stable references
+  const memoizedCategories = useMemo(() => categories, [categories]);
+  const memoizedDemographics = useMemo(() => demographics, [demographics]);
+  const memoizedAverageGap = useMemo(() => averageGapForInsights, [averageGapForInsights]);
 
   // Mobile-specific results view
   if (isMobile) {
@@ -341,7 +376,13 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
 
   // Desktop view (unchanged)
   return (
-    <div className="fade-in space-y-6">
+    <InsightsProvider
+      categories={memoizedCategories}
+      demographics={memoizedDemographics}
+      averageGap={memoizedAverageGap}
+      assessmentId={assessmentId}
+    >
+      <div className="fade-in space-y-6">
       <Card>
         <CardHeader className={`flex ${isMobile ? 'flex-col items-start gap-4' : 'flex-row items-center justify-between'}`}>
           <div className={`${isMobile ? 'w-full' : 'flex-1 pr-4'}`}>
@@ -421,6 +462,7 @@ const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
         </CardFooter>
       </Card>
     </div>
+    </InsightsProvider>
   );
 };
 

@@ -9,6 +9,7 @@ interface SaveAssessmentResult {
   error?: string;
   data?: any;
   isUpdate?: boolean;
+  isDuplicate?: boolean; // Added for duplicate check
 }
 
 export const TEST_ASSESSMENT_ID = '2631edf1-a358-4303-83c1-deb9664b53e2';
@@ -29,16 +30,15 @@ const checkForDuplicateAssessment = async (
   assessmentSignature: string
 ): Promise<{ exists: boolean; assessmentId?: string }> => {
   try {
-    // Check for assessments within the last 2 hours (reduced from 24 hours for testing)
-    // This allows the same user to submit multiple test assessments
-    const twoHoursAgo = new Date();
-    twoHoursAgo.setHours(twoHoursAgo.getHours() - 2);
+    // Check for assessments within the last 1 hour (reduced from 2 hours for better accuracy)
+    const oneHourAgo = new Date();
+    oneHourAgo.setHours(oneHourAgo.getHours() - 1);
 
     const { data, error } = await supabase
       .from('assessment_results')
       .select('id, categories, demographics, created_at')
       .eq('user_id', userId)
-      .gte('created_at', twoHoursAgo.toISOString())
+      .gte('created_at', oneHourAgo.toISOString())
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -58,6 +58,7 @@ const checkForDuplicateAssessment = async (
       );
       
       if (existingSignature === assessmentSignature) {
+        console.log('checkForDuplicateAssessment - Found duplicate assessment:', (assessment as any).id);
         return { exists: true, assessmentId: (assessment as any).id };
       }
     }
@@ -262,21 +263,24 @@ export const saveAssessmentResults = async (
       };
     }
 
-    // TEMPORARILY DISABLED: Check for duplicate assessment (causing issues in testing)
-    // This allows multiple test assessments without the duplicate check blocking them
-    /*
-    if (!forceNew && isAuthenticatedUser && user) {
-      const assessmentSignature = generateAssessmentSignature(categories, demographics);
-      const duplicateCheck = await checkForDuplicateAssessment(user.id, assessmentSignature);
-      
-      if (duplicateCheck.exists) {
-        return { 
-          success: false, 
-          error: "You have already submitted an identical assessment within the last 2 hours." 
-        };
-      }
+    // SIMPLE SOLUTION: Use a global flag to prevent multiple saves
+    // Check if we're already in the process of saving this exact assessment
+    const saveKey = `${userId}-${JSON.stringify(categories)}-${JSON.stringify(demographics)}`;
+    if ((global as any).__savingAssessments && (global as any).__savingAssessments.has(saveKey)) {
+      console.log('saveAssessmentResults - Already saving this assessment, skipping');
+      return { success: false, error: "Assessment is already being saved" };
     }
-    */
+    
+    // Mark this assessment as being saved
+    if (!(global as any).__savingAssessments) {
+      (global as any).__savingAssessments = new Set();
+    }
+    (global as any).__savingAssessments.add(saveKey);
+    
+    // Clean up the flag after a reasonable timeout
+    setTimeout(() => {
+      (global as any).__savingAssessments.delete(saveKey);
+    }, 5000);
 
     // --- ALL OTHER ASSESSMENTS: Always create new record ---
     console.log('saveAssessmentResults - Creating new assessment record for user:', userId);
@@ -296,10 +300,14 @@ export const saveAssessmentResults = async (
 
     if (error) {
       console.log('saveAssessmentResults - Database error:', error);
+      // Clean up the flag on error
+      (global as any).__savingAssessments.delete(saveKey);
       return { success: false, error: error.message };
     }
 
     console.log('saveAssessmentResults - Successfully saved assessment:', data);
+    // Clean up the flag on success
+    (global as any).__savingAssessments.delete(saveKey);
     return { success: true, data, isUpdate: false };
 
   } catch (error: any) {

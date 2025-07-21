@@ -35,6 +35,11 @@ export const useAssessment = () => {
   // Reset all categories to default values when starting a new assessment
   const handleStartNewAssessment = () => {
     console.log('handleStartNewAssessment called - forcing fresh categories');
+    
+    // Clear localStorage and reset state first
+    clearLocalAssessmentData();
+    resetAssessment();
+    
     // Force fresh categories with zero ratings
     startFreshAssessment();
     

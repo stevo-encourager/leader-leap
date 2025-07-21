@@ -17,7 +17,9 @@ export const useAssessmentState = (initialCategories: Category[] = []) => {
       )
     });
     
-    if (initialCategories && initialCategories.length > 0 && categories.length === 0) {
+    // Always set categories from initialCategories when they change
+    // This ensures fresh categories from startFreshAssessment are properly applied
+    if (initialCategories && initialCategories.length > 0) {
       console.log('useAssessmentState - Setting categories from initial');
       setCategories(initialCategories);
     }

@@ -26,12 +26,16 @@ export const useAssessmentState = (initialCategories: Category[] = []) => {
 
   const handleCategoriesUpdate = (updatedCategories: Category[]) => {
     setCategories(updatedCategories);
-    // Local storage removed - assessments now saved to Supabase
+    
+    // Save to local storage during assessment completion (before signup)
+    storeLocalAssessmentData(updatedCategories, demographics);
   };
 
   const handleDemographicsUpdate = (updatedDemographics: Demographics) => {
     setDemographics(updatedDemographics);
-    // Local storage removed - assessments now saved to Supabase
+    
+    // Save to local storage during assessment completion (before signup)
+    storeLocalAssessmentData(categories, updatedDemographics);
   };
 
   const resetAssessment = (freshCategories?: Category[]) => {

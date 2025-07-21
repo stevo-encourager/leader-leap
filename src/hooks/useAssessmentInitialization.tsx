@@ -110,7 +110,7 @@ export const useAssessmentInitialization = () => {
         }
       }
     }
-  }, [isInitialized]);
+  }, [isInitialized, isFreshAssessment]);
 
   // Function to load existing data when explicitly requested (e.g., continuing assessment)
   const loadExistingData = () => {

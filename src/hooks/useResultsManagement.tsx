@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { AssessmentCategory } from '@/types/assessment';
 import { storeLocalAssessmentData, getLocalAssessmentData, saveAssessmentResults, TEST_ASSESSMENT_ID } from '@/services/assessment';
 import { assessmentLogger } from '@/utils/logger';
+import { toast } from '@/hooks/use-toast';
 
 interface UseResultsManagementProps {
   categories: AssessmentCategory[];
@@ -129,14 +130,41 @@ export const useResultsManagement = ({
         setCurrentAssessmentId(result.data[0].id);
         setSavedToSupabase(true);
         console.log('useResultsManagement - Assessment saved successfully:', result.data[0].id);
-        // Optionally show a toast here
+        
+        toast({
+          title: "Assessment Saved",
+          description: "Your assessment results have been saved successfully.",
+        });
       } else {
         console.error('useResultsManagement - Failed to save assessment:', result.error);
-        // Optionally show a toast here
+        
+        // Check if it's a session expiry error
+        if (result.error?.includes('session has expired') || result.error?.includes('re-authenticate')) {
+          toast({
+            title: "Session Expired",
+            description: "Please sign out and sign back in to save your results.",
+            variant: "destructive",
+            duration: 8000,
+          });
+          
+          // Show the auth form to let user re-authenticate
+          setShowAuthForm(true);
+        } else {
+          toast({
+            title: "Save Failed",
+            description: result.error || "Failed to save assessment results. Please try again.",
+            variant: "destructive",
+          });
+        }
       }
     } catch (error) {
       console.error('useResultsManagement - Error saving assessment:', error);
-      // Optionally show a toast here
+      
+      toast({
+        title: "Unexpected Error",
+        description: "An unexpected error occurred while saving. Please try again.",
+        variant: "destructive",
+      });
     }
   }, [user, hasValidRatings, savedToSupabase, categories, demographics, currentAssessmentId]);
 

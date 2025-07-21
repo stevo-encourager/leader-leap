@@ -25,6 +25,12 @@ export const useAssessmentInitialization = () => {
 
   // Initialize categories with default data - only run once and preserve valid data
   useEffect(() => {
+    // Skip all initialization if we've already done a fresh assessment
+    if (isFreshAssessment) {
+      console.log('useAssessmentInitialization - Skipping initialization, fresh assessment already set');
+      return;
+    }
+    
     if (!isInitialized) {
       try {
         // If this is a fresh assessment, skip restoration and use fresh categories

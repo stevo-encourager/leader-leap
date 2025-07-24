@@ -1,48 +1,26 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <title>Confirm Your Email - Leader Leap</title>
-</head>
-<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 20px; background-color: #f9f9f9;">
-    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-        <div style="background-color: #2F564D; color: white; padding: 30px 20px; text-align: center;">
-            <h1 style="margin: 0; font-size: 24px; font-weight: 600;">Confirm Your Email Address</h1>
-        </div>
-        
-        <div style="padding: 30px 20px;">
-            <p>Hi there,</p>
-            
-            <p>Thank you for signing up for Leader Leap! To complete your registration and access your leadership assessment, please confirm your email address by clicking the button below.</p>
-            
-            <div style="text-align: center; margin: 20px 0;">
-                <a href="{{ .ConfirmationURL }}" style="display: inline-block; background-color: #2F564D; color: white; text-decoration: none; padding: 12px 30px; border-radius: 6px; font-weight: 500;">Confirm Email Address</a>
-            </div>
-            
-            <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
-            <p style="word-break: break-all; color: #666; font-size: 14px;">{{ .ConfirmationURL }}</p>
-            
-            <div style="background-color: #f8f9fa; border-left: 4px solid #2F564D; padding: 15px; margin: 20px 0; font-size: 14px;">
-                <strong>Security Note:</strong> This link will expire in 24 hours for your security. If you didn't create this account, you can safely ignore this email.
-            </div>
-            
-            <p>Once confirmed, you'll be able to:</p>
-            <ul>
-                <li>Complete your leadership assessment</li>
-                <li>Receive personalized insights and recommendations</li>
-                <li>Track your development progress</li>
-                <li>Access professional development resources</li>
-            </ul>
-            
-            <p>If you have any questions, please don't hesitate to reach out to our support team.</p>
-            
-            <p>Best regards,<br>The Leader Leap Team</p>
-        </div>
-        
-        <div style="padding: 20px; text-align: center; color: #666; font-size: 14px; border-top: 1px solid #eee;">
-            <p>Leader Leap - Empowering Leadership Development</p>
-            <p>This email was sent to {{ .Email }}. If you didn't sign up for Leader Leap, please ignore this email.</p>
-        </div>
-    </div>
-</body>
-</html> 
+Confirm Your Email Address - Leader Leap
+
+Hi there,
+
+Thank you for signing up for Leader Leap! To complete your registration and access your leadership assessment, please confirm your email address by clicking the link below:
+
+{{ .ConfirmationURL }}
+
+SECURITY NOTE: This link will expire in 24 hours for your security. If you didn't create this account, you can safely ignore this email.
+
+Once confirmed, you'll be able to:
+- Take your personalized leadership assessment
+- Receive detailed insights about your leadership strengths
+- Get personalized development recommendations
+- Track your progress over time
+- Access professional development resources
+
+If you have any questions or need assistance, please don't hesitate to reach out to our support team.
+
+Best regards,
+Steve Thompson
+Encourager Coaching
+
+---
+Leader Leap - Empowering Leadership Development
+This email was sent to {{ .Email }}. If you didn't create this account, please ignore this email. 

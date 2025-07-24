@@ -30,13 +30,13 @@ interface ChartData {
 }
 
 // PDF export constants (centralized for consistency)
-const PDF_RADAR_WIDTH = 500;
-const PDF_RADAR_HEIGHT = 400;
+const PDF_RADAR_WIDTH = 450;
+const PDF_RADAR_HEIGHT = 350;
 const PDF_CONTAINER_WIDTH = 540; // Outer container for PDF, gives margin for labels
 const PDF_CONTAINER_HEIGHT = 440;
-// Set label radius to 160 for PDF export (500x400px) to keep labels just inside the edge and prevent cut-off.
-// If you change the chart size, adjust this value to be about 80% of the smallest dimension / 2.
-const PDF_LABEL_RADIUS = 160;
+// Set label radius to 130 for PDF export (450x350px) to keep labels closer to center and prevent cut-off.
+// If you change the chart size, adjust this value to be about 65% of the smallest dimension / 2.
+const PDF_LABEL_RADIUS = 130;
 const SCREEN_LABEL_RADIUS = 185; // For on-screen chart
 
 // WARNING: If you change the chart size, you MUST update PDF_CONTAINER_WIDTH, PDF_CONTAINER_HEIGHT, and PDF_LABEL_RADIUS together!

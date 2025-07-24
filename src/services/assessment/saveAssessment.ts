@@ -1,85 +1,99 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { storeLocalAssessmentData } from './manageAssessmentHistory';
-import { v4 as uuidv4 } from 'uuid';
 
-// Define the return type for save operations
-interface SaveAssessmentResult {
+export interface SaveAssessmentResult {
   success: boolean;
   error?: string;
   data?: any;
-  isUpdate?: boolean;
-  isDuplicate?: boolean; // Added for duplicate check
+  isUpdate?: boolean; // Flag to indicate if this was an update vs new insert
 }
 
-export const TEST_ASSESSMENT_ID = '2631edf1-a358-4303-83c1-deb9664b53e2';
-
+// Helper function to generate a deterministic assessment signature
 const generateAssessmentSignature = (categories: Category[], demographics: Demographics): string => {
-  // Create a simple signature based on assessment content
+  // Create a signature based on the assessment content
   const categorySignature = categories.map(cat => 
-    cat.skills.map(skill => `${skill.id}:${skill.ratings?.current || 0}:${skill.ratings?.desired || 0}`).join(',')
-  ).join('|');
+    cat.skills.map(skill => `${skill.id}-${skill.ratings.current}-${skill.ratings.desired}`).join('|')
+  ).join('||');
   
-  const demoSignature = `${demographics.role || ''}:${demographics.industry || ''}:${demographics.teamSize || ''}`;
+  const demoSignature = `${demographics.role || ''}-${demographics.industry || ''}-${demographics.yearsOfExperience || ''}`;
   
-  return `${categorySignature}:${demoSignature}`;
+  return `${categorySignature}::${demoSignature}`;
 };
 
+// Check if an assessment with the same content already exists for this user
 const checkForDuplicateAssessment = async (
   userId: string, 
   assessmentSignature: string
 ): Promise<{ exists: boolean; assessmentId?: string }> => {
-  try {
-    // Check for assessments within the last 1 hour (reduced from 2 hours for better accuracy)
-    const oneHourAgo = new Date();
-    oneHourAgo.setHours(oneHourAgo.getHours() - 1);
+  
+  
+  // Check for assessments created in the last 24 hours to avoid checking too far back
+  const oneDayAgo = new Date();
+  oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+  
+  const { data: recentAssessments, error } = await supabase
+    .from('assessment_results')
+    .select('id, categories, demographics, created_at')
+    .eq('user_id', userId)
+    .gte('created_at', oneDayAgo.toISOString())
+    .order('created_at', { ascending: false });
 
-    const { data, error } = await supabase
-      .from('assessment_results')
-      .select('id, categories, demographics, created_at')
-      .eq('user_id', userId)
-      .gte('created_at', oneHourAgo.toISOString())
-      .order('created_at', { ascending: false });
+  if (error) {
+    return { exists: false };
+  }
 
-    if (error) {
-      console.error('Error checking for duplicate assessments:', error);
+      if (!recentAssessments || recentAssessments.length === 0) {
       return { exists: false };
     }
 
-    if (!data || data.length === 0) {
-      return { exists: false };
-    }
-
-    // Check if any existing assessment has the same signature
-    for (const assessment of data) {
+  // Check each recent assessment to see if it has the same signature
+  for (const assessment of recentAssessments) {
+    try {
+      // Safely parse the categories and demographics from the database
+      let assessmentCategories: Category[] = [];
+      let assessmentDemographics: Demographics = {};
+      
+      // Handle categories - convert from Supabase Json type
+      if (typeof assessment.categories === 'string') {
+        assessmentCategories = JSON.parse(assessment.categories);
+      } else if (Array.isArray(assessment.categories)) {
+        // Safely convert from Json[] to Category[] through unknown
+        assessmentCategories = assessment.categories as unknown as Category[];
+      }
+      
+      // Handle demographics - convert from Supabase Json type
+      if (typeof assessment.demographics === 'string') {
+        assessmentDemographics = JSON.parse(assessment.demographics);
+      } else if (assessment.demographics && typeof assessment.demographics === 'object') {
+        // Safely convert from Json to Demographics through unknown
+        assessmentDemographics = assessment.demographics as unknown as Demographics;
+      }
+      
       const existingSignature = generateAssessmentSignature(
-        (assessment as any).categories as Category[],
-        (assessment as any).demographics as Demographics
+        assessmentCategories, 
+        assessmentDemographics
       );
       
       if (existingSignature === assessmentSignature) {
-        console.log('checkForDuplicateAssessment - Found duplicate assessment:', (assessment as any).id);
-        return { exists: true, assessmentId: (assessment as any).id };
+        return { exists: true, assessmentId: assessment.id };
       }
+    } catch (error) {
+      continue;
     }
-
-    return { exists: false };
-  } catch (error) {
-    console.error('Error in duplicate check:', error);
-    return { exists: false };
   }
+
+  return { exists: false };
 };
 
-/**
- * Save assessment results to Supabase
- * Includes validation, local storage backup, and duplicate checking
- */
+export const TEST_ASSESSMENT_ID = '08a5f01a-db17-474d-a3e8-c53bedbc34c8';
+
 export const saveAssessmentResults = async (
   categories: Category[], 
   demographics: Demographics,
   forceNew: boolean = false, // Allow forcing a new assessment if needed
-  assessmentId?: string, // Optionally pass the assessmentId for test assessment updates
-  overrideUserId?: string // Optionally pass a user_id (for anonymous/temporary users)
+  assessmentId?: string // Optionally pass the assessmentId for test assessment updates
 ): Promise<SaveAssessmentResult> => {
   
   // Validate input data
@@ -90,48 +104,28 @@ export const saveAssessmentResults = async (
   // Count and validate skills with ratings
   let totalSkills = 0;
   let skillsWithBothRatings = 0;
-  let skillsWithPartialRatings = 0;
-  let skillsWithNoRatings = 0;
   
-  console.log('saveAssessmentResults - Validating categories:', categories.length);
-  
-  categories.forEach((category, categoryIndex) => {
+  categories.forEach((category) => {
     if (category && category.skills && Array.isArray(category.skills)) {
-      console.log(`saveAssessmentResults - Category ${categoryIndex}:`, category.title, 'skills:', category.skills.length);
-      
-      category.skills.forEach((skill, skillIndex) => {
+      category.skills.forEach((skill) => {
         totalSkills++;
         
         if (skill && skill.ratings) {
           const currentRating = Number(skill.ratings.current) || 0;
           const desiredRating = Number(skill.ratings.desired) || 0;
-          const hasCurrentRating = currentRating > 0;
-          const hasDesiredRating = desiredRating > 0;
-          
-          console.log(`saveAssessmentResults - Skill ${skillIndex}:`, skill.name, 'current:', currentRating, 'desired:', desiredRating);
           
           if (currentRating > 0 && desiredRating > 0) {
             skillsWithBothRatings++;
-          } else if (hasCurrentRating || hasDesiredRating) {
-            skillsWithPartialRatings++;
-          } else {
-            skillsWithNoRatings++;
           }
-        } else {
-          console.log(`saveAssessmentResults - Skill ${skillIndex}:`, skill.name, 'NO RATINGS');
         }
       });
-    } else {
-      console.log(`saveAssessmentResults - Category ${categoryIndex}: Invalid category or skills`);
     }
   });
+
+  // Check if the assessment is complete (all skills have both ratings)
+  const isComplete = totalSkills > 0 && skillsWithBothRatings === totalSkills;
   
-  console.log('saveAssessmentResults - Validation results:', { totalSkills, skillsWithBothRatings, isComplete: totalSkills > 0 && skillsWithBothRatings === totalSkills });
-
-  const isComplete = skillsWithBothRatings === totalSkills && totalSkills > 0;
-
   if (!isComplete) {
-    console.log('saveAssessmentResults - Assessment incomplete:', { totalSkills, skillsWithBothRatings });
     return { success: false, error: "Assessment is incomplete. All skills must be rated." };
   }
 
@@ -142,176 +136,80 @@ export const saveAssessmentResults = async (
     // Silent fail for local storage
   }
 
-  // Check if user is authenticated and ensure session is valid
+  // Check if user is authenticated
   let user = null;
   let authError = null;
-  let userId = overrideUserId;
+  
   try {
-    // Get the current session to ensure we have a valid JWT token
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-    
-    console.log('saveAssessmentResults - Session check:', {
-      hasSession: !!session,
-      hasUser: !!session?.user,
-      sessionUserId: session?.user?.id,
-      accessToken: session?.access_token ? 'present' : 'missing',
-      sessionError: sessionError?.message
-    });
-    
-    if (sessionError) {
-      authError = sessionError;
-      console.error('saveAssessmentResults - Session error:', sessionError);
-    } else if (session?.user) {
-      user = session.user;
-      userId = session.user.id;
-      
-      // Verify the session is still valid by checking with the server
-      const { data: { user: verifiedUser }, error: userError } = await supabase.auth.getUser();
-      if (userError || !verifiedUser) {
-        console.error('saveAssessmentResults - User verification failed:', userError);
-        authError = userError || new Error('Session verification failed');
-        user = null;
-        userId = overrideUserId;
-      } else {
-        console.log('saveAssessmentResults - User verified successfully:', verifiedUser.id);
-      }
-    } else {
-      console.log('saveAssessmentResults - No session found, but checking if user should be authenticated');
-      
-      // If we have a userId but no session, this indicates a session sync issue
-      // Try to refresh the session
-      const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
-      
-      if (refreshedSession?.user && !refreshError) {
-        console.log('saveAssessmentResults - Session refreshed successfully');
-        user = refreshedSession.user;
-        userId = refreshedSession.user.id;
-      } else {
-        console.log('saveAssessmentResults - Session refresh failed, user needs to re-authenticate');
-        return { 
-          success: false, 
-          error: "Your session has expired. Please sign in again to save your assessment results." 
-        };
-      }
-    }
+    const authResult = await supabase.auth.getUser();
+    user = authResult.data.user;
+    authError = authResult.error;
   } catch (error) {
     authError = error;
-    console.error('saveAssessmentResults - Auth check exception:', error);
   }
   
-  const isAuthenticatedUser = !!user;
-  
-  // If no userId, generate a temporary one and store in localStorage
-  if (!userId) {
-    userId = localStorage.getItem('temp_user_id') || uuidv4();
-    localStorage.setItem('temp_user_id', userId);
+  if (authError || !user) {
+    return { success: true, data: [] }; // Return success for local storage save
   }
 
   try {
+    // Prepare the data to save - ensure all ratings are properly formatted
+    const processedCategories = categories.map(category => ({
+      ...category,
+      skills: category.skills.map(skill => ({
+        ...skill,
+        ratings: {
+          current: Number(skill.ratings.current) || 0,
+          desired: Number(skill.ratings.desired) || 0
+        }
+      }))
+    }));
 
-    // Special case: Handle update for test assessment
-    if (assessmentId === '2631edf1-a358-4303-83c1-deb9664b53e2') {
-      // This is the public test assessment, update it
-      const { data: updateData, error: updateError } = await supabase
+    // Convert Demographics to a regular object to satisfy TypeScript
+    const demographicsObject = { ...demographics };
+
+    // --- TEST ASSESSMENT SPECIAL CASE ---
+    if (assessmentId === TEST_ASSESSMENT_ID) {
+      // Update the test assessment and reset ai_insights
+      const result = await supabase
         .from('assessment_results')
         .update({
-          categories: categories as any,
-          demographics: demographics as any,
-          completed: true,
-          updated_at: new Date().toISOString()
+          categories: processedCategories,
+          demographics: demographicsObject,
+          completed: isComplete,
+          ai_insights: null // Always reset for test assessment
         })
-        .eq('id', assessmentId)
-        .select();
-
-      if (updateError) {
-        console.error('Error updating test assessment:', updateError);
-        return { success: false, error: `Failed to update assessment: ${updateError.message}` };
-      }
-
-      console.log('Test assessment updated successfully:', updateData);
-      return { 
-        success: true, 
-        data: updateData?.[0], 
-        isUpdate: true 
-      };
-    }
-
-    // Handle update for specific assessment ID
-    if (assessmentId && !forceNew && user) {
-      const { data: updateData, error: updateError } = await supabase
-        .from('assessment_results')
-        .update({
-          categories: categories as any,
-          demographics: demographics as any,
-          completed: true,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', assessmentId)
+        .eq('id', TEST_ASSESSMENT_ID)
         .eq('user_id', user.id)
         .select();
-
-      if (updateError) {
-        console.error('Error updating assessment:', updateError);
-        return { success: false, error: `Failed to update assessment: ${updateError.message}` };
+      if (result.data) {
+        return { success: true, data: result.data, isUpdate: true };
+      } else {
+        return { success: false, error: "Failed to update test assessment" };
       }
-
-      console.log('Assessment updated successfully:', updateData);
-      return { 
-        success: true, 
-        data: updateData?.[0], 
-        isUpdate: true 
-      };
     }
-
-    // SIMPLE SOLUTION: Use a global flag to prevent multiple saves
-    // Check if we're already in the process of saving this exact assessment
-    const saveKey = `${userId}-${JSON.stringify(categories)}-${JSON.stringify(demographics)}`;
-    if ((global as any).__savingAssessments && (global as any).__savingAssessments.has(saveKey)) {
-      console.log('saveAssessmentResults - Already saving this assessment, skipping');
-      return { success: false, error: "Assessment is already being saved" };
-    }
-    
-    // Mark this assessment as being saved
-    if (!(global as any).__savingAssessments) {
-      (global as any).__savingAssessments = new Set();
-    }
-    (global as any).__savingAssessments.add(saveKey);
-    
-    // Clean up the flag after a reasonable timeout
-    setTimeout(() => {
-      (global as any).__savingAssessments.delete(saveKey);
-    }, 5000);
 
     // --- ALL OTHER ASSESSMENTS: Always create new record ---
-    console.log('saveAssessmentResults - Creating new assessment record for user:', userId);
     const result = await supabase
       .from('assessment_results')
       .insert({
-        user_id: userId,
-        categories: categories as any,
-        demographics: demographics as any,
+        user_id: user.id,
+        categories: processedCategories,
+        demographics: demographicsObject,
         completed: isComplete,
         ai_insights: null // Will be generated once on first access
       })
       .select();
 
     const { data, error } = result;
-    console.log('saveAssessmentResults - Insert result:', { data, error });
 
     if (error) {
-      console.log('saveAssessmentResults - Database error:', error);
-      // Clean up the flag on error
-      (global as any).__savingAssessments.delete(saveKey);
       return { success: false, error: error.message };
     }
 
-    console.log('saveAssessmentResults - Successfully saved assessment:', data);
-    // Clean up the flag on success
-    (global as any).__savingAssessments.delete(saveKey);
     return { success: true, data, isUpdate: false };
 
-  } catch (error: any) {
-    console.error('Unexpected error in saveAssessmentResults:', error);
-    return { success: false, error: `Unexpected error: ${error.message}` };
+  } catch (error) {
+    return { success: false, error: "An unexpected error occurred while saving" };
   }
 };

@@ -222,3 +222,28 @@
 .encourager-header {
   @apply text-encourager font-bold font-playfair;
 }
+
+/* Tab isolation styles to prevent content bleeding */
+.skills-assessment-tab {
+  isolation: isolate;
+  contain: layout style paint;
+}
+
+.skills-assessment-component {
+  isolation: isolate;
+  contain: layout style paint;
+}
+
+/* Robot icon spinning animation */
+@keyframes robotSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.robot-spin {
+  animation: robotSpin 2s linear infinite;
+}

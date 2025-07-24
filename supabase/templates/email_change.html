@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm Your New Email - Leader Leap</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: #2F564D;
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .content {
+            padding: 30px 20px;
+        }
+        .welcome-text {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #2F564D;
+            color: white;
+            text-decoration: none;
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-weight: 500;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .cta-button:hover {
+            background-color: #1e3a32;
+        }
+        .footer {
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+        }
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .security-note {
+            background-color: #f8f9fa;
+            border-left: 4px solid #2F564D;
+            padding: 15px;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Leader Leap</div>
+            <h1>Confirm Your New Email Address</h1>
+        </div>
+        
+        <div class="content">
+            <p class="welcome-text">Hi there,</p>
+            
+            <p>We received a request to change the email address for your Leader Leap account. To confirm this change, please click the button below.</p>
+            
+            <div style="text-align: center;">
+                <a href="{{ .ConfirmationURL }}" class="cta-button">Confirm Email Change</a>
+            </div>
+            
+            <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
+            <p style="word-break: break-all; color: #666; font-size: 14px;">{{ .ConfirmationURL }}</p>
+            
+            <div class="security-note">
+                <strong>Security Note:</strong> This link will expire in 24 hours for your security. If you didn't request this email change, you can safely ignore this email.
+            </div>
+            
+            <p>After confirming this change:</p>
+            <ul>
+                <li>Your new email address will be used for all future communications</li>
+                <li>You'll continue to have access to all your assessment results</li>
+                <li>Your development progress and insights will remain unchanged</li>
+                <li>You'll receive future updates at your new email address</li>
+            </ul>
+            
+            <p>If you have any questions about this email change, please don't hesitate to reach out to our support team.</p>
+            
+            <p>Best regards,<br>The Leader Leap Team</p>
+        </div>
+        
+        <div class="footer">
+            <p>Leader Leap - Empowering Leadership Development</p>
+            <p>This email was sent to {{ .Email }}. If you didn't request an email change, please ignore this email.</p>
+        </div>
+    </div>
+</body>
+</html> 

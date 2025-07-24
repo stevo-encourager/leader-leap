@@ -32,8 +32,7 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
 }) => {
   const isMobile = useIsMobile();
   
-  // Store the regeneration callback
-  const [regenerationCallback, setRegenerationCallback] = React.useState<(() => Promise<void>) | null>(null);
+
 
   // Add extensive validation to ensure we have data to render
   const hasCategories = categories && 
@@ -135,7 +134,6 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
                   demographics={demographics}
                   averageGap={averageGap}
                   assessmentId={assessmentId}
-                  onRegenerateCallback={setRegenerationCallback}
                 />
               </div>
             ) : (
@@ -147,7 +145,7 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
             )}
           </TabsContent>
 
-          <TabsContent value="skills-assessment" className="mt-0">
+          <TabsContent value="skills-assessment" className="mt-0 skills-assessment-tab" data-tab="skills-assessment">
             {hasCategories ? (
               <div className={`w-full p-6 overflow-y-auto ${isMobile ? 'h-[400px]' : 'h-[600px]'}`}>
                 <SkillsAssessment categories={categories} />

@@ -21,7 +21,7 @@ const UserHeader: React.FC = () => {
         </div>
         <div>
           <p className="text-sm text-slate-500">Signed in as</p>
-          <p className="font-medium">{user.email}</p>
+          <p className="text-sm text-slate-500">{user.email}</p>
         </div>
       </div>
       

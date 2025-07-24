@@ -16,8 +16,8 @@ export const checkExistingInsights = async (assessmentId: string, supabaseUrl: s
   
   // DOUBLE CHECK: First verify we have a valid assessment ID
   if (!assessmentId || assessmentId.trim() === '') {
-    console.log('🔍 NO ASSESSMENT ID - Will generate insights without database linkage');
-    return null; // Continue with generation but without database check
+    console.log('🔍 NO ASSESSMENT ID - Cannot check for existing insights');
+    return null;
   }
   
   // CRITICAL FIX: For test assessment with force regenerate, skip database check entirely

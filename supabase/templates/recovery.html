@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Reset Your Password - Leader Leap</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 20px; background-color: #f9f9f9;">
+    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+        <div style="background-color: #2F564D; color: white; padding: 30px 20px; text-align: center;">
+            <h1 style="margin: 0; font-size: 24px; font-weight: 600;">Reset Your Password</h1>
+        </div>
+        
+        <div style="padding: 30px 20px;">
+            <p>Hi there,</p>
+            
+            <p>We received a request to reset your password for your Leader Leap account. If you made this request, please click the button below to create a new password.</p>
+            
+            <div style="text-align: center; margin: 20px 0;">
+                <a href="{{ .ConfirmationURL }}" style="display: inline-block; background-color: #2F564D; color: white; text-decoration: none; padding: 12px 30px; border-radius: 6px; font-weight: 500;">Reset Password</a>
+            </div>
+            
+            <p>If the button doesn't work, you can copy and paste this link into your browser:</p>
+            <p style="word-break: break-all; color: #666; font-size: 14px;">{{ .ConfirmationURL }}</p>
+            
+            <div style="background-color: #f8f9fa; border-left: 4px solid #2F564D; padding: 15px; margin: 20px 0; font-size: 14px;">
+                <strong>Security Note:</strong> This link will expire in 1 hour for your security. If you didn't request a password reset, you can safely ignore this email.
+            </div>
+            
+            <p>After resetting your password, you'll be able to:</p>
+            <ul>
+                <li>Access your leadership assessment results</li>
+                <li>Continue your development journey</li>
+                <li>Track your progress and insights</li>
+                <li>Access professional development resources</li>
+            </ul>
+            
+            <p>If you have any questions or need assistance, please don't hesitate to reach out to our support team.</p>
+            
+            <p>Best regards,<br>The Leader Leap Team</p>
+        </div>
+        
+        <div style="padding: 20px; text-align: center; color: #666; font-size: 14px; border-top: 1px solid #eee;">
+            <p>Leader Leap - Empowering Leadership Development</p>
+            <p>This email was sent to {{ .Email }}. If you didn't request a password reset, please ignore this email.</p>
+        </div>
+    </div>
+</body>
+</html> 

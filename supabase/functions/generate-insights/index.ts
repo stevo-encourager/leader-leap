@@ -8,25 +8,12 @@ import { callOpenAI } from './utils/openaiClient.ts';
 import { checkExistingInsights, saveInsights } from './utils/database.ts';
 
 
-// Helper to determine CORS origin
-function getCorsOrigin(origin: string | null) {
-  // Production domain
-  const PROD_ORIGIN = 'https://www.leader-leap.com';
-  if (origin === PROD_ORIGIN) return PROD_ORIGIN;
-  // Allow localhost and dev tools
-  if (origin && origin.startsWith('http://localhost')) return '*';
-  // Default to production domain for unknown origins
-  return PROD_ORIGIN;
-}
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
 
 serve(async (req) => {
-  const origin = req.headers.get('origin');
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': getCorsOrigin(origin),
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-  };
-
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -115,16 +102,12 @@ serve(async (req) => {
     });
     
   } catch (error) {
-    // Only log error details that are always available
-    console.error('🚨 CRITICAL ERROR in generate-insights:', {
-      message: error.message,
-      stack: error.stack,
-      name: error.name,
-    });
+    
     // Provide user-friendly error message without exposing internal details
-    const userMessage = error.message && error.message.includes('OpenAI') 
+    const userMessage = error.message.includes('OpenAI') 
       ? 'Unable to generate insights at this time. Please try again later.'
       : 'An unexpected error occurred while generating insights. Please try again.';
+    
     return new Response(JSON.stringify({ error: userMessage }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

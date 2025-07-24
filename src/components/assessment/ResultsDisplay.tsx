@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Category, Demographics } from '@/utils/assessmentTypes';
-import ResultsDashboard from '@/components/ResultsDashboard';
+import { ResultsDashboard } from '@/components/ResultsDashboard';
 
 interface ResultsDisplayProps {
   categories: Category[];
@@ -23,12 +23,9 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   assessmentId
 }) => {
   return (
-    <ResultsDashboard
+    <ResultsDashboard 
       categories={categories}
       demographics={demographics}
-      onRestart={onRestart}
-      onBack={onBack}
-      onSignup={!isAuthenticated ? onSignup : undefined}
       assessmentId={assessmentId}
     />
   );

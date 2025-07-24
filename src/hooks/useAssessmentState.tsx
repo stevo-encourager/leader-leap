@@ -14,16 +14,27 @@ export const useAssessmentState = (initialCategories: Category[] = []) => {
       currentLength: categories.length,
       hasInitialRatings: initialCategories?.some(cat => 
         cat?.skills?.some(skill => skill?.ratings?.current > 0)
+      ),
+      hasZeroRatings: initialCategories?.every(cat => 
+        cat?.skills?.every(skill => skill?.ratings?.current === 0)
       )
     });
     
-    // Always set categories from initialCategories when they change
-    // This ensures fresh categories from startFreshAssessment are properly applied
-    if (initialCategories && initialCategories.length > 0) {
+    // Only set categories from initialCategories if we don't already have categories
+    // or if the initialCategories have zero ratings (fresh assessment)
+    const shouldSetCategories = !categories.length || 
+      (initialCategories && initialCategories.length > 0 && 
+       initialCategories.every(cat => 
+         cat?.skills?.every(skill => skill?.ratings?.current === 0)
+       ));
+    
+    if (shouldSetCategories && initialCategories && initialCategories.length > 0) {
       console.log('useAssessmentState - Setting categories from initial');
       setCategories(initialCategories);
+    } else if (initialCategories && initialCategories.length > 0) {
+      console.log('useAssessmentState - Skipping category update to preserve existing data');
     }
-  }, [initialCategories]);
+  }, [initialCategories, categories.length]);
 
   const handleCategoriesUpdate = (updatedCategories: Category[]) => {
     setCategories(updatedCategories);

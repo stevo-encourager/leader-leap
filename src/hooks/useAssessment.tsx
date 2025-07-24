@@ -41,9 +41,10 @@ export const useAssessment = () => {
     resetAssessment();
     
     // Force fresh categories with zero ratings
-    startFreshAssessment();
+    const success = startFreshAssessment();
+    console.log('handleStartNewAssessment - startFreshAssessment result:', success);
     
-    // Call the original handler to navigate
+    // Call the original handler to navigate with a new assessment flag
     handleStartAssessment();
   };
 

@@ -34,12 +34,40 @@ export const useAssessmentInitialization = () => {
     
     if (!isInitialized) {
       try {
+        // Check if we're starting a new assessment by looking at the URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const isNewAssessment = window.location.pathname === '/assessment' && 
+          urlParams.get('new') === 'true';
+        
+        console.log('useAssessmentInitialization - URL check:', {
+          pathname: window.location.pathname,
+          search: window.location.search,
+          isNewAssessment,
+          hasNewParam: urlParams.get('new')
+        });
+        
         // If this is a fresh assessment, skip restoration and use fresh categories
         if (isFreshAssessment) {
           console.log('useAssessmentInitialization - Fresh assessment requested, using zero ratings');
           const freshCategories = createFreshCategories();
           if (freshCategories && freshCategories.length > 0) {
             setCategories(freshCategories);
+          }
+        } else if (isNewAssessment) {
+          // For new assessments, always start with fresh categories
+          console.log('useAssessmentInitialization - New assessment detected, using zero ratings');
+          const freshCategories = createFreshCategories();
+          if (freshCategories && freshCategories.length > 0) {
+            console.log('useAssessmentInitialization - Setting fresh categories with zero ratings');
+            setCategories(freshCategories);
+            setIsInitialized(true); // Mark as initialized immediately
+          } else {
+            console.error("useAssessmentInitialization - Fresh categories are empty or invalid");
+            toast({
+              title: "Error loading categories",
+              description: "Could not load assessment categories. Please refresh the page.",
+              variant: "destructive",
+            });
           }
         } else {
           // FIRST, check if we have valid local storage data to preserve

@@ -42,7 +42,7 @@ const SkillsAssessment: React.FC<SkillsAssessmentProps> = ({ categories }) => {
   const sortedCategories = categoriesWithGap.sort((a, b) => b.gap - a.gap);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 skills-assessment-component" data-component="skills-assessment">
       <div className="text-center">
         <p className="text-muted-foreground">
           Your self-assessment scores across all competencies and the individual skills within them

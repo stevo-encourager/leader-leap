@@ -17,16 +17,6 @@ interface InsightsState {
   isInitialized: boolean;
 }
 
-// Assessment-specific guard to prevent duplicate API calls
-interface AssessmentGuard {
-  categories: Category[];
-  demographics: Demographics;
-  averageGap: number;
-}
-
-// Global map to store last data used for each assessment
-const assessmentDataMap = new Map<string, AssessmentGuard>();
-
 export const useOpenAIInsights = ({ categories, demographics, averageGap, assessmentId }: UseOpenAIInsightsProps) => {
   // Consolidated state to prevent race conditions
   const [state, setState] = useState<InsightsState>({
@@ -52,54 +42,6 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       return newState;
     });
   }, []);
-
-  // Assessment-specific guard function
-  const shouldGenerateInsights = useCallback((currentAssessmentId: string | undefined): boolean => {
-    // Always allow generation for test assessments
-    if (isTestAssessment) {
-      return true;
-    }
-
-    // If no assessment ID, allow generation (new assessment)
-    if (!currentAssessmentId) {
-      return true;
-    }
-
-    // Check if we have stored data for this assessment
-    const lastData = assessmentDataMap.get(currentAssessmentId);
-    if (!lastData) {
-      // No stored data, allow generation
-      return true;
-    }
-
-    // Compare current data with last data used for this assessment
-    const currentData: AssessmentGuard = { categories, demographics, averageGap };
-    
-    // Deep comparison of categories
-    const categoriesChanged = JSON.stringify(currentData.categories) !== JSON.stringify(lastData.categories);
-    
-    // Deep comparison of demographics
-    const demographicsChanged = JSON.stringify(currentData.demographics) !== JSON.stringify(lastData.demographics);
-    
-    // Simple comparison of averageGap
-    const averageGapChanged = currentData.averageGap !== lastData.averageGap;
-
-    // If any data has changed, allow generation
-    if (categoriesChanged || demographicsChanged || averageGapChanged) {
-      return true;
-    }
-
-    // Data is identical for this assessment, prevent generation
-    return false;
-  }, [categories, demographics, averageGap, isTestAssessment]);
-
-  // Store assessment data after successful generation
-  const storeAssessmentData = useCallback((assessmentId: string | undefined) => {
-    if (assessmentId && !isTestAssessment) {
-      const dataToStore: AssessmentGuard = { categories, demographics, averageGap };
-      assessmentDataMap.set(assessmentId, dataToStore);
-    }
-  }, [categories, demographics, averageGap, isTestAssessment]);
 
   // ENHANCED: Better data validation function that doesn't require assessmentId for new assessments
   // FIXED: Memoize the validation function to prevent unnecessary re-creation
@@ -144,6 +86,12 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
 
   // Polling/retry logic for insights generation
   const generateNewInsights = useCallback(async (forceRegenerate = false) => {
+    // Set loading state immediately when starting generation
+    updateState({
+      isLoading: true,
+      error: null
+    }, 'Starting insights generation');
+    
     const MAX_RETRIES = 5;
     const RETRY_DELAY_MS = 6000;
     let attempt = 0;
@@ -173,18 +121,14 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
           attempt++;
           continue;
         }
-                  if (data && data.insights) {
-            const finalInsights = data.insights;
-            updateState({
-              insights: finalInsights,
+        if (data && data.insights) {
+          const finalInsights = data.insights;
+          updateState({
+            insights: finalInsights,
             isLoading: false,
             error: null,
             isInitialized: true
           }, 'Generated new insights from API');
-          
-          // Store the data used for this assessment
-          storeAssessmentData(assessmentId);
-          
           initializationCompleteRef.current = true;
           isOperationInProgressRef.current = false;
           return;
@@ -210,27 +154,23 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     }, 'Generation error after retries');
     initializationCompleteRef.current = true;
     isOperationInProgressRef.current = false;
-  }, [categories, demographics, averageGap, assessmentId, isTestAssessment, validateDataForInsights, updateState, storeAssessmentData]);
+  }, [categories, demographics, averageGap, assessmentId, isTestAssessment, validateDataForInsights, updateState]);
 
   // ENHANCED: Better initialization logic that always checks database first
   const initializeInsights = useCallback(async () => {
+    
     // Set operation flag to prevent concurrent operations
     if (isOperationInProgressRef.current) {
       return;
     }
     
-    // Check assessment-specific guard
-    if (!shouldGenerateInsights(assessmentId)) {
-      // Data hasn't changed for this assessment, skip generation
-      updateState({
-        isLoading: false,
-        isInitialized: true
-      }, 'Skipping generation - data unchanged for this assessment');
-      initializationCompleteRef.current = true;
-      return;
-    }
-    
     isOperationInProgressRef.current = true;
+    
+    // Set loading state when starting initialization
+    updateState({
+      isLoading: true,
+      error: null
+    }, 'Starting insights initialization');
     
     try {
       // ENHANCED: Always check database first for existing insights
@@ -242,27 +182,25 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
           .maybeSingle();
 
         if (dbError) {
-          // Database error, continue to generate new insights
-        } else if (assessment) {
-          const assessmentData = assessment as any;
-          if (assessmentData.ai_insights && 
-              assessmentData.ai_insights.trim() !== '' &&
-              assessmentData.ai_insights.trim().length > 100) {
-            updateState({
-              insights: assessmentData.ai_insights,
-              isLoading: false,
-              error: null,
-              isInitialized: true
-            }, 'Loaded existing insights from database');
-            
-            // Store the data used for this assessment
-            storeAssessmentData(assessmentId);
-            
-            initializationCompleteRef.current = true;
-            isOperationInProgressRef.current = false;
-            return; // Exit early - use cached data
-          }
+          // Continue to generate new insights
+        } else if (assessment && 
+                   assessment.ai_insights && 
+                   assessment.ai_insights.trim() !== '' &&
+                   assessment.ai_insights.trim().length > 100) {
+          updateState({
+            insights: assessment.ai_insights,
+            isLoading: false,
+            error: null,
+            isInitialized: true
+          }, 'Loaded existing insights from database');
+          initializationCompleteRef.current = true;
+          isOperationInProgressRef.current = false;
+          return; // Exit early - use cached data
+        } else {
+          // No existing insights found in database
         }
+      } else {
+        // No assessmentId provided, proceeding to generate new insights
       }
 
       // ENHANCED: Only generate new insights if we don't have cached data
@@ -282,21 +220,32 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     } finally {
       isOperationInProgressRef.current = false;
     }
-  }, [assessmentId, updateState, validateDataForInsights, generateNewInsights, shouldGenerateInsights, storeAssessmentData]);
+  }, [assessmentId, updateState, validateDataForInsights, generateNewInsights]);
+
+  // Store the initializeInsights function in a ref to prevent recreation
+  const initializeInsightsRef = useRef<() => Promise<void>>();
+  initializeInsightsRef.current = initializeInsights;
 
   // FIXED: Stabilize the useEffect dependencies to prevent unnecessary re-initialization
   // Use a stable reference for the initialization check
   const shouldInitialize = useMemo(() => {
-    return validateDataForInsights() && !initializationCompleteRef.current;
-  }, [validateDataForInsights]);
+    return validateDataForInsights() && !state.isInitialized;
+  }, [validateDataForInsights, state.isInitialized]);
+
+  // Track component lifecycle
+  useEffect(() => {
+    return () => {
+      // Component unmounting
+    };
+  }, [assessmentId]);
 
   // ENHANCED: Better initialization trigger that doesn't rely on local state
   useEffect(() => {
     // Only run if we have valid data and haven't completed initialization
-    if (shouldInitialize) {
-      initializeInsights();
+    if (shouldInitialize && !isOperationInProgressRef.current) {
+      initializeInsightsRef.current?.();
     }
-  }, [assessmentId, shouldInitialize, initializeInsights]);
+  }, [assessmentId, shouldInitialize]);
 
   const regenerateInsights = useCallback(async () => {
     

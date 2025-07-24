@@ -12,9 +12,9 @@ serve(async (req) => {
   }
 
   try {
-    const { email } = await req.json();
+    const { email, firstName, lastName } = await req.json();
     
-    console.log('[Brevo] Received subscribe request for:', email);
+    console.log('[Brevo] Received subscribe request for:', email, 'Name:', firstName, lastName);
     
     if (!email) {
       console.log('[Brevo] No email provided in request body.');
@@ -24,6 +24,20 @@ serve(async (req) => {
       );
     }
 
+    // Prepare contact data
+    const contactData: any = { 
+      email, 
+      listIds: [24] 
+    };
+
+    // Add name fields if provided
+    if (firstName) {
+      contactData.attributes = { ...contactData.attributes, FIRSTNAME: firstName };
+    }
+    if (lastName) {
+      contactData.attributes = { ...contactData.attributes, LASTNAME: lastName };
+    }
+
     const response = await fetch('https://api.brevo.com/v3/contacts', {
       method: 'POST',
       headers: {
@@ -31,7 +45,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
-      body: JSON.stringify({ email, listIds: [2, 15] }),
+      body: JSON.stringify(contactData),
     });
 
     const responseBody = await response.text();

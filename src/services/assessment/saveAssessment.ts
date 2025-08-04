@@ -87,7 +87,7 @@ const checkForDuplicateAssessment = async (
   return { exists: false };
 };
 
-export const TEST_ASSESSMENT_ID = '08a5f01a-db17-474d-a3e8-c53bedbc34c8';
+export const TEST_ASSESSMENT_ID = '4a404fb0-311d-464b-8278-10df1b151ea4';
 
 export const saveAssessmentResults = async (
   categories: Category[], 

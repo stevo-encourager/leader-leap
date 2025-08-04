@@ -32,7 +32,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
   const initializationCompleteRef = useRef(false);
   
   // UPDATED: Special test assessment ID that allows regeneration
-  const TEST_ASSESSMENT_ID = '08a5f01a-db17-474d-a3e8-c53bedbc34c8';
+  const TEST_ASSESSMENT_ID = '4a404fb0-311d-464b-8278-10df1b151ea4';
   const isTestAssessment = assessmentId === TEST_ASSESSMENT_ID;
 
   // Safe state updater

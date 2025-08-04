@@ -112,7 +112,7 @@ const AssessmentsList = ({
                             {isMobile ? 'View' : 'View Results'}
                           </Button>
                         </Link>
-                        {onDeleteAssessment && assessment.id !== '08a5f01a-db17-474d-a3e8-c53bedbc34c8' && (
+                        {onDeleteAssessment && assessment.id !== '4a404fb0-311d-464b-8278-10df1b151ea4' && (
                           <DeleteAssessmentDialog
                             assessmentId={assessment.id}
                             onDeleteAssessment={onDeleteAssessment}

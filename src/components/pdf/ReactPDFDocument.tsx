@@ -632,13 +632,13 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
           ))}
       </Page>
 
-      {/* Page 5 - Recommended Next Steps & Professional Development Coaching */}
+      {/* Page 5 - Recommended Next Steps & Self-Leadership Coaching */}
       <Page size="A4" style={styles.page}>
         <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Recommended Next Steps</Text>
-        <Text style={styles.listItem}>• Consider using this report in your next 1:1 with your manager or mentor as a guide for your professional development</Text>
+        <Text style={styles.listItem}>• Consider using this report in your next 1:1 with your manager or mentor as a guide for your self-leadership development</Text>
         <Text style={styles.listItem}>• Create a 6 month action plan to address your most critical competency gaps and schedule a time to re-take this assessment to track your progress</Text>
         <Text style={styles.listItem}>• Set an actionable goal for yourself within the next week, and set a reminder to help hold yourself accountable for taking that next step</Text>
-        <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Professional Development Coaching</Text>
+        <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Self-Leadership Coaching</Text>
         <View style={styles.coachingContainer}>
           <View style={styles.coachingText}>
             <Text style={styles.text}>Ready to take your leadership skills to the next level? Our expert coaches can help you:</Text>

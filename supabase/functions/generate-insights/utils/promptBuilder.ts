@@ -48,7 +48,7 @@ const buildValidatedSkillsList = (): string => {
 - Prioritization
 - Work-Life Balance
 
-**Professional Development:**
+**Self-Leadership:**
 - Continuous Learning
 - Feedback Reception
 - Career Planning
@@ -131,7 +131,7 @@ const buildValidatedLeadersList = (): string => {
 - Negotiation & Conflict Resolution strengths → Jamie Dimon, Stewart Butterfield, or Andy Jassy
 - Delegation & Empowerment strengths → Indra Nooyi, Mary Barra, or Marc Benioff
 - Time/Priority Management strengths → Vary selection to avoid repetition
-- Professional Development strengths → Marc Benioff, Thasunda Brown Duckett, or Elizabeth Nyamayaro
+- Self-Leadership strengths → Marc Benioff, Thasunda Brown Duckett, or Elizabeth Nyamayaro
 
 **Step 3: Apply Industry Filter (if applicable)**
 - Technology industry → Prefer Satya Nadella, Jensen Huang, Marc Benioff, or Andy Jassy
@@ -282,7 +282,7 @@ const buildValidatedResourcesList = (): string => {
 - For Change Management competencies, prefer "Leading Change" or "The Power of Habit"
 - For Decision Making competencies, prefer "Thinking Fast and Slow" or "Getting To Yes"
 - For Time/Priority Management competencies, prefer "Atomic Habits" or "Getting Things Done"
-- For Professional Development competencies, prefer "The 7 Habits of Highly Effective People" or "Atomic Habits"
+- For Self-Leadership competencies, prefer "The 7 Habits of Highly Effective People" or "Atomic Habits"
 - For Negotiation & Conflict Resolution competencies, prefer "Getting To Yes" or "Crucial Conversations"
 - For Delegation & Empowerment competencies, prefer "The Leadership Challenge" or "Dare to Lead"
 
@@ -310,7 +310,7 @@ const buildValidatedResourcesList = (): string => {
 - For Change Management competencies, prefer "Leading Change" or "The Power of Habit"
 - For Decision Making competencies, prefer "Thinking Fast and Slow" or "Getting To Yes"
 - For Time/Priority Management competencies, prefer "Atomic Habits" or "Getting Things Done"
-- For Professional Development competencies, prefer "The 7 Habits of Highly Effective People" or "Atomic Habits"
+- For Self-Leadership competencies, prefer "The 7 Habits of Highly Effective People" or "Atomic Habits"
 - For Negotiation & Conflict Resolution competencies, prefer "Getting To Yes" or "Crucial Conversations"
 - For Delegation & Empowerment competencies, prefer "The Leadership Challenge" or "Dare to Lead"
 
@@ -847,10 +847,10 @@ Use the Streamlined Leader Selection Process above to select the most appropriat
 - Use "key competencies," "top competencies," or "competency areas" instead
 
 **Correct Terminology Examples:**
-✅ "Your key competencies in professional development..."
+✅ "Your key competencies in self-leadership..."
 ✅ "These leadership competencies provide a foundation..."
 ✅ "Your assessment highlights competencies in..."
-❌ "Your strengths in professional development..."
+❌ "Your strengths in self-leadership..."
 ❌ "These strength areas provide a foundation..."
 ❌ "Your assessment highlights strengths in..."
 

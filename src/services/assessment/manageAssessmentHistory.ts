@@ -196,7 +196,7 @@ export const getAssessmentHistory = async (): Promise<{
       .from('assessment_results')
       .select('id, created_at, completed')
       .eq('user_id', user.id)
-      .neq('id', '08a5f01a-db17-474d-a3e8-c53bedbc34c8') // Exclude test assessment
+      .neq('id', '4a404fb0-311d-464b-8278-10df1b151ea4') // Exclude test assessment
       .order('created_at', { ascending: false });
       
     if (error) {
@@ -228,7 +228,7 @@ export const deleteAssessment = async (assessmentId: string): Promise<{
     }
     
     // Prevent deletion of the protected test assessment
-    if (assessmentId === '08a5f01a-db17-474d-a3e8-c53bedbc34c8') {
+    if (assessmentId === '4a404fb0-311d-464b-8278-10df1b151ea4') {
       return { success: false, error: 'This test assessment cannot be deleted.' };
     }
     
@@ -289,7 +289,7 @@ export const deleteAllAssessments = async (): Promise<{
       .from('assessment_results')
       .delete()
       .eq('user_id', user.id)
-      .neq('id', '08a5f01a-db17-474d-a3e8-c53bedbc34c8');
+      .neq('id', '4a404fb0-311d-464b-8278-10df1b151ea4');
       
     if (error) {
       return { success: false, error: error.message };

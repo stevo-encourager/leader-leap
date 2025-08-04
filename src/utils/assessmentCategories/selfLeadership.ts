@@ -1,9 +1,8 @@
-
 import { Category } from '../assessmentTypes';
 
-export const professionalDevelopmentCategory: Category = {
-  id: "professional-development",
-  title: "Professional Development",
+export const selfLeadershipCategory: Category = {
+  id: "self-leadership",
+  title: "Self-Leadership",
   description: "The ability to continuously improve skills and knowledge for career growth.",
   skills: [
     {
@@ -25,4 +24,4 @@ export const professionalDevelopmentCategory: Category = {
       ratings: { current: 0, desired: 0 }
     }
   ]
-};
+}; 

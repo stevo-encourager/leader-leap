@@ -13,6 +13,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, Bot, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import AssessmentLoading from '@/components/assessment/AssessmentLoading';
+import { InsightsProvider } from '@/hooks/InsightsProvider';
 
 const AITestPanel = () => {
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ const AITestPanel = () => {
   // This was causing the "f is not a function" error
 
   // UPDATED: Use the new test assessment ID
-  const TEST_ASSESSMENT_ID = '08a5f01a-db17-474d-a3e8-c53bedbc34c8';
+  const TEST_ASSESSMENT_ID = '4a404fb0-311d-464b-8278-10df1b151ea4';
 
   // Check if we're in development/staging (not production)
   const isDevelopment = import.meta.env.DEV || 
@@ -72,7 +73,7 @@ const AITestPanel = () => {
 
     try {
   
-      const result = await getSpecificAssessmentResults(TEST_ASSESSMENT_ID, 'test-user');
+      const result = await getSpecificAssessmentResults(TEST_ASSESSMENT_ID, user.id);
 
       if (result.success && result.data) {
         setCategories(result.data.categories);
@@ -202,13 +203,20 @@ const AITestPanel = () => {
         {/* AI Insights Section - identical to live dashboard */}
         <div className="space-y-8">
           <div key={`ai-insights-${refreshKey}`}>
-            <AIInsights 
+            <InsightsProvider
               categories={categories}
               demographics={demographics}
               averageGap={averageGap}
               assessmentId={TEST_ASSESSMENT_ID}
-              onRegenerateCallback={handleRegenerateCallback}
-            />
+            >
+              <AIInsights 
+                categories={categories}
+                demographics={demographics}
+                averageGap={averageGap}
+                assessmentId={TEST_ASSESSMENT_ID}
+                onRegenerateCallback={handleRegenerateCallback}
+              />
+            </InsightsProvider>
           </div>
         </div>
 

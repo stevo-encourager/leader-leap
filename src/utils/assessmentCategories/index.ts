@@ -8,7 +8,7 @@ import { changeManagementCategory } from './changeManagement';
 import { negotiationConflictResolutionCategory } from './negotiationConflictResolution';
 import { delegationEmpowermentCategory } from './delegationEmpowerment';
 import { timeManagementCategory } from './timeManagement';
-import { professionalDevelopmentCategory } from './professionalDevelopment';
+import { selfLeadershipCategory } from './selfLeadership';
 import { Category } from '../assessmentTypes';
 
 export const allCategories = [
@@ -21,7 +21,7 @@ export const allCategories = [
   negotiationConflictResolutionCategory,
   delegationEmpowermentCategory,
   timeManagementCategory,
-  professionalDevelopmentCategory
+  selfLeadershipCategory
 ];
 
 export {
@@ -34,7 +34,7 @@ export {
   negotiationConflictResolutionCategory,
   delegationEmpowermentCategory,
   timeManagementCategory,
-  professionalDevelopmentCategory
+  selfLeadershipCategory
 };
 
 // Using export type for type re-export

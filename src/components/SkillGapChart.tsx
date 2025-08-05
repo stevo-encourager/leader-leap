@@ -82,6 +82,9 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   
+  // Force desktop rendering for PDF generation to ensure consistency across devices
+  const effectiveIsMobile = isPDF ? false : isMobile;
+  
   // Ensure categories is always an array
   const safeCategories = Array.isArray(categories) ? categories : [];
   
@@ -216,7 +219,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
   // Optimized chart margins for mobile and larger chart size
   const chartMargins = isPDF 
     ? { top: 20, right: 50, left: 50, bottom: 20 } // Reduced margins for PDF
-    : isMobile
+    : effectiveIsMobile
     ? { top: 10, right: 20, left: 20, bottom: 10 } // Much smaller margins for mobile
     : { top: 20, right: 80, left: 80, bottom: 20 }; // Original margins for desktop
 

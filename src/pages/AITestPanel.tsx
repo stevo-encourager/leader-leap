@@ -28,7 +28,7 @@ const AITestPanel = () => {
   // This was causing the "f is not a function" error
 
   // UPDATED: Use the new test assessment ID
-  const TEST_ASSESSMENT_ID = '4a404fb0-311d-464b-8278-10df1b151ea4';
+  const TEST_ASSESSMENT_ID = 'b11beb1e-b6d6-4204-91f7-5673ed90dce5';
 
   // Check if we're in development/staging (not production)
   const isDevelopment = import.meta.env.DEV || 

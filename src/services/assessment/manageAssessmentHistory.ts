@@ -197,6 +197,7 @@ export const getAssessmentHistory = async (): Promise<{
       .select('id, created_at, completed')
       .eq('user_id', user.id)
       .neq('id', '4a404fb0-311d-464b-8278-10df1b151ea4') // Exclude test assessment
+        .neq('id', 'b11beb1e-b6d6-4204-91f7-5673ed90dce5') // Exclude test assessment
       .order('created_at', { ascending: false });
       
     if (error) {
@@ -227,10 +228,10 @@ export const deleteAssessment = async (assessmentId: string): Promise<{
       return { success: false, error: 'User not authenticated' };
     }
     
-    // Prevent deletion of the protected test assessment
-    if (assessmentId === '4a404fb0-311d-464b-8278-10df1b151ea4') {
-      return { success: false, error: 'This test assessment cannot be deleted.' };
-    }
+          // Prevent deletion of the protected test assessments
+      if (assessmentId === '4a404fb0-311d-464b-8278-10df1b151ea4' || assessmentId === 'b11beb1e-b6d6-4204-91f7-5673ed90dce5') {
+        return { success: false, error: 'This test assessment cannot be deleted.' };
+      }
     
     // First check if the assessment exists and belongs to this user
     const { data: existingAssessment, error: fetchError } = await supabase
@@ -289,7 +290,8 @@ export const deleteAllAssessments = async (): Promise<{
       .from('assessment_results')
       .delete()
       .eq('user_id', user.id)
-      .neq('id', '4a404fb0-311d-464b-8278-10df1b151ea4');
+      .neq('id', '4a404fb0-311d-464b-8278-10df1b151ea4')
+        .neq('id', 'b11beb1e-b6d6-4204-91f7-5673ed90dce5');
       
     if (error) {
       return { success: false, error: error.message };

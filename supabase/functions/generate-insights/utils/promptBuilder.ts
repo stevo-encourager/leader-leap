@@ -13,7 +13,7 @@ const buildValidatedSkillsList = (): string => {
 - Stakeholder Engagement
 - Executive Presence
 
-**Team Building/Management:**
+**Team Leadership:**
 - Team Motivation
 - Team Development
 - Collaboration
@@ -124,7 +124,7 @@ const buildValidatedLeadersList = (): string => {
 **Step 2: Apply Competency-to-Leader Mapping**
 - Strategic Thinking/Vision strengths → Satya Nadella, Paul Polman, Jensen Huang, or Arvind Krishna
 - Influencing strengths → Elizabeth Nyamayaro, Stewart Butterfield, or Whitney Wolfe Herd  
-- Team Building/Management strengths → Mary Barra, Brian Chesky, or Marc Benioff
+- Team Leadership strengths → Mary Barra, Brian Chesky, or Marc Benioff
 - Decision Making strengths → Jamie Dimon, Reed Hastings, or Andy Jassy
 - Emotional Intelligence strengths → Thasunda Brown Duckett, Satya Nadella, or Whitney Wolfe Herd
 - Change Management strengths → Reed Hastings, Brian Chesky, or Reshma Saujani
@@ -306,7 +306,7 @@ const buildValidatedResourcesList = (): string => {
 - For Influencing competencies, prefer "Crucial Conversations" or "Radical Candor"
 - For Emotional Intelligence competencies, prefer "Emotional Intelligence 2.0" or "Primal Leadership"
 - For Strategic Thinking competencies, prefer "Good to Great" or "Playing To Win"
-- For Team Building competencies, prefer "The Leadership Challenge" or "The 17 Indisputable Laws of Teamwork"
+- For Team Leadership competencies, prefer "The Leadership Challenge" or "The 17 Indisputable Laws of Teamwork"
 - For Change Management competencies, prefer "Leading Change" or "The Power of Habit"
 - For Decision Making competencies, prefer "Thinking Fast and Slow" or "Getting To Yes"
 - For Time/Priority Management competencies, prefer "Atomic Habits" or "Getting Things Done"

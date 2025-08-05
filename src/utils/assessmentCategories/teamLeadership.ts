@@ -1,9 +1,8 @@
-
 import { Category } from '../assessmentTypes';
 
-export const teamBuildingCategory: Category = {
+export const teamLeadershipCategory: Category = {
   id: "team-building",
-  title: "Team Building/Management",
+  title: "Team Leadership",
   description: "The ability to build and maintain high-performing teams through effective leadership.",
   skills: [
     {
@@ -25,4 +24,4 @@ export const teamBuildingCategory: Category = {
       ratings: { current: 0, desired: 0 }
     }
   ]
-};
+}; 

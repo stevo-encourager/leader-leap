@@ -1,7 +1,7 @@
 
 import { strategicThinkingCategory } from './strategicThinking';
 import { influencingCategory } from './influencing';
-import { teamBuildingCategory } from './teamBuilding';
+import { teamLeadershipCategory } from './teamLeadership';
 import { decisionMakingCategory } from './decisionMaking';
 import { emotionalIntelligenceCategory } from './emotionalIntelligence';
 import { changeManagementCategory } from './changeManagement';
@@ -14,7 +14,7 @@ import { Category } from '../assessmentTypes';
 export const allCategories = [
   strategicThinkingCategory,
   influencingCategory,
-  teamBuildingCategory,
+  teamLeadershipCategory,
   decisionMakingCategory,
   emotionalIntelligenceCategory,
   changeManagementCategory,
@@ -27,7 +27,7 @@ export const allCategories = [
 export {
   strategicThinkingCategory,
   influencingCategory,
-  teamBuildingCategory,
+  teamLeadershipCategory,
   decisionMakingCategory,
   emotionalIntelligenceCategory,
   changeManagementCategory,

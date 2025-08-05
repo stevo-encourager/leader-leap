@@ -44,7 +44,7 @@ const SCREEN_LABEL_RADIUS = 185; // For on-screen chart
 
 // Custom tick component for competency names with optimized spacing
 const CustomTick = (props: any) => {
-  const { payload, x, y, cx, cy, textAnchor, index, isPDF } = props;
+  const { payload, x, y, cx, cy, textAnchor, index, isPDF, isMobile } = props;
   
   // Calculate angle from center to current position
   const angle = Math.atan2(y - cy, x - cx);
@@ -55,6 +55,22 @@ const CustomTick = (props: any) => {
   const labelX = cx + labelRadius * Math.cos(angle);
   const labelY = cy + labelRadius * Math.sin(angle);
   
+  // Split longer labels onto two lines for PDF only
+  const splitLabel = (text: string) => {
+    const longLabels = {
+      'Strategic Thinking/Vision': ['Strategic', 'Thinking/Vision'],
+      'Team Leadership': ['Team Leadership'],
+      'Negotiation & Conflict Resolution': ['Negotiation &', 'Conflict Resolution'],
+      'Delegation & Empowerment': ['Delegation &', 'Empowerment'],
+      'Time/Priority Management': ['Time/Priority', 'Management']
+    };
+    
+    return longLabels[text] || [text];
+  };
+  
+  // Only split labels for PDF generation, keep single line for main app
+  const labelLines = isPDF ? splitLabel(payload.value) : [payload.value];
+  
   // Determine text anchor based on position relative to center
   let anchor = 'middle';
   if (labelX > cx + 5) anchor = 'start';
@@ -64,17 +80,22 @@ const CustomTick = (props: any) => {
   const displayText = payload.value;
   
   return (
-    <text
-      x={labelX}
-      y={labelY}
-      textAnchor={anchor}
-      dominantBaseline="middle"
-      fill="#2F564D"
-      fontSize={isPDF ? "10" : "14"}
-      fontWeight="500"
-    >
-      {displayText}
-    </text>
+    <g>
+      {labelLines.map((line, lineIndex) => (
+        <text
+          key={lineIndex}
+          x={labelX}
+          y={labelY + (lineIndex * (isPDF ? 12 : 14)) - ((labelLines.length - 1) * (isPDF ? 6 : 7))}
+          textAnchor={anchor}
+          dominantBaseline="middle"
+          fill="#2F564D"
+          fontSize={isPDF ? "10" : "14"}
+          fontWeight="500"
+        >
+          {line}
+        </text>
+      ))}
+    </g>
   );
 };
 
@@ -301,7 +322,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             />
             <PolarAngleAxis 
               dataKey="subject"
-              tick={(props) => <CustomTick {...props} isPDF={isPDF} />}
+              tick={(props) => <CustomTick {...props} isPDF={isPDF} isMobile={isMobile} />}
             />
             <Radar
               name={isPDF ? "Current State" : "Current Level"}

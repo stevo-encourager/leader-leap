@@ -69,6 +69,7 @@ const CustomTick = (props: any) => {
   };
   
   // Only split labels for PDF generation, keep single line for main app
+  console.log('🔍 DEBUG: CustomTick isPDF =', isPDF, 'payload.value =', payload.value);
   const labelLines = isPDF ? splitLabel(payload.value) : [payload.value];
   
   // Determine text anchor based on position relative to center
@@ -100,6 +101,7 @@ const CustomTick = (props: any) => {
 };
 
 const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "", isPDF = false }) => {
+  console.log('🔍 DEBUG: SkillGapChart isPDF =', isPDF);
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   

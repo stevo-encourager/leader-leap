@@ -69,7 +69,6 @@ const CustomTick = (props: any) => {
   };
   
   // Only split labels for PDF generation, keep single line for main app
-  console.log('🔍 DEBUG: CustomTick isPDF =', isPDF, 'payload.value =', payload.value);
   const labelLines = isPDF ? splitLabel(payload.value) : [payload.value];
   
   // Determine text anchor based on position relative to center
@@ -101,7 +100,6 @@ const CustomTick = (props: any) => {
 };
 
 const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "", isPDF = false }) => {
-  console.log('🔍 DEBUG: SkillGapChart isPDF =', isPDF);
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   
@@ -264,7 +262,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
       id="radar-chart-container"
       style={{
         width: isPDF ? `${PDF_CONTAINER_WIDTH}px` : '100%',
-        height: isPDF ? `${PDF_CONTAINER_HEIGHT}px` : '600px',
+        height: isPDF ? `${PDF_CONTAINER_HEIGHT}px` : 'min(100%, 600px)',
         backgroundColor: 'white',
         display: 'grid',
         gridTemplateRows: isPDF ? '1fr' : '1fr auto',
@@ -286,9 +284,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             minHeight: 0,
             width: isPDF ? `${PDF_RADAR_WIDTH}px` : '100%',
             height: isPDF ? `${PDF_RADAR_HEIGHT}px` : '100%',
-            margin: isPDF ? 'auto' : undefined, // Center chart in container for PDF
-            // Ensure square aspect ratio for main app chart
-            aspectRatio: isPDF ? undefined : '1 / 1'
+            margin: isPDF ? 'auto' : undefined // Center chart in container for PDF
           }}
         >
         {/* ResponsiveContainer always fills parent for both PDF and screen */}

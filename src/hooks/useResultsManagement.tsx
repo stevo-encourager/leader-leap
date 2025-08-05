@@ -31,10 +31,7 @@ export const useResultsManagement = ({
   useEffect(() => {
     if (!initialized) return;
     
-    assessmentLogger.debug('Categories updated', {
-      length: categories.length,
-      isArray: Array.isArray(categories)
-    });
+
     
     const checkRatings = () => {
       if (!Array.isArray(categories) || categories.length === 0) {
@@ -50,10 +47,7 @@ export const useResultsManagement = ({
         )
       );
       
-      assessmentLogger.debug('Categories contain skills with ratings', {
-        skillsWithRatings: skillsWithRatings.length,
-        totalRatingValues: skillsWithRatings.length * 2
-      });
+
       
       setHasValidRatings(skillsWithRatings.length > 0);
     };

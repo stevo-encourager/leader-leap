@@ -85,6 +85,8 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
   // Force desktop rendering for PDF generation to ensure consistency across devices
   const effectiveIsMobile = isPDF ? false : isMobile;
   
+
+  
   // Ensure categories is always an array
   const safeCategories = Array.isArray(categories) ? categories : [];
   
@@ -223,6 +225,28 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
     ? { top: 10, right: 20, left: 20, bottom: 10 } // Much smaller margins for mobile
     : { top: 20, right: 80, left: 80, bottom: 20 }; // Original margins for desktop
 
+  // Debug: log the actual chart container dimensions
+  if (isPDF) {
+    console.log('📊 ChartDebug: Container style dimensions', {
+      width: isPDF ? `${PDF_CONTAINER_WIDTH}px` : '100%',
+      height: isPDF ? `${PDF_CONTAINER_HEIGHT}px` : '600px',
+      chartMargins: chartMargins
+    });
+  }
+
+  // Debug logging for chart dimensions
+  if (isPDF) {
+    console.log('🚨 TESTING CHANGES - PDF Chart Rendering', {
+      isMobile: isMobile,
+      effectiveIsMobile: effectiveIsMobile,
+      chartMargins: chartMargins,
+      containerWidth: PDF_CONTAINER_WIDTH,
+      containerHeight: PDF_CONTAINER_HEIGHT,
+      radarWidth: PDF_RADAR_WIDTH,
+      radarHeight: PDF_RADAR_HEIGHT
+    });
+  }
+
   /**
    * CRITICAL FOR PDF EXPORT: This container MUST always have data-testid="radar-chart-container"
    * The PDF export function captureRadarChartAsPNG() depends on this attribute to find and capture the chart.
@@ -250,18 +274,18 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
       }}
     >
       {/* Chart area with proper grid positioning */}
-      <div 
-        style={{ 
-          gridArea: 'chart',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: 0,
-          width: isPDF ? `${PDF_RADAR_WIDTH}px` : '100%',
-          height: isPDF ? `${PDF_RADAR_HEIGHT}px` : '100%',
-          margin: isPDF ? 'auto' : undefined // Center chart in container for PDF
-        }}
-      >
+              <div 
+          style={{ 
+            gridArea: 'chart',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: 0,
+            width: isPDF ? `${PDF_RADAR_WIDTH}px` : '100%',
+            height: isPDF ? `${PDF_RADAR_HEIGHT}px` : '100%',
+            margin: isPDF ? 'auto' : undefined // Center chart in container for PDF
+          }}
+        >
         {/* ResponsiveContainer always fills parent for both PDF and screen */}
         <ResponsiveContainer width="100%" height="100%">
           <RadarChart 

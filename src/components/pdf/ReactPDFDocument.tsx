@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   },
   chartImage: {
     maxWidth: 500,
-    maxHeight: 500,
+    maxHeight: 417, // Maintain 1.2:1 aspect ratio (500/1.2 = 417)
     marginBottom: 8,
     alignSelf: 'center',
   },
@@ -403,6 +403,22 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
             </View>
           )}
         </View>
+        
+        {/* Chart Legend for Mobile PDF only */}
+        {typeof window !== 'undefined' && window.innerWidth < 768 && (
+          <View style={styles.chartLegend}>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendColor, { backgroundColor: '#2F564D', opacity: 0.6 }]} />
+              <Text style={styles.legendText}>Current Level</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendColor, { backgroundColor: '#8baca5', opacity: 0.6 }]} />
+              <Text style={styles.legendText}>Desired Level</Text>
+            </View>
+          </View>
+        )}
+        
+
       </Page>
 
       {/* Page 2 - Key Insights & Recommendations */}

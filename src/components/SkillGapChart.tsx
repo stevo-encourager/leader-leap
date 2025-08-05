@@ -246,27 +246,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
     ? { top: 10, right: 20, left: 20, bottom: 10 } // Much smaller margins for mobile
     : { top: 20, right: 80, left: 80, bottom: 20 }; // Original margins for desktop
 
-  // Debug: log the actual chart container dimensions
-  if (isPDF) {
-    console.log('📊 ChartDebug: Container style dimensions', {
-      width: isPDF ? `${PDF_CONTAINER_WIDTH}px` : '100%',
-      height: isPDF ? `${PDF_CONTAINER_HEIGHT}px` : '600px',
-      chartMargins: chartMargins
-    });
-  }
 
-  // Debug logging for chart dimensions
-  if (isPDF) {
-    console.log('🚨 TESTING CHANGES - PDF Chart Rendering', {
-      isMobile: isMobile,
-      effectiveIsMobile: effectiveIsMobile,
-      chartMargins: chartMargins,
-      containerWidth: PDF_CONTAINER_WIDTH,
-      containerHeight: PDF_CONTAINER_HEIGHT,
-      radarWidth: PDF_RADAR_WIDTH,
-      radarHeight: PDF_RADAR_HEIGHT
-    });
-  }
 
   /**
    * CRITICAL FOR PDF EXPORT: This container MUST always have data-testid="radar-chart-container"

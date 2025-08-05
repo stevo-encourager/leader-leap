@@ -106,14 +106,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     return true;
   };
 
-  // Enhanced PDF download with better error handling and debugging
+  // Enhanced PDF download with better error handling
   const handleDownloadPDF = async () => {
-    console.log('📱 MobilePDF: Starting PDF download process...');
     setIsExportingPDF(true); // Show hidden chart
-    console.log('📱 MobilePDF: Hidden chart container should now be visible');
     // Wait for chart to render in DOM
     await new Promise(res => setTimeout(res, 1200));
-    console.log('📱 MobilePDF: Chart render timeout completed');
     
     if (!hasValidAssessmentData()) {
       toast({
@@ -138,13 +135,11 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     // Declare variables outside try block for cleanup in finally
     let chartImageDataUrl: string | null = null;
     
-    try {
-      // Step 1: Capture the radar chart with enhanced error handling
-      console.log('📱 MobilePDF: Attempting to capture radar chart...');
-      try {
-        chartImageDataUrl = await captureRadarChartAsPNG();
-        console.log('📱 MobilePDF: Chart capture result:', chartImageDataUrl ? 'SUCCESS' : 'FAILED');
-      } catch (chartError) {
+          try {
+        // Step 1: Capture the radar chart with enhanced error handling
+        try {
+          chartImageDataUrl = await captureRadarChartAsPNG();
+        } catch (chartError) {
         console.error('📱 MobilePDF: Chart capture error:', chartError);
         // Continue without chart - don't fail the entire PDF generation
       }

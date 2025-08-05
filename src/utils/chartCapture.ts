@@ -13,14 +13,10 @@ import html2canvas from 'html2canvas';
  * the primary selector here, or PDF exports will fail.
  */
 export const captureRadarChartAsPNG = async (): Promise<string | null> => {
-  console.log('🔍 ChartCapture: Starting chart capture process...');
   return new Promise((resolve) => {
-  
-  
     
     // Wait for chart to fully render
     setTimeout(async () => {
-      console.log('🔍 ChartCapture: Chart render timeout completed, starting capture...');
   
       
       /**
@@ -45,8 +41,6 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         radarContainer = document.querySelector(selector) as HTMLElement;
         if (radarContainer) {
           usedSelector = selector;
-          console.log(`🔍 ChartCapture: Found radar container with selector: ${selector}`);
-          console.log(`🔍 ChartCapture: Container dimensions: ${radarContainer.offsetWidth}x${radarContainer.offsetHeight}`);
           break;
         }
       }
@@ -54,7 +48,7 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
       if (!radarContainer) {
         console.error('ChartCapture: CRITICAL ERROR - No radar chart container found with any selector!');
         console.error('ChartCapture: This usually means the data-testid="radar-chart-container" attribute is missing from SkillGapChart.tsx');
-        console.log('🔍 ChartCapture: Tried selectors:', selectors);
+
         resolve(null);
         return;
       }
@@ -118,15 +112,10 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         // Convert to PNG data URL with high quality
         const pngDataUrl = canvas.toDataURL('image/png', 1.0);
         
-        console.log(`🔍 ChartCapture: Generated PNG data URL length: ${pngDataUrl.length}`);
-        console.log(`🔍 ChartCapture: Canvas dimensions: ${canvas.width}x${canvas.height}`);
-        
         // Validate that we have substantial image data
         if (pngDataUrl.length > 2000) {
-          console.log('🔍 ChartCapture: Chart capture successful!');
           resolve(pngDataUrl);
         } else {
-          console.error('🔍 ChartCapture: Chart capture failed - PNG data URL too short');
           resolve(null);
         }
         

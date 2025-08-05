@@ -284,7 +284,9 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             minHeight: 0,
             width: isPDF ? `${PDF_RADAR_WIDTH}px` : '100%',
             height: isPDF ? `${PDF_RADAR_HEIGHT}px` : '100%',
-            margin: isPDF ? 'auto' : undefined // Center chart in container for PDF
+            margin: isPDF ? 'auto' : undefined, // Center chart in container for PDF
+            // Ensure square aspect ratio for main app chart
+            aspectRatio: isPDF ? undefined : '1 / 1'
           }}
         >
         {/* ResponsiveContainer always fills parent for both PDF and screen */}

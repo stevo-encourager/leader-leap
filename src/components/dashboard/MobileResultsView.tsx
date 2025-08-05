@@ -220,8 +220,8 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
             position: 'absolute', 
             left: '-9999px', 
             top: 0, 
-            width: 540,
-            height: 440,
+            width: 600,
+            height: 500,
             zIndex: -1
           }}
         >

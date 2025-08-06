@@ -434,7 +434,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           <DialogHeader>
             <DialogTitle>Account Created Successfully</DialogTitle>
                               <DialogDescription>
-                    <span className="block mb-2">Please check your email to verify your account before signing in.</span>
+                    <span className="block mt-4 mb-4">Please check your email to verify your account before signing in.</span>
                     <span className="block mb-2">If you do not see the email in your inbox, please check your <strong>spam folder</strong>.</span>
                     <span className="block"><strong>You must complete your sign-up within 2 hours, or your assessment data will be lost.</strong></span>
                   </DialogDescription>

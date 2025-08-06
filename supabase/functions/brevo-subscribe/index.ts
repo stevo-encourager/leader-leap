@@ -27,7 +27,7 @@ serve(async (req) => {
     // Prepare contact data
     const contactData: any = { 
       email, 
-      listIds: [24] 
+      listIds: [24, 2] 
     };
 
     // Add name fields if provided

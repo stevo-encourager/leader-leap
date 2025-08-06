@@ -22,14 +22,28 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 app.post('/api/subscribe-brevo', async (req, res) => {
-  const { email } = req.body;
-  console.log('[Brevo] Received subscribe request for:', email);
+  const { email, firstName, lastName } = req.body;
+  console.log('[Brevo] Received subscribe request for:', email, 'Name:', firstName, lastName);
   if (!email) {
     console.log('[Brevo] No email provided in request body.');
     return res.status(400).json({ error: 'Email required' });
   }
 
   try {
+    // Prepare contact data
+    const contactData = { 
+      email, 
+      listIds: [24, 2] 
+    };
+
+    // Add name fields if provided
+    if (firstName) {
+      contactData.attributes = { ...contactData.attributes, FIRSTNAME: firstName };
+    }
+    if (lastName) {
+      contactData.attributes = { ...contactData.attributes, LASTNAME: lastName };
+    }
+
     const response = await fetch('https://api.brevo.com/v3/contacts', {
       method: 'POST',
       headers: {
@@ -37,7 +51,7 @@ app.post('/api/subscribe-brevo', async (req, res) => {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
-      body: JSON.stringify({ email, listIds: [2, 15] }),
+      body: JSON.stringify(contactData),
     });
 
     const responseBody = await response.text();
@@ -46,6 +60,10 @@ app.post('/api/subscribe-brevo', async (req, res) => {
 
     if (response.ok) {
       return res.status(200).json({ success: true });
+    } else if (response.status === 400 && responseBody.includes('duplicate_parameter')) {
+      // Email already exists in Brevo - treat as success
+      console.log('[Brevo] Email already exists, treating as success');
+      return res.status(200).json({ success: true, message: 'Email already subscribed' });
     } else {
       return res.status(500).json({ error: responseBody });
     }

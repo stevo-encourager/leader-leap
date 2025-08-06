@@ -117,7 +117,7 @@ const PrivacyNoticeModal: React.FC<{ open: boolean; onOpenChange: (open: boolean
 );
 
 const Consent: React.FC = () => {
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const navigate = useNavigate();
   const [gdprConsent, setGdprConsent] = useState(false);
   const [receiveEmails, setReceiveEmails] = useState(true);
@@ -164,9 +164,40 @@ const Consent: React.FC = () => {
       // If user consents to emails, subscribe to Brevo
       if (receiveEmails && user.email) {
         try {
-          const { data, error } = await supabase.functions.invoke('brevo-subscribe', {
-            body: { email: user.email }
-          });
+          // For local development, use the local server; for production, use Supabase Edge Function
+          const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+          
+          let data, error;
+          
+          if (isLocalhost) {
+            // Use local server for development
+            const response = await fetch('http://localhost:3001/api/subscribe-brevo', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ 
+                email: user.email,
+                firstName: userProfile?.first_name,
+                lastName: userProfile?.surname
+              })
+            });
+            
+            const result = await response.json();
+            data = result;
+            error = response.ok ? null : result;
+          } else {
+            // Use Supabase Edge Function for production
+            const result = await supabase.functions.invoke('brevo-subscribe', {
+              body: { 
+                email: user.email,
+                firstName: userProfile?.first_name,
+                lastName: userProfile?.surname
+              }
+            });
+            data = result.data;
+            error = result.error;
+          }
           if (!error && data?.success) {
             toast({
               title: 'Subscribed to email updates',

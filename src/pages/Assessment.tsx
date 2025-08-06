@@ -49,16 +49,20 @@ const Assessment = () => {
 
   // Test function to generate demographic data and assessment scores
   const generateTestData = () => {
+    if (import.meta.env.DEV) {
+      console.log('generateTestData - Starting test data generation');
+    }
+    
     // Generate realistic demographic data
     const testDemographics: Demographics = {
       role: "Manager",
-      jobTitle: "Senior Manager",
-      department: "Operations",
-      experienceLevel: "Mid-level",
-      teamSize: "5-10 people",
       yearsOfExperience: "4-7 years",
       industry: "Technology"
     };
+    
+    if (import.meta.env.DEV) {
+      console.log('generateTestData - Test demographics:', testDemographics);
+    }
 
     // Generate realistic assessment scores for all categories and skills
     const testCategories = allCategories.map(category => ({
@@ -72,13 +76,31 @@ const Assessment = () => {
       }))
     }));
 
+    if (import.meta.env.DEV) {
+      console.log('generateTestData - About to call handleDemographicsUpdate');
+    }
     // Update the assessment state with test data
     handleDemographicsUpdate(testDemographics);
-    handleCategoriesUpdate(testCategories);
+    if (import.meta.env.DEV) {
+      console.log('generateTestData - Called handleDemographicsUpdate');
+    }
     
+    if (import.meta.env.DEV) {
+      console.log('generateTestData - About to call handleCategoriesUpdate');
+    }
+    handleCategoriesUpdate(testCategories);
+    if (import.meta.env.DEV) {
+      console.log('generateTestData - Called handleCategoriesUpdate');
+    }
+    
+    if (import.meta.env.DEV) {
+      console.log('generateTestData - About to store locally');
+    }
     // Store the test data locally
     const stored = storeLocalAssessmentData(testCategories, testDemographics);
-
+    if (import.meta.env.DEV) {
+      console.log('generateTestData - Stored locally, result:', stored);
+    }
     
     // Set initial active category to the last category (index 9 for 10 categories)
     setInitialActiveCategory(allCategories.length - 1);

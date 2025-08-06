@@ -27,7 +27,7 @@ interface AuthContextType {
   session: Session | null;
   userProfile: UserProfile | null;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, firstName: string, surname: string, receiveEmails: boolean) => Promise<void>;
+  signUp: (email: string, password: string, firstName: string, surname: string, receiveEmails: boolean | null) => Promise<void>;
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
@@ -53,6 +53,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [showAccountCreatedDialog, setShowAccountCreatedDialog] = useState(false);
   const [showAccountExistsDialog, setShowAccountExistsDialog] = useState(false);
+  const [isSigningUp, setIsSigningUp] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -149,11 +150,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user]);
 
   React.useEffect(() => {
-    if (initialized && user) {
+    if (initialized && user && !isSigningUp) {
       // Check if user is missing consent or preferences
       const checkConsent = async () => {
         // Don't redirect if user is already on consent page
         if (window.location.pathname === '/consent') {
+          return;
+        }
+        
+        // Don't redirect to consent if user's email is not confirmed yet
+        if (!user.email_confirmed_at) {
+          if (import.meta.env.DEV) {
+            console.log('AuthContext: User email not confirmed yet, skipping consent check');
+          }
           return;
         }
         
@@ -169,7 +178,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             navigate('/consent');
           }
         } else if (error) {
-          console.error('AuthContext: Error checking consent:', error);
+          if (import.meta.env.DEV) {
+            console.error('AuthContext: Error checking consent:', error);
+          }
         }
       };
       checkConsent();
@@ -208,13 +219,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       throw error;
     } finally {
       setLoading(false);
+      setIsSigningUp(false);
     }
   };
 
-  const signUp = async (email: string, password: string, firstName: string, surname: string, receiveEmails: boolean) => {
-    const redirectUrl = `${window.location.origin}/`;
+  const signUp = async (email: string, password: string, firstName: string, surname: string, receiveEmails: boolean | null) => {
+    setIsSigningUp(true);
     
-    console.log('AuthContext: Attempting signup for:', email);
+    const redirectUrl = `${window.location.origin}/consent`;
     
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -229,25 +241,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     });
 
-    console.log('AuthContext: Signup response:', { 
-      data, 
-      error, 
-      hasUser: !!data?.user, 
-      userConfirmedAt: data?.user?.email_confirmed_at,
-      identitiesLength: data?.user?.identities?.length,
-      confirmationSentAt: data?.user?.confirmation_sent_at
-    });
-
     // First check: If there's no error AND no user, this means the email already exists
     if (!error && !data?.user) {
-      console.log('AuthContext: No error but no user returned - email already exists');
       setShowAccountExistsDialog(true);
+      setIsSigningUp(false);
       return;
     }
 
     // Second check: Handle explicit errors
     if (error) {
-      console.error('AuthContext: Sign up error:', error);
+      if (import.meta.env.DEV) {
+        console.error('AuthContext: Sign up error:', error);
+      }
       
       // Check for specific error messages that indicate existing email
       const errorMessage = error.message?.toLowerCase() || '';
@@ -262,7 +267,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                              error.status === 400; // Another common status for validation errors
       
       if (isExistingEmail) {
-        console.log('AuthContext: Error indicates existing email');
         setShowAccountExistsDialog(true);
       } else {
         toast({
@@ -277,22 +281,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Third check: Detect duplicate signup by checking for empty identities array
     // When Supabase creates a duplicate unconfirmed user, it has empty identities
     if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
-      console.log('AuthContext: User has empty identities array - likely duplicate signup');
       setShowAccountExistsDialog(true);
       return;
     }
 
-    // Fourth check: For existing confirmed emails, Supabase might return a user with email_confirmed_at already set
-    if (data?.user?.email_confirmed_at) {
-      console.log('AuthContext: User email already confirmed, likely existing account');
-      setShowAccountExistsDialog(true);
-      return;
+    // Fourth check: For existing confirmed emails, we need to be more careful
+    // If we have a user with email_confirmed_at but no confirmation_sent_at, it might be an existing account
+    // But we should only show the dialog if we're confident it's an existing account
+    // For now, let's be more conservative and only show the dialog for clear error cases
+    if (data?.user?.email_confirmed_at && !data?.user?.confirmation_sent_at && !error) {
+      // This might be an existing confirmed account, but let's not assume
+      // Don't show dialog for now - let the user proceed
     }
 
     // Only show success dialog if we have a user and no errors (genuine new signup)
     if (data?.user && !error) {
-      console.log('AuthContext: Showing account created dialog');
       setShowAccountCreatedDialog(true);
+      // Don't reset isSigningUp here - keep it set until user closes the dialog
+    } else {
+      // Reset the signing up flag only if there was an error
+      setIsSigningUp(false);
     }
   };
 
@@ -415,13 +423,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       {children}
       
       {/* Account Created Success Dialog */}
-      <Dialog open={showAccountCreatedDialog} onOpenChange={setShowAccountCreatedDialog}>
+      <Dialog open={showAccountCreatedDialog} onOpenChange={(open) => {
+        setShowAccountCreatedDialog(open);
+        if (!open) {
+          // Reset the signing up flag when dialog is closed
+          setIsSigningUp(false);
+        }
+      }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Account Created Successfully</DialogTitle>
-            <DialogDescription>
-              Please check your email to verify your account before signing in.
-            </DialogDescription>
+                              <DialogDescription>
+                    <span className="block mb-2">Please check your email to verify your account before signing in.</span>
+                    <span className="block mb-2">If you do not see the email in your inbox, please check your <strong>spam folder</strong>.</span>
+                    <span className="block"><strong>You must complete your sign-up within 2 hours, or your assessment data will be lost.</strong></span>
+                  </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button onClick={() => setShowAccountCreatedDialog(false)}>
@@ -432,7 +448,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       </Dialog>
 
       {/* Account Already Exists Dialog */}
-      <Dialog open={showAccountExistsDialog} onOpenChange={setShowAccountExistsDialog}>
+      <Dialog open={showAccountExistsDialog} onOpenChange={(open) => {
+        setShowAccountExistsDialog(open);
+        if (!open) {
+          // Reset the signing up flag when dialog is closed
+          setIsSigningUp(false);
+        }
+      }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Account Already Exists</DialogTitle>

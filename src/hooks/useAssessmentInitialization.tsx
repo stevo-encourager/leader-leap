@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Category } from '@/utils/assessmentTypes';
 import { allCategories } from '@/utils/assessmentCategories';
 import { getLocalAssessmentData } from '@/services/assessment/manageAssessmentHistory';
@@ -10,25 +10,21 @@ export const useAssessmentInitialization = () => {
   const [isFreshAssessment, setIsFreshAssessment] = useState(false);
 
   // Function to create fresh categories with all ratings reset to 0
-  const createFreshCategories = () => {
-    console.log('createFreshCategories - Creating completely fresh categories with zero ratings');
-    return allCategories.map((category: Category) => ({
+  const createFreshCategories = useCallback(() => {
+    const freshCategories = allCategories.map(category => ({
       ...category,
       skills: category.skills.map(skill => ({
         ...skill,
-        ratings: {
-          current: 0,
-          desired: 0
-        }
+        ratings: { current: 0, desired: 0 }
       }))
     }));
-  };
+    return freshCategories;
+  }, []);
 
   // Initialize categories with default data - only run once and preserve valid data
   useEffect(() => {
     // Skip all initialization if we've already done a fresh assessment
     if (isFreshAssessment) {
-      console.log('useAssessmentInitialization - Skipping initialization, fresh assessment already set');
       return;
     }
     
@@ -39,26 +35,16 @@ export const useAssessmentInitialization = () => {
         const isNewAssessment = window.location.pathname === '/assessment' && 
           urlParams.get('new') === 'true';
         
-        console.log('useAssessmentInitialization - URL check:', {
-          pathname: window.location.pathname,
-          search: window.location.search,
-          isNewAssessment,
-          hasNewParam: urlParams.get('new')
-        });
-        
         // If this is a fresh assessment, skip restoration and use fresh categories
         if (isFreshAssessment) {
-          console.log('useAssessmentInitialization - Fresh assessment requested, using zero ratings');
           const freshCategories = createFreshCategories();
           if (freshCategories && freshCategories.length > 0) {
             setCategories(freshCategories);
           }
         } else if (isNewAssessment) {
           // For new assessments, always start with fresh categories
-          console.log('useAssessmentInitialization - New assessment detected, using zero ratings');
           const freshCategories = createFreshCategories();
           if (freshCategories && freshCategories.length > 0) {
-            console.log('useAssessmentInitialization - Setting fresh categories with zero ratings');
             setCategories(freshCategories);
             setIsInitialized(true); // Mark as initialized immediately
           } else {
@@ -84,10 +70,7 @@ export const useAssessmentInitialization = () => {
               )
             );
             
-            console.log('useAssessmentInitialization - Found local data with valid ratings:', hasValidRatings);
-            
             if (hasValidRatings) {
-              console.log('useAssessmentInitialization - Using existing data with valid ratings');
               setCategories(existingData.categories);
               shouldUseExistingData = true;
             }
@@ -95,7 +78,6 @@ export const useAssessmentInitialization = () => {
           
           // Only create fresh categories if we don't have valid existing data
           if (!shouldUseExistingData) {
-            console.log('useAssessmentInitialization - Creating fresh categories');
             const freshCategories = createFreshCategories();
             if (freshCategories && freshCategories.length > 0) {
               setCategories(freshCategories);
@@ -139,13 +121,12 @@ export const useAssessmentInitialization = () => {
           );
           
           if (hasValidRatings) {
-            console.log('useAssessmentInitialization - Restoring valid data from localStorage after reinitialization');
             setCategories(existingData.categories);
           }
         }
       }
     }
-  }, [isInitialized, isFreshAssessment]);
+  }, [isInitialized, isFreshAssessment, createFreshCategories]);
 
   // Function to load existing data when explicitly requested (e.g., continuing assessment)
   const loadExistingData = () => {
@@ -175,9 +156,7 @@ export const useAssessmentInitialization = () => {
   };
 
   // Function to explicitly start a fresh assessment (ignoring any existing data)
-  const startFreshAssessment = () => {
-    console.log('useAssessmentInitialization - Starting fresh assessment with zero ratings');
-    
+  const startFreshAssessment = (preserveDemographics = false) => {
     // Clear localStorage first to prevent any restoration
     localStorage.removeItem('assessmentData');
     
@@ -187,7 +166,6 @@ export const useAssessmentInitialization = () => {
     // IMMEDIATELY create and set fresh categories - don't wait for useEffect
     const freshCategories = createFreshCategories();
     if (freshCategories && freshCategories.length > 0) {
-      console.log('useAssessmentInitialization - DIRECTLY setting fresh categories');
       setCategories(freshCategories);
       setIsInitialized(true); // Mark as initialized to prevent useEffect override
       return true;

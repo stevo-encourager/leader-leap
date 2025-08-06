@@ -85,8 +85,17 @@ const AssessmentContent: React.FC<AssessmentContentProps> = ({
         onComplete={async () => {
           // For guest users, just store locally and navigate to results
           if (!user) {
-            console.log('AssessmentContent - Guest user completing assessment, storing locally');
+            if (import.meta.env.DEV) {
+              console.log('AssessmentContent - Guest user completing assessment, storing locally');
+              console.log('AssessmentContent - Storing demographics:', demographics);
+            }
             storeLocalAssessmentData(categories, demographics);
+            // Ensure demographics are stored in localStorage before navigation
+            localStorage.setItem('assessmentData', JSON.stringify({
+              categories,
+              demographics,
+              timestamp: Date.now()
+            }));
             navigate('/results');
             return;
           }

@@ -387,8 +387,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
         {demographics?.industry && (
           <Text style={styles.text}><Text style={styles.boldText}>Industry:</Text> {demographics.industry}</Text>
         )}
-        <Text style={styles.text}><Text style={styles.boldText}>Overall Development Gap:</Text> {averageGap.toFixed(2)} points</Text>
-        <Text style={styles.text}>Assessment completed across {categories.length} competency areas</Text>
+        <Text style={styles.text}><Text style={styles.boldText}>Average Development Gap:</Text> {averageGap.toFixed(2)} points</Text>
         <Text style={[styles.sectionTitle, { marginTop: 15 }]}>Competency Analysis - Radar Chart</Text>
         <View style={styles.chartContainer}>
           {chartImageDataUrl && chartImageDataUrl.startsWith('data:image/') ? (

@@ -114,7 +114,7 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
           
           <TabsContent value="radar-chart" className="mt-0">
             {hasCategories ? (
-              <div className={`w-full p-6 ${isMobile ? 'h-[400px]' : 'h-[600px]'}`}>
+              <div className={`w-full p-6 ${isMobile ? 'h-[500px]' : 'h-[700px]'}`}>
                 <SkillGapChart categories={categories} />
               </div>
             ) : (

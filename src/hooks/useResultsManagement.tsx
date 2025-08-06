@@ -55,19 +55,32 @@ export const useResultsManagement = ({
     checkRatings();
   }, [categories, initialized]);
 
-  // Reset saved flag when categories or demographics change (but only after auth is initialized)
-  useEffect(() => {
-    if (!initialized) return;
-    
-    if (hasValidRatings || demographics) {
-      console.log('Categories/demographics changed with ratings, resetting saved flag');
-      setSavedToSupabase(false);
-      
-      // Store locally when we have valid data
-      console.log('useResultsManagement - Storing assessment data locally');
-      storeLocalAssessmentData(categories, demographics);
-    }
-  }, [categories, demographics, hasValidRatings, initialized]);
+            // Store data locally when categories or demographics change
+          useEffect(() => {
+            if (!initialized) return;
+            
+            if (hasValidRatings) {
+              console.log('useResultsManagement - Categories/demographics changed with ratings, resetting saved flag');
+              console.log('useResultsManagement - Current demographics:', demographics);
+              console.log('useResultsManagement - Current categories length:', categories?.length);
+              console.log('useResultsManagement - Demographics keys:', Object.keys(demographics || {}));
+              setSavedToSupabase(false);
+              
+              // Check if demographics are empty but exist in localStorage
+              if ((!demographics || Object.keys(demographics).length === 0) && categories && categories.length > 0) {
+                const localData = getLocalAssessmentData();
+                if (localData && localData.demographics && Object.keys(localData.demographics).length > 0) {
+                  console.log('useResultsManagement - Restoring demographics from localStorage:', localData.demographics);
+                  // Don't overwrite with empty demographics if they exist in localStorage
+                  return;
+                }
+              }
+              
+              // Store locally when we have valid data
+              console.log('useResultsManagement - Storing assessment data locally');
+              storeLocalAssessmentData(categories, demographics);
+            }
+          }, [categories, demographics, hasValidRatings, initialized]);
 
   const updateCategories = useCallback((newCategories: AssessmentCategory[]) => {
     if (onCategoriesUpdate) {

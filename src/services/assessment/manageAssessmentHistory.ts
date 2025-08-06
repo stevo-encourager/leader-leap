@@ -18,72 +18,34 @@ interface AssessmentRecord {
  * Stores assessment data in the browser's local storage for immediate access
  * This provides a fallback if database storage fails or user is not authenticated
  */
-export const storeLocalAssessmentData = (categories: Category[], demographics: Demographics): boolean => {
+export const storeLocalAssessmentData = (categories: Category[], demographics: Demographics) => {
   try {
-    console.log('storeLocalAssessmentData - Storing categories:', categories.length);
+    const data = {
+      categories,
+      demographics,
+      timestamp: Date.now()
+    };
     
-    // Debug: Log rating data for first few skills
-    categories.slice(0, 2).forEach((cat, catIndex) => {
-      console.log(`storeLocalAssessmentData - Category ${catIndex}:`, cat.title, 'skills:', cat.skills?.length);
-      cat.skills?.slice(0, 2).forEach((skill, skillIndex) => {
-        console.log(`storeLocalAssessmentData - Skill ${skillIndex}:`, skill.name, 'ratings:', skill.ratings);
-      });
-    });
-    
-    // Ensure we have a deep copy to avoid reference issues
-    const categoriesToStore = JSON.parse(JSON.stringify(categories));
-    
-    // Store the categories and demographics in localStorage
-    localStorage.setItem('assessment_categories', JSON.stringify(categoriesToStore));
-    localStorage.setItem('assessment_demographics', JSON.stringify(demographics));
-    localStorage.setItem('assessment_timestamp', new Date().toISOString());
-    
-    console.log('storeLocalAssessmentData - Successfully stored to localStorage');
-    
-    return true;
+    localStorage.setItem('assessmentData', JSON.stringify(data));
   } catch (error) {
-    console.error('storeLocalAssessmentData - Error storing to localStorage:', error);
-    return false;
+    console.error('Error storing assessment data locally:', error);
   }
 };
 
 /**
  * Retrieves locally stored assessment data
  */
-export const getLocalAssessmentData = (): LocalAssessmentData | null => {
+export const getLocalAssessmentData = (): { categories: Category[]; demographics: Demographics; timestamp: number } | null => {
   try {
-    const categoriesStr = localStorage.getItem('assessment_categories');
-    const demographicsStr = localStorage.getItem('assessment_demographics');
-    const timestamp = localStorage.getItem('assessment_timestamp');
-    
-    console.log('getLocalAssessmentData - Retrieved from localStorage:', {
-      hasCategoriesStr: !!categoriesStr,
-      categoriesLength: categoriesStr ? categoriesStr.length : 0,
-      hasDemographicsStr: !!demographicsStr,
-      timestamp
-    });
-    
-    if (!categoriesStr) {
-      console.log('getLocalAssessmentData - No categories found in localStorage');
+    const data = localStorage.getItem('assessmentData');
+    if (!data) {
       return null;
     }
     
-    const categories = JSON.parse(categoriesStr);
-    const demographics = demographicsStr ? JSON.parse(demographicsStr) : {};
-    
-    console.log('getLocalAssessmentData - Parsed data:', {
-      categoriesCount: categories.length,
-      firstCategoryTitle: categories[0]?.title,
-      firstSkillRating: categories[0]?.skills?.[0]?.ratings
-    });
-    
-    return { 
-      categories, 
-      demographics, 
-      timestamp: timestamp || new Date().toISOString() 
-    };
+    const parsed = JSON.parse(data);
+    return parsed;
   } catch (error) {
-    console.error('getLocalAssessmentData - Error retrieving from localStorage:', error);
+    console.error('Error retrieving assessment data from localStorage:', error);
     return null;
   }
 };
@@ -96,27 +58,27 @@ export const preserveAssessmentDataForVerification = async (email: string): Prom
   try {
     const localData = getLocalAssessmentData();
     
-    if (!localData) {
+    if (!localData || !localData.categories || localData.categories.length === 0) {
       return false;
     }
-    
-    // Store in database temp table
-    const { error } = await supabase
+
+    const { data, error } = await supabase
       .from('temp_assessment_data')
       .insert({
-        email: email,
+        email,
         categories: JSON.parse(JSON.stringify(localData.categories)) as Json,
-        demographics: JSON.parse(JSON.stringify(localData.demographics)) as Json
+        demographics: JSON.parse(JSON.stringify(localData.demographics)) as Json,
+        expires_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString() // 2 hours
       });
-    
+
     if (error) {
-      console.error('preserveAssessmentDataForVerification - Database error:', error);
+      console.error('Error preserving assessment data:', error);
       return false;
     }
-    
+
     return true;
   } catch (error) {
-    console.error('preserveAssessmentDataForVerification - Error:', error);
+    console.error('Error preserving assessment data:', error);
     return false;
   }
 };
@@ -141,10 +103,13 @@ export const restoreAssessmentDataAfterVerification = async (email: string): Pro
     // Cast to unknown first then to our expected type
     const tempData = (data as unknown) as { categories: any; demographics: any };
     
-    // Restore to localStorage
-    localStorage.setItem('assessment_categories', JSON.stringify(tempData.categories));
-    localStorage.setItem('assessment_demographics', JSON.stringify(tempData.demographics || {}));
-    localStorage.setItem('assessment_timestamp', new Date().toISOString());
+    // Restore to localStorage using the same format as storeLocalAssessmentData
+    const restoredData = {
+      categories: tempData.categories,
+      demographics: tempData.demographics || {},
+      timestamp: Date.now()
+    };
+    localStorage.setItem('assessmentData', JSON.stringify(restoredData));
     
     // Clean up - delete the temp record from database
     await supabase
@@ -164,9 +129,7 @@ export const restoreAssessmentDataAfterVerification = async (email: string): Pro
  */
 export const clearLocalAssessmentData = (): boolean => {
   try {
-    localStorage.removeItem('assessment_categories');
-    localStorage.removeItem('assessment_demographics');
-    localStorage.removeItem('assessment_timestamp');
+    localStorage.removeItem('assessmentData');
     return true;
   } catch (error) {
     console.error('clearLocalAssessmentData - Error clearing localStorage:', error);

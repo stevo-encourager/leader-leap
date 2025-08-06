@@ -41,7 +41,7 @@ const Results = () => {
     handleDemographicsUpdate,
     handleCloseAuthForm,
     handleShowSignupForm,
-    handleStartAssessment,
+    handleStartNewAssessment,
     handleBackToDemographics,
     handleSaveResults
   } = useAssessment();
@@ -95,6 +95,18 @@ const Results = () => {
         localDataLoadedRef.current = true;
       }
     }
+    
+                // Also try to restore demographics if they're missing but categories exist
+            if (categories && categories.length > 0 && (!demographics || Object.keys(demographics).length === 0) && !localDataLoadedRef.current && !assessmentId) {
+              const localData = getLocalAssessmentData();
+              if (localData && localData.demographics && Object.keys(localData.demographics).length > 0) {
+                if (import.meta.env.DEV) {
+                  console.log('Results - Restoring demographics from localStorage:', localData.demographics);
+                }
+                handleDemographicsUpdate(localData.demographics);
+                localDataLoadedRef.current = true;
+              }
+            }
     
     // CRITICAL FIX: If we have categories but they have no ratings, try to load from local storage
     if (categories && categories.length > 0 && !localDataLoadedRef.current && !assessmentId) {
@@ -269,7 +281,7 @@ const Results = () => {
           </Alert>
           <InvalidResultsMessage 
             onRestart={() => {
-              handleStartAssessment();
+              handleStartNewAssessment();
               navigate('/assessment');
             }}
             onBack={() => navigate('/profile')}
@@ -344,7 +356,7 @@ const Results = () => {
           <UserHeader />
           <InvalidResultsMessage 
             onRestart={() => {
-              handleStartAssessment();
+              handleStartNewAssessment();
               navigate('/assessment');
             }}
             onBack={assessmentId ? () => navigate('/profile') : undefined}
@@ -379,7 +391,7 @@ const Results = () => {
               categories={finalDisplayCategories}
               demographics={finalDisplayDemographics}
               onRestart={() => {
-                handleStartAssessment();
+                handleStartNewAssessment();
                 navigate('/assessment');
               }}
               onBack={() => {

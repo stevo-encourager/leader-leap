@@ -35,6 +35,7 @@ export const useAssessment = () => {
   // Reset all categories to default values when starting a new assessment
   const handleStartNewAssessment = () => {
     console.log('handleStartNewAssessment called - forcing fresh categories');
+    console.log('handleStartNewAssessment - Stack trace:', new Error().stack);
     
     // Clear localStorage and reset state first
     clearLocalAssessmentData();
@@ -114,7 +115,8 @@ export const useAssessment = () => {
     handleDemographicsUpdate,
     
     // Navigation functions
-    handleStartAssessment: handleStartNewAssessment,
+    handleStartAssessment,
+    handleStartNewAssessment,
     handleContinueAssessment,
     handleContinueToAssessment,
     handleContinueToInstructions,

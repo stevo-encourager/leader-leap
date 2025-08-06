@@ -90,18 +90,38 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
   };
 
   const handleSignUp = async (data: any) => {
+    if (import.meta.env.DEV) {
+      console.log('AuthForm: handleSignUp called, setting isSubmitting to true');
+    }
     setIsSubmitting(true);
+    if (import.meta.env.DEV) {
+      console.log('AuthForm: isSubmitting set to true, isLoading should be:', (loading || true).toString());
+    }
 
     try {
       // Preserve assessment data before email verification process
       await preserveAssessmentDataForVerification(data.email);
       
-      await signUp(data.email, data.password, data.firstName, data.surname, null); // Pass null for receiveEmails so user gets redirected to consent page
+      await signUp(data.email, data.password, data.firstName, data.surname, false); // Pass false for receiveEmails so user gets redirected to consent page
       // Don't call onSuccess here as the user needs to verify their email
+      
+      // Keep button disabled for a moment to show the loading state
+      setTimeout(() => {
+        if (import.meta.env.DEV) {
+          console.log('AuthForm: Success, setting isSubmitting to false after delay');
+        }
+        setIsSubmitting(false);
+      }, 2000);
+      
     } catch (error) {
       // Error is already handled in AuthContext with toast
-    } finally {
-      setIsSubmitting(false);
+      // Keep button disabled for a moment even on error to prevent rapid clicking
+      setTimeout(() => {
+        if (import.meta.env.DEV) {
+          console.log('AuthForm: Error occurred, setting isSubmitting to false after delay');
+        }
+        setIsSubmitting(false);
+      }, 1000);
     }
   };
 
@@ -299,8 +319,11 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
           {/* Removed GDPR consent and receive emails checkboxes from signup form */}
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Create Account
+            {isLoading ? 'Creating Account...' : 'Create Account'}
           </Button>
+          {/* Button disabled when loading to prevent multiple clicks */}
+          {/* Debug: isLoading = {isLoading.toString()}, isSubmitting = {isSubmitting.toString()}, loading = {loading.toString()} */}
+          {/* TESTING: This comment should appear if the file is being updated */}
         </form>
         {showGoogleAuth && (
           <div className="mt-4 text-center text-sm">

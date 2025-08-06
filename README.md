@@ -71,3 +71,57 @@ Yes, you can!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+## Development Rules & Guidelines
+
+### 🚨 Critical Rules (Never Violate)
+
+**Database Operations:**
+- **NEVER** initiate database resets, truncates, or destructive operations without explicit, multi-step user confirmation
+- **NEVER** modify database schema outside of Supabase migrations
+- **NEVER** create new standalone SQL files without explicit need and approval
+- **ALWAYS** verify current database state before suggesting changes
+
+**Code Modifications:**
+- **NEVER** modify the core logic inside existing hooks without explicit permission
+- **NEVER** make any code changes without presenting them step-by-step first
+- **ALWAYS** ask for explicit consent before implementing changes
+- **ALWAYS** explain the reasoning behind suggested modifications
+
+**Security:**
+- **NEVER** modify RLS policies without thorough explanation and approval
+- **NEVER** suggest security changes without explicit approval
+- **ALWAYS** consider security implications of any database changes
+
+### 🔧 Project Conventions
+
+**Database:**
+- Use Supabase migrations for all schema changes
+- Standalone SQL files are for manual maintenance only
+- This project uses a remotely hosted database (no local Supabase instance)
+
+**Code Quality:**
+- Follow existing code patterns and conventions
+- Use TypeScript types consistently
+- Maintain existing file structure
+- Respect the current tech stack (Vite, React, Supabase)
+
+**Communication:**
+- Proceed step-by-step and ask for consent
+- Explain the reasoning behind suggestions
+- Provide context for all recommendations
+- If unsure about a change, ask for clarification
+
+### 🎨 Design Guidelines
+
+- Button colors in emails should match the dark green from the website's results dashboard
+- Admin pages should never be indexed by search engines (private access only)
+
+### 📝 For AI Assistants
+
+When working on this project, please:
+1. Read and follow these development rules
+2. Present changes step-by-step before implementing
+3. Ask for explicit permission before making modifications
+4. Explain your reasoning and provide context
+5. Respect the existing codebase patterns and conventions

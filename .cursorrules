@@ -1,0 +1,29 @@
+# Cursor Project Rules for Leader Leap Dashboard
+
+## Code Modification Rules
+- NEVER modify the logic inside hooks without explicit permission
+- NEVER use db reset without explicit permission
+- Always ask for consent before making any code changes
+- Explain changes before implementing them
+
+## Database Rules
+- All schema changes must go through Supabase migrations
+- Standalone SQL files are for manual maintenance only
+- Never create new standalone SQL files without explicit need
+- Always verify current database state before suggesting changes
+
+## Security Rules
+- Security changes require explicit approval
+- Never modify RLS policies without thorough explanation
+- Always consider security implications of database changes
+
+## Project Conventions
+- Follow existing code patterns and conventions
+- Use TypeScript types consistently
+- Maintain existing file structure
+- Respect the current tech stack (Vite, React, Supabase)
+
+## Communication Rules
+- Proceed step-by-step and ask for consent
+- Explain the reasoning behind suggestions
+- Provide context for all recommendations 

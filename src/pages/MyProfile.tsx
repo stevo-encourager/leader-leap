@@ -65,6 +65,24 @@ const MyProfile = () => {
     fetchAssessments();
     setLastRefreshed(new Date().toISOString());
     
+    // Force refresh user profile to ensure we have latest data
+    const refreshProfile = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+        if (!error && data) {
+          // Update the email preferences state directly with fresh data
+          const profileData = data as any;
+          setReceiveEmails(profileData.receive_emails ?? true);
+        }
+      } catch (error) {
+        console.error('Error refreshing profile:', error);
+      }
+    };
+    
     // Fetch the most recent demographic data
     const fetchDemographics = async () => {
       setDemographicsLoading(true);
@@ -81,6 +99,7 @@ const MyProfile = () => {
     };
     
     fetchDemographics();
+    refreshProfile();
   }, [user, navigate]);
 
   // Load current email preferences

@@ -178,8 +178,8 @@ const Consent: React.FC = () => {
               },
               body: JSON.stringify({ 
                 email: user.email,
-                firstName: userProfile?.first_name,
-                lastName: userProfile?.surname
+                firstName: user.user_metadata?.first_name,
+                lastName: user.user_metadata?.surname
               })
             });
             
@@ -191,8 +191,8 @@ const Consent: React.FC = () => {
             const result = await supabase.functions.invoke('brevo-subscribe', {
               body: { 
                 email: user.email,
-                firstName: userProfile?.first_name,
-                lastName: userProfile?.surname
+                firstName: user.user_metadata?.first_name,
+                lastName: user.user_metadata?.surname
               }
             });
             data = result.data;

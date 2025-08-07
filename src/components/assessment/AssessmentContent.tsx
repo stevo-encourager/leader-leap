@@ -54,7 +54,6 @@ const AssessmentContent: React.FC<AssessmentContentProps> = ({
         categories={categories}
         onStartAssessment={() => {
           onStartAssessment();
-          navigate('/assessment');
         }}
       />
     );
@@ -148,11 +147,9 @@ const AssessmentContent: React.FC<AssessmentContentProps> = ({
         demographics={demographics}
         onRestart={() => {
           onStartAssessment();
-          navigate('/assessment');
         }}
         onBack={() => {
           onBackToDemographics();
-          navigate('/assessment');
         }}
         onSignup={onShowSignupForm}
         isAuthenticated={isAuthenticated}

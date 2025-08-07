@@ -45,7 +45,8 @@ export const useAssessment = () => {
     const success = startFreshAssessment();
     console.log('handleStartNewAssessment - startFreshAssessment result:', success);
     
-    // Call the original handler to navigate with a new assessment flag
+    // Always call the navigation handler, regardless of startFreshAssessment result
+    console.log('handleStartNewAssessment - calling handleStartAssessment');
     handleStartAssessment();
   };
 

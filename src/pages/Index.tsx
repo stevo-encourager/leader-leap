@@ -112,7 +112,6 @@ const Index = () => {
             categories={allCategories}
             onStartAssessment={() => {
               handleStartAssessment();
-              navigate('/assessment');
             }}
           />
         </main>

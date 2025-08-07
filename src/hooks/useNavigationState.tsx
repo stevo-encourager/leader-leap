@@ -22,6 +22,7 @@ export const useNavigationState = () => {
 
   // Navigation functions
   const handleStartAssessment = useCallback(() => {
+    console.log('handleStartAssessment called - navigating to /assessment?new=true');
     setCurrentStep('demographics');
     navigate('/assessment?new=true');
   }, [navigate]);

@@ -17,6 +17,7 @@ import { getLatestAssessmentResults } from '@/services/assessment/fetchAssessmen
 import { Demographics } from '@/utils/assessmentTypes';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { useAssessment } from '@/hooks/useAssessment';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,6 +34,7 @@ const MyProfile = () => {
   const navigate = useNavigate();
   const { user, userProfile, signOut } = useAuth();
   const isMobile = useIsMobile();
+  const { handleStartNewAssessment } = useAssessment();
   const {
     assessments,
     allAssessments,
@@ -255,9 +257,7 @@ const MyProfile = () => {
     }
   };
 
-  const handleStartNewAssessment = () => {
-    navigate('/assessment');
-  };
+
 
   if (isLoading) {
     return (

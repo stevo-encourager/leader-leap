@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Category } from '@/utils/assessmentTypes';
 import { allCategories } from '@/utils/assessmentCategories';
-import { getLocalAssessmentData } from '@/services/assessment/manageAssessmentHistory';
+import { getLocalAssessmentData, clearLocalAssessmentData } from '@/services/assessment/manageAssessmentHistory';
 import { toast } from './use-toast';
 
 export const useAssessmentInitialization = () => {
@@ -23,11 +23,6 @@ export const useAssessmentInitialization = () => {
 
   // Initialize categories with default data - only run once and preserve valid data
   useEffect(() => {
-    // Skip all initialization if we've already done a fresh assessment
-    if (isFreshAssessment) {
-      return;
-    }
-    
     if (!isInitialized) {
       try {
         // Check if we're starting a new assessment by looking at the URL parameters
@@ -43,6 +38,8 @@ export const useAssessmentInitialization = () => {
           }
         } else if (isNewAssessment) {
           // For new assessments, always start with fresh categories
+          // Clear localStorage to ensure no previous data is restored
+          clearLocalAssessmentData();
           const freshCategories = createFreshCategories();
           if (freshCategories && freshCategories.length > 0) {
             setCategories(freshCategories);

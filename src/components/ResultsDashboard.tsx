@@ -49,7 +49,10 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   };
   
   const handleRestart = () => {
-    navigate('/assessment');
+    // Use the proper fresh assessment logic instead of direct navigation
+    // This will clear localStorage and start a fresh assessment
+    localStorage.removeItem('assessmentData');
+    navigate('/assessment?new=true');
   };
   
   const handleSignup = () => {
@@ -231,8 +234,10 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
             <ResultsActions 
               categories={memoizedCategories}
               demographics={memoizedDemographics}
-              averageGap={memoizedAverageGap}
               assessmentId={finalAssessmentId!}
+              onRestart={handleRestart}
+              onBack={handleBack}
+              onSignup={handleSignup}
             />
           </div>
         </div>

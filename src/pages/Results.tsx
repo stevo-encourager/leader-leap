@@ -282,7 +282,6 @@ const Results = () => {
           <InvalidResultsMessage 
             onRestart={() => {
               handleStartNewAssessment();
-              navigate('/assessment');
             }}
             onBack={() => navigate('/profile')}
             errorType={specificAssessmentError}
@@ -392,7 +391,6 @@ const Results = () => {
               demographics={finalDisplayDemographics}
               onRestart={() => {
                 handleStartNewAssessment();
-                navigate('/assessment');
               }}
               onBack={() => {
                 if (assessmentId) {

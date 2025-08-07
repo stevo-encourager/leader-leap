@@ -204,7 +204,6 @@ const Consent: React.FC = () => {
               description: 'You will receive leadership tips and updates.',
             });
           } else {
-            console.error('Brevo subscription failed:', { error, data, userEmail: user.email });
             toast({
               title: 'Email subscription failed',
               description: error?.message || data?.error || 'Could not subscribe to emails.',

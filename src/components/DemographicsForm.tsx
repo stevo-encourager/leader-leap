@@ -138,7 +138,7 @@ const DemographicsForm: React.FC<DemographicsFormProps> = ({ demographics, onDem
 
             <div className="bg-blue-50 text-blue-700 p-4 rounded-md">
               <p className="text-sm">
-                <strong>Note:</strong> All demographic information is used only to provide more tailored insights and new results.
+                <strong>Note:</strong> All demographic information is used only to provide more tailored insights and new results, not for identification, tracking, or sharing with third parties.
               </p>
             </div>
           </div>

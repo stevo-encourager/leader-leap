@@ -56,7 +56,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
     'Team Leadership': 'The ability to build and maintain high-performing teams through effective leadership.',
     'Decision Making': 'The ability to make timely and effective decisions based on available information.',
     'Emotional Intelligence': 'The ability to recognize and manage emotions in yourself and others.',
-    'Change Management': 'The ability to effectively lead and support organizational change initiatives.',
+    'Change Management': 'The ability to effectively lead and support organisational change initiatives.',
     'Negotiation & Conflict Resolution': 'The ability to resolve conflicts and negotiate effectively with stakeholders.',
     'Delegation & Empowerment': 'The ability to effectively assign responsibilities and empower team members.',
     'Time/Priority Management': 'The ability to manage time effectively and prioritize tasks appropriately.',
@@ -66,9 +66,9 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
   // Skill descriptions for tooltips
   const skillDescriptions: { [key: string]: string } = {
     // Strategic Thinking/Vision
-    'Future Vision': 'Ability to envision and articulate a compelling future state for the organization.',
+    'Future Vision': 'Ability to envision and articulate a compelling future state for the organisation.',
     'Big Picture Thinking': 'Ability to see beyond day-to-day operations and understand broader implications.',
-    'Strategic Planning': 'Ability to create actionable plans that align with the organization\'s vision.',
+    'Strategic Planning': 'Ability to create actionable plans that align with the organisation\'s vision.',
     
     // Influencing
     'Persuasive Messaging': 'The ability to craft compelling arguments (verbal, written and visual) that motivate others to adopt new perspectives or take specific actions',

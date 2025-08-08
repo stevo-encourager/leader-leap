@@ -34,7 +34,7 @@ const AssessmentInstructions: React.FC<AssessmentInstructionsProps> = ({ onConti
                   <ArrowRight className="text-encourager" size={16} strokeWidth={1.5} />
                 </div>
                 <p className="text-slate-700">
-                  <span className="font-medium text-slate-900">Consider context:</span> When rating "target level," think about what's truly important for your current role or your next step (i.e. a specific role or promotion you are aiming for).
+                  <span className="font-medium text-slate-900">Consider context:</span> When rating "target level," think about what's truly important for your current role or your next step. Be realistic about where you need to be.
                 </p>
               </div>
               <div className="flex gap-4 items-center">

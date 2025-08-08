@@ -17,8 +17,8 @@ const AuthSection: React.FC<AuthSectionProps> = ({ onClose, mandatory = false })
             Sign Up to View Your Results
           </h3>
           <p className="text-blue-800 text-sm">
-            <strong>Completely FREE!</strong> Create your account to access your personalized leadership assessment results, 
-            download your report, and save your progress.
+            <strong>Completely FREE!</strong> Create your account to access your personalised leadership assessment results, 
+            download your report, and create an action plan.
           </p>
         </div>
       )}

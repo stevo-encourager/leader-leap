@@ -423,7 +423,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
       {/* Page 2 - Key Insights & Recommendations */}
       <Page size="A4" style={styles.page}>
         <Text style={styles.sectionTitle}>Key Insights & Recommendations</Text>
-        <Text style={styles.leftAlignedSubtitle}>Personalized leadership development insights powered by EncouragerGPT</Text>
+        <Text style={styles.leftAlignedSubtitle}>Personalised leadership development insights powered by EncouragerGPT</Text>
 
         {parsedInsights ? (
           <View>

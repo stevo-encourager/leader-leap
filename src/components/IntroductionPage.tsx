@@ -5,6 +5,7 @@ import { Category } from '../utils/assessmentData';
 import IntroductionHeader from './introduction/IntroductionHeader';
 import PurposeSection from './introduction/PurposeSection';
 import AudienceSection from './introduction/AudienceSection';
+import WelcomeSection from './introduction/WelcomeSection';
 
 interface IntroductionPageProps {
   categories: Category[];
@@ -22,6 +23,8 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
         <PurposeSection />
         <AudienceSection />
       </div>
+
+      <WelcomeSection />
     </div>
   );
 };

@@ -4,7 +4,7 @@ import { Category } from '../assessmentTypes';
 export const changeManagementCategory: Category = {
   id: "change-management",
   title: "Change Management",
-  description: "The ability to effectively lead and support organizational change initiatives.",
+  description: "The ability to effectively lead and support organisational change initiatives.",
   skills: [
     {
       id: "adaptability",

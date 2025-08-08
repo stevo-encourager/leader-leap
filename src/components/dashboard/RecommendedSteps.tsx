@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { ListCheck } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import SectionHeader from '../introduction/SectionHeader';
 
 const RecommendedSteps: React.FC = () => {
@@ -13,7 +14,7 @@ const RecommendedSteps: React.FC = () => {
       />
       <ul className="list-disc list-inside space-y-2 text-slate-700">
         <li>Consider using this report in your next 1:1 with your manager or mentor as a guide for your self-leadership development</li>
-        <li>Create a 6 month action plan to address your most critical competency gaps and schedule a time to re-take this assessment to track your progress</li>
+        <li>Create a <Link to="/profile" className="text-encourager underline hover:underline">6 month action plan</Link> to address your most critical competency gaps and schedule a time to re-take this assessment to track your progress</li>
         <li>Set an actionable goal for yourself within the next week, and set a reminder to help hold yourself accountable for taking that next step</li>
       </ul>
     </div>

@@ -24,6 +24,7 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
   hideHeader = false
 }) => {
   const [isExpanded, setIsExpanded] = useState(!hideHeader);
+  const [tooltipStates, setTooltipStates] = useState<{ [key: string]: boolean }>({});
 
   const handleRatingChange = (skillId: string, ratingType: 'current' | 'desired', value: number) => {
     // Ensure value is a valid number
@@ -101,15 +102,17 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
                     </div>
                     <div className="flex-shrink-0">
                       <TooltipProvider>
-                        <Tooltip>
+                        <Tooltip open={tooltipStates[skill.id]} onOpenChange={(open) => setTooltipStates(prev => ({ ...prev, [skill.id]: open }))}>
                           <TooltipTrigger asChild>
-                            <CircleHelp className="h-5 w-5 text-gray-600 hover:text-gray-800 cursor-help transition-colors" />
+                            <CircleHelp 
+                              className="h-5 w-5 text-gray-600 hover:text-gray-800 cursor-pointer transition-colors" 
+                              onClick={() => setTooltipStates(prev => ({ ...prev, [skill.id]: !prev[skill.id] }))}
+                            />
                           </TooltipTrigger>
                           <TooltipContent className="w-80" side="left">
                             <div className="text-xs text-slate-500 space-y-1">
-                              <p><strong>Current ability:</strong> Rate your current skill level from 0-10</p>
-                              <p><strong>Target level:</strong> Set your desired skill level to work towards</p>
-                              <p>For Target level, consider context i.e. think about what's truly important for your current role or your next step (a specific role or promotion you are aiming for).</p>
+                              <p><strong>Current ability:</strong> Rate your current skill level from 1-10</p>
+                              <p><strong>Target level:</strong> Set your desired skill level to work towards. Consider context i.e. think about what's truly important for your current role or your next step. Be realistic about where you need to be.</p>
                               <p>You must select a rating for every skill before proceeding.</p>
                             </div>
                           </TooltipContent>
@@ -178,11 +181,11 @@ const SkillAssessment: React.FC<SkillAssessmentProps> = ({ skill, onRatingChange
             }}
           />
         </div>
-        <div className="flex justify-between text-xs text-gray-500 mt-1">
-          <span>Beginner</span>
-          <span>Proficient</span>
-          <span>Advanced</span>
-          <span>Expert</span>
+        <div className="relative text-xs text-gray-500 mt-1" style={{ height: '16px' }}>
+          <span style={{ position: 'absolute', left: '20%', transform: 'translateX(-50%)' }}>Beginner</span>
+          <span style={{ position: 'absolute', left: '47%', transform: 'translateX(-50%)' }}>Proficient</span>
+          <span style={{ position: 'absolute', left: '74%', transform: 'translateX(-50%)' }}>Advanced</span>
+          <span style={{ position: 'absolute', left: '98%', transform: 'translateX(-50%)' }}>Expert</span>
         </div>
       </div>
       
@@ -208,11 +211,11 @@ const SkillAssessment: React.FC<SkillAssessmentProps> = ({ skill, onRatingChange
             }}
           />
         </div>
-        <div className="flex justify-between text-xs text-gray-500 mt-1">
-          <span>Beginner</span>
-          <span>Proficient</span>
-          <span>Advanced</span>
-          <span>Expert</span>
+        <div className="relative text-xs text-gray-500 mt-1" style={{ height: '16px' }}>
+          <span style={{ position: 'absolute', left: '20%', transform: 'translateX(-50%)' }}>Beginner</span>
+          <span style={{ position: 'absolute', left: '47%', transform: 'translateX(-50%)' }}>Proficient</span>
+          <span style={{ position: 'absolute', left: '74%', transform: 'translateX(-50%)' }}>Advanced</span>
+          <span style={{ position: 'absolute', left: '98%', transform: 'translateX(-50%)' }}>Expert</span>
         </div>
       </div>
 

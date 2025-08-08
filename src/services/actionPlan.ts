@@ -76,7 +76,7 @@ export const getDefaultResources = (competencyName: string) => {
     'Change Management': [
       { type: 'book', title: 'Leading Change', description: 'John Kotter\'s change model', url: 'https://amazon.com' },
       { type: 'framework', title: 'ADKAR Model', description: 'Change management framework' },
-      { type: 'tool', title: 'Change Readiness Assessment', description: 'Organizational change evaluation' }
+      { type: 'tool', title: 'Change Readiness Assessment', description: 'Organisational change evaluation' }
     ],
     'Influencing': [
       { type: 'book', title: 'Influence: The Psychology of Persuasion', description: 'Robert Cialdini on influence', url: 'https://amazon.com' },

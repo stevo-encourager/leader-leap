@@ -48,11 +48,11 @@ serve(async (req) => {
               </div>
               <div class="content">
                 <p>Hi there,</p>
-                <p>Thank you for completing your Leader Leap Assessment! Your personalized leadership development report is attached to this email.</p>
+                <p>Thank you for completing your Leader Leap Assessment! Your personalised leadership development report is attached to this email.</p>
                 <p>This comprehensive report includes:</p>
                 <ul>
                   <li>Your competency analysis across 11 leadership areas</li>
-                  <li>Personalized insights and recommendations</li>
+                  <li>Personalised insights and recommendations</li>
                   <li>Development priorities and action steps</li>
                   <li>Professional development resources</li>
                 </ul>

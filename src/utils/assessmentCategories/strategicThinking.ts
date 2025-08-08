@@ -9,7 +9,7 @@ export const strategicThinkingCategory: Category = {
     {
       id: "future-vision",
       name: "Future Vision",
-      description: "Ability to envision and articulate a compelling future state for the organization.",
+      description: "Ability to envision and articulate a compelling future state for the organisation.",
       ratings: { current: 0, desired: 0 }
     },
     {
@@ -21,7 +21,7 @@ export const strategicThinkingCategory: Category = {
     {
       id: "strategic-planning",
       name: "Strategic Planning",
-      description: "Ability to create actionable plans that align with the organization's vision.",
+      description: "Ability to create actionable plans that align with the organisation's vision.",
       ratings: { current: 0, desired: 0 }
     }
   ]

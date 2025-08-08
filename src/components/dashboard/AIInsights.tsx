@@ -298,7 +298,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({
             <div>
               <h2 className="text-2xl font-bold text-encourager font-playfair">AI-Powered Insights</h2>
               <p className="text-sm text-slate-600 mt-1">
-                Personalized leadership development insights powered by EncouragerGPT
+                Personalised leadership development insights powered by EncouragerGPT
               </p>
             </div>
           </div>

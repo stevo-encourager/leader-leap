@@ -267,7 +267,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
         display: 'grid',
         gridTemplateRows: isPDF ? '1fr' : '1fr auto',
         gridTemplateAreas: isPDF ? '"chart"' : '"chart" "legend"',
-        gap: isPDF ? '0' : '16px',
+        gap: isPDF ? '0' : '4px',
         overflow: 'visible',
         paddingBottom: isPDF ? '0' : '20px',
         placeItems: isPDF ? 'center' : undefined, // Center chart in PDF container

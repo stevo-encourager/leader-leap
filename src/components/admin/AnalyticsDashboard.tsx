@@ -378,7 +378,15 @@ const AnalyticsDashboard = () => {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {Object.entries(analyticsData.competencyAverages).map(([competencyId, competencyData]) => {
+                          {competencyChartData.map((competencyChartItem) => {
+                            // Find the competency data by title
+                            const competencyEntry = Object.entries(analyticsData.competencyAverages)
+                              .find(([id, data]) => data.title === competencyChartItem.name);
+                            
+                            if (!competencyEntry) return null;
+                            
+                            const [competencyId, competencyData] = competencyEntry;
+                            
                             // Get skills for this competency
                             const competencySkills = Object.entries(analyticsData.skillGaps)
                               .filter(([skillId, skillData]) => skillData.categoryTitle === competencyData.title)
@@ -386,7 +394,7 @@ const AnalyticsDashboard = () => {
 
                             return competencySkills.map(([skillId, skillData], skillIndex) => {
                               const isFirstSkillInCompetency = skillIndex === 0;
-                              const competencyIndex = Object.keys(analyticsData.competencyAverages).indexOf(competencyId);
+                              const competencyIndex = competencyChartData.findIndex(item => item.name === competencyData.title);
                               const isAlternateCompetency = competencyIndex % 2 === 1;
                               
                               return (

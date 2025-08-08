@@ -8,6 +8,7 @@ import Footer from '@/components/layout/Footer';
 import { useAssessmentHistory } from '@/hooks/useAssessmentHistory';
 import AssessmentsList from '@/components/previous-assessments/AssessmentsList';
 import EmptyAssessmentsList from '@/components/previous-assessments/EmptyAssessmentsList';
+import ActionPlanComponent from '@/components/ActionPlan';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -285,14 +286,14 @@ const MyProfile = () => {
               <div className="bg-white rounded-lg shadow p-6">
                 <div className="flex flex-col md:flex-row gap-6">
                   <div className="flex-1">
-                    <h2 className="text-xl font-semibold mb-2 text-encourager">Personal Details</h2>
+                    <h2 className="text-xl font-semibold mb-2 text-slate-700 font-montserrat">Personal Details</h2>
                     <div className="mb-4">
                       {userProfile?.full_name && (
-                        <div className="mb-2">
+                        <div className="mb-2 text-slate-700">
                           <span className="font-medium">Name:</span> {userProfile.full_name}
                         </div>
                       )}
-                      <div className="mb-2">
+                      <div className="mb-2 text-slate-700">
                         <span className="font-medium">Email:</span> {user?.email}
                       </div>
                     </div>
@@ -360,19 +361,19 @@ const MyProfile = () => {
                   
                   {demographics && (demographics.role || demographics.yearsOfExperience || demographics.industry) && (
                     <div className="flex-1">
-                      <h3 className="text-xl font-semibold mb-2 text-encourager">Demographic Info</h3>
+                      <h3 className="text-xl font-semibold mb-2 text-slate-700 font-montserrat">Demographic Info</h3>
                       {demographics.role && (
-                        <div className="mb-2">
+                        <div className="mb-2 text-slate-700">
                           <span className="font-medium">Your Role:</span> {demographics.role}
                         </div>
                       )}
                       {demographics.industry && (
-                        <div className="mb-2">
+                        <div className="mb-2 text-slate-700">
                           <span className="font-medium">Industry:</span> {demographics.industry}
                         </div>
                       )}
                       {demographics.yearsOfExperience && (
-                        <div className="mb-2">
+                        <div className="mb-2 text-slate-700">
                           <span className="font-medium">Leadership Experience:</span> {demographics.yearsOfExperience}
                         </div>
                       )}
@@ -382,7 +383,7 @@ const MyProfile = () => {
                 
                 {/* Email Preferences Section */}
                 <div className="mt-6 pt-6 border-t border-gray-200">
-                  <h3 className="text-xl font-semibold mb-4 text-encourager">Email Preferences</h3>
+                                        <h3 className="text-xl font-semibold mb-4 text-slate-700 font-montserrat">Email Preferences</h3>
                   <div className="flex items-center space-x-2">
                     <Switch
                       id="email-preferences"
@@ -390,7 +391,7 @@ const MyProfile = () => {
                       onCheckedChange={handleEmailPreferencesChange}
                       disabled={emailPreferencesLoading}
                     />
-                    <Label htmlFor="email-preferences" className="text-sm">
+                    <Label htmlFor="email-preferences" className="text-sm text-slate-700">
                       Receive leadership tips and updates (max one email per month)
                     </Label>
                   </div>
@@ -477,7 +478,7 @@ const MyProfile = () => {
           </div>
 
           <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">Previous Assessments</h2>
+                          <h2 className="text-2xl font-semibold mb-4 text-encourager">Previous Assessments</h2>
             <div className="flex items-center gap-3 mb-4">
               <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isLoading}>
                 Refresh List
@@ -503,6 +504,9 @@ const MyProfile = () => {
               </p>
             )}
           </div>
+
+          {/* 6-Month Action Plan Section */}
+          <ActionPlanComponent assessments={allAssessments} />
           </div>
         </main>
         <Footer />

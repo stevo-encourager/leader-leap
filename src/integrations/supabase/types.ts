@@ -14,6 +14,73 @@ export type Database = {
   }
   public: {
     Tables: {
+      action_plans: {
+        Row: {
+          id: string
+          user_id: string
+          assessment_id: string
+          competency_name: string
+          skill_name: string | null
+          gap_score: number
+          goals: Json
+          quarterly_milestones: Json
+          plan_text: string
+          actions_text: string
+          resources: Json
+          overall_progress: number
+          status: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          assessment_id: string
+          competency_name: string
+          skill_name?: string | null
+          gap_score: number
+          goals?: Json
+          quarterly_milestones?: Json
+          plan_text?: string
+          actions_text?: string
+          resources?: Json
+          overall_progress?: number
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          assessment_id?: string
+          competency_name?: string
+          skill_name?: string | null
+          gap_score?: number
+          goals?: Json
+          quarterly_milestones?: Json
+          plan_text?: string
+          actions_text?: string
+          resources?: Json
+          overall_progress?: number
+          status?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "action_plans_user_id_fkey"
+            columns: ["user_id"]
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "action_plans_assessment_id_fkey"
+            columns: ["assessment_id"]
+            referencedRelation: "assessment_results"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       assessment_results: {
         Row: {
           ai_insights: string | null

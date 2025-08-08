@@ -182,10 +182,10 @@ const SkillAssessment: React.FC<SkillAssessmentProps> = ({ skill, onRatingChange
           />
         </div>
         <div className="relative text-xs text-gray-500 mt-1" style={{ height: '16px' }}>
-          <span style={{ position: 'absolute', left: '20%', transform: 'translateX(-50%)' }}>Beginner</span>
-          <span style={{ position: 'absolute', left: '47%', transform: 'translateX(-50%)' }}>Proficient</span>
-          <span style={{ position: 'absolute', left: '74%', transform: 'translateX(-50%)' }}>Advanced</span>
-          <span style={{ position: 'absolute', left: '98%', transform: 'translateX(-50%)' }}>Expert</span>
+          <span className="absolute transform -translate-x-1/2 left-[20%] md:left-[10%]">Beginner</span>
+          <span className="absolute transform -translate-x-1/2 left-[47%] md:left-[40%]">Proficient</span>
+          <span className="absolute transform -translate-x-1/2 left-[74%] md:left-[70%]">Advanced</span>
+          <span className="absolute transform -translate-x-1/2 left-[98%] md:left-[100%]">Expert</span>
         </div>
       </div>
       
@@ -212,10 +212,10 @@ const SkillAssessment: React.FC<SkillAssessmentProps> = ({ skill, onRatingChange
           />
         </div>
         <div className="relative text-xs text-gray-500 mt-1" style={{ height: '16px' }}>
-          <span style={{ position: 'absolute', left: '20%', transform: 'translateX(-50%)' }}>Beginner</span>
-          <span style={{ position: 'absolute', left: '47%', transform: 'translateX(-50%)' }}>Proficient</span>
-          <span style={{ position: 'absolute', left: '74%', transform: 'translateX(-50%)' }}>Advanced</span>
-          <span style={{ position: 'absolute', left: '98%', transform: 'translateX(-50%)' }}>Expert</span>
+          <span className="absolute transform -translate-x-1/2 left-[20%] md:left-[10%]">Beginner</span>
+          <span className="absolute transform -translate-x-1/2 left-[47%] md:left-[40%]">Proficient</span>
+          <span className="absolute transform -translate-x-1/2 left-[74%] md:left-[70%]">Advanced</span>
+          <span className="absolute transform -translate-x-1/2 left-[98%] md:left-[100%]">Expert</span>
         </div>
       </div>
 

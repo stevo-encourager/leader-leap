@@ -31,7 +31,7 @@ const IntroductionHeader: React.FC<IntroductionHeaderProps> = ({ onStartAssessme
         <img 
           src="/lovable-uploads/8320d514-fba5-4e1b-a658-1563758db943.png" 
           alt="Encourager Logo" 
-          className={`${isMobile ? 'h-24' : 'h-32'} object-contain mb-6 animate-float`} 
+          className={`${isMobile ? 'h-24' : 'h-32'} object-contain mb-6`} 
         />
       </a>
       

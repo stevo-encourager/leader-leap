@@ -24,7 +24,7 @@ const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStart
         <AudienceSection />
       </div>
 
-      <WelcomeSection />
+      <WelcomeSection onStartAssessment={onStartAssessment} />
     </div>
   );
 };

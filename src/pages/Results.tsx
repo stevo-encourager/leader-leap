@@ -101,7 +101,7 @@ const Results = () => {
               const localData = getLocalAssessmentData();
               if (localData && localData.demographics && Object.keys(localData.demographics).length > 0) {
                 if (import.meta.env.DEV) {
-                  console.log('Results - Restoring demographics from localStorage:', localData.demographics);
+          
                 }
                 handleDemographicsUpdate(localData.demographics);
                 localDataLoadedRef.current = true;

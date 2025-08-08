@@ -28,7 +28,7 @@ export const useSpecificAssessment = (assessmentId: string | undefined): UseSpec
 
   useEffect(() => {
     if (!assessmentId) {
-      console.log('useSpecificAssessment - No assessmentId provided');
+  
       return;
     }
     

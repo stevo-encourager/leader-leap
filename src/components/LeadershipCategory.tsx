@@ -51,7 +51,7 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
       const skillToUpdate = updatedCategory.skills.find(skill => skill.id === skillId);
       if (skillToUpdate) {
         skillToUpdate.ratings[ratingType] = numericValue;
-        console.log(`LeadershipCategory - Updated ${category.title} -> ${skillToUpdate.name} -> ${ratingType} = ${numericValue}`);
+
         onChange(updatedCategory);
       } else {
         console.error(`LeadershipCategory - Skill not found: ${skillId}`);
@@ -145,14 +145,12 @@ const SkillAssessment: React.FC<SkillAssessmentProps> = ({ skill, onRatingChange
   // Handle current rating change
   const handleCurrentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
-    console.log(`SkillAssessment - Current rating change for ${skill.name}: ${value}`);
     onRatingChange('current', value);
   };
   
   // Handle desired rating change
   const handleDesiredChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value, 10);
-    console.log(`SkillAssessment - Desired rating change for ${skill.name}: ${value}`);
     onRatingChange('desired', value);
   };
 

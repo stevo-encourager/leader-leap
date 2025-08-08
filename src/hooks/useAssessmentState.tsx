@@ -22,13 +22,9 @@ export const useAssessmentState = (initialCategories: Category[] = []) => {
   };
 
             const handleDemographicsUpdate = useCallback((updatedDemographics: Demographics) => {
-            console.log('useAssessmentState - handleDemographicsUpdate called with:', updatedDemographics);
-            console.log('useAssessmentState - Previous demographics state:', demographics);
             setDemographics(updatedDemographics);
-            console.log('useAssessmentState - Demographics state updated');
             
             // Save to local storage for persistence (consistent with categories behavior)
-            console.log('useAssessmentState - Storing to localStorage with categories length:', categories?.length);
             storeLocalAssessmentData(categories, updatedDemographics);
           }, [categories, demographics]);
 

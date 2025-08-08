@@ -27,7 +27,7 @@ const UserManagement = () => {
   const fetchUsers = async () => {
     setIsLoading(true);
     setError(null);
-    console.log("UserManagement: Fetching all users via list-users function...");
+
     
     try {
       // Use the list-users function to get all users
@@ -38,7 +38,7 @@ const UserManagement = () => {
         throw new Error(`Error getting users: ${usersError.message}`);
       }
       
-      console.log("UserManagement: Users response:", usersData);
+
       
       if (!usersData.success) {
         throw new Error(usersData.error || "Failed to get users");
@@ -52,12 +52,12 @@ const UserManagement = () => {
       }
       
       const profiles = profilesData?.profiles || [];
-      console.log("UserManagement: Profiles data from edge function:", profiles);
+
       
       // Merge user data with profile data
       const mergedUsers = usersData.users.map((user: any) => {
         const profile = profiles.find((p: any) => p.id === user.id);
-        console.log(`UserManagement: Merging user ${user.email} with profile:`, profile);
+
         
         return {
           id: user.id,
@@ -74,8 +74,7 @@ const UserManagement = () => {
       setUsers(mergedUsers);
       setLastUpdated(new Date().toLocaleString());
       
-      console.log("UserManagement: Users loaded successfully:", mergedUsers.length, "users");
-      console.log("UserManagement: Final merged user data:", mergedUsers);
+
       
     } catch (error: any) {
       console.error('UserManagement: Error fetching users:', error);
@@ -86,7 +85,7 @@ const UserManagement = () => {
   };
 
   useEffect(() => {
-    console.log("UserManagement: Component mounted, fetching users...");
+
     fetchUsers();
   }, []);
 
@@ -122,7 +121,7 @@ const UserManagement = () => {
     }
   };
 
-  console.log("UserManagement: Rendering with users:", users.length, "isLoading:", isLoading);
+  
 
   return (
     <Card>

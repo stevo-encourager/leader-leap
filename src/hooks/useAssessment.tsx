@@ -34,19 +34,14 @@ export const useAssessment = () => {
 
   // Reset all categories to default values when starting a new assessment
   const handleStartNewAssessment = () => {
-    console.log('handleStartNewAssessment called - forcing fresh categories');
-    console.log('handleStartNewAssessment - Stack trace:', new Error().stack);
-    
     // Clear localStorage and reset state first
     clearLocalAssessmentData();
     resetAssessment();
     
     // Force fresh categories with zero ratings
     const success = startFreshAssessment();
-    console.log('handleStartNewAssessment - startFreshAssessment result:', success);
     
     // Always call the navigation handler, regardless of startFreshAssessment result
-    console.log('handleStartNewAssessment - calling handleStartAssessment');
     handleStartAssessment();
   };
 
@@ -96,10 +91,7 @@ export const useAssessment = () => {
       );
       
       if (hasValidRatings) {
-        console.log('useAssessment - Saving results with valid ratings');
         handleSaveResults();
-      } else {
-        console.log('useAssessment - Skipping save, no valid ratings found');
       }
     }
   }, [user, currentStep, handleSaveResults, categories]);

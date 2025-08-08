@@ -89,7 +89,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
         .find(cat => cat?.id === categoryId)
         ?.skills?.find(skill => skill?.id === skillId);
         
-      console.log("Updated skill:", updatedSkill);
+  
       
       onCategoriesUpdate(updatedCategories);
     } catch (error) {

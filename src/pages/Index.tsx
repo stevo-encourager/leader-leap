@@ -31,8 +31,7 @@ const Index = () => {
     const hashType = hashParams.get('type');
     
     // Log all URL parameters for debugging
-    console.log('Index: URL parameters:', Object.fromEntries(urlParams.entries()));
-    console.log('Index: Hash parameters:', Object.fromEntries(hashParams.entries()));
+
     
     // Check for various password reset URL formats
     const isPasswordReset = (
@@ -44,7 +43,7 @@ const Index = () => {
     );
     
     if (isPasswordReset) {
-      console.log('Index: Password reset flow detected, redirecting to reset page');
+      
       // Preserve the URL parameters when redirecting
       const currentUrl = window.location.href;
       const resetUrl = currentUrl.replace('/?', '/reset-password?').replace('/#', '/reset-password#');

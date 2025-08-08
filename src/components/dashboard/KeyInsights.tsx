@@ -43,33 +43,23 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
   
   // Detailed logging for debugging
   useEffect(() => {
-    console.log("KeyInsights - Component mounted with categories:", safeCategories?.length || 0);
-    console.log("KeyInsights - Average gap:", averageGap);
-    console.log("KeyInsights - Categories data:", safeCategories);
-    console.log("KeyInsights - Strengths count:", strengths?.length || 0);
-    console.log("KeyInsights - Lowest skills count:", lowestSkills?.length || 0);
     
-    // Log first category details if available
-    if (safeCategories && safeCategories.length > 0) {
-      const firstCategory = safeCategories[0];
-      console.log("KeyInsights - First category:", firstCategory?.title);
-      
-      if (firstCategory?.skills && firstCategory.skills.length > 0) {
-        const firstSkill = firstCategory.skills[0];
-        console.log("KeyInsights - First skill:", firstSkill?.name);
-        console.log("KeyInsights - First skill ratings:", firstSkill?.ratings);
+    
+          // Log first category details if available
+      if (safeCategories && safeCategories.length > 0) {
+        const firstCategory = safeCategories[0];
+        
+        if (firstCategory?.skills && firstCategory.skills.length > 0) {
+          const firstSkill = firstCategory.skills[0];
+        }
       }
-    }
   }, [safeCategories, averageGap, strengths, lowestSkills]);
   
   // Compute derived data once categories are available
   useEffect(() => {
     if (!safeCategories || safeCategories.length === 0) {
-      console.log("KeyInsights - No valid categories provided");
       return;
     }
-    
-    console.log("KeyInsights - Computing insights from categories");
     
     try {
       // Count skills with ratings for diagnostic purposes
@@ -83,11 +73,8 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
           )
         ).length;
         
-        console.log(`KeyInsights - Category ${category.title} has ${categoryCount} skills with ratings`);
         return count + categoryCount;
       }, 0);
-      
-      console.log(`KeyInsights - Total skills with ratings: ${skillsWithRatings}`);
       
       // Only calculate insights if we have actual data
       if (skillsWithRatings > 0) {
@@ -95,17 +82,10 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
         const largestCategoryGaps = getLargestCategoryGaps(safeCategories, 3) || [];
         const skillsToImprove = getSkillsToImprove(safeCategories, 3) || [];
         
-        console.log("KeyInsights - Calculated values:", {
-          largestCategoryGaps: largestCategoryGaps.length,
-          skillsToImprove: skillsToImprove.length
-        });
-        
         setInsightData({
           largestCategoryGaps,
           skillsToImprove
         });
-      } else {
-        console.log("KeyInsights - No skills with ratings, skipping calculations");
       }
     } catch (error) {
       console.error("KeyInsights - Error calculating insights:", error);

@@ -23,14 +23,14 @@ const SystemStatusViewer = () => {
 
   const fetchStats = async () => {
     setIsLoading(true);
-    console.log("SystemStatusViewer: Starting to fetch stats using admin-stats function...");
+
     
     try {
       // Reset error state
       setStats(prev => ({ ...prev, error: null }));
       
       // Use the new admin-stats function that bypasses RLS
-      console.log("SystemStatusViewer: Fetching all stats via admin-stats function...");
+      
       const { data: statsData, error: statsError } = await supabase.functions.invoke('admin-stats');
       
       if (statsError) {
@@ -38,7 +38,7 @@ const SystemStatusViewer = () => {
         throw new Error(`Error getting admin stats: ${statsError.message}`);
       }
       
-      console.log("SystemStatusViewer: Admin stats response:", statsData);
+      
       
       if (!statsData.success) {
         throw new Error(statsData.error || "Failed to get admin stats");
@@ -54,12 +54,7 @@ const SystemStatusViewer = () => {
         lastUpdated: timestamp
       });
       
-      console.log("SystemStatusViewer: Stats updated successfully:", {
-        userCount: statsData.userCount,
-        assessmentCount: statsData.assessmentCount,
-        profileCount: statsData.profileCount,
-        timestamp
-      });
+
       
     } catch (error: any) {
       console.error('SystemStatusViewer: Error fetching system stats:', error);
@@ -74,11 +69,11 @@ const SystemStatusViewer = () => {
   };
 
   useEffect(() => {
-    console.log("SystemStatusViewer: Component mounted, fetching initial stats...");
+
     fetchStats();
   }, []); 
 
-  console.log("SystemStatusViewer: Rendering with stats:", stats, "isLoading:", isLoading);
+
 
   return (
     <div className="space-y-4">

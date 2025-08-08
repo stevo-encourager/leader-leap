@@ -60,24 +60,18 @@ export const useResultsManagement = ({
             if (!initialized) return;
             
             if (hasValidRatings) {
-              console.log('useResultsManagement - Categories/demographics changed with ratings, resetting saved flag');
-              console.log('useResultsManagement - Current demographics:', demographics);
-              console.log('useResultsManagement - Current categories length:', categories?.length);
-              console.log('useResultsManagement - Demographics keys:', Object.keys(demographics || {}));
               setSavedToSupabase(false);
               
               // Check if demographics are empty but exist in localStorage
               if ((!demographics || Object.keys(demographics).length === 0) && categories && categories.length > 0) {
                 const localData = getLocalAssessmentData();
                 if (localData && localData.demographics && Object.keys(localData.demographics).length > 0) {
-                  console.log('useResultsManagement - Restoring demographics from localStorage:', localData.demographics);
                   // Don't overwrite with empty demographics if they exist in localStorage
                   return;
                 }
               }
               
               // Store locally when we have valid data
-              console.log('useResultsManagement - Storing assessment data locally');
               storeLocalAssessmentData(categories, demographics);
             }
           }, [categories, demographics, hasValidRatings, initialized]);
@@ -100,21 +94,17 @@ export const useResultsManagement = ({
 
   const handleSaveResults = useCallback(async () => {
     if (!user) {
-      console.log('useResultsManagement - No user, storing locally only (guest user)');
       // For guest users, just store locally and don't attempt database save
       storeLocalAssessmentData(categories, demographics);
       return;
     }
     if (!hasValidRatings) {
-      console.log('useResultsManagement - No valid ratings, skipping save');
       return;
     }
     if (savedToSupabase) {
-      console.log('useResultsManagement - Already saved, skipping duplicate save');
       return;
     }
     if (isSaving) {
-      console.log('useResultsManagement - Already saving, skipping duplicate save');
       return;
     }
     
@@ -128,7 +118,6 @@ export const useResultsManagement = ({
     );
     
     if (!hasValidRatingsData) {
-      console.log('useResultsManagement - Double-check failed: no valid ratings found');
       return;
     }
     
@@ -147,7 +136,7 @@ export const useResultsManagement = ({
         setCurrentAssessmentId(result.data[0].id);
         setSavedToSupabase(true);
         
-        console.log('useResultsManagement - Assessment saved successfully:', result.data[0].id);
+
         
         toast({
           title: "Assessment Saved",

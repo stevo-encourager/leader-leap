@@ -712,7 +712,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
   if (isMobile) {
     return (
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4 text-encourager">6-Month Action Plan</h2>
+        <h2 className="text-2xl font-semibold mb-4 text-encourager">6-Month Action Plan for your Top 3 Priority Development Areas</h2>
         <Card>
           <CardContent className="p-6">
             <div className="text-center">
@@ -736,7 +736,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
   if (loading) {
     return (
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4 text-encourager">6-Month Action Plan</h2>
+        <h2 className="text-2xl font-semibold mb-4 text-encourager">6-Month Action Plan for your Top 3 Priority Development Areas</h2>
         <Card>
           <CardContent className="p-6">
             <div className="text-center">
@@ -751,7 +751,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
   if (assessments.length === 0) {
     return (
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4 text-encourager">6-Month Action Plan</h2>
+        <h2 className="text-2xl font-semibold mb-4 text-encourager">6-Month Action Plan for your Top 3 Priority Development Areas</h2>
         <Card>
           <CardContent className="p-6">
             <div className="text-center">
@@ -765,7 +765,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
 
   return (
     <div className="mb-8">
-      <h2 className="text-2xl font-semibold mb-4 text-encourager">6-Month Action Plan</h2>
+      <h2 className="text-2xl font-semibold mb-4 text-encourager">6-Month Action Plan for your Top 3 Priority Development Areas</h2>
       
       <div className="bg-encourager/5 p-6 rounded-lg border border-encourager/20">
         {/* Assessment Selector */}

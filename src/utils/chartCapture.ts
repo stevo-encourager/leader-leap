@@ -77,10 +77,29 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         resolve(null);
         return;
       }
-      
+      let originalStyles: { width: string; height: string; minWidth: string; minHeight: string; flexShrink: string } | null = null;
       try {
         // Wait a bit more for any animations to complete
         await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Targeted mobile fix: temporarily force a fixed canvas size to avoid horizontal compression
+        originalStyles = {
+          width: (radarContainer as HTMLElement).style.width,
+          height: (radarContainer as HTMLElement).style.height,
+          minWidth: (radarContainer as HTMLElement).style.minWidth,
+          minHeight: (radarContainer as HTMLElement).style.minHeight,
+          flexShrink: (radarContainer as HTMLElement).style.flexShrink,
+        };
+        const shouldForceFixedSize = window.innerWidth <= 768; // mobile and small tablets
+        if (shouldForceFixedSize) {
+          (radarContainer as HTMLElement).style.width = '630px';
+          (radarContainer as HTMLElement).style.height = '530px';
+          (radarContainer as HTMLElement).style.minWidth = '630px';
+          (radarContainer as HTMLElement).style.minHeight = '530px';
+          (radarContainer as HTMLElement).style.flexShrink = '0';
+          // Allow layout to settle
+          await new Promise(r => setTimeout(r, 150));
+        }
         
         // Use html2canvas with settings optimized for chart capture
         const canvas = await html2canvas(radarContainer, {
@@ -89,8 +108,8 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
           useCORS: true,
           allowTaint: false,
           logging: false,
-          width: radarContainer.offsetWidth,
-          height: radarContainer.offsetHeight,
+          width: (radarContainer as HTMLElement).offsetWidth,
+          height: (radarContainer as HTMLElement).offsetHeight,
           scrollX: 0,
           scrollY: 0,
           windowWidth: window.innerWidth,
@@ -102,8 +121,6 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
                    element.classList.contains('recharts-active-dot');
           }
         });
-        
-
         
         if (canvas.width === 0 || canvas.height === 0) {
           throw new Error('Generated canvas has zero dimensions');
@@ -118,9 +135,17 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         } else {
           resolve(null);
         }
-        
       } catch (error) {
         resolve(null);
+      } finally {
+        // Revert any temporary style overrides
+        if (radarContainer) {
+          (radarContainer as HTMLElement).style.width = originalStyles?.width || '';
+          (radarContainer as HTMLElement).style.height = originalStyles?.height || '';
+          (radarContainer as HTMLElement).style.minWidth = originalStyles?.minWidth || '';
+          (radarContainer as HTMLElement).style.minHeight = originalStyles?.minHeight || '';
+          (radarContainer as HTMLElement).style.flexShrink = originalStyles?.flexShrink || '';
+        }
       }
     }, 2000); // Use 2000ms as in working version
   });

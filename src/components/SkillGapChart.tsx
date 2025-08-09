@@ -5,6 +5,7 @@ import {
   RadarChart, 
   PolarGrid, 
   PolarAngleAxis, 
+  PolarRadiusAxis,
   Radar,
   Tooltip,
   Legend
@@ -303,6 +304,10 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             <PolarAngleAxis 
               dataKey="subject"
               tick={(props) => <CustomTick {...props} isPDF={isPDF} isMobile={isMobile} />}
+            />
+            <PolarRadiusAxis 
+              domain={[0, 10]} 
+              tick={false}
             />
             <Radar
               name={isPDF ? "Current State" : "Current Level"}

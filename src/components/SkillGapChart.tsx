@@ -308,6 +308,8 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             <PolarRadiusAxis 
               domain={[0, 10]} 
               tick={false}
+              axisLine={false}
+              tickLine={false}
             />
             <Radar
               name={isPDF ? "Current State" : "Current Level"}

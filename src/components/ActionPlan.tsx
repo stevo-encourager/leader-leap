@@ -1149,7 +1149,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
           </div>
         ) : (
           <div>
-            <h4 className="font-semibold mb-3 text-encourager">Short Term Goals</h4>
+            <h4 className="text-xl text-encourager mb-3 font-montserrat">Short Term Goals</h4>
             <Card>
               <CardContent className="p-6">
                 <div className="text-center text-slate-500">

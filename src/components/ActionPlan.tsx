@@ -1105,7 +1105,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
         {/* Explanatory Text */}
         <div className="bg-slate-50 p-4 rounded-lg border-l-4 border-encourager">
           <p className="text-slate-700 text-sm">
-            This summary section will automatically populate with your short-term goals and quarterly milestones once you create action plans for your competencies above. 
+            This summary section will automatically populate with your short-term goals and quarterly milestones once you create action plans for the competencies above. 
             The tables below will show an overview of all your development goals across all competencies.
           </p>
         </div>

@@ -3,6 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Gift } from 'lucide-react';
 
 interface IntroductionHeaderProps {
   onStartAssessment?: () => void;
@@ -39,9 +40,16 @@ const IntroductionHeader: React.FC<IntroductionHeaderProps> = ({ onStartAssessme
         Leader Leap Assessment Tool
       </h1>
       
-      <p className={`${isMobile ? 'text-base' : 'text-xl'} text-slate-600 ${isMobile ? 'max-w-full' : 'max-w-2xl'} text-center mb-10`}>
+      <p className={`${isMobile ? 'text-base' : 'text-xl'} text-slate-600 ${isMobile ? 'max-w-full' : 'max-w-2xl'} text-center mb-8`}>
         Identify and close the gaps between your current leadership competencies and where you want to be.
       </p>
+      
+      <div className="flex items-center justify-center gap-2 mb-4">
+        <Gift size={isMobile ? 14 : 16} style={{ color: '#91ABA5' }} />
+        <span className={`${isMobile ? 'text-sm' : 'text-base'} font-medium`} style={{ color: '#91ABA5' }}>
+          Currently free
+        </span>
+      </div>
       
       <Button 
         size="lg"

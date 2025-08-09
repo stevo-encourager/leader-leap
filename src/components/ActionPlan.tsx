@@ -767,7 +767,8 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
     <div className="mb-8">
       <h2 className="text-2xl font-semibold mb-4 text-encourager">6-Month Action Plan</h2>
       
-      {/* Assessment Selector */}
+      <div className="bg-encourager/5 p-6 rounded-lg border border-encourager/20">
+        {/* Assessment Selector */}
       <div className="mb-6">
         <Label htmlFor="assessment-select" className="text-sm font-medium mb-2 block text-slate-700">
           Action Plan for Assessment:
@@ -1226,6 +1227,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
           <FileText className="h-4 w-4" />
           Export CSV
         </Button>
+      </div>
       </div>
     </div>
   );

@@ -272,11 +272,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
         overflow: 'visible',
         paddingBottom: isPDF ? '0' : '20px',
         placeItems: isPDF ? 'center' : undefined, // Center chart in PDF container
-        position: isPDF ? 'relative' : undefined,
-        // Mobile PDF fix: prevent compression
-        minWidth: isPDF ? `${PDF_CONTAINER_WIDTH}px` : undefined,
-        minHeight: isPDF ? `${PDF_CONTAINER_HEIGHT}px` : undefined,
-        flexShrink: isPDF ? 0 : undefined
+        position: isPDF ? 'relative' : undefined
       }}
     >
       {/* Chart area with proper grid positioning */}

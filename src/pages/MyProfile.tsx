@@ -52,6 +52,7 @@ const MyProfile = () => {
   const [lastRefreshed, setLastRefreshed] = useState<string | null>(null);
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
@@ -125,11 +126,20 @@ const MyProfile = () => {
     e.preventDefault();
     setPasswordLoading(true);
     setPasswordMessage(null);
+
+    // Require confirmation to match
+    if (newPassword !== confirmPassword) {
+      setPasswordMessage('Passwords do not match.');
+      setPasswordLoading(false);
+      return;
+    }
+
     try {
       const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
       setPasswordMessage('Password updated successfully.');
       setNewPassword('');
+      setConfirmPassword('');
     } catch (err: any) {
       setPasswordMessage(err.message || 'Failed to update password.');
     } finally {
@@ -332,29 +342,38 @@ const MyProfile = () => {
                         </AlertDialogContent>
                       </AlertDialog>
                       {showChangePassword && (
-                        <form onSubmit={handleChangePassword} className="mt-4 flex flex-col gap-2 max-w-xs">
-                          <input
-                            type="password"
-                            className="border rounded px-3 py-2"
-                            placeholder="New password"
-                            value={newPassword}
-                            onChange={e => setNewPassword(e.target.value)}
-                            minLength={6}
-                            required
-                          />
-                          <button
-                            type="submit"
-                            className="bg-encourager text-white rounded px-3 py-2 mt-1"
-                            disabled={passwordLoading}
-                          >
-                            {passwordLoading ? 'Updating...' : 'Update Password'}
-                          </button>
-                          {passwordMessage && (
-                            <div className="text-sm text-center mt-1 text-encourager">
-                              {passwordMessage}
-                            </div>
-                          )}
-                        </form>
+                      <form onSubmit={handleChangePassword} className="mt-4 flex flex-col gap-2 max-w-xs">
+                        <input
+                          type="password"
+                          className="border rounded px-3 py-2"
+                          placeholder="New password"
+                          value={newPassword}
+                          onChange={e => setNewPassword(e.target.value)}
+                          minLength={6}
+                          required
+                        />
+                        <input
+                          type="password"
+                          className="border rounded px-3 py-2"
+                          placeholder="Confirm new password"
+                          value={confirmPassword}
+                          onChange={e => setConfirmPassword(e.target.value)}
+                          minLength={6}
+                          required
+                        />
+                        <button
+                          type="submit"
+                          className="bg-encourager text-white rounded px-3 py-2 mt-1"
+                          disabled={passwordLoading}
+                        >
+                          {passwordLoading ? 'Updating...' : 'Update Password'}
+                        </button>
+                        {passwordMessage && (
+                          <div className="text-sm text-center mt-1 text-encourager">
+                            {passwordMessage}
+                          </div>
+                        )}
+                      </form>
                       )}
                     </div>
                   </div>
@@ -442,6 +461,15 @@ const MyProfile = () => {
                           placeholder="New password"
                           value={newPassword}
                           onChange={e => setNewPassword(e.target.value)}
+                          minLength={6}
+                          required
+                        />
+                        <input
+                          type="password"
+                          className="border rounded px-3 py-2"
+                          placeholder="Confirm new password"
+                          value={confirmPassword}
+                          onChange={e => setConfirmPassword(e.target.value)}
                           minLength={6}
                           required
                         />

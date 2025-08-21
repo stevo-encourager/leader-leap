@@ -13,10 +13,10 @@ const Footer: React.FC = () => {
         </div>
         <div className="flex items-center justify-center gap-4 text-xs">
           <Link 
-            to="/privacy" 
+            to="/privacy-notice" 
             className="text-slate-500 hover:text-encourager transition-colors"
           >
-            Privacy Policy
+            Privacy Notice
           </Link>
           <span className="text-slate-300">|</span>
           <a 

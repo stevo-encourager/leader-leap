@@ -21,7 +21,19 @@ const PrivacyNotice = () => {
               <div>
                 <h2 className="text-2xl font-semibold text-encourager mt-8 mb-4">Who We Are</h2>
                 <p>
-                  Encourager Limited is the data controller for the personal information you provide to us. You can contact us at info@encourager.co.uk if you have any questions about how we handle your personal data.
+                  Encourager Limited is the data controller for the personal information you provide to us.
+                </p>
+                <p>&nbsp;</p>
+                <p><strong>Company Details:</strong></p>
+                <p>&nbsp;</p>
+                <p>
+                  Encourager Limited<br />
+                  Park Lodge, 60 London Road, Horsham, RH12 1AY<br />
+                  Company Registration Number: 15188497
+                </p>
+                <p>&nbsp;</p>
+                <p>
+                  If you have any questions about how we handle your personal data, please contact us at info@encourager.co.uk.
                 </p>
               </div>
               
@@ -31,6 +43,7 @@ const PrivacyNotice = () => {
                 <ul className="list-disc pl-6 mt-2">
                   <li>Your name</li>
                   <li>Your email address</li>
+                  <li>Your assessment responses (leadership competency scores, skill ratings, and professional background information)</li>
                 </ul>
               </div>
               
@@ -38,17 +51,31 @@ const PrivacyNotice = () => {
                 <h2 className="text-2xl font-semibold text-encourager mt-8 mb-4">Why We Collect This Information</h2>
                 <p>We collect your personal information for two purposes:</p>
                 <ol className="list-decimal pl-6 mt-2 space-y-2">
-                  <li><strong>To deliver your assessment results</strong> - We need your email address to send you your personalised leadership gap assessment report</li>
-                  <li><strong>To keep in touch about executive coaching services</strong> - With your separate consent, we may contact you about our executive coaching services and related professional development opportunities</li>
+                  <li><strong>To create your account and deliver your assessment results</strong> - We need your email address to create your account and provide access to your personalised leadership gap assessment and AI-powered insights</li>
+                  <li><strong>To send useful leadership tools, tips and coaching services</strong> - With your separate consent, we may send you valuable leadership resources, practical guidance and information about our executive coaching services and related professional development opportunities</li>
                 </ol>
               </div>
               
               <div>
                 <h2 className="text-2xl font-semibold text-encourager mt-8 mb-4">Legal Basis for Processing</h2>
                 <ul className="list-disc pl-6 mt-2 space-y-1">
-                  <li><strong>For delivering your assessment results:</strong> Your consent</li>
+                  <li><strong>For delivering your assessment results:</strong> Performance of contract (providing the assessment service you requested)</li>
                   <li><strong>For marketing communications:</strong> Your separate, explicit consent (which you can withdraw at any time)</li>
                 </ul>
+              </div>
+              
+              <div>
+                <h2 className="text-2xl font-semibold text-encourager mt-8 mb-4">International Data Transfers</h2>
+                <p>
+                  Your anonymised assessment data (competency scores, skill ratings, and professional background information - but not your name or email address) is processed by OpenAI, which is based in the United States. We ensure appropriate safeguards are in place for this transfer through Standard Contractual Clauses approved by the European Commission.
+                </p>
+              </div>
+              
+              <div>
+                <h2 className="text-2xl font-semibold text-encourager mt-8 mb-4">Automated Decision-Making</h2>
+                <p>
+                  We use AI technology (provided by OpenAI) to analyse your assessment responses and generate personalised insights and recommendations. This automated processing helps provide tailored leadership development suggestions based on your responses. This processing does not have legal or similarly significant effects on you.
+                </p>
               </div>
               
               <div>
@@ -69,7 +96,10 @@ const PrivacyNotice = () => {
               <div>
                 <h2 className="text-2xl font-semibold text-encourager mt-8 mb-4">Who We Share Your Information With</h2>
                 <p>
-                  We do not share your personal information with any third parties. Your data stays with us.
+                  We share your assessment data (leadership competency scores, skill ratings, and professional background information) with OpenAI to generate AI-powered insights and recommendations. This data does not include your name, email address, or any other personally identifiable information. OpenAI processes this anonymised assessment data according to their privacy policy and our data processing agreement.
+                </p>
+                <p className="mt-2">
+                  We do not share your personal information with any other third parties.
                 </p>
               </div>
               
@@ -78,22 +108,25 @@ const PrivacyNotice = () => {
                 <p>Under GDPR, you have the right to:</p>
                 <ul className="list-disc pl-6 mt-2 space-y-1">
                   <li>Access your personal data</li>
-                  <li>Rectification</li>
-                  <li>Erasure</li>
-                  <li>Restrict processing</li>
-                  <li>Data portability</li>
-                  <li>Object</li>
-                  <li>Withdraw consent</li>
+                  <li>Rectification - correct inaccurate personal data</li>
+                  <li>Erasure - request deletion of your personal data</li>
+                  <li>Restrict processing - limit how we use your data</li>
+                  <li>Data portability - receive your data in a portable format</li>
+                  <li>Object - object to processing based on legitimate interests</li>
+                  <li>Withdraw consent - for marketing communications</li>
                 </ul>
                 <p className="mt-2">
                   To exercise any of these rights, please contact us at info@encourager.co.uk.
+                </p>
+                <p className="mt-2">
+                  If you're not satisfied with our response to any rights request, you can lodge a complaint with the Information Commissioner's Office (ICO) at ico.org.uk.
                 </p>
               </div>
               
               <div>
                 <h2 className="text-2xl font-semibold text-encourager mt-8 mb-4">How We Protect Your Information</h2>
                 <p>
-                  We take appropriate technical and organisational measures to protect your personal information against unauthorised access, alteration, disclosure or destruction.
+                  We take appropriate technical and organisational measures to protect your personal information against unauthorised access, alteration, disclosure or destruction. This includes encryption of data in transit and at rest, access controls, and regular security monitoring.
                 </p>
               </div>
               
@@ -107,7 +140,14 @@ const PrivacyNotice = () => {
               <div>
                 <h2 className="text-2xl font-semibold text-encourager mt-8 mb-4">Contact Us</h2>
                 <p>
-                  If you have any questions about this privacy notice or how we handle your personal data, please contact us at info@encourager.co.uk.
+                  If you have any questions about this privacy notice or how we handle your personal data, please contact us at:
+                </p>
+                <p>&nbsp;</p>
+                <p>
+                  Encourager Limited<br />
+                  Park Lodge, 60 London Road<br />
+                  Horsham, RH12 1AY<br />
+                  Email: info@encourager.co.uk
                 </p>
               </div>
               

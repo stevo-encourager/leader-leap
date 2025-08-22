@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 interface CategoryNavigationProps {
   activeCategory: number;
@@ -19,6 +20,18 @@ const CategoryNavigationControls: React.FC<CategoryNavigationProps> = ({
   isLastCategory,
   isCategoryComplete
 }) => {
+  const handleNextClick = () => {
+    if (!isCategoryComplete) {
+      toast({
+        title: "Incomplete Competency",
+        description: "Please rate all skills in this competency before proceeding.",
+        variant: "destructive",
+      });
+      return;
+    }
+    onNextCategory();
+  };
+
   return (
     <div className="flex justify-end mt-6">
       {!isFirstCategory && (
@@ -32,9 +45,8 @@ const CategoryNavigationControls: React.FC<CategoryNavigationProps> = ({
         </Button>
       )}
       <Button
-        onClick={onNextCategory}
-        className="bg-encourager hover:bg-encourager-light"
-        disabled={!isCategoryComplete}
+        onClick={handleNextClick}
+        className={`${isCategoryComplete ? 'bg-encourager hover:bg-encourager-light' : 'bg-gray-300 cursor-not-allowed'}`}
         title={!isCategoryComplete ? "Please rate all skills in this category" : ""}
       >
         {isLastCategory ? 'View Results' : 'Next'}

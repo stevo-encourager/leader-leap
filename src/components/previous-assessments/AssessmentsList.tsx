@@ -60,15 +60,14 @@ const AssessmentsList = ({
       <Table className={isMobile ? 'w-full max-w-full table-fixed' : ''}>
         <TableHeader>
           <TableRow>
-            <TableHead className={isMobile ? 'w-1/3' : ''}>Date & Time Completed</TableHead>
-            <TableHead className={isMobile ? 'w-1/4' : ''}>{isMobile ? 'Assess. ID' : 'Assessment ID'}</TableHead>
-            <TableHead className={`text-right ${isMobile ? 'w-5/12' : ''}`}>Actions</TableHead>
+            <TableHead className={isMobile ? 'w-1/2' : ''}>Date & Time Completed</TableHead>
+            <TableHead className={`text-right ${isMobile ? 'w-1/2' : ''}`}>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {assessments.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={3} className="text-center py-6">
+              <TableCell colSpan={2} className="text-center py-6">
                 No assessments found
               </TableCell>
             </TableRow>
@@ -81,13 +80,8 @@ const AssessmentsList = ({
                     <div className="flex flex-col">
                       <span className="text-sm">{date}</span>
                       <span className="text-xs text-muted-foreground">{time}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className={`text-muted-foreground text-sm ${isMobile ? 'truncate' : ''}`}>
-                    <div className={isMobile ? 'truncate text-xs' : ''}>
-                      {assessment.id}
                       {assessment.completed === false && (
-                        <span className="ml-2 text-xs text-amber-500">(incomplete)</span>
+                        <span className="text-xs text-amber-500 mt-1">(incomplete)</span>
                       )}
                     </div>
                   </TableCell>

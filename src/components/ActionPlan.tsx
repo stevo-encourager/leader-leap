@@ -125,6 +125,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
   const [saving, setSaving] = useState<Set<string>>(new Set());
   const [unsavedChanges, setUnsavedChanges] = useState<Set<string>>(new Set());
   const [planData, setPlanData] = useState<Map<string, ActionPlanFormData>>(new Map());
+  const [tooltipStates, setTooltipStates] = useState<{ [key: string]: boolean }>({});
 
   const [aiInsights, setAiInsights] = useState<string | null>(null);
 
@@ -712,7 +713,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
   if (isMobile) {
     return (
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4 text-encourager">6-Month Action Plan for your Top 3 Priority Development Areas</h2>
+        <h2 className="text-2xl font-semibold mb-4 text-encourager">6-Month Action Plan</h2>
         <Card>
           <CardContent className="p-6">
             <div className="text-center">
@@ -736,7 +737,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
   if (loading) {
     return (
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4 text-encourager">6-Month Action Plan for your Top 3 Priority Development Areas</h2>
+        <h2 className="text-2xl font-semibold mb-4 text-encourager">6-Month Action Plan</h2>
         <Card>
           <CardContent className="p-6">
             <div className="text-center">
@@ -751,7 +752,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
   if (assessments.length === 0) {
     return (
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4 text-encourager">6-Month Action Plan for your Top 3 Priority Development Areas</h2>
+        <h2 className="text-2xl font-semibold mb-4 text-encourager">6-Month Action Plan</h2>
         <Card>
           <CardContent className="p-6">
             <div className="text-center">
@@ -765,35 +766,13 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
 
   return (
     <div className="mb-8">
-      <h2 className="text-2xl font-semibold mb-4 text-encourager">6-Month Action Plan for your Top 3 Priority Development Areas</h2>
+      <h2 className="text-2xl font-semibold mb-4 text-encourager">6-Month Action Plan</h2>
       
       <div className="bg-encourager/5 p-6 rounded-lg border border-encourager/20">
-        {/* Assessment Selector */}
-      <div className="mb-6">
-        <Label htmlFor="assessment-select" className="text-sm font-medium mb-2 block text-slate-700">
-          Action Plan for Assessment:
-        </Label>
-        <Select value={selectedAssessmentId} onValueChange={setSelectedAssessmentId}>
-          <SelectTrigger className="w-full max-w-md">
-            <SelectValue placeholder="Select an assessment" />
-          </SelectTrigger>
-          <SelectContent>
-            {assessments.map((assessment) => (
-              <SelectItem key={assessment.id} value={assessment.id}>
-                {new Date(assessment.created_at).toLocaleString('en-US', {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <div className="bg-slate-50 p-4 rounded-lg border-l-4 border-encourager mt-4">
+        {/* Instructions */}
+        <div className="bg-slate-50 p-4 rounded-lg border-l-4 border-encourager mb-6">
           <p className="text-slate-700 text-sm font-montserrat">
-            Complete your short-term goals and quarterly milestones for each of your competencies with the largest gaps.
+            Complete your short-term goals and quarterly milestones for the three competencies with the largest gaps.
           </p>
           <p className="text-slate-700 text-sm font-montserrat mt-2">
             <strong>Short-term Goals</strong> = specific actions or tasks you'll complete in the next 1-3 months to improve this competency. Think immediate, concrete steps you can take.
@@ -801,6 +780,32 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
           <p className="text-slate-700 text-sm font-montserrat mt-2">
             <strong>Quarterly Milestones</strong> = measurable outcomes or achievements that show your progress over a 3-month period. They're bigger-picture results that demonstrate you're actually improving in this area.
           </p>
+        </div>
+
+        {/* Assessment Selector */}
+      <div className="mb-6">
+        <div className="flex items-center gap-3">
+          <Label htmlFor="assessment-select" className="text-xl font-bold text-encourager font-montserrat whitespace-nowrap">
+            Action Plan for Assessment:
+          </Label>
+          <Select value={selectedAssessmentId} onValueChange={setSelectedAssessmentId}>
+            <SelectTrigger className="w-full max-w-md">
+              <SelectValue placeholder="Select an assessment" />
+            </SelectTrigger>
+            <SelectContent>
+              {assessments.map((assessment) => (
+                <SelectItem key={assessment.id} value={assessment.id}>
+                  {new Date(assessment.created_at).toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -820,9 +825,12 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <TooltipProvider>
-                          <Tooltip>
+                          <Tooltip open={tooltipStates[`competency-${competency.title}`]} onOpenChange={(open) => setTooltipStates(prev => ({ ...prev, [`competency-${competency.title}`]: open }))}>
                             <TooltipTrigger asChild>
-                              <CardTitle className="text-lg text-slate-700 font-montserrat font-normal cursor-pointer">
+                              <CardTitle 
+                                className="text-lg text-slate-700 font-montserrat font-normal cursor-pointer"
+                                onClick={() => setTooltipStates(prev => ({ ...prev, [`competency-${competency.title}`]: !prev[`competency-${competency.title}`] }))}
+                              >
                                 {competency.title} - Gap: {competency.gap}
                               </CardTitle>
                             </TooltipTrigger>
@@ -837,25 +845,33 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
                           </Badge>
                         )}
                       </div>
-                      <div className="text-sm text-slate-600 mb-2">
-                        Skills: {competency.skills.map((skill, index) => (
-                          <React.Fragment key={skill.name}>
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <span className="cursor-pointer underline decoration-dotted">
-                                    {skill.name}
-                                  </span>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p className="max-w-xs">{skillDescriptions[skill.name] || 'No description available.'}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                            {index < competency.skills.length - 1 ? ` (Gap: ${skill.gap}), ` : ` (Gap: ${skill.gap})`}
-                          </React.Fragment>
-                        ))}
-                      </div>
+                      {isExpanded && (
+                        <div className="mb-3">
+                          <h4 className="font-semibold mb-3 text-encourager font-montserrat">Skills Breakdown</h4>
+                          <div className="text-sm text-slate-600 mb-2">
+                            {competency.skills.map((skill, index) => (
+                              <div key={skill.name} className="ml-4 mb-1">
+                                <TooltipProvider>
+                                  <Tooltip open={tooltipStates[`skill-${skill.name}`]} onOpenChange={(open) => setTooltipStates(prev => ({ ...prev, [`skill-${skill.name}`]: open }))}>
+                                    <TooltipTrigger asChild>
+                                      <span 
+                                        className="cursor-pointer underline decoration-dotted"
+                                        onClick={() => setTooltipStates(prev => ({ ...prev, [`skill-${skill.name}`]: !prev[`skill-${skill.name}`] }))}
+                                      >
+                                        {skill.name}
+                                      </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p className="max-w-xs">{skillDescriptions[skill.name] || 'No description available.'}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                                <span className="text-slate-500"> (Gap: {skill.gap})</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                       {existingPlan && (
                         <div className="text-sm text-slate-600">
                           Overall Progress: {progress}%

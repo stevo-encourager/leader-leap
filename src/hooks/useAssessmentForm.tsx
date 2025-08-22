@@ -11,6 +11,56 @@ export const useAssessmentForm = (categories: Category[], initialActiveCategory?
   const [dataValidationError, setDataValidationError] = useState<string | null>(null);
   const { toast } = useToast();
 
+  // Handle browser back/forward buttons for assessment navigation
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      // Check if we're in the assessment step and have category data
+      if (categories && categories.length > 0) {
+        const categoryIndex = event.state?.categoryIndex ?? 0;
+        if (categoryIndex >= 0 && categoryIndex < categories.length) {
+          setActiveCategory(categoryIndex);
+          window.scrollTo(0, 0);
+        }
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [categories]);
+
+  // Initialize browser history for assessment navigation
+  useEffect(() => {
+    if (categories && categories.length > 0) {
+      // Check if there's a category parameter in the URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const categoryParam = urlParams.get('category');
+      
+      if (categoryParam !== null) {
+        const categoryIndex = parseInt(categoryParam, 10);
+        if (categoryIndex >= 0 && categoryIndex < categories.length) {
+          setActiveCategory(categoryIndex);
+        }
+      }
+      
+      // Initialize the history state for the current category
+      const newUrl = `${window.location.pathname}?category=${activeCategory}`;
+      const newState = { categoryIndex: activeCategory };
+      window.history.replaceState(newState, '', newUrl);
+    }
+  }, [categories, activeCategory]);
+
+  // Update browser history when active category changes (but not on initial load)
+  useEffect(() => {
+    if (categories && categories.length > 0 && activeCategory > 0) {
+      const newUrl = `${window.location.pathname}?category=${activeCategory}`;
+      const newState = { categoryIndex: activeCategory };
+      
+      // Replace the current history entry instead of pushing a new one
+      // This prevents creating too many history entries
+      window.history.replaceState(newState, '', newUrl);
+    }
+  }, [activeCategory, categories]);
+
   // Validate categories data on component mount
   useEffect(() => {
     
@@ -66,7 +116,14 @@ export const useAssessmentForm = (categories: Category[], initialActiveCategory?
     }
     
     if (activeCategory < categories.length - 1) {
-      setActiveCategory(activeCategory + 1);
+      const nextCategory = activeCategory + 1;
+      setActiveCategory(nextCategory);
+      
+      // Push a new history entry for the next category
+      const newUrl = `${window.location.pathname}?category=${nextCategory}`;
+      const newState = { categoryIndex: nextCategory };
+      window.history.pushState(newState, '', newUrl);
+      
       window.scrollTo(0, 0);
     } else {
       // Verify all categories are completed before finishing assessment
@@ -86,7 +143,14 @@ export const useAssessmentForm = (categories: Category[], initialActiveCategory?
 
   const handlePrevCategory = (onBack: () => void) => {
     if (activeCategory > 0) {
-      setActiveCategory(activeCategory - 1);
+      const prevCategory = activeCategory - 1;
+      setActiveCategory(prevCategory);
+      
+      // Push a new history entry for the previous category
+      const newUrl = `${window.location.pathname}?category=${prevCategory}`;
+      const newState = { categoryIndex: prevCategory };
+      window.history.pushState(newState, '', newUrl);
+      
       window.scrollTo(0, 0);
     } else {
       onBack();

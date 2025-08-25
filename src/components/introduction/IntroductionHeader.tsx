@@ -45,8 +45,8 @@ const IntroductionHeader: React.FC<IntroductionHeaderProps> = ({ onStartAssessme
       </p>
       
       <div className="flex items-center justify-center gap-2 mb-4">
-        <Gift size={isMobile ? 14 : 16} style={{ color: '#91ABA5' }} />
-        <span className={`${isMobile ? 'text-sm' : 'text-base'} font-medium`} style={{ color: '#91ABA5' }}>
+        <Gift size={isMobile ? 14 : 16} style={{ color: '#5fac9a' }} />
+        <span className={`${isMobile ? 'text-sm' : 'text-base'} font-medium`} style={{ color: '#5fac9a' }}>
           Currently free
         </span>
       </div>

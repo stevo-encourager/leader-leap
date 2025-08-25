@@ -45,8 +45,8 @@ const IntroductionHeader: React.FC<IntroductionHeaderProps> = ({ onStartAssessme
       </p>
       
       <div className="flex items-center justify-center gap-2 mb-4">
-        <Gift size={isMobile ? 14 : 16} style={{ color: '#5fac9a' }} />
-        <span className={`${isMobile ? 'text-sm' : 'text-base'} font-medium`} style={{ color: '#5fac9a' }}>
+        <Gift size={isMobile ? 14 : 16} style={{ color: '#91ABA5' }} />
+        <span className={`${isMobile ? 'text-sm' : 'text-base'} font-medium`} style={{ color: '#91ABA5' }}>
           Currently free
         </span>
       </div>
@@ -55,9 +55,9 @@ const IntroductionHeader: React.FC<IntroductionHeaderProps> = ({ onStartAssessme
         size="lg"
         onClick={handleStartClick}
         className="text-white px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 font-medium"
-        style={{ backgroundColor: '#2F564D' }}
-        onMouseEnter={(e) => e.target.style.backgroundColor = '#3a6b61'}
-        onMouseLeave={(e) => e.target.style.backgroundColor = '#2F564D'}
+        style={{ backgroundColor: '#5fac9a' }}
+        onMouseEnter={(e) => e.target.style.backgroundColor = '#6cbdab'}
+        onMouseLeave={(e) => e.target.style.backgroundColor = '#5fac9a'}
       >
         Start Your Assessment
       </Button>

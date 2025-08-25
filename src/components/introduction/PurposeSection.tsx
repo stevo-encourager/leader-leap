@@ -5,7 +5,7 @@ import SectionHeader from './SectionHeader';
 
 const PurposeSection: React.FC = () => {
   return (
-    <Card className="border-none shadow-card hover:shadow-elevated transition-all duration-300" style={{ backgroundColor: '#5fac9a' }}>
+    <Card className="border-none shadow-card hover:shadow-elevated transition-all duration-300" style={{ backgroundColor: '#91ABA5' }}>
       <CardContent className="p-6">
         <SectionHeader title="Purpose of this Assessment" icon={Star} className="[&>h2]:text-white" />
         <div className="space-y-2">

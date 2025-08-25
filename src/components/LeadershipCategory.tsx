@@ -9,6 +9,7 @@ import {
 } from './ui/tooltip';
 import { Category, Skill } from '../utils/assessmentTypes';
 import { assessmentLogger } from '@/utils/logger';
+import { logger } from '@/utils/productionLogger';
 
 interface LeadershipCategoryProps {
   category: Category;
@@ -55,10 +56,10 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
 
         onChange(updatedCategory);
       } else {
-        console.error(`LeadershipCategory - Skill not found: ${skillId}`);
+        logger.error(`LeadershipCategory - Skill not found: ${skillId}`);
       }
     } else {
-      console.warn(`LeadershipCategory - No onChange or onSkillRating handler provided for ${category.title} -> ${skillId}`);
+      logger.warn(`LeadershipCategory - No onChange or onSkillRating handler provided for ${category.title} -> ${skillId}`);
     }
   };
 

@@ -2,30 +2,31 @@
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { normalizeCategories } from '@/utils/resultNormalizer';
 import { toast } from '@/hooks/use-toast';
+import { logger } from './productionLogger';
 
 /**
  * Validates and normalizes categories data from an assessment
  */
 export const validateAndNormalizeCategories = (
-  rawCategoriesData: any
+  rawCategoriesData: unknown
 ): Category[] | null => {
-  console.log("validateAndNormalizeCategories - Raw categories data type:", typeof rawCategoriesData);
-  console.log("validateAndNormalizeCategories - Raw categories data:", rawCategoriesData);
+  logger.log("validateAndNormalizeCategories - Raw categories data type:", typeof rawCategoriesData);
+  logger.log("validateAndNormalizeCategories - Raw categories data:", rawCategoriesData);
   
   // Handle case where categories might be stored as a string
   if (typeof rawCategoriesData === 'string') {
     try {
       rawCategoriesData = JSON.parse(rawCategoriesData);
-      console.log("validateAndNormalizeCategories - Parsed categories from string:", rawCategoriesData);
+      logger.log("validateAndNormalizeCategories - Parsed categories from string:", rawCategoriesData);
     } catch (e) {
-      console.error("validateAndNormalizeCategories - Failed to parse categories string:", e);
+      logger.error("validateAndNormalizeCategories - Failed to parse categories string:", e);
       return null;
     }
   }
   
   // Ensure we have proper categories data to work with
   if (!rawCategoriesData) {
-    console.error("validateAndNormalizeCategories - No categories data found");
+    logger.error("validateAndNormalizeCategories - No categories data found");
     return null;
   }
   
@@ -36,20 +37,20 @@ export const validateAndNormalizeCategories = (
   } else if (typeof rawCategoriesData === 'object') {
     categoriesArray = Object.values(rawCategoriesData);
   } else {
-    console.error('validateAndNormalizeCategories - Categories data is in an invalid format');
+    logger.error('validateAndNormalizeCategories - Categories data is in an invalid format');
     return null;
   }
     
-  console.log("validateAndNormalizeCategories - Categories array before normalization:", categoriesArray);
+  logger.log("validateAndNormalizeCategories - Categories array before normalization:", categoriesArray);
   
   // Apply thorough normalization to ensure consistent data structure
   const normalizedCategories = normalizeCategories(categoriesArray as unknown as Category[]);
   
-  console.log("validateAndNormalizeCategories - Normalized categories:", normalizedCategories);
+  logger.log("validateAndNormalizeCategories - Normalized categories:", normalizedCategories);
   
   // Verify we have valid data after normalization
   if (!normalizedCategories || normalizedCategories.length === 0) {
-    console.error("validateAndNormalizeCategories - Normalization failed to produce valid categories");
+    logger.error("validateAndNormalizeCategories - Normalization failed to produce valid categories");
     return null;
   }
   
@@ -59,7 +60,7 @@ export const validateAndNormalizeCategories = (
   );
   
   if (!hasValidSkills) {
-    console.error("validateAndNormalizeCategories - Normalized categories have no valid skills");
+    logger.error("validateAndNormalizeCategories - Normalized categories have no valid skills");
     return null;
   }
   

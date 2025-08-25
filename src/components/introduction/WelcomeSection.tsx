@@ -74,8 +74,12 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({ onStartAssessment }) =>
                 {onStartAssessment && (
                   <div className="pt-4 flex justify-center">
                     <Button 
+                      size="lg"
                       onClick={onStartAssessment}
-                      className="w-full md:w-auto bg-encourager hover:bg-encourager/90 text-white py-3 px-8 text-lg"
+                      className="w-full md:w-auto text-white px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 font-medium"
+                      style={{ backgroundColor: '#5fac9a' }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#6cbdab'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = '#5fac9a'}
                     >
                       Start Your Assessment
                     </Button>

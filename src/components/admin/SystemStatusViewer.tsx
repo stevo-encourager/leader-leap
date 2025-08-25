@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { CircleGauge, RefreshCw, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/utils/productionLogger';
 
 const SystemStatusViewer = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -34,7 +35,7 @@ const SystemStatusViewer = () => {
       const { data: statsData, error: statsError } = await supabase.functions.invoke('admin-stats');
       
       if (statsError) {
-        console.error("SystemStatusViewer: Error getting admin stats:", statsError);
+        logger.error("SystemStatusViewer: Error getting admin stats:", statsError);
         throw new Error(`Error getting admin stats: ${statsError.message}`);
       }
       
@@ -57,7 +58,7 @@ const SystemStatusViewer = () => {
 
       
     } catch (error: any) {
-      console.error('SystemStatusViewer: Error fetching system stats:', error);
+      logger.error('SystemStatusViewer: Error fetching system stats:', error);
       setStats(prev => ({
         ...prev,
         error: error.message,

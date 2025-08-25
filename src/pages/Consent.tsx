@@ -213,7 +213,7 @@ const Consent: React.FC = () => {
                     onChange={e => setReceiveEmails(e.target.checked)}
                     className="accent-encourager mt-1"
                   />
-                  <span>Receive emails about leadership tools, tips and updates. MAX ONE EMAIL MONTH</span>
+                  <span>Get free leadership tools, tips, and insights delivered to your inbox (just once a month, max)</span>
                 </label>
               </div>
               <DialogFooter>

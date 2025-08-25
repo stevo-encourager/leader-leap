@@ -4,6 +4,7 @@ import { Bot, AlertCircle, Target, TrendingUp, ExternalLink } from 'lucide-react
 import { useInsights } from '@/hooks/InsightsProvider';
 import { FormattedSummary } from '@/components/FormattedSummary';
 import type { Category, Demographics } from '@/utils/assessmentTypes';
+import { logger } from '@/utils/productionLogger';
 
 interface AIInsightsProps {
   categories: Category[];
@@ -62,26 +63,26 @@ const AIInsights: React.FC<AIInsightsProps> = ({
       
       // Validate structure
       if (!parsed.summary || !parsed.priority_areas || !parsed.key_strengths) {
-        console.error('AIInsights: Invalid insights structure - missing required fields');
+        logger.error('AIInsights: Invalid insights structure - missing required fields');
         return null;
       }
       
       if (!Array.isArray(parsed.priority_areas) || !Array.isArray(parsed.key_strengths)) {
-        console.error('AIInsights: Invalid insights structure - arrays expected');
+        logger.error('AIInsights: Invalid insights structure - arrays expected');
         return null;
       }
 
       // Validate priority areas
       for (const area of parsed.priority_areas) {
         if (!area.competency || !area.insights || !Array.isArray(area.insights)) {
-          console.error('AIInsights: Invalid priority area structure:', area);
+          logger.error('AIInsights: Invalid priority area structure:', area);
           return null;
         }
         
         // Ensure insights is an array of strings only
         for (const insight of area.insights) {
           if (typeof insight !== 'string') {
-            console.error('AIInsights: Invalid insight type - must be string:', insight);
+            logger.error('AIInsights: Invalid insight type - must be string:', insight);
             return null;
           }
         }
@@ -98,14 +99,14 @@ const AIInsights: React.FC<AIInsightsProps> = ({
       // Validate key strengths
       for (const strength of parsed.key_strengths) {
         if (!strength.competency || !strength.example || !strength.leverage_advice || !Array.isArray(strength.leverage_advice)) {
-          console.error('AIInsights: Invalid key strength structure:', strength);
+          logger.error('AIInsights: Invalid key strength structure:', strength);
           return null;
         }
         
         // Ensure leverage_advice is an array of strings only
         for (const advice of strength.leverage_advice) {
           if (typeof advice !== 'string') {
-            console.error('AIInsights: Invalid advice type - must be string:', advice);
+            logger.error('AIInsights: Invalid advice type - must be string:', advice);
             return null;
           }
         }
@@ -118,7 +119,37 @@ const AIInsights: React.FC<AIInsightsProps> = ({
       
       return parsed;
     } catch (error) {
-      console.error('AIInsights: Error parsing insights JSON:', error);
+      logger.error('AIInsights: Error parsing insights JSON:', error);
+      return null;
+    }
+  };
+
+  // Sanitize URL to prevent XSS attacks
+  const sanitizeUrl = (url: string): string | null => {
+    try {
+      // Only allow http/https URLs
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        return null;
+      }
+      
+      // Parse and validate URL structure
+      const parsedUrl = new URL(url);
+      
+      // Block dangerous protocols and suspicious patterns
+      if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+        return null;
+      }
+      
+      // Block javascript: data: and other dangerous schemes
+      if (url.toLowerCase().includes('javascript:') || 
+          url.toLowerCase().includes('data:') ||
+          url.toLowerCase().includes('vbscript:')) {
+        return null;
+      }
+      
+      return parsedUrl.href;
+    } catch (error) {
+      // Invalid URL
       return null;
     }
   };
@@ -133,10 +164,11 @@ const AIInsights: React.FC<AIInsightsProps> = ({
       if (markdownMatch) {
         const name = markdownMatch[1];
         const url = markdownMatch[2];
+        const sanitizedUrl = sanitizeUrl(url);
         
-        // Only add if URL is valid (starts with http/https)
-        if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
-          validResources.push({ name, url });
+        // Only add if URL is valid and sanitized
+        if (sanitizedUrl) {
+          validResources.push({ name, url: sanitizedUrl });
         }
       }
     });

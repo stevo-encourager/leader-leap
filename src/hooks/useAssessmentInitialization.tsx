@@ -3,6 +3,7 @@ import { Category } from '@/utils/assessmentTypes';
 import { allCategories } from '@/utils/assessmentCategories';
 import { getLocalAssessmentData, clearLocalAssessmentData } from '@/services/assessment/manageAssessmentHistory';
 import { toast } from './use-toast';
+import { logger } from '@/utils/productionLogger';
 
 export const useAssessmentInitialization = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -45,7 +46,7 @@ export const useAssessmentInitialization = () => {
             setCategories(freshCategories);
             setIsInitialized(true); // Mark as initialized immediately
           } else {
-            console.error("useAssessmentInitialization - Fresh categories are empty or invalid");
+            logger.error("useAssessmentInitialization - Fresh categories are empty or invalid");
             toast({
               title: "Error loading categories",
               description: "Could not load assessment categories. Please refresh the page.",
@@ -79,7 +80,7 @@ export const useAssessmentInitialization = () => {
             if (freshCategories && freshCategories.length > 0) {
               setCategories(freshCategories);
             } else {
-              console.error("useAssessmentInitialization - Fresh categories are empty or invalid");
+              logger.error("useAssessmentInitialization - Fresh categories are empty or invalid");
               toast({
                 title: "Error loading categories",
                 description: "Could not load assessment categories. Please refresh the page.",
@@ -91,7 +92,7 @@ export const useAssessmentInitialization = () => {
         
         setIsInitialized(true);
       } catch (error) {
-        console.error("useAssessmentInitialization - Error initializing categories:", error);
+        logger.error("useAssessmentInitialization - Error initializing categories:", error);
         setIsInitialized(true);
       }
     } else if (!isFreshAssessment) {
@@ -147,7 +148,7 @@ export const useAssessmentInitialization = () => {
       }
       return false; // No valid existing data found
     } catch (error) {
-      console.error("useAssessmentInitialization - Error loading existing data:", error);
+      logger.error("useAssessmentInitialization - Error loading existing data:", error);
       return false;
     }
   };

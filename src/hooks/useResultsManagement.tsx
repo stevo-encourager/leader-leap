@@ -5,6 +5,7 @@ import { AssessmentCategory } from '@/types/assessment';
 import { storeLocalAssessmentData, getLocalAssessmentData, saveAssessmentResults, TEST_ASSESSMENT_ID } from '@/services/assessment';
 import { assessmentLogger } from '@/utils/logger';
 import { toast } from '@/hooks/use-toast';
+import { logger } from '@/utils/productionLogger';
 
 interface UseResultsManagementProps {
   categories: AssessmentCategory[];
@@ -143,7 +144,7 @@ export const useResultsManagement = ({
           description: "Your assessment results have been saved successfully.",
         });
       } else {
-        console.error('useResultsManagement - Failed to save assessment:', result.error);
+        logger.error('useResultsManagement - Failed to save assessment:', result.error);
         
         // Check if it's a session expiry error
         if (result.error?.includes('session has expired') || result.error?.includes('re-authenticate')) {
@@ -165,7 +166,7 @@ export const useResultsManagement = ({
         }
       }
     } catch (error) {
-      console.error('useResultsManagement - Error saving assessment:', error);
+      logger.error('useResultsManagement - Error saving assessment:', error);
       
       toast({
         title: "Unexpected Error",

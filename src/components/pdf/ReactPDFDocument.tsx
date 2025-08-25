@@ -3,6 +3,7 @@ import React from 'react';
 import { Document, Page, Text, View, StyleSheet, Image, Link } from '@react-pdf/renderer';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { calculateAverageGap } from '@/utils/assessmentCalculations/averages';
+import { logger } from '@/utils/productionLogger';
 
 // Define styles for React PDF
 const styles = StyleSheet.create({
@@ -94,27 +95,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 8,
     alignSelf: 'center',
-  },
-  chartLegend: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 20,
-    marginTop: 8,
-    width: '100%',
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-  },
-  legendColor: {
-    width: 12,
-    height: 12,
-    borderRadius: 2,
-  },
-  legendText: {
-    fontSize: 11,
-    color: '#374151',
   },
   priorityItem: {
     marginBottom: 12,
@@ -252,9 +232,9 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
 
   // Chart image validation: only accept data:image/ URLs
   if (!chartImageDataUrl) {
-    console.error('ReactPDFDocument: No chart image data URL provided - chart capture may have failed');
+    logger.error('ReactPDFDocument: No chart image data URL provided - chart capture may have failed');
   } else if (!chartImageDataUrl.startsWith('data:image/')) {
-    console.error('ReactPDFDocument: Invalid chart image data URL format:', chartImageDataUrl?.substring(0, 50));
+    logger.error('ReactPDFDocument: Invalid chart image data URL format:', chartImageDataUrl?.substring(0, 50));
   } else {
   
   }
@@ -403,20 +383,6 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
           )}
         </View>
         
-        {/* Chart Legend for Mobile PDF only */}
-        {typeof window !== 'undefined' && window.innerWidth < 768 && (
-          <View style={styles.chartLegend}>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendColor, { backgroundColor: '#2F564D', opacity: 0.6 }]} />
-              <Text style={styles.legendText}>Current Level</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <View style={[styles.legendColor, { backgroundColor: '#8baca5', opacity: 0.6 }]} />
-              <Text style={styles.legendText}>Desired Level</Text>
-            </View>
-          </View>
-        )}
-        
 
       </Page>
 
@@ -449,25 +415,13 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
                       // HTML anchor tag
                       if (match[1] && match[2]) {
                         parts.push(
-                          `${match[2]} (`
-                        );
-                        parts.push(
-                          <Link key={key++} src={match[1]} style={styles.linkText}>{match[1]}</Link>
-                        );
-                        parts.push(
-                          ")"
+                          <Link key={key++} src={match[1]} style={styles.linkText}>{match[2]}</Link>
                         );
                       }
                       // Markdown link
                       else if (match[3] && match[4]) {
                         parts.push(
-                          `${match[3]} (`
-                        );
-                        parts.push(
-                          <Link key={key++} src={match[4]} style={styles.linkText}>{match[4]}</Link>
-                        );
-                        parts.push(
-                          ")"
+                          <Link key={key++} src={match[4]} style={styles.linkText}>{match[3]}</Link>
                         );
                       }
                       lastIndex = match.index + match[0].length;
@@ -649,10 +603,9 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
 
       {/* Page 5 - Recommended Next Steps & Self-Leadership Coaching */}
       <Page size="A4" style={styles.page}>
-        <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Recommended Next Steps</Text>
-        <Text style={styles.listItem}>• Consider using this report in your next 1:1 with your manager or mentor as a guide for your self-leadership development</Text>
-        <Text style={styles.listItem}>• Create a 6 month action plan to address your most critical competency gaps and schedule a time to re-take this assessment to track your progress</Text>
-        <Text style={styles.listItem}>• Set an actionable goal for yourself within the next week, and set a reminder to help hold yourself accountable for taking that next step</Text>
+        <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Create a 6-month action plan</Text>
+        <Text style={styles.listItem}>• Navigate to <Link src="www.leader-leap.com/profile" style={styles.linkText}>My Profile</Link> and create plan to address your most critical competency gaps</Text>
+        <Text style={styles.listItem}>• Collaborate with your manager, mentor or coach to develop your leadership development strategy</Text>
         <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Self-Leadership Coaching</Text>
         <View style={styles.coachingContainer}>
           <View style={styles.coachingText}>

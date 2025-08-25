@@ -1,6 +1,7 @@
 
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { validateEnvironmentVariables, validateInsightsStructure } from './utils/validation.ts';
 import { cleanJsonResponse, formatSummaryIntoParagraphs, sanitizeJsonString } from './utils/formatting.ts';
 import { buildAssessmentData, buildPrompt, formatResourceMarkdown } from './utils/promptBuilder.ts';
@@ -20,10 +21,40 @@ serve(async (req) => {
   }
 
   try {
-    // STEP 1: Validate environment variables
-    const { openAIApiKey, supabaseUrl, supabaseServiceKey } = validateEnvironmentVariables();
+    // STEP 1: Authentication check
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Authorization required' }),
+        { 
+          status: 401, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
 
-    // STEP 2: Parse and validate request
+    const jwt = authHeader.replace('Bearer ', '');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+    
+    // Create client to verify user token
+    const supabaseClient = createClient(supabaseUrl, anonKey);
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(jwt);
+    
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid authentication token' }),
+        { 
+          status: 401, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    // STEP 2: Validate environment variables
+    const { openAIApiKey, supabaseServiceKey } = validateEnvironmentVariables();
+
+    // STEP 3: Parse and validate request
     const requestBody = await req.json();
     const { categories, averageGap, assessmentId, forceRegenerate = false, demographics = {} } = requestBody;
 
@@ -41,7 +72,7 @@ serve(async (req) => {
       throw new Error('Too many categories provided');
     }
 
-    // STEP 3: Check for existing insights (unless force regenerate)
+    // STEP 4: Check for existing insights (unless force regenerate)
     if (!forceRegenerate) {
       const existingInsights = await checkExistingInsights(assessmentId, supabaseUrl, supabaseServiceKey, forceRegenerate);
       if (existingInsights) {
@@ -51,28 +82,28 @@ serve(async (req) => {
       }
     }
 
-    // STEP 4: Build assessment data and prompt
+    // STEP 5: Build assessment data and prompt
     const assessmentSummary = buildAssessmentData(categories, averageGap, demographics);
     const prompt = buildPrompt(assessmentSummary);
 
-    // STEP 5: Call OpenAI
+    // STEP 6: Call OpenAI
     const rawInsights = await callOpenAI(prompt, openAIApiKey);
 
-    // STEP 6: Clean and parse the response
+    // STEP 7: Clean and parse the response
     const cleanedInsights = cleanJsonResponse(rawInsights);
     const sanitizedInsights = sanitizeJsonString(cleanedInsights);
     const parsedInsights = JSON.parse(sanitizedInsights);
 
-    // STEP 7: Validate insights structure
+    // STEP 8: Validate insights structure
     validateInsightsStructure(parsedInsights);
 
-    // STEP 8: Format summary
+    // STEP 9: Format summary
     if (parsedInsights.summary) {
       const formattedSummary = formatSummaryIntoParagraphs(parsedInsights.summary);
       parsedInsights.summary = formattedSummary;
     }
 
-    // STEP 9: Convert resources to markdown format for frontend compatibility
+    // STEP 10: Convert resources to markdown format for frontend compatibility
     if (parsedInsights.priority_areas) {
       parsedInsights.priority_areas.forEach((area: any) => {
         if (area.resources && Array.isArray(area.resources)) {
@@ -88,7 +119,7 @@ serve(async (req) => {
       });
     }
 
-    // STEP 10: Save insights (if applicable)
+    // STEP 11: Save insights (if applicable)
     if (assessmentId && assessmentId !== 'new-assessment') {
       try {
         await saveInsights(assessmentId, JSON.stringify(parsedInsights), supabaseUrl, supabaseServiceKey);

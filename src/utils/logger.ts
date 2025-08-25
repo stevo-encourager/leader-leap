@@ -1,3 +1,4 @@
+import { logger as productionLogger } from './productionLogger';
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 interface LogContext {
@@ -22,18 +23,18 @@ class Logger {
 
   debug(message: string, context?: LogContext): void {
     if (this.isDevelopment) {
-      console.log(this.formatMessage('debug', message, context));
+      productionLogger.log(this.formatMessage('debug', message, context));
     }
   }
 
   info(message: string, context?: LogContext): void {
     if (this.isDevelopment) {
-      console.info(this.formatMessage('info', message, context));
+      productionLogger.info(this.formatMessage('info', message, context));
     }
   }
 
   warn(message: string, context?: LogContext): void {
-    console.warn(this.formatMessage('warn', message, context));
+    productionLogger.warn(this.formatMessage('warn', message, context));
   }
 
   error(message: string, error?: Error | any, context?: LogContext): void {
@@ -42,7 +43,7 @@ class Logger {
       : error;
     
     const fullContext = { ...context, error: errorInfo };
-    console.error(this.formatMessage('error', message, fullContext));
+    productionLogger.error(this.formatMessage('error', message, fullContext));
   }
 }
 

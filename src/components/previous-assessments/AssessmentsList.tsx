@@ -101,7 +101,10 @@ const AssessmentsList = ({
                         <Link to={`/results/${assessment.id}`}>
                           <Button 
                             size="sm" 
-                            className="bg-encourager hover:bg-encourager-light"
+                            className="text-white"
+                            style={{ backgroundColor: '#5fac9a' }}
+                            onMouseEnter={(e) => e.target.style.backgroundColor = '#6cbdab'}
+                            onMouseLeave={(e) => e.target.style.backgroundColor = '#5fac9a'}
                           >
                             {isMobile ? 'View' : 'View Results'}
                           </Button>

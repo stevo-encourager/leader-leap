@@ -11,6 +11,7 @@ import { Category, Demographics } from '@/utils/assessmentTypes';
 import InsightSummary from './insights/InsightSummary';
 import LargestGapsSection from './insights/LargestGapsSection';
 import SkillsToImproveSection from './insights/SkillsToImproveSection';
+import { logger } from '@/utils/productionLogger';
 
 interface KeyInsightsProps {
   averageGap: number;
@@ -88,7 +89,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
         });
       }
     } catch (error) {
-      console.error("KeyInsights - Error calculating insights:", error);
+      logger.error("KeyInsights - Error calculating insights:", error);
       // Set empty arrays as fallback
       setInsightData({
         largestCategoryGaps: [],

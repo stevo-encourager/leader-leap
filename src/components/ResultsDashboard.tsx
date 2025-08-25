@@ -18,7 +18,7 @@ import SkillGapChart from './SkillGapChart';
 import ResultsActions from './dashboard/ResultsActions';
 import MobileResultsView from './dashboard/MobileResultsView';
 import SEO from '../components/SEO';
-import { logger } from '../utils/logger';
+import { logger } from '../utils/productionLogger';
 
 interface ResultsDashboardProps {
   categories?: Category[];
@@ -104,7 +104,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   }, [memoizedCategories]);
 
   // Debug logging
-  logger.debug('Results page - Debug info', {
+  logger.log('Results page - Debug info', {
     hasCategories: !!categories && categories.length > 0,
     hasAssessmentId: !!finalAssessmentId,
     isUser: !!user,

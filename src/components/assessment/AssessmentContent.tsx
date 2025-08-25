@@ -9,6 +9,7 @@ import { AssessmentStep, Category, Demographics } from '../../utils/assessmentDa
 import { useState } from 'react';
 import { saveAssessmentResults, TEST_ASSESSMENT_ID, storeLocalAssessmentData } from '@/services/assessment';
 import { useAuth } from '@/contexts/AuthContext';
+import { logger } from '@/utils/productionLogger';
 
 interface AssessmentContentProps {
   currentStep: AssessmentStep;
@@ -85,8 +86,8 @@ const AssessmentContent: React.FC<AssessmentContentProps> = ({
           // For guest users, just store locally and navigate to results
           if (!user) {
             if (import.meta.env.DEV) {
-              console.log('AssessmentContent - Guest user completing assessment, storing locally');
-              console.log('AssessmentContent - Storing demographics:', demographics);
+              logger.log('AssessmentContent - Guest user completing assessment, storing locally');
+              logger.log('AssessmentContent - Storing demographics:', demographics);
             }
             storeLocalAssessmentData(categories, demographics);
             // Ensure demographics are stored in localStorage before navigation

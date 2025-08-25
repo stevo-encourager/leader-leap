@@ -1,21 +1,22 @@
 
 import { Category, Skill } from './assessmentTypes';
+import { logger } from './productionLogger';
 
 /**
  * Normalizes categories data to ensure consistent format for display
  */
-export const normalizeCategories = (categories: any[]): Category[] => {
-  console.log("normalizeCategories - Input:", categories);
+export const normalizeCategories = (categories: unknown[]): Category[] => {
+  logger.log("normalizeCategories - Input:", categories);
   
   if (!categories || !Array.isArray(categories) || categories.length === 0) {
-    console.warn("normalizeCategories - Invalid or empty categories input");
+    logger.warn("normalizeCategories - Invalid or empty categories input");
     return [];
   }
 
   try {
     const result = categories.map(category => {
       if (!category || typeof category !== 'object') {
-        console.warn("normalizeCategories - Invalid category object:", category);
+        logger.warn("normalizeCategories - Invalid category object:", category);
         return {
           id: `category-${Math.random().toString(36).substring(2, 9)}`,
           title: "Unknown Category",
@@ -36,7 +37,7 @@ export const normalizeCategories = (categories: any[]): Category[] => {
       if (rawSkills && Array.isArray(rawSkills)) {
         skills = normalizeSkills(rawSkills);
       } else {
-        console.warn(`normalizeCategories - Invalid skills array in category ${categoryTitle}`);
+        logger.warn(`normalizeCategories - Invalid skills array in category ${categoryTitle}`);
       }
       
       return {
@@ -47,10 +48,10 @@ export const normalizeCategories = (categories: any[]): Category[] => {
       };
     });
     
-    console.log("normalizeCategories - Result count:", result.length);
+    logger.log("normalizeCategories - Result count:", result.length);
     return result;
   } catch (error) {
-    console.error("Error in normalizeCategories:", error);
+    logger.error("Error in normalizeCategories:", error);
     return [];
   }
 };
@@ -58,16 +59,16 @@ export const normalizeCategories = (categories: any[]): Category[] => {
 /**
  * Normalizes skills data to ensure consistent format for display
  */
-export const normalizeSkills = (skills: any[]): Skill[] => {
+export const normalizeSkills = (skills: unknown[]): Skill[] => {
   if (!skills || !Array.isArray(skills) || skills.length === 0) {
-    console.warn("normalizeSkills - Invalid or empty skills input");
+    logger.warn("normalizeSkills - Invalid or empty skills input");
     return [];
   }
 
   try {
     return skills.map(skill => {
       if (!skill || typeof skill !== 'object') {
-        console.warn("normalizeSkills - Invalid skill object:", skill);
+        logger.warn("normalizeSkills - Invalid skill object:", skill);
         return {
           id: `skill-${Math.random().toString(36).substring(2, 9)}`,
           name: "Unknown Skill",
@@ -99,7 +100,7 @@ export const normalizeSkills = (skills: any[]): Skill[] => {
       };
     });
   } catch (error) {
-    console.error("Error in normalizeSkills:", error);
+    logger.error("Error in normalizeSkills:", error);
     return [];
   }
 };

@@ -148,7 +148,22 @@ const DemographicsForm: React.FC<DemographicsFormProps> = ({ demographics, onDem
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back
           </Button>
-          <Button onClick={onContinue} disabled={!isFormComplete}>
+          <Button 
+            onClick={onContinue} 
+            disabled={!isFormComplete}
+            className="text-white"
+            style={{ backgroundColor: !isFormComplete ? undefined : '#5fac9a' }}
+            onMouseEnter={(e) => {
+              if (!e.currentTarget.disabled) {
+                e.currentTarget.style.backgroundColor = '#6cbdab';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!e.currentTarget.disabled) {
+                e.currentTarget.style.backgroundColor = '#5fac9a';
+              }
+            }}
+          >
             Continue to Instructions
           </Button>
         </CardFooter>

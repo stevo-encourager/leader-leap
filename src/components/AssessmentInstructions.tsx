@@ -60,7 +60,13 @@ const AssessmentInstructions: React.FC<AssessmentInstructionsProps> = ({ onConti
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back
             </Button>
-            <Button onClick={onContinue} className="bg-encourager text-white w-[220px]">
+            <Button 
+              onClick={onContinue} 
+              className="text-white w-[220px]"
+              style={{ backgroundColor: '#5fac9a' }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#6cbdab'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#5fac9a'}
+            >
               Start Assessment
             </Button>
           </CardFooter>

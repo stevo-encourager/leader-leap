@@ -19,14 +19,27 @@ import React, { useEffect } from 'react';
 import MyProfile from "./pages/MyProfile";
 import Consent from './pages/Consent';
 import ResetPassword from './pages/ResetPassword';
+import ErrorBoundary from "@/components/ErrorBoundary";
 
-// Configure the QueryClient with sensible defaults
+// Configure the QueryClient with optimized defaults
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 1,
-      staleTime: 30000,
+      retry: (failureCount, error) => {
+        // Don't retry on 401/403 errors
+        if (error instanceof Error && error.message.includes('401') || error.message.includes('403')) {
+          return false;
+        }
+        return failureCount < 2;
+      },
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes (replaces cacheTime)
       refetchOnWindowFocus: false,
+      refetchOnReconnect: true,
+      refetchOnMount: true,
+    },
+    mutations: {
+      retry: 1,
     },
   },
 });
@@ -105,42 +118,92 @@ function FocusManager() {
 
 function App() {
   return (
-    <HelmetProvider>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <FocusManager />
-          <BrowserRouter>
-            <AuthProvider>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/assessment" element={<Assessment />} />
-                <Route path="/results" element={<Results />} />
-                <Route path="/results/:id" element={<Results />} />
-                
-                <Route path="/profile" element={<MyProfile />} />
-                <Route path="/consent" element={<Consent />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/admin" element={
-                  <SuperAdminRoute>
-                    <Admin />
-                  </SuperAdminRoute>
-                } />
-                <Route path="/privacy-notice" element={<PrivacyNotice />} />
-                <Route path="/ai-test-panel" element={
-                  <SuperAdminRoute>
-                    <AITestPanel />
-                  </SuperAdminRoute>
-                } />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </AuthProvider>
-          </BrowserRouter>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </HelmetProvider>
+    <ErrorBoundary>
+      <HelmetProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <FocusManager />
+            <BrowserRouter>
+              <ErrorBoundary>
+                <AuthProvider>
+                  <ErrorBoundary>
+                    <Routes>
+                      <Route path="/" element={
+                        <ErrorBoundary>
+                          <Index />
+                        </ErrorBoundary>
+                      } />
+                      <Route path="/login" element={
+                        <ErrorBoundary>
+                          <Login />
+                        </ErrorBoundary>
+                      } />
+                      <Route path="/assessment" element={
+                        <ErrorBoundary>
+                          <Assessment />
+                        </ErrorBoundary>
+                      } />
+                      <Route path="/results" element={
+                        <ErrorBoundary>
+                          <Results />
+                        </ErrorBoundary>
+                      } />
+                      <Route path="/results/:id" element={
+                        <ErrorBoundary>
+                          <Results />
+                        </ErrorBoundary>
+                      } />
+                      
+                      <Route path="/profile" element={
+                        <ErrorBoundary>
+                          <MyProfile />
+                        </ErrorBoundary>
+                      } />
+                      <Route path="/consent" element={
+                        <ErrorBoundary>
+                          <Consent />
+                        </ErrorBoundary>
+                      } />
+                      <Route path="/reset-password" element={
+                        <ErrorBoundary>
+                          <ResetPassword />
+                        </ErrorBoundary>
+                      } />
+                      <Route path="/admin" element={
+                        <ErrorBoundary>
+                          <SuperAdminRoute>
+                            <Admin />
+                          </SuperAdminRoute>
+                        </ErrorBoundary>
+                      } />
+                      <Route path="/privacy-notice" element={
+                        <ErrorBoundary>
+                          <PrivacyNotice />
+                        </ErrorBoundary>
+                      } />
+                      <Route path="/ai-test-panel" element={
+                        <ErrorBoundary>
+                          <SuperAdminRoute>
+                            <AITestPanel />
+                          </SuperAdminRoute>
+                        </ErrorBoundary>
+                      } />
+                      <Route path="*" element={
+                        <ErrorBoundary>
+                          <NotFound />
+                        </ErrorBoundary>
+                      } />
+                    </Routes>
+                  </ErrorBoundary>
+                </AuthProvider>
+              </ErrorBoundary>
+            </BrowserRouter>
+          </TooltipProvider>
+        </QueryClientProvider>
+      </HelmetProvider>
+    </ErrorBoundary>
   );
 }
 

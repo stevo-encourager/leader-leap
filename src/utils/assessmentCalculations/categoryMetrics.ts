@@ -1,12 +1,13 @@
 
 import { Category } from '../assessmentTypes';
 import { CategoryWithMetadata } from './types';
+import { logger } from './productionLogger';
 
 // Calculate category-level gaps and metadata
 export const getCategoriesWithMetadata = (categories: Category[]): CategoryWithMetadata[] => {
   // Add defensive check for undefined or null categories
   if (!categories || !Array.isArray(categories)) {
-    console.error("getCategoriesWithMetadata received invalid categories:", categories);
+    logger.error("getCategoriesWithMetadata received invalid categories:", categories);
     return [];
   }
   
@@ -17,7 +18,7 @@ export const getCategoriesWithMetadata = (categories: Category[]): CategoryWithM
   return categories.map(category => {
     // Skip undefined category objects
     if (!category) {
-      console.warn("getCategoriesWithMetadata - Found undefined category");
+      logger.warn("getCategoriesWithMetadata - Found undefined category");
       return {
         id: `category-${Math.random().toString(36).substring(2, 9)}`,
         title: "Unknown Category",
@@ -74,7 +75,7 @@ export const getCategoriesWithMetadata = (categories: Category[]): CategoryWithM
 export const getLargestCategoryGaps = (categories: Category[], count: number = 3): CategoryWithMetadata[] => {
   // Add defensive check for undefined or null categories
   if (!categories || !Array.isArray(categories)) {
-    console.error("getLargestCategoryGaps received invalid categories:", categories);
+    logger.error("getLargestCategoryGaps received invalid categories:", categories);
     return [];
   }
   
@@ -93,7 +94,7 @@ export const getLargestCategoryGaps = (categories: Category[], count: number = 3
 export const getSmallestCategoryGaps = (categories: Category[], count: number = 3): CategoryWithMetadata[] => {
   // Add defensive check for undefined or null categories
   if (!categories || !Array.isArray(categories)) {
-    console.error("getSmallestCategoryGaps received invalid categories:", categories);
+    logger.error("getSmallestCategoryGaps received invalid categories:", categories);
     return [];
   }
   

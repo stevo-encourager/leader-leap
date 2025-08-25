@@ -9,10 +9,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from '@/hooks/use-toast';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { logger } from '@/utils/productionLogger';
 
 // Define the props interface with onSuccess and defaultTab
 export interface AuthFormProps {
@@ -37,6 +36,9 @@ const signUpSchema = z.object({
 }, {
   // No consent required at signup
 });
+
+type SignInFormData = z.infer<typeof signInSchema>;
+type SignUpFormData = z.infer<typeof signUpSchema>;
 
 const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, defaultTab = 'signin' }) => {
   const [activeTab, setActiveTab] = useState<string>(defaultTab);
@@ -66,7 +68,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
     }
   });
 
-  const handleSignIn = async (data: any) => {
+  const handleSignIn = async (data: SignInFormData) => {
     setIsSubmitting(true);
     
     try {
@@ -89,13 +91,13 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
     }
   };
 
-  const handleSignUp = async (data: any) => {
+  const handleSignUp = async (data: SignUpFormData) => {
     if (import.meta.env.DEV) {
-      console.log('AuthForm: handleSignUp called, setting isSubmitting to true');
+      logger.log('AuthForm: handleSignUp called, setting isSubmitting to true');
     }
     setIsSubmitting(true);
     if (import.meta.env.DEV) {
-      console.log('AuthForm: isSubmitting set to true, isLoading should be:', (loading || true).toString());
+      logger.log('AuthForm: isSubmitting set to true, isLoading should be:', (loading || true).toString());
     }
 
     try {
@@ -108,7 +110,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
       // Keep button disabled for a moment to show the loading state
       setTimeout(() => {
         if (import.meta.env.DEV) {
-          console.log('AuthForm: Success, setting isSubmitting to false after delay');
+          logger.log('AuthForm: Success, setting isSubmitting to false after delay');
         }
         setIsSubmitting(false);
       }, 2000);
@@ -118,7 +120,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
       // Keep button disabled for a moment even on error to prevent rapid clicking
       setTimeout(() => {
         if (import.meta.env.DEV) {
-          console.log('AuthForm: Error occurred, setting isSubmitting to false after delay');
+          logger.log('AuthForm: Error occurred, setting isSubmitting to false after delay');
         }
         setIsSubmitting(false);
       }, 1000);
@@ -197,9 +199,20 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
                   type="email"
                   placeholder="you@example.com"
                   autoComplete="email"
+                  aria-invalid={!!signInForm.formState.errors.email}
+                  aria-describedby={signInForm.formState.errors.email ? "email-error" : undefined}
                   {...signInForm.register('email')}
                 />
-                {signInForm.formState.errors.email && <p className="text-sm text-red-500">{signInForm.formState.errors.email.message as string}</p>}
+                {signInForm.formState.errors.email && (
+                  <p 
+                    id="email-error" 
+                    className="text-sm text-red-500" 
+                    role="alert"
+                    aria-live="polite"
+                  >
+                    {signInForm.formState.errors.email.message as string}
+                  </p>
+                )}
               </div>
               
               <div className="space-y-2">
@@ -210,17 +223,29 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     autoComplete="current-password"
+                    aria-invalid={!!signInForm.formState.errors.password}
+                    aria-describedby={signInForm.formState.errors.password ? "password-error" : undefined}
                     {...signInForm.register('password')}
                   />
                   <button 
                     type="button"
                     className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500"
                     onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
-                {signInForm.formState.errors.password && <p className="text-sm text-red-500">{signInForm.formState.errors.password.message as string}</p>}
+                {signInForm.formState.errors.password && (
+                  <p 
+                    id="password-error" 
+                    className="text-sm text-red-500" 
+                    role="alert"
+                    aria-live="polite"
+                  >
+                    {signInForm.formState.errors.password.message as string}
+                  </p>
+                )}
               </div>
               
               <Button 
@@ -270,9 +295,20 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
             <Input 
               id="firstName"
               placeholder="John"
+              aria-invalid={!!signUpForm.formState.errors.firstName}
+              aria-describedby={signUpForm.formState.errors.firstName ? "firstName-error" : undefined}
               {...signUpForm.register('firstName')}
             />
-            {signUpForm.formState.errors.firstName && <p className="text-sm text-red-500">{signUpForm.formState.errors.firstName.message as string}</p>}
+            {signUpForm.formState.errors.firstName && (
+              <p 
+                id="firstName-error" 
+                className="text-sm text-red-500" 
+                role="alert"
+                aria-live="polite"
+              >
+                {signUpForm.formState.errors.firstName.message as string}
+              </p>
+            )}
           </div>
           
           <div className="space-y-2">
@@ -280,9 +316,20 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
             <Input 
               id="surname"
               placeholder="Doe"
+              aria-invalid={!!signUpForm.formState.errors.surname}
+              aria-describedby={signUpForm.formState.errors.surname ? "surname-error" : undefined}
               {...signUpForm.register('surname')}
             />
-            {signUpForm.formState.errors.surname && <p className="text-sm text-red-500">{signUpForm.formState.errors.surname.message as string}</p>}
+            {signUpForm.formState.errors.surname && (
+              <p 
+                id="surname-error" 
+                className="text-sm text-red-500" 
+                role="alert"
+                aria-live="polite"
+              >
+                {signUpForm.formState.errors.surname.message as string}
+              </p>
+            )}
           </div>
           
           <div className="space-y-2">
@@ -291,9 +338,20 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
               id="emailSignup"
               type="email"
               placeholder="you@example.com"
+              aria-invalid={!!signUpForm.formState.errors.email}
+              aria-describedby={signUpForm.formState.errors.email ? "emailSignup-error" : undefined}
               {...signUpForm.register('email')}
             />
-            {signUpForm.formState.errors.email && <p className="text-sm text-red-500">{signUpForm.formState.errors.email.message as string}</p>}
+            {signUpForm.formState.errors.email && (
+              <p 
+                id="emailSignup-error" 
+                className="text-sm text-red-500" 
+                role="alert"
+                aria-live="polite"
+              >
+                {signUpForm.formState.errors.email.message as string}
+              </p>
+            )}
           </div>
           
           <div className="space-y-2">
@@ -303,17 +361,29 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
                 id="passwordSignup"
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
+                aria-invalid={!!signUpForm.formState.errors.password}
+                aria-describedby={signUpForm.formState.errors.password ? "passwordSignup-error" : undefined}
                 {...signUpForm.register('password')}
               />
               <button 
                 type="button"
                 className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500"
                 onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-            {signUpForm.formState.errors.password && <p className="text-sm text-red-500">{signUpForm.formState.errors.password.message as string}</p>}
+            {signUpForm.formState.errors.password && (
+              <p 
+                id="passwordSignup-error" 
+                className="text-sm text-red-500" 
+                role="alert"
+                aria-live="polite"
+              >
+                {signUpForm.formState.errors.password.message as string}
+              </p>
+            )}
           </div>
           
           {/* Removed GDPR consent and receive emails checkboxes from signup form */}

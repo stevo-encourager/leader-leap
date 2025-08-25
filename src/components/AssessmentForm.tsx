@@ -12,6 +12,7 @@ import HelpButton from './assessment/HelpButton';
 import { useAssessmentForm } from '@/hooks/useAssessmentForm';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { assessmentLogger } from '@/utils/logger';
+import { logger } from '@/utils/productionLogger';
 
 interface AssessmentFormProps {
   categories: Category[];
@@ -93,7 +94,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
       
       onCategoriesUpdate(updatedCategories);
     } catch (error) {
-      console.error("Error updating skill rating:", error);
+      logger.error("Error updating skill rating:", error);
     }
   };
 
@@ -104,7 +105,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
 
   // Add safety check for currentCategory
   if (!categories || !Array.isArray(categories) || categories.length === 0 || activeCategory >= categories.length) {
-    console.error("AssessmentForm - Invalid categories or activeCategory out of bounds");
+    logger.error("AssessmentForm - Invalid categories or activeCategory out of bounds");
     return (
       <div className="p-6 bg-red-50 border border-red-200 rounded-md text-red-800">
         <h3 className="font-bold mb-2">Error Loading Assessment</h3>
@@ -118,7 +119,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
   
   // Add additional safety check for currentCategory
   if (!currentCategory) {
-    console.error("AssessmentForm - currentCategory is undefined");
+    logger.error("AssessmentForm - currentCategory is undefined");
     return (
       <div className="p-6 bg-red-50 border border-red-200 rounded-md text-red-800">
         <h3 className="font-bold mb-2">Error Loading Category</h3>

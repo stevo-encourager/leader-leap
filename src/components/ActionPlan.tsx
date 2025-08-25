@@ -21,7 +21,8 @@ import {
   HighGapCompetency,
   ActionPlanGoal,
   ActionPlanMilestone,
-  ActionPlanResource
+  ActionPlanResource,
+  QuarterlyMilestones
 } from '@/types/actionPlan';
 import {
   getHighGapCompetencies,
@@ -37,6 +38,7 @@ import { fetchLatestAssessmentByUserId, fetchAssessmentByIdAndUserId } from '@/s
 import { supabase } from '@/integrations/supabase/client';
 import { pdf } from '@react-pdf/renderer';
 import ActionPlanSummaryPDF from './pdf/ActionPlanSummaryPDF';
+import { logger } from '@/utils/productionLogger';
 
 interface ActionPlanProps {
   assessments: Array<{
@@ -157,7 +159,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
         setSelectedAssessmentData({ categories: result.data.categories });
       }
     } catch (error) {
-      console.error('Error loading assessment data:', error);
+      logger.error('Error loading assessment data:', error);
     } finally {
       setLoading(false);
     }
@@ -180,7 +182,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
           const uniquePrefix = `${plan.competency_name}-${timestamp}-${randomSuffix}`;
           
           // Update goals with unique IDs
-          const updatedGoals = plan.goals.map((goal: any, index: number) => ({
+          const updatedGoals = plan.goals.map((goal: ActionPlanGoal, index: number) => ({
             ...goal,
             id: goal.id && goal.id.includes('goal-') ? `${uniquePrefix}-goal-${index + 1}` : goal.id
           }));
@@ -202,7 +204,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
           };
           
           // Update resources with unique IDs
-          const updatedResources = plan.resources.map((resource: any, index: number) => ({
+          const updatedResources = plan.resources.map((resource: ActionPlanResource, index: number) => ({
             ...resource,
             id: resource.id && resource.id.includes('resource-') ? `${uniquePrefix}-resource-${index}` : resource.id
           }));
@@ -221,7 +223,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
         setPlanData(newPlanData);
       }
     } catch (error) {
-      console.error('Error loading action plans:', error);
+      logger.error('Error loading action plans:', error);
     }
   };
 
@@ -235,15 +237,15 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
         .maybeSingle();
 
       if (error) {
-        console.error('Error loading AI insights:', error);
+        logger.error('Error loading AI insights:', error);
         return;
       }
 
-      if (data && (data as any).ai_insights) {
-        setAiInsights((data as any).ai_insights);
+      if (data && 'ai_insights' in data && data.ai_insights) {
+        setAiInsights(data.ai_insights);
       }
     } catch (error) {
-      console.error('Error loading AI insights:', error);
+      logger.error('Error loading AI insights:', error);
     }
   };
 
@@ -256,7 +258,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
       
       // Look for resources in priority_areas (development areas)
       if (parsed.priority_areas && Array.isArray(parsed.priority_areas)) {
-        const priorityArea = parsed.priority_areas.find((area: any) => 
+        const priorityArea = parsed.priority_areas.find((area: { competency?: string; name?: string; title?: string }) => 
           area.competency && area.competency.toLowerCase().includes(competencyName.toLowerCase())
         );
         
@@ -284,7 +286,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
       
       return [];
     } catch (error) {
-      console.error('Error parsing AI insights:', error);
+      logger.error('Error parsing AI insights:', error);
       return [];
     }
   };
@@ -628,7 +630,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
       });
       
     } catch (error) {
-      console.error('PDF export error:', error);
+      logger.error('PDF export error:', error);
       toast({
         title: "PDF Export Failed",
         description: "There was an error generating your PDF. Please try again.",
@@ -698,7 +700,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
       });
       
     } catch (error) {
-      console.error('CSV export error:', error);
+      logger.error('CSV export error:', error);
       toast({
         title: "CSV Export Failed",
         description: "There was an error generating your CSV file. Please try again.",
@@ -883,7 +885,10 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
                         <Button
                           size="sm"
                           onClick={() => createActionPlan(competency)}
-                          className="bg-encourager hover:bg-encourager-light"
+                          className="text-white"
+                          style={{ backgroundColor: '#5fac9a' }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = '#6cbdab'}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = '#5fac9a'}
                         >
                           <Plus className="w-4 h-4 mr-1" />
                           Create Plan
@@ -979,21 +984,21 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
                             <div key={milestone.id} className="grid grid-cols-[1fr_120px_80px] gap-3 items-center">
                               <Input
                                 value={milestone.text}
-                                onChange={(e) => updateMilestone(competency.title, key as any, { text: e.target.value })}
+                                onChange={(e) => updateMilestone(competency.title, key as keyof QuarterlyMilestones, { text: e.target.value })}
                                 placeholder={`${key === 'q1' ? 'Q1' : 'Q2'} milestone description (200 characters max)`}
                                 maxLength={200}
                               />
                               <Input
                                 type="date"
                                 value={milestone.targetDate}
-                                onChange={(e) => updateMilestone(competency.title, key as any, { targetDate: e.target.value })}
+                                onChange={(e) => updateMilestone(competency.title, key as keyof QuarterlyMilestones, { targetDate: e.target.value })}
                                 className="[&:not([value])]:text-slate-400"
                               />
                               <div className="flex justify-center">
                                 <Checkbox
                                   checked={milestone.completed}
                                   onCheckedChange={(checked) => 
-                                    updateMilestone(competency.title, key as any, { completed: !!checked })
+                                    updateMilestone(competency.title, key as keyof QuarterlyMilestones, { completed: !!checked })
                                   }
                                 />
                               </div>
@@ -1230,7 +1235,10 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
         <Button
           size="sm"
           onClick={handleExportPDF}
-          className="flex items-center gap-2 bg-encourager hover:bg-encourager-light text-white"
+          className="flex items-center gap-2 text-white"
+          style={{ backgroundColor: '#5fac9a' }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = '#6cbdab'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = '#5fac9a'}
         >
           <Download className="h-4 w-4" />
           Export PDF
@@ -1238,7 +1246,10 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
         <Button
           size="sm"
           onClick={handleExportCSV}
-          className="flex items-center gap-2 bg-encourager hover:bg-encourager-light text-white"
+          className="flex items-center gap-2 text-white"
+          style={{ backgroundColor: '#5fac9a' }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = '#6cbdab'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = '#5fac9a'}
         >
           <FileText className="h-4 w-4" />
           Export CSV

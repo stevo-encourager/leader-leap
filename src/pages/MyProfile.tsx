@@ -19,6 +19,7 @@ import { Demographics } from '@/utils/assessmentTypes';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useAssessment } from '@/hooks/useAssessment';
+import { logger } from '@/utils/productionLogger';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -83,7 +84,7 @@ const MyProfile = () => {
           setReceiveEmails(profileData.receive_emails ?? true);
         }
       } catch (error) {
-        console.error('Error refreshing profile:', error);
+        logger.error('Error refreshing profile:', error);
       }
     };
     
@@ -96,7 +97,7 @@ const MyProfile = () => {
           setDemographics(result.data.demographics);
         }
       } catch (error) {
-        console.error('Error fetching demographics:', error);
+        logger.error('Error fetching demographics:', error);
       } finally {
         setDemographicsLoading(false);
       }
@@ -168,7 +169,7 @@ const MyProfile = () => {
         });
         
         if (brevoError) {
-          console.error('Brevo subscription error:', brevoError);
+          logger.error('Brevo subscription error:', brevoError);
           toast({
             title: 'Email preferences updated',
             description: 'Your preferences were saved, but there was an issue with the email subscription.',
@@ -187,7 +188,7 @@ const MyProfile = () => {
         });
         
         if (brevoError) {
-          console.error('Brevo unsubscription error:', brevoError);
+          logger.error('Brevo unsubscription error:', brevoError);
           toast({
             title: 'Email preferences updated',
             description: 'Your preferences were saved, but there was an issue with the email unsubscription.',
@@ -499,7 +500,10 @@ const MyProfile = () => {
           <div className={`mb-8 ${isMobile ? 'flex justify-center' : 'flex justify-end'}`}>
             <Button 
               onClick={handleStartNewAssessment}
-              className={`bg-encourager hover:bg-encourager-light text-white ${isMobile ? 'w-full px-4 py-3' : 'px-6 py-3'}`}
+              className={`text-white ${isMobile ? 'w-full px-4 py-3' : 'px-6 py-3'}`}
+              style={{ backgroundColor: '#5fac9a' }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#6cbdab'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#5fac9a'}
             >
               Start New Assessment
             </Button>

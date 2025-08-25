@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { getLocalAssessmentData } from '@/services/assessment/manageAssessmentHistory';
+import { logger } from '@/utils/productionLogger';
 
 export const useAssessmentData = (
   assessmentId: string | undefined,
@@ -176,7 +177,7 @@ export const useAssessmentData = (
         debug.error = "No valid categories data found";
       }
     } catch (error) {
-      console.error("useAssessmentData - Error processing assessment data:", error);
+      logger.error("useAssessmentData - Error processing assessment data:", error);
       setDisplayCategories([]);
       setIsAssessmentDataValid(false);
       

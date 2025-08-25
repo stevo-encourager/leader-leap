@@ -46,7 +46,18 @@ const CategoryNavigationControls: React.FC<CategoryNavigationProps> = ({
       )}
       <Button
         onClick={handleNextClick}
-        className={`${isCategoryComplete ? 'bg-encourager hover:bg-encourager-light' : 'bg-gray-300 cursor-not-allowed'}`}
+        className={`${isCategoryComplete ? 'text-white' : 'bg-gray-300 cursor-not-allowed'}`}
+        style={isCategoryComplete ? { backgroundColor: '#5fac9a' } : {}}
+        onMouseEnter={(e) => {
+          if (isCategoryComplete) {
+            e.currentTarget.style.backgroundColor = '#6cbdab';
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (isCategoryComplete) {
+            e.currentTarget.style.backgroundColor = '#5fac9a';
+          }
+        }}
         title={!isCategoryComplete ? "Please rate all skills in this category" : ""}
       >
         {isLastCategory ? 'View Results' : 'Next'}

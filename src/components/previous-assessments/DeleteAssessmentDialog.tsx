@@ -35,7 +35,7 @@ const DeleteAssessmentDialog = ({
         <Button
           size="sm"
           variant="outline"
-          className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 hover:border-red-300"
+          className="text-black border-gray-200 hover:bg-gray-50 hover:text-black hover:border-gray-300"
           disabled={isDeleting}
         >
           <Trash2 className="h-4 w-4" />

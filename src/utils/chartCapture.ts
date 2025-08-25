@@ -1,5 +1,6 @@
 
 import html2canvas from 'html2canvas';
+import { logger } from './productionLogger';
 
 /**
  * CRITICAL FOR PDF EXPORT: Enhanced radar chart capture logic with improved error handling
@@ -46,8 +47,8 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
       }
       
       if (!radarContainer) {
-        console.error('ChartCapture: CRITICAL ERROR - No radar chart container found with any selector!');
-        console.error('ChartCapture: This usually means the data-testid="radar-chart-container" attribute is missing from SkillGapChart.tsx');
+        logger.error('ChartCapture: CRITICAL ERROR - No radar chart container found with any selector!');
+        logger.error('ChartCapture: This usually means the data-testid="radar-chart-container" attribute is missing from SkillGapChart.tsx');
 
         resolve(null);
         return;

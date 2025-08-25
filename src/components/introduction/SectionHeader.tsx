@@ -11,8 +11,8 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({ icon: Icon, title, classN
   return (
     <div className={`flex items-center gap-3 mb-4 ${className}`}>
       {Icon && (
-        <div className="bg-encourager p-3 rounded-full">
-          <Icon className="text-white" size={24} strokeWidth={1.5} />
+        <div className="p-3 rounded-full" style={{ backgroundColor: 'white' }}>
+          <Icon size={24} strokeWidth={1.5} style={{ color: '#2F564D', stroke: '#2F564D' }} />
         </div>
       )}
       <h2 className="text-2xl font-bold text-encourager">{title}</h2>

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw, Users, AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { logger } from '@/utils/productionLogger';
 
 interface User {
   id: string;
@@ -34,7 +35,7 @@ const UserManagement = () => {
       const { data: usersData, error: usersError } = await supabase.functions.invoke('list-users');
       
       if (usersError) {
-        console.error("UserManagement: Error getting users:", usersError);
+        logger.error("UserManagement: Error getting users:", usersError);
         throw new Error(`Error getting users: ${usersError.message}`);
       }
       
@@ -48,7 +49,7 @@ const UserManagement = () => {
       const { data: profilesData, error: profilesError } = await supabase.functions.invoke('list-profiles');
       
       if (profilesError) {
-        console.warn("UserManagement: Error getting profiles via edge function:", profilesError);
+        logger.warn("UserManagement: Error getting profiles via edge function:", profilesError);
       }
       
       const profiles = profilesData?.profiles || [];
@@ -77,7 +78,7 @@ const UserManagement = () => {
 
       
     } catch (error: any) {
-      console.error('UserManagement: Error fetching users:', error);
+      logger.error('UserManagement: Error fetching users:', error);
       setError(error.message);
     } finally {
       setIsLoading(false);

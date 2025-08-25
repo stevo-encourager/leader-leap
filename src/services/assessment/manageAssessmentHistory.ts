@@ -6,6 +6,7 @@ import {
   LocalAssessmentData 
 } from '@/types/assessment';
 import { v4 as uuidv4 } from 'uuid';
+import { logger } from '@/utils/productionLogger';
 
 // Update the AssessmentSummary interface in this file or ensure it's properly defined in types/assessment.ts
 interface AssessmentRecord {
@@ -28,7 +29,7 @@ export const storeLocalAssessmentData = (categories: Category[], demographics: D
     
     localStorage.setItem('assessmentData', JSON.stringify(data));
   } catch (error) {
-    console.error('Error storing assessment data locally:', error);
+    logger.error('Error storing assessment data locally:', error);
   }
 };
 
@@ -45,7 +46,7 @@ export const getLocalAssessmentData = (): { categories: Category[]; demographics
     const parsed = JSON.parse(data);
     return parsed;
   } catch (error) {
-    console.error('Error retrieving assessment data from localStorage:', error);
+    logger.error('Error retrieving assessment data from localStorage:', error);
     return null;
   }
 };
@@ -72,13 +73,13 @@ export const preserveAssessmentDataForVerification = async (email: string): Prom
       });
 
     if (error) {
-      console.error('Error preserving assessment data:', error);
+      logger.error('Error preserving assessment data:', error);
       return false;
     }
 
     return true;
   } catch (error) {
-    console.error('Error preserving assessment data:', error);
+    logger.error('Error preserving assessment data:', error);
     return false;
   }
 };
@@ -119,7 +120,7 @@ export const restoreAssessmentDataAfterVerification = async (email: string): Pro
     
     return true;
   } catch (error) {
-    console.error('restoreAssessmentDataAfterVerification - Error:', error);
+    logger.error('restoreAssessmentDataAfterVerification - Error:', error);
     return false;
   }
 };
@@ -132,7 +133,7 @@ export const clearLocalAssessmentData = (): boolean => {
     localStorage.removeItem('assessmentData');
     return true;
   } catch (error) {
-    console.error('clearLocalAssessmentData - Error clearing localStorage:', error);
+    logger.error('clearLocalAssessmentData - Error clearing localStorage:', error);
     return false;
   }
 };

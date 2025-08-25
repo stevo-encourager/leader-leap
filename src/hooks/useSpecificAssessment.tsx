@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { getAssessmentById } from '@/services/assessment/fetchAssessment';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { useNavigate } from 'react-router-dom';
+import { logger } from '@/utils/productionLogger';
 import { 
   validateAndNormalizeCategories, 
   handleAssessmentDataError 
@@ -59,15 +60,15 @@ export const useSpecificAssessment = (assessmentId: string | undefined): UseSpec
               demographics: demographicsData
             });
           } else {
-            console.error("useSpecificAssessment - Failed to validate categories");
+            logger.error("useSpecificAssessment - Failed to validate categories");
             setError("invalid-format");
           }
         } else {
-          console.error("useSpecificAssessment - Failed to fetch assessment:", result.error);
+          logger.error("useSpecificAssessment - Failed to fetch assessment:", result.error);
           setError(result.error || "fetch-error");
         }
       } catch (error) {
-        console.error("useSpecificAssessment - Error fetching specific assessment:", error);
+        logger.error("useSpecificAssessment - Error fetching specific assessment:", error);
         setError("fetch-error");
       } finally {
         setLoadingSpecificAssessment(false);

@@ -1,5 +1,6 @@
 
 import { Category } from '../assessmentTypes';
+import { logger } from './productionLogger';
 
 export interface SkillWithMetadata {
   id: string;
@@ -15,7 +16,7 @@ export interface SkillWithMetadata {
 // Get top strengths (skills with highest current ratings)
 export const getTopStrengths = (categories: Category[], limit: number = 5): SkillWithMetadata[] => {
   if (!categories || !Array.isArray(categories)) {
-    console.error("getTopStrengths received invalid categories:", categories);
+    logger.error("getTopStrengths received invalid categories:", categories);
     return [];
   }
 
@@ -59,7 +60,7 @@ export const getTopStrengths = (categories: Category[], limit: number = 5): Skil
 // Get lowest skills (skills with largest gaps or lowest current ratings)
 export const getLowestSkills = (categories: Category[], limit: number = 5): SkillWithMetadata[] => {
   if (!categories || !Array.isArray(categories)) {
-    console.error("getLowestSkills received invalid categories:", categories);
+    logger.error("getLowestSkills received invalid categories:", categories);
     return [];
   }
 

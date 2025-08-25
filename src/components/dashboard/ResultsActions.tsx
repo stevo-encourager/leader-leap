@@ -333,7 +333,13 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
       <div className={`${isMobile ? 'flex flex-col gap-4' : 'flex justify-between'} w-full`}>
         {isMobile ? (
           <>
-            <Button onClick={handleNewAssessment}>
+            <Button 
+              onClick={handleNewAssessment}
+              className="text-white"
+              style={{ backgroundColor: '#5fac9a' }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#6cbdab'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#5fac9a'}
+            >
               <Plus className="mr-2 h-4 w-4" />
               Start New Assessment
             </Button>
@@ -395,8 +401,18 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button 
-                        variant="encourager" 
-                        className="flex items-center gap-2"
+                        className="flex items-center gap-2 text-white"
+                        style={{ backgroundColor: isPDFExportDisabled ? undefined : '#5fac9a' }}
+                        onMouseEnter={(e) => {
+                          if (!e.currentTarget.disabled) {
+                            e.currentTarget.style.backgroundColor = '#6cbdab';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!e.currentTarget.disabled) {
+                            e.currentTarget.style.backgroundColor = '#5fac9a';
+                          }
+                        }}
                         onClick={handleDownloadPDF}
                         disabled={isPDFExportDisabled}
                       >
@@ -410,7 +426,13 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
                   </Tooltip>
                 </TooltipProvider>
               )}
-              <Button onClick={handleNewAssessment}>
+              <Button 
+                onClick={handleNewAssessment}
+                className="text-white"
+                style={{ backgroundColor: '#5fac9a' }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#6cbdab'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#5fac9a'}
+              >
                 <Plus className="mr-2 h-4 w-4" />
                 Start New Assessment
               </Button>

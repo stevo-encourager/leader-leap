@@ -31,7 +31,10 @@ const AssessmentListItem = ({ id, created_at }: AssessmentListItemProps) => {
           <Link to={`/results/${id}`}>
             <Button 
               size="sm" 
-              className="bg-encourager hover:bg-encourager-light"
+              className="text-white"
+              style={{ backgroundColor: '#5fac9a' }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#6cbdab'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#5fac9a'}
             >
               View Results
             </Button>

@@ -17,6 +17,7 @@ import { storeLocalAssessmentData } from '@/services/assessment/manageAssessment
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { allCategories } from '@/utils/assessmentCategories';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { logger } from '@/utils/productionLogger';
 
 const Assessment = () => {
   const navigate = useNavigate();
@@ -50,7 +51,7 @@ const Assessment = () => {
   // Test function to generate demographic data and assessment scores
   const generateTestData = () => {
     if (import.meta.env.DEV) {
-      console.log('generateTestData - Starting test data generation');
+      logger.log('generateTestData - Starting test data generation');
     }
     
     // Generate realistic demographic data
@@ -61,7 +62,7 @@ const Assessment = () => {
     };
     
     if (import.meta.env.DEV) {
-      console.log('generateTestData - Test demographics:', testDemographics);
+      logger.log('generateTestData - Test demographics:', testDemographics);
     }
 
     // Generate realistic assessment scores for all categories and skills
@@ -77,29 +78,29 @@ const Assessment = () => {
     }));
 
     if (import.meta.env.DEV) {
-      console.log('generateTestData - About to call handleDemographicsUpdate');
+      logger.log('generateTestData - About to call handleDemographicsUpdate');
     }
     // Update the assessment state with test data
     handleDemographicsUpdate(testDemographics);
     if (import.meta.env.DEV) {
-      console.log('generateTestData - Called handleDemographicsUpdate');
+      logger.log('generateTestData - Called handleDemographicsUpdate');
     }
     
     if (import.meta.env.DEV) {
-      console.log('generateTestData - About to call handleCategoriesUpdate');
+      logger.log('generateTestData - About to call handleCategoriesUpdate');
     }
     handleCategoriesUpdate(testCategories);
     if (import.meta.env.DEV) {
-      console.log('generateTestData - Called handleCategoriesUpdate');
+      logger.log('generateTestData - Called handleCategoriesUpdate');
     }
     
     if (import.meta.env.DEV) {
-      console.log('generateTestData - About to store locally');
+      logger.log('generateTestData - About to store locally');
     }
     // Store the test data locally
     const stored = storeLocalAssessmentData(testCategories, testDemographics);
     if (import.meta.env.DEV) {
-      console.log('generateTestData - Stored locally, result:', stored);
+      logger.log('generateTestData - Stored locally, result:', stored);
     }
     
     // Set initial active category to the last category (index 9 for 10 categories)

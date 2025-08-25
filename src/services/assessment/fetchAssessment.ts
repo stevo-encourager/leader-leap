@@ -1,6 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { normalizeCategories, normalizeDemographics } from '@/utils/dataNormalizer';
 import { Category, Demographics } from '@/utils/assessmentTypes';
+import { logger } from '@/utils/productionLogger';
 
 // Define AssessmentResult type
 interface AssessmentResult {
@@ -23,18 +24,18 @@ export const fetchAssessmentById = async (assessmentId: string): Promise<{
     if (!assessmentId || typeof assessmentId !== 'string') {
       return { success: false, error: "Invalid assessment ID" };
     }
-    console.log(`Assessment Service: Fetching assessment ${assessmentId}`);
+    logger.log(`Assessment Service: Fetching assessment ${assessmentId}`);
     const { data, error } = await supabase
       .from('assessment_results')
       .select('*')
       .eq('id', assessmentId)
       .maybeSingle();
     if (error) {
-      console.error('Assessment Service: Database error:', error);
+      logger.error('Assessment Service: Database error:', error);
       return { success: false, error: error.message };
     }
     if (!data) {
-      console.log('Assessment Service: Assessment not found');
+      logger.log('Assessment Service: Assessment not found');
       return { success: false, error: "Assessment not found" };
     }
     // Type assertion after null check
@@ -67,7 +68,7 @@ export const fetchAssessmentById = async (assessmentId: string): Promise<{
     };
     return { success: true, data: result };
   } catch (error) {
-    console.error('Assessment Service: Exception in fetchAssessmentById:', error);
+    logger.error('Assessment Service: Exception in fetchAssessmentById:', error);
     return { success: false, error: "Failed to fetch assessment" };
   }
 };
@@ -86,7 +87,7 @@ export const fetchLatestAssessmentByUserId = async (userId: string): Promise<{
       return { success: false, error: "Invalid user ID" };
     }
 
-    console.log(`Assessment Service: Fetching latest assessment for user ${userId}`);
+    logger.log(`Assessment Service: Fetching latest assessment for user ${userId}`);
     
     const { data, error } = await supabase
       .from('assessment_results')
@@ -97,12 +98,12 @@ export const fetchLatestAssessmentByUserId = async (userId: string): Promise<{
       .maybeSingle();
 
     if (error) {
-      console.error('Assessment Service: Database error:', error);
+      logger.error('Assessment Service: Database error:', error);
       return { success: false, error: error.message };
     }
 
     if (!data) {
-      console.log('Assessment Service: No assessments found for user');
+      logger.log('Assessment Service: No assessments found for user');
       return { success: false, error: "No assessments found" };
     }
 
@@ -130,7 +131,7 @@ export const fetchLatestAssessmentByUserId = async (userId: string): Promise<{
     return { success: true, data: result };
 
   } catch (error) {
-    console.error('Assessment Service: Exception in fetchLatestAssessmentByUserId:', error);
+    logger.error('Assessment Service: Exception in fetchLatestAssessmentByUserId:', error);
     return { success: false, error: "Failed to fetch latest assessment" };
   }
 };
@@ -152,7 +153,7 @@ export const fetchAssessmentByIdAndUserId = async (assessmentId: string, userId:
       return { success: false, error: "Invalid user ID" };
     }
 
-    console.log(`Assessment Service: Fetching assessment ${assessmentId} for user ${userId}`);
+    logger.log(`Assessment Service: Fetching assessment ${assessmentId} for user ${userId}`);
     
     const { data, error } = await supabase
       .from('assessment_results')
@@ -162,12 +163,12 @@ export const fetchAssessmentByIdAndUserId = async (assessmentId: string, userId:
       .maybeSingle();
 
     if (error) {
-      console.error('Assessment Service: Database error:', error);
+      logger.error('Assessment Service: Database error:', error);
       return { success: false, error: error.message };
     }
 
     if (!data) {
-      console.log('Assessment Service: Assessment not found or does not belong to user');
+      logger.log('Assessment Service: Assessment not found or does not belong to user');
       return { success: false, error: "Assessment not found" };
     }
 
@@ -195,7 +196,7 @@ export const fetchAssessmentByIdAndUserId = async (assessmentId: string, userId:
     return { success: true, data: result };
 
   } catch (error) {
-    console.error('Assessment Service: Exception in fetchAssessmentByIdAndUserId:', error);
+    logger.error('Assessment Service: Exception in fetchAssessmentByIdAndUserId:', error);
     return { success: false, error: "Failed to fetch assessment" };
   }
 };
@@ -220,7 +221,7 @@ export const fetchAssessmentForInsights = async (assessmentId: string): Promise<
       .maybeSingle();
 
     if (error) {
-      console.error('Assessment Service: Database error:', error);
+      logger.error('Assessment Service: Database error:', error);
       return { success: false, error: error.message };
     }
 
@@ -231,7 +232,7 @@ export const fetchAssessmentForInsights = async (assessmentId: string): Promise<
     return { success: true, data };
 
   } catch (error) {
-    console.error('Assessment Service: Exception in fetchAssessmentForInsights:', error);
+    logger.error('Assessment Service: Exception in fetchAssessmentForInsights:', error);
     return { success: false, error: "Failed to fetch assessment for insights" };
   }
 };

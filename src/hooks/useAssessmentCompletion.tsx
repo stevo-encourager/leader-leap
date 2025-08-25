@@ -4,6 +4,7 @@ import { storeLocalAssessmentData } from '@/services/assessment/manageAssessment
 import { saveAssessmentResults } from '@/services/assessment/saveAssessment';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { useAuth } from '@/contexts/AuthContext';
+import { logger } from '@/utils/productionLogger';
 
 export const useAssessmentCompletion = (
   categories: Category[],
@@ -15,7 +16,7 @@ export const useAssessmentCompletion = (
   const handleCompleteAssessment = async () => {
     // Check if we have valid category data before completing
     if (!categories || !Array.isArray(categories) || categories.length === 0) {
-      console.error("handleCompleteAssessment - Cannot complete: categories is empty or invalid");
+      logger.error("handleCompleteAssessment - Cannot complete: categories is empty or invalid");
       toast({
         title: "Error completing assessment",
         description: "Assessment data is missing or invalid. Please try again.",
@@ -41,7 +42,7 @@ export const useAssessmentCompletion = (
     });
     // Check if all skills have been rated
     if (skillsWithBothRatings < totalSkills) {
-      console.warn(`handleCompleteAssessment - Incomplete assessment: ${skillsWithBothRatings}/${totalSkills} skills rated`);
+      logger.warn(`handleCompleteAssessment - Incomplete assessment: ${skillsWithBothRatings}/${totalSkills} skills rated`);
       toast({
         title: "Incomplete Assessment",
         description: `Please complete all ratings (${skillsWithBothRatings} of ${totalSkills} completed).`,
@@ -53,7 +54,7 @@ export const useAssessmentCompletion = (
     const saveResult = await saveAssessmentResults(categories, demographics);
     
     if (!saveResult.success) {
-      console.error('useAssessmentCompletion - Failed to save assessment:', saveResult.error);
+      logger.error('useAssessmentCompletion - Failed to save assessment:', saveResult.error);
       // Don't block the flow, but log the error
     }
     

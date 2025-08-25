@@ -1,6 +1,7 @@
 
 import { Category, Demographics, Skill, SkillRating } from "@/utils/assessmentTypes";
 import { LocalAssessmentData } from "@/types/assessment";
+import { logger } from './productionLogger';
 
 /**
  * Generates a unique ID with an optional prefix
@@ -11,7 +12,7 @@ export const generateId = (prefix: string = ''): string =>
 /**
  * Normalizes a rating value to ensure it's a valid number
  */
-export const normalizeRating = (value: any): number => {
+export const normalizeRating = (value: unknown): number => {
   const parsed = Number(value);
   return !isNaN(parsed) && parsed >= 0 ? parsed : 0;
 };
@@ -19,7 +20,7 @@ export const normalizeRating = (value: any): number => {
 /**
  * Normalizes a skill rating object
  */
-export const normalizeSkillRating = (rating: any): SkillRating => {
+export const normalizeSkillRating = (rating: unknown): SkillRating => {
   if (!rating || typeof rating !== 'object') {
     return { current: 0, desired: 0 };
   }
@@ -33,7 +34,7 @@ export const normalizeSkillRating = (rating: any): SkillRating => {
 /**
  * Normalizes a skill object
  */
-export const normalizeSkill = (skill: any): Skill => {
+export const normalizeSkill = (skill: unknown): Skill => {
   if (!skill || typeof skill !== 'object') {
     return {
       id: generateId('skill'),
@@ -54,7 +55,7 @@ export const normalizeSkill = (skill: any): Skill => {
 /**
  * Normalizes a category object
  */
-export const normalizeCategory = (category: any): Category => {
+export const normalizeCategory = (category: unknown): Category => {
   if (!category || typeof category !== 'object') {
     return {
       id: generateId('category'),
@@ -77,9 +78,9 @@ export const normalizeCategory = (category: any): Category => {
 /**
  * Normalizes an array of category objects
  */
-export const normalizeCategories = (categories: any): Category[] => {
+export const normalizeCategories = (categories: unknown): Category[] => {
   if (!categories || !Array.isArray(categories)) {
-    console.error("normalizeCategories - Input is not an array:", categories);
+    logger.error("normalizeCategories - Input is not an array:", categories);
     return [];
   }
   
@@ -89,7 +90,7 @@ export const normalizeCategories = (categories: any): Category[] => {
 /**
  * Normalizes a demographics object
  */
-export const normalizeDemographics = (demographics: any): Demographics => {
+export const normalizeDemographics = (demographics: unknown): Demographics => {
   if (!demographics || typeof demographics !== 'object') {
     return {};
   }
@@ -104,7 +105,7 @@ export const normalizeDemographics = (demographics: any): Demographics => {
 /**
  * Normalizes local assessment data
  */
-export const normalizeLocalAssessmentData = (data: any): LocalAssessmentData | null => {
+export const normalizeLocalAssessmentData = (data: unknown): LocalAssessmentData | null => {
   if (!data || typeof data !== 'object') {
     return null;
   }

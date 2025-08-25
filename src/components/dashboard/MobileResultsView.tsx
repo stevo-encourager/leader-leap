@@ -12,6 +12,7 @@ import ReactPDFDocument from '../pdf/ReactPDFDocument';
 import { captureRadarChartAsPNG } from '@/utils/chartCapture';
 import SkillGapChart from '../SkillGapChart';
 import ResultsActions from './ResultsActions';
+import { logger } from '@/utils/productionLogger';
 
 interface MobileResultsViewProps {
   categories: Category[];
@@ -140,7 +141,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
         try {
           chartImageDataUrl = await captureRadarChartAsPNG();
         } catch (chartError) {
-        console.error('📱 MobilePDF: Chart capture error:', chartError);
+        logger.error('📱 MobilePDF: Chart capture error:', chartError);
         // Continue without chart - don't fail the entire PDF generation
       }
       

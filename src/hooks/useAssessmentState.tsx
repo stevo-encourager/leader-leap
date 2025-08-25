@@ -21,12 +21,12 @@ export const useAssessmentState = (initialCategories: Category[] = []) => {
     storeLocalAssessmentData(updatedCategories, demographics);
   };
 
-            const handleDemographicsUpdate = useCallback((updatedDemographics: Demographics) => {
-            setDemographics(updatedDemographics);
-            
-            // Save to local storage for persistence (consistent with categories behavior)
-            storeLocalAssessmentData(categories, updatedDemographics);
-          }, [categories, demographics]);
+    const handleDemographicsUpdate = (updatedDemographics: Demographics) => {
+    setDemographics(updatedDemographics);
+    
+    // Save to local storage for persistence (consistent with categories behavior)
+    storeLocalAssessmentData(categories, updatedDemographics);
+  };
 
   const resetAssessment = (freshCategories?: Category[]) => {
     // Clear local storage first

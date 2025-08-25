@@ -12,6 +12,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { logger } from '@/utils/productionLogger';
 
 interface UserProfile {
   id: string;
@@ -103,14 +104,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!mounted) return;
         
         if (error) {
-          console.error('AuthContext: Error getting initial session:', error);
+          logger.error('AuthContext: Error getting initial session:', error);
         } else {
           setSession(session);
           setUser(session?.user ?? null);
         }
       } catch (error) {
         if (mounted) {
-          console.error('AuthContext: Exception getting initial session:', error);
+          logger.error('AuthContext: Exception getting initial session:', error);
         }
       } finally {
         if (mounted) {
@@ -161,7 +162,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Don't redirect to consent if user's email is not confirmed yet
         if (!user.email_confirmed_at) {
           if (import.meta.env.DEV) {
-            console.log('AuthContext: User email not confirmed yet, skipping consent check');
+            logger.log('AuthContext: User email not confirmed yet, skipping consent check');
           }
           return;
         }
@@ -179,7 +180,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
         } else if (error) {
           if (import.meta.env.DEV) {
-            console.error('AuthContext: Error checking consent:', error);
+            logger.error('AuthContext: Error checking consent:', error);
           }
         }
       };
@@ -199,7 +200,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { data, error } = await supabase.auth.signInWithPassword(signInData);
 
       if (error) {
-        console.error('AuthContext: Sign in error:', error);
+        logger.error('AuthContext: Sign in error:', error);
         
         toast({
           title: "Error signing in",
@@ -215,7 +216,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         throw new Error('Sign in completed but no user session was created');
       }
     } catch (error) {
-      console.error('AuthContext: Exception during sign in:', error);
+      logger.error('AuthContext: Exception during sign in:', error);
       throw error;
     } finally {
       setLoading(false);
@@ -251,7 +252,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Second check: Handle explicit errors
     if (error) {
       if (import.meta.env.DEV) {
-        console.error('AuthContext: Sign up error:', error);
+        logger.error('AuthContext: Sign up error:', error);
       }
       
       // Check for specific error messages that indicate existing email
@@ -311,13 +312,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) {
         // If session is missing, that means user is already signed out
         if (error.message === 'Auth session missing!') {
-          console.log('AuthContext: Session already missing, clearing local state');
+          logger.log('AuthContext: Session already missing, clearing local state');
           // Clear local state manually since Supabase can't do it
           setUser(null);
           setSession(null);
           setUserProfile(null);
         } else {
-          console.error('AuthContext: Sign out error:', error);
+          logger.error('AuthContext: Sign out error:', error);
           toast({
             title: "Error signing out",
             description: error.message,
@@ -341,7 +342,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error: any) {
       // Handle session missing error gracefully
       if (error?.message === 'Auth session missing!' || error?.name === 'AuthSessionMissingError') {
-        console.log('AuthContext: Session missing during logout, clearing local state');
+        logger.log('AuthContext: Session missing during logout, clearing local state');
         // Clear local state manually since Supabase can't do it
         setUser(null);
         setSession(null);
@@ -372,7 +373,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     if (error) {
-      console.error('AuthContext: Google sign in error:', error);
+      logger.error('AuthContext: Google sign in error:', error);
       toast({
         title: "Error with Google sign in",
         description: error.message,
@@ -390,7 +391,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     if (error) {
-      console.error('AuthContext: Password reset error:', error);
+      logger.error('AuthContext: Password reset error:', error);
       toast({
         title: "Error sending reset email",
         description: error.message,

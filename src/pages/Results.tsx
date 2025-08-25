@@ -68,24 +68,63 @@ const Results = () => {
     }
   }, [isPageReady, categories, assessmentId]);
 
-  // Log assessment state data with more detail
+  // Fetch latest assessment for authenticated user (runs once when page is ready)
   useEffect(() => {
-    if (!isPageReady) return;
+    if (!isPageReady || !user || assessmentId || localDataLoadedRef.current) return;
+    if (categories && categories.length > 0) return;
     
-    // Always fetch latest assessment for authenticated user if no assessmentId
-    if (user && !assessmentId && (!categories || categories.length === 0) && !localDataLoadedRef.current) {
-      import('@/services/assessment/fetchAssessment').then(({ getLatestAssessmentResults }) => {
-        getLatestAssessmentResults(user.id).then(result => {
-          if (result.success && result.data) {
-            // Redirect to the specific assessment
-            navigate(`/results/${result.data.id}`);
-          }
-        });
+    import('@/services/assessment/fetchAssessment').then(({ getLatestAssessmentResults }) => {
+      getLatestAssessmentResults(user.id).then(result => {
+        if (result.success && result.data) {
+          navigate(`/results/${result.data.id}`);
+        }
       });
-    }
+    });
+  }, [isPageReady, user, assessmentId, navigate]);
+
+  // Load local data when categories are empty (runs once)
+  useEffect(() => {
+    if (!isPageReady || assessmentId || localDataLoadedRef.current) return;
+    if (categories && categories.length > 0) return;
     
-    // Try to load local data if categories are empty AND we're not viewing a specific assessment
-    if ((!categories || categories.length === 0) && !localDataLoadedRef.current && !assessmentId) {
+    const localData = getLocalAssessmentData();
+    if (localData && localData.categories && localData.categories.length > 0) {
+      handleCategoriesUpdate(localData.categories);
+      if (localData.demographics) {
+        handleDemographicsUpdate(localData.demographics);
+      }
+      localDataLoadedRef.current = true;
+    }
+  }, [isPageReady, assessmentId, handleCategoriesUpdate, handleDemographicsUpdate]);
+
+  // Restore missing demographics when categories exist (runs once)
+  useEffect(() => {
+    if (!isPageReady || assessmentId || localDataLoadedRef.current) return;
+    if (!categories || categories.length === 0) return;
+    if (demographics && Object.keys(demographics).length > 0) return;
+    
+    const localData = getLocalAssessmentData();
+    if (localData && localData.demographics && Object.keys(localData.demographics).length > 0) {
+      handleDemographicsUpdate(localData.demographics);
+      localDataLoadedRef.current = true;
+    }
+  }, [isPageReady, assessmentId, categories?.length, demographics, handleDemographicsUpdate]);
+
+  // Load local data for categories without ratings (runs once)
+  useEffect(() => {
+    if (!isPageReady || assessmentId || localDataLoadedRef.current) return;
+    if (!categories || categories.length === 0) return;
+    
+    // Check if current categories have any ratings
+    const hasRatings = categories.some(cat => 
+      cat && cat.skills && cat.skills.some(skill => 
+        skill && skill.ratings && 
+        skill.ratings.current > 0 && 
+        skill.ratings.desired > 0
+      )
+    );
+    
+    if (!hasRatings) {
       const localData = getLocalAssessmentData();
       if (localData && localData.categories && localData.categories.length > 0) {
         handleCategoriesUpdate(localData.categories);
@@ -95,44 +134,14 @@ const Results = () => {
         localDataLoadedRef.current = true;
       }
     }
-    
-                // Also try to restore demographics if they're missing but categories exist
-            if (categories && categories.length > 0 && (!demographics || Object.keys(demographics).length === 0) && !localDataLoadedRef.current && !assessmentId) {
-              const localData = getLocalAssessmentData();
-              if (localData && localData.demographics && Object.keys(localData.demographics).length > 0) {
-                if (import.meta.env.DEV) {
-          
-                }
-                handleDemographicsUpdate(localData.demographics);
-                localDataLoadedRef.current = true;
-              }
-            }
-    
-    // CRITICAL FIX: If we have categories but they have no ratings, try to load from local storage
-    if (categories && categories.length > 0 && !localDataLoadedRef.current && !assessmentId) {
-      // Check if current categories have any ratings
-      const hasRatings = categories.some(cat => 
-        cat && cat.skills && cat.skills.some(skill => 
-          skill && skill.ratings && 
-          skill.ratings.current > 0 && 
-          skill.ratings.desired > 0
-        )
-      );
-      
-      if (!hasRatings) {
-        const localData = getLocalAssessmentData();
-        if (localData && localData.categories && localData.categories.length > 0) {
-          handleCategoriesUpdate(localData.categories);
-          if (localData.demographics) {
-            handleDemographicsUpdate(localData.demographics);
-          }
-          localDataLoadedRef.current = true;
-        }
-      }
+  }, [isPageReady, assessmentId, categories, handleCategoriesUpdate, handleDemographicsUpdate]);
+
+  // Set initial data check flag (runs once when page is ready)
+  useEffect(() => {
+    if (isPageReady && !isInitialDataChecked) {
+      setIsInitialDataChecked(true);
     }
-    
-    setIsInitialDataChecked(true);
-  }, [currentStep, categories, demographics, assessmentId, user, handleCategoriesUpdate, handleDemographicsUpdate, isPageReady]);
+  }, [isPageReady, isInitialDataChecked]);
 
   // Load specific assessment if ID is provided
   const {

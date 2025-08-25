@@ -295,6 +295,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
             <Input 
               id="firstName"
               placeholder="John"
+              required
               aria-invalid={!!signUpForm.formState.errors.firstName}
               aria-describedby={signUpForm.formState.errors.firstName ? "firstName-error" : undefined}
               {...signUpForm.register('firstName')}
@@ -316,6 +317,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
             <Input 
               id="surname"
               placeholder="Doe"
+              required
               aria-invalid={!!signUpForm.formState.errors.surname}
               aria-describedby={signUpForm.formState.errors.surname ? "surname-error" : undefined}
               {...signUpForm.register('surname')}

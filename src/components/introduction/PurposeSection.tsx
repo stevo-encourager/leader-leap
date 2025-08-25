@@ -10,26 +10,26 @@ const PurposeSection: React.FC = () => {
         <SectionHeader title="Purpose of this Assessment" icon={Star} className="[&>h2]:text-white" />
         <div className="space-y-2">
           <div className="flex items-center gap-2 p-2 rounded-lg border border-slate-100 bg-white">
-            <Star size={16} style={{ color: '#2F564D' }} />
-            <div className="text-sm" style={{ color: '#2F564D' }}>
+            <Star size={16} className="text-slate-600" />
+            <div className="text-sm text-slate-600">
               Gain Self-awareness
             </div>
           </div>
           <div className="flex items-center gap-2 p-2 rounded-lg border border-slate-100 bg-white">
-            <Star size={16} style={{ color: '#2F564D' }} />
-            <div className="text-sm" style={{ color: '#2F564D' }}>
+            <Star size={16} className="text-slate-600" />
+            <div className="text-sm text-slate-600">
               Build a targeted growth plan
             </div>
           </div>
           <div className="flex items-center gap-2 p-2 rounded-lg border border-slate-100 bg-white">
-            <Star size={16} style={{ color: '#2F564D' }} />
-            <div className="text-sm" style={{ color: '#2F564D' }}>
+            <Star size={16} className="text-slate-600" />
+            <div className="text-sm text-slate-600">
               Track your progress
             </div>
           </div>
           <div className="flex items-center gap-2 p-2 rounded-lg border border-slate-100 bg-white">
-            <Star size={16} style={{ color: '#2F564D' }} />
-            <div className="text-sm" style={{ color: '#2F564D' }}>
+            <Star size={16} className="text-slate-600" />
+            <div className="text-sm text-slate-600">
               Career advancement
             </div>
           </div>

@@ -10,26 +10,26 @@ const AudienceSection: React.FC = () => {
         <SectionHeader icon={User} title="Who is this for?" className="[&>h2]:text-white" />
         <div className="space-y-2">
           <div className="flex items-center gap-2 p-2 rounded-lg border border-slate-100 bg-white">
-            <User size={16} style={{ color: '#2F564D' }} />
-            <div className="text-sm" style={{ color: '#2F564D' }}>
+            <User size={16} className="text-slate-600" />
+            <div className="text-sm text-slate-600">
               Aspiring Leaders
             </div>
           </div>
           <div className="flex items-center gap-2 p-2 rounded-lg border border-slate-100 bg-white">
-            <User size={16} style={{ color: '#2F564D' }} />
-            <div className="text-sm" style={{ color: '#2F564D' }}>
+            <User size={16} className="text-slate-600" />
+            <div className="text-sm text-slate-600">
               Mid-Career Execs
             </div>
           </div>
           <div className="flex items-center gap-2 p-2 rounded-lg border border-slate-100 bg-white">
-            <User size={16} style={{ color: '#2F564D' }} />
-            <div className="text-sm" style={{ color: '#2F564D' }}>
+            <User size={16} className="text-slate-600" />
+            <div className="text-sm text-slate-600">
               C-Suite
             </div>
           </div>
           <div className="flex items-center gap-2 p-2 rounded-lg border border-slate-100 bg-white">
-            <User size={16} style={{ color: '#2F564D' }} />
-            <div className="text-sm" style={{ color: '#2F564D' }}>
+            <User size={16} className="text-slate-600" />
+            <div className="text-sm text-slate-600">
               Entrepreneurs & Business Owners
             </div>
           </div>

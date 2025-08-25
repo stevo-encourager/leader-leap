@@ -12,7 +12,7 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({ icon: Icon, title, classN
     <div className={`flex items-center gap-3 mb-4 ${className}`}>
       {Icon && (
         <div className="p-3 rounded-full" style={{ backgroundColor: 'white' }}>
-          <Icon size={24} strokeWidth={1.5} style={{ color: '#2F564D', stroke: '#2F564D' }} />
+          <Icon size={24} strokeWidth={1.5} className="text-slate-600" style={{ stroke: '#475569' }} />
         </div>
       )}
       <h2 className="text-2xl font-bold text-encourager">{title}</h2>

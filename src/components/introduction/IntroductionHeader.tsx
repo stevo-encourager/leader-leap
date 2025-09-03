@@ -55,9 +55,9 @@ const IntroductionHeader: React.FC<IntroductionHeaderProps> = ({ onStartAssessme
         size="lg"
         onClick={handleStartClick}
         className="text-white px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 font-medium"
-        style={{ backgroundColor: '#5fac9a' }}
-        onMouseEnter={(e) => e.target.style.backgroundColor = '#6cbdab'}
-        onMouseLeave={(e) => e.target.style.backgroundColor = '#5fac9a'}
+        style={{ backgroundColor: '#2F564D' }}
+        onMouseEnter={(e) => e.target.style.backgroundColor = '#3a6859'}
+        onMouseLeave={(e) => e.target.style.backgroundColor = '#2F564D'}
       >
         Start Your Assessment
       </Button>

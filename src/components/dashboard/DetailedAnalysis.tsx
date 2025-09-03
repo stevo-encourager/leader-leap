@@ -57,7 +57,7 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
             <div>
               <h2 className="text-2xl font-bold text-encourager">Competency Analysis</h2>
               <p className="text-sm text-muted-foreground mt-1">
-                Visualize and analyze your leadership competency gaps and insights
+                Visualise and analyse your leadership competency gaps and insights
               </p>
             </div>
           </div>

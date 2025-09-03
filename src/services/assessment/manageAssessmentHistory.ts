@@ -97,7 +97,16 @@ export const restoreAssessmentDataAfterVerification = async (email: string): Pro
       .eq('email', email)
       .single();
     
-    if (error || !data) {
+    if (error) {
+      // Suppress 406 errors (no data found) as they're expected when there's nothing to restore
+      if (error.code === 'PGRST116' || error.message?.includes('No rows')) {
+        return false;
+      }
+      logger.error('restoreAssessmentDataAfterVerification - Unexpected error:', error);
+      return false;
+    }
+    
+    if (!data) {
       return false;
     }
     
@@ -122,6 +131,61 @@ export const restoreAssessmentDataAfterVerification = async (email: string): Pro
   } catch (error) {
     logger.error('restoreAssessmentDataAfterVerification - Error:', error);
     return false;
+  }
+};
+
+/**
+ * Save guest assessment data using synthetic tempUserId via Edge Function
+ * This allows guest users to have their assessments saved to the database
+ * with a temporary user ID before they sign up
+ */
+export const saveGuestAssessmentWithTempUserId = async (
+  categories: Category[], 
+  demographics: Demographics
+): Promise<{ success: boolean; assessmentId?: string; tempUserId?: string; error?: string }> => {
+  try {
+    
+    // Use direct fetch with explicit headers to avoid authentication issues
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    
+    if (!supabaseUrl || !anonKey) {
+      return { success: false, error: 'Missing Supabase configuration' };
+    }
+    
+    const response = await fetch(`${supabaseUrl}/functions/v1/save-guest-assessment`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': anonKey,
+        // Explicitly avoid Authorization header for guest users
+      },
+      body: JSON.stringify({
+        categories,
+        demographics
+      })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      logger.error('HTTP error saving guest assessment with tempUserId:', errorText);
+      return { success: false, error: `HTTP ${response.status}: ${errorText}` };
+    }
+
+    const data = await response.json();
+
+    if (data && data.success) {
+      return { 
+        success: true, 
+        assessmentId: data.assessmentId,
+        tempUserId: data.tempUserId
+      };
+    }
+
+    return { success: false, error: data?.error || 'Unexpected response from server' };
+  } catch (error) {
+    logger.error('Exception saving guest assessment with tempUserId:', error);
+    return { success: false, error: 'Network error saving assessment' };
   }
 };
 

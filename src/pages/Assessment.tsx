@@ -50,9 +50,6 @@ const Assessment = () => {
 
   // Test function to generate demographic data and assessment scores
   const generateTestData = () => {
-    if (import.meta.env.DEV) {
-      logger.log('generateTestData - Starting test data generation');
-    }
     
     // Generate realistic demographic data
     const testDemographics: Demographics = {
@@ -61,9 +58,6 @@ const Assessment = () => {
       industry: "Technology"
     };
     
-    if (import.meta.env.DEV) {
-      logger.log('generateTestData - Test demographics:', testDemographics);
-    }
 
     // Generate realistic assessment scores for all categories and skills
     const testCategories = allCategories.map(category => ({
@@ -77,31 +71,13 @@ const Assessment = () => {
       }))
     }));
 
-    if (import.meta.env.DEV) {
-      logger.log('generateTestData - About to call handleDemographicsUpdate');
-    }
     // Update the assessment state with test data
     handleDemographicsUpdate(testDemographics);
-    if (import.meta.env.DEV) {
-      logger.log('generateTestData - Called handleDemographicsUpdate');
-    }
     
-    if (import.meta.env.DEV) {
-      logger.log('generateTestData - About to call handleCategoriesUpdate');
-    }
     handleCategoriesUpdate(testCategories);
-    if (import.meta.env.DEV) {
-      logger.log('generateTestData - Called handleCategoriesUpdate');
-    }
     
-    if (import.meta.env.DEV) {
-      logger.log('generateTestData - About to store locally');
-    }
     // Store the test data locally
     const stored = storeLocalAssessmentData(testCategories, testDemographics);
-    if (import.meta.env.DEV) {
-      logger.log('generateTestData - Stored locally, result:', stored);
-    }
     
     // Set initial active category to the last category (index 9 for 10 categories)
     setInitialActiveCategory(allCategories.length - 1);

@@ -18,7 +18,6 @@ export const getCategoriesWithMetadata = (categories: Category[]): CategoryWithM
   return categories.map(category => {
     // Skip undefined category objects
     if (!category) {
-      logger.warn("getCategoriesWithMetadata - Found undefined category");
       return {
         id: `category-${Math.random().toString(36).substring(2, 9)}`,
         title: "Unknown Category",

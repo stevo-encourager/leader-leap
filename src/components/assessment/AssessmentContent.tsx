@@ -8,6 +8,7 @@ import AssessmentInstructions from '../AssessmentInstructions';
 import { AssessmentStep, Category, Demographics } from '../../utils/assessmentData';
 import { useState } from 'react';
 import { saveAssessmentResults, TEST_ASSESSMENT_ID, storeLocalAssessmentData } from '@/services/assessment';
+import { saveGuestAssessmentWithTempUserId } from '@/services/assessment/manageAssessmentHistory';
 import { useAuth } from '@/contexts/AuthContext';
 import { logger } from '@/utils/productionLogger';
 
@@ -83,19 +84,34 @@ const AssessmentContent: React.FC<AssessmentContentProps> = ({
         categories={categories}
         onCategoriesUpdate={onCategoriesUpdate}
         onComplete={async () => {
-          // For guest users, just store locally and navigate to results
+          // For guest users, store locally and optionally save with tempUserId for better persistence
           if (!user) {
-            if (import.meta.env.DEV) {
-              logger.log('AssessmentContent - Guest user completing assessment, storing locally');
-              logger.log('AssessmentContent - Storing demographics:', demographics);
-            }
+            
+            // Always store locally as primary method
             storeLocalAssessmentData(categories, demographics);
-            // Ensure demographics are stored in localStorage before navigation
             localStorage.setItem('assessmentData', JSON.stringify({
               categories,
               demographics,
               timestamp: Date.now()
             }));
+            
+            // TODO: Temporarily disabled tempUserId saving due to authentication issues
+            // Will re-enable once Edge Function authentication is resolved
+            /*
+            try {
+              const tempResult = await saveGuestAssessmentWithTempUserId(categories, demographics);
+              if (tempResult.success) {
+                localStorage.setItem('guestAssessmentInfo', JSON.stringify({
+                  assessmentId: tempResult.assessmentId,
+                  tempUserId: tempResult.tempUserId,
+                  timestamp: Date.now()
+                }));
+              }
+            } catch (error) {
+              logger.error('AssessmentContent - Failed to save guest assessment with tempUserId:', error);
+            }
+            */
+            
             navigate('/results');
             return;
           }

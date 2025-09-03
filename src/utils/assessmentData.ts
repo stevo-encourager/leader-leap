@@ -45,4 +45,3 @@ export const validateCategoriesData = (categories: Category[] | undefined): bool
 
 // Export the initial categories count for debugging
 export const initialCategoriesCount = allCategories.length;
-logger.debug(`assessmentData.ts - Loaded ${initialCategoriesCount} categories`);

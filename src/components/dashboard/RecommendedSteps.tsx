@@ -13,7 +13,7 @@ const RecommendedSteps: React.FC = () => {
         className="mb-2" 
       />
       <ul className="list-disc list-inside space-y-2 text-slate-700">
-        <li>Navigate to <Link to="/profile" className="text-encourager underline hover:underline">"My Profile"</Link> and create plan to address your most critical competency gaps</li>
+        <li>Navigate to <Link to="/profile" className="text-encourager underline hover:underline">My Profile</Link> and create plan to address your most critical competency gaps</li>
         <li>Collaborate with your manager, mentor or coach to develop your leadership development strategy</li>
       </ul>
     </div>

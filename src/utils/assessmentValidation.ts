@@ -10,14 +10,11 @@ import { logger } from './productionLogger';
 export const validateAndNormalizeCategories = (
   rawCategoriesData: unknown
 ): Category[] | null => {
-  logger.log("validateAndNormalizeCategories - Raw categories data type:", typeof rawCategoriesData);
-  logger.log("validateAndNormalizeCategories - Raw categories data:", rawCategoriesData);
   
   // Handle case where categories might be stored as a string
   if (typeof rawCategoriesData === 'string') {
     try {
       rawCategoriesData = JSON.parse(rawCategoriesData);
-      logger.log("validateAndNormalizeCategories - Parsed categories from string:", rawCategoriesData);
     } catch (e) {
       logger.error("validateAndNormalizeCategories - Failed to parse categories string:", e);
       return null;
@@ -40,13 +37,9 @@ export const validateAndNormalizeCategories = (
     logger.error('validateAndNormalizeCategories - Categories data is in an invalid format');
     return null;
   }
-    
-  logger.log("validateAndNormalizeCategories - Categories array before normalization:", categoriesArray);
   
   // Apply thorough normalization to ensure consistent data structure
   const normalizedCategories = normalizeCategories(categoriesArray as unknown as Category[]);
-  
-  logger.log("validateAndNormalizeCategories - Normalized categories:", normalizedCategories);
   
   // Verify we have valid data after normalization
   if (!normalizedCategories || normalizedCategories.length === 0) {

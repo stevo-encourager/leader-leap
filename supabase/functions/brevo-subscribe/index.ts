@@ -38,10 +38,14 @@ serve(async (req) => {
       contactData.attributes = { ...contactData.attributes, LASTNAME: lastName };
     }
 
+    const brevoApiKey = Deno.env.get('BREVO_API_KEY');
+    console.log('[Brevo] API key configured:', brevoApiKey ? 'Yes' : 'No');
+    console.log('[Brevo] API key length:', brevoApiKey?.length || 0);
+    
     const response = await fetch('https://api.brevo.com/v3/contacts', {
       method: 'POST',
       headers: {
-        'api-key': Deno.env.get('BREVO_API_KEY') || '',
+        'api-key': brevoApiKey || '',
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },

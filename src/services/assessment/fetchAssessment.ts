@@ -24,7 +24,6 @@ export const fetchAssessmentById = async (assessmentId: string): Promise<{
     if (!assessmentId || typeof assessmentId !== 'string') {
       return { success: false, error: "Invalid assessment ID" };
     }
-    logger.log(`Assessment Service: Fetching assessment ${assessmentId}`);
     const { data, error } = await supabase
       .from('assessment_results')
       .select('*')
@@ -35,7 +34,6 @@ export const fetchAssessmentById = async (assessmentId: string): Promise<{
       return { success: false, error: error.message };
     }
     if (!data) {
-      logger.log('Assessment Service: Assessment not found');
       return { success: false, error: "Assessment not found" };
     }
     // Type assertion after null check
@@ -87,8 +85,6 @@ export const fetchLatestAssessmentByUserId = async (userId: string): Promise<{
       return { success: false, error: "Invalid user ID" };
     }
 
-    logger.log(`Assessment Service: Fetching latest assessment for user ${userId}`);
-    
     const { data, error } = await supabase
       .from('assessment_results')
       .select('*')
@@ -103,7 +99,6 @@ export const fetchLatestAssessmentByUserId = async (userId: string): Promise<{
     }
 
     if (!data) {
-      logger.log('Assessment Service: No assessments found for user');
       return { success: false, error: "No assessments found" };
     }
 
@@ -153,8 +148,6 @@ export const fetchAssessmentByIdAndUserId = async (assessmentId: string, userId:
       return { success: false, error: "Invalid user ID" };
     }
 
-    logger.log(`Assessment Service: Fetching assessment ${assessmentId} for user ${userId}`);
-    
     const { data, error } = await supabase
       .from('assessment_results')
       .select('*')
@@ -168,7 +161,6 @@ export const fetchAssessmentByIdAndUserId = async (assessmentId: string, userId:
     }
 
     if (!data) {
-      logger.log('Assessment Service: Assessment not found or does not belong to user');
       return { success: false, error: "Assessment not found" };
     }
 

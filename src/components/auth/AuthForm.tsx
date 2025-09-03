@@ -92,13 +92,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
   };
 
   const handleSignUp = async (data: SignUpFormData) => {
-    if (import.meta.env.DEV) {
-      logger.log('AuthForm: handleSignUp called, setting isSubmitting to true');
-    }
     setIsSubmitting(true);
-    if (import.meta.env.DEV) {
-      logger.log('AuthForm: isSubmitting set to true, isLoading should be:', (loading || true).toString());
-    }
 
     try {
       // Preserve assessment data before email verification process
@@ -109,9 +103,6 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
       
       // Keep button disabled for a moment to show the loading state
       setTimeout(() => {
-        if (import.meta.env.DEV) {
-          logger.log('AuthForm: Success, setting isSubmitting to false after delay');
-        }
         setIsSubmitting(false);
       }, 2000);
       
@@ -119,9 +110,6 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
       // Error is already handled in AuthContext with toast
       // Keep button disabled for a moment even on error to prevent rapid clicking
       setTimeout(() => {
-        if (import.meta.env.DEV) {
-          logger.log('AuthForm: Error occurred, setting isSubmitting to false after delay');
-        }
         setIsSubmitting(false);
       }, 1000);
     }
@@ -289,6 +277,25 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
       </TabsContent>
       
       <TabsContent value="signup">
+        {showGoogleAuth && (
+          <div className="mb-6 text-center">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={handleGoogleSignIn}
+              disabled={isLoading}
+              className="w-full"
+            >
+              <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" className="h-5 w-5 mr-2" />
+              Sign up with Google
+            </Button>
+            <div className="mt-4 mb-4 flex items-center">
+              <div className="flex-1 border-t border-slate-200"></div>
+              <span className="px-4 text-sm text-muted-foreground">Or continue with email</span>
+              <div className="flex-1 border-t border-slate-200"></div>
+            </div>
+          </div>
+        )}
         <form onSubmit={signUpForm.handleSubmit(handleSignUp)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="firstName">First Name</Label>
@@ -393,25 +400,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             {isLoading ? 'Creating Account...' : 'Create Account'}
           </Button>
-          {/* Button disabled when loading to prevent multiple clicks */}
-          {/* Debug: isLoading = {isLoading.toString()}, isSubmitting = {isSubmitting.toString()}, loading = {loading.toString()} */}
-          {/* TESTING: This comment should appear if the file is being updated */}
         </form>
-        {showGoogleAuth && (
-          <div className="mt-4 text-center text-sm">
-            <p className="text-muted-foreground mb-4">Or continue with</p>
-            <Button 
-              type="button" 
-              variant="outline" 
-              onClick={handleGoogleSignIn}
-              disabled={isLoading}
-              className="w-full"
-            >
-              <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google" className="h-5 w-5 mr-2" />
-              Sign up with Google
-            </Button>
-          </div>
-        )}
         <div className="mt-4">
           <p className="text-sm text-muted-foreground text-center">
             By signing up, you agree to our Terms of Service and{' '}

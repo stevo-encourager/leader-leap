@@ -89,6 +89,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             return;
           }
           
+          // Check if this user just completed email verification (within last 5 minutes)
+          const emailConfirmedAt = session.user.email_confirmed_at ? new Date(session.user.email_confirmed_at) : null;
+          const isRecentEmailConfirmation = emailConfirmedAt && (Date.now() - emailConfirmedAt.getTime()) < 5 * 60 * 1000;
+          
+          if (isRecentEmailConfirmation && session.user.email) {
+            // Try to restore assessment data after email verification
+            import('@/services/assessment/manageAssessmentHistory').then(async ({ restoreAssessmentDataAfterVerification }) => {
+              try {
+                const restored = await restoreAssessmentDataAfterVerification(session.user.email!);
+                if (restored) {
+                  // Navigate to results page to show the restored assessment
+                  navigate('/results');
+                  return;
+                }
+              } catch (error) {
+                logger.error('Error restoring assessment data after verification:', error);
+              }
+            });
+          }
+          
           toast({
             title: "Success",
             description: "Successfully signed in!",
@@ -161,9 +181,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         // Don't redirect to consent if user's email is not confirmed yet
         if (!user.email_confirmed_at) {
-          if (import.meta.env.DEV) {
-            logger.log('AuthContext: User email not confirmed yet, skipping consent check');
-          }
           return;
         }
         
@@ -179,9 +196,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             navigate('/consent');
           }
         } else if (error) {
-          if (import.meta.env.DEV) {
-            logger.error('AuthContext: Error checking consent:', error);
-          }
+          logger.error('AuthContext: Error checking consent:', error);
         }
       };
       checkConsent();
@@ -251,9 +266,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Second check: Handle explicit errors
     if (error) {
-      if (import.meta.env.DEV) {
-        logger.error('AuthContext: Sign up error:', error);
-      }
       
       // Check for specific error messages that indicate existing email
       const errorMessage = error.message?.toLowerCase() || '';
@@ -312,7 +324,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (error) {
         // If session is missing, that means user is already signed out
         if (error.message === 'Auth session missing!') {
-          logger.log('AuthContext: Session already missing, clearing local state');
           // Clear local state manually since Supabase can't do it
           setUser(null);
           setSession(null);
@@ -342,7 +353,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (error: any) {
       // Handle session missing error gracefully
       if (error?.message === 'Auth session missing!' || error?.name === 'AuthSessionMissingError') {
-        logger.log('AuthContext: Session missing during logout, clearing local state');
         // Clear local state manually since Supabase can't do it
         setUser(null);
         setSession(null);

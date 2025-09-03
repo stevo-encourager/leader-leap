@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Demographics } from '@/utils/assessmentTypes';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface UseOpenAIInsightsProps {
   categories: Category[];
@@ -18,6 +19,7 @@ interface InsightsState {
 }
 
 export const useOpenAIInsights = ({ categories, demographics, averageGap, assessmentId }: UseOpenAIInsightsProps) => {
+  const { user } = useAuth();
   // Consolidated state to prevent race conditions
   const [state, setState] = useState<InsightsState>({
     insights: null,
@@ -164,6 +166,27 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       return;
     }
     
+    // SECURITY: Don't generate insights for unauthenticated users unless it's a test assessment
+    if (!user && !isTestAssessment) {
+      updateState({
+        error: null,
+        isLoading: false,
+        isInitialized: true
+      }, 'Skipping insights for unauthenticated user');
+      return;
+    }
+    
+    // EFFICIENCY: Require assessment ID to prevent multiple API calls during signup flow
+    // Exception: Allow test assessments without ID for testing purposes
+    if (!assessmentId && !isTestAssessment) {
+      updateState({
+        error: null,
+        isLoading: false,
+        isInitialized: true
+      }, 'Waiting for assessment to be saved before generating insights');
+      return;
+    }
+    
     isOperationInProgressRef.current = true;
     
     // Set loading state when starting initialization
@@ -220,7 +243,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
     } finally {
       isOperationInProgressRef.current = false;
     }
-  }, [assessmentId, updateState, validateDataForInsights, generateNewInsights]);
+  }, [assessmentId, user, isTestAssessment, updateState, validateDataForInsights, generateNewInsights]);
 
   // Store the initializeInsights function in a ref to prevent recreation
   const initializeInsightsRef = useRef<() => Promise<void>>();
@@ -248,6 +271,15 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
   }, [assessmentId, shouldInitialize]);
 
   const regenerateInsights = useCallback(async () => {
+    
+    // SECURITY: Don't regenerate insights for unauthenticated users unless it's a test assessment
+    if (!user && !isTestAssessment) {
+      updateState({
+        error: 'Authentication required to regenerate insights',
+        isLoading: false
+      }, 'Regeneration blocked for unauthenticated user');
+      return;
+    }
     
     // ENHANCED: Better validation for regeneration - don't require assessmentId for new assessments
     if (!validateDataForInsights()) {
@@ -286,7 +318,7 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
       isOperationInProgressRef.current = false;
       initializationCompleteRef.current = true;
     }
-  }, [updateState, validateDataForInsights, generateNewInsights]);
+  }, [user, isTestAssessment, updateState, validateDataForInsights, generateNewInsights]);
 
   return {
     insights: state.insights,

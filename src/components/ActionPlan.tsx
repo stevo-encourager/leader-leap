@@ -886,9 +886,9 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
                           size="sm"
                           onClick={() => createActionPlan(competency)}
                           className="text-white"
-                          style={{ backgroundColor: '#5fac9a' }}
-                          onMouseEnter={(e) => e.target.style.backgroundColor = '#6cbdab'}
-                          onMouseLeave={(e) => e.target.style.backgroundColor = '#5fac9a'}
+                          style={{ backgroundColor: '#2F564D' }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = '#3a6859'}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = '#2F564D'}
                         >
                           <Plus className="w-4 h-4 mr-1" />
                           Create Plan

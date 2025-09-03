@@ -24,12 +24,14 @@ interface ResultsDashboardProps {
   categories?: Category[];
   demographics?: Demographics;
   assessmentId?: string;
+  shouldGenerateInsights?: boolean;
 }
 
 export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   categories: propCategories = [],
   demographics: propDemographics = {},
-  assessmentId: propAssessmentId
+  assessmentId: propAssessmentId,
+  shouldGenerateInsights = true
 }) => {
   const { assessmentId: urlAssessmentId } = useParams<{ assessmentId: string }>();
   const { user } = useAuth();
@@ -103,13 +105,6 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
     return totalGap / memoizedCategories.length;
   }, [memoizedCategories]);
 
-  // Debug logging
-  logger.log('Results page - Debug info', {
-    hasCategories: !!categories && categories.length > 0,
-    hasAssessmentId: !!finalAssessmentId,
-    isUser: !!user,
-    loadingPreviousResults
-  });
 
   if (dataLoading) {
     return (
@@ -148,100 +143,108 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
 
   // Mobile-specific results view
   if (isMobile) {
-    return (
+    const mobileContent = (
+      <MobileResultsView
+        categories={memoizedCategories}
+        demographics={memoizedDemographics}
+        assessmentId={finalAssessmentId}
+        onBack={handleBack}
+        onRestart={handleRestart}
+        onSignup={handleSignup}
+      />
+    );
+    
+    return shouldGenerateInsights ? (
       <InsightsProvider
         categories={memoizedCategories}
         demographics={memoizedDemographics}
         averageGap={memoizedAverageGap}
         assessmentId={finalAssessmentId!}
       >
-        <MobileResultsView
-          categories={memoizedCategories}
-          demographics={memoizedDemographics}
-          assessmentId={finalAssessmentId}
-          onBack={handleBack}
-          onRestart={handleRestart}
-          onSignup={handleSignup}
-        />
+        {mobileContent}
       </InsightsProvider>
-    );
+    ) : mobileContent;
   }
 
   // Desktop view
-  return (
+  const desktopContent = (
+    <div className="min-h-screen bg-white">
+      <SEO 
+        title="Leadership Assessment Results" 
+        description="Your personalised leadership assessment results and insights"
+      />
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white rounded-lg border border-slate-200 shadow-sm">
+          {/* Header Section */}
+          <div className="p-6 pt-10 pb-4 border-b border-slate-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-slate-900">Your Leader Leap Assessment Results</h1>
+                <p className="text-sm text-muted-foreground mt-1 whitespace-nowrap">Review your leadership competency gaps and development opportunities</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <img 
+                  src="/encouragercoachinglogo.png" 
+                  alt="Encourager Coaching" 
+                  className="h-24 w-auto"
+                />
+              </div>
+            </div>
+          </div>
+          
+          {/* Content Section */}
+          <div className="p-6">
+            <DetailedAnalysis 
+              categories={memoizedCategories}
+              demographics={memoizedDemographics}
+              averageGap={memoizedAverageGap}
+              assessmentId={finalAssessmentId!}
+            />
+          </div>
+        </div>
+        
+        {/* Recommended Steps */}
+        <div className="mt-8">
+          <RecommendedSteps 
+            categories={memoizedCategories}
+            demographics={memoizedDemographics}
+            averageGap={memoizedAverageGap}
+          />
+        </div>
+        
+        {/* Coaching Support */}
+        <div className="mt-8">
+          <CoachingSupport 
+            categories={memoizedCategories}
+            demographics={memoizedDemographics}
+            averageGap={memoizedAverageGap}
+          />
+        </div>
+        
+        {/* Results Actions */}
+        <div className="mt-8">
+          <ResultsActions 
+            categories={memoizedCategories}
+            demographics={memoizedDemographics}
+            assessmentId={finalAssessmentId!}
+            onRestart={handleRestart}
+            onBack={handleBack}
+            onSignup={handleSignup}
+          />
+        </div>
+      </div>
+    </div>
+  );
+  
+  return shouldGenerateInsights ? (
     <InsightsProvider
       categories={memoizedCategories}
       demographics={memoizedDemographics}
       averageGap={memoizedAverageGap}
       assessmentId={finalAssessmentId!}
     >
-      <div className="min-h-screen bg-white">
-        <SEO 
-          title="Leadership Assessment Results" 
-          description="Your personalised leadership assessment results and insights"
-        />
-        
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="bg-white rounded-lg border border-slate-200 shadow-sm">
-            {/* Header Section */}
-            <div className="p-6 pt-10 pb-4 border-b border-slate-100">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-2xl font-bold text-slate-900">Your Leader Leap Assessment Results</h1>
-                  <p className="text-sm text-muted-foreground mt-1 whitespace-nowrap">Review your leadership competency gaps and development opportunities</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <img 
-                    src="/encouragercoachinglogo.png" 
-                    alt="Encourager Coaching" 
-                    className="h-24 w-auto"
-                  />
-                </div>
-              </div>
-            </div>
-            
-            {/* Content Section */}
-            <div className="p-6">
-              <DetailedAnalysis 
-                categories={memoizedCategories}
-                demographics={memoizedDemographics}
-                averageGap={memoizedAverageGap}
-                assessmentId={finalAssessmentId!}
-              />
-            </div>
-          </div>
-          
-          {/* Recommended Steps */}
-          <div className="mt-8">
-            <RecommendedSteps 
-              categories={memoizedCategories}
-              demographics={memoizedDemographics}
-              averageGap={memoizedAverageGap}
-            />
-          </div>
-          
-          {/* Coaching Support */}
-          <div className="mt-8">
-            <CoachingSupport 
-              categories={memoizedCategories}
-              demographics={memoizedDemographics}
-              averageGap={memoizedAverageGap}
-            />
-          </div>
-          
-          {/* Results Actions */}
-          <div className="mt-8">
-            <ResultsActions 
-              categories={memoizedCategories}
-              demographics={memoizedDemographics}
-              assessmentId={finalAssessmentId!}
-              onRestart={handleRestart}
-              onBack={handleBack}
-              onSignup={handleSignup}
-            />
-          </div>
-        </div>
-      </div>
+      {desktopContent}
     </InsightsProvider>
-  );
+  ) : desktopContent;
 };

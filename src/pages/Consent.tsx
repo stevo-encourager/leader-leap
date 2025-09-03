@@ -66,40 +66,17 @@ const Consent: React.FC = () => {
       // If user consents to emails, subscribe to Brevo
       if (receiveEmails && user.email) {
         try {
-          // For local development, use the local server; for production, use Supabase Edge Function
-          const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+          // Always use Supabase Edge Function for both development and production
+          const result = await supabase.functions.invoke('brevo-subscribe', {
+            body: { 
+              email: user.email,
+              firstName: user.user_metadata?.first_name,
+              lastName: user.user_metadata?.surname
+            }
+          });
           
-          let data, error;
-          
-          if (isLocalhost) {
-            // Use local server for development
-            const response = await fetch('http://localhost:3001/api/subscribe-brevo', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ 
-                email: user.email,
-                firstName: user.user_metadata?.first_name,
-                lastName: user.user_metadata?.surname
-              })
-            });
-            
-            const result = await response.json();
-            data = result;
-            error = response.ok ? null : result;
-          } else {
-            // Use Supabase Edge Function for production
-            const result = await supabase.functions.invoke('brevo-subscribe', {
-              body: { 
-                email: user.email,
-                firstName: user.user_metadata?.first_name,
-                lastName: user.user_metadata?.surname
-              }
-            });
-            data = result.data;
-            error = result.error;
-          }
+          const data = result.data;
+          const error = result.error;
           if (!error && data?.success) {
             toast({
               title: 'Subscribed to email updates',

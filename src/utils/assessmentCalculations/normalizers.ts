@@ -12,7 +12,6 @@ export const normalizeSkill = (
 ): SkillWithMetadata | null => {
   try {
     if (!skill || !skill.ratings) {
-      logger.log(`normalizeSkill - Skipping invalid skill (no ratings):`, skill);
       return null;
     }
     
@@ -28,7 +27,7 @@ export const normalizeSkill = (
         current = parseFloat(String(skill.ratings.current));
         current = isNaN(current) ? 0 : current;
       } catch (e) {
-        logger.warn(`normalizeSkill - Error parsing current rating for ${skill.name}:`, e);
+        // Skip invalid rating
       }
     }
     
@@ -40,7 +39,7 @@ export const normalizeSkill = (
         desired = parseFloat(String(skill.ratings.desired));
         desired = isNaN(desired) ? 0 : desired;
       } catch (e) {
-        logger.warn(`normalizeSkill - Error parsing desired rating for ${skill.name}:`, e);
+        // Skip invalid rating
       }
     }
     
@@ -50,7 +49,6 @@ export const normalizeSkill = (
     
     // Only include skills with at least one non-zero value
     if (current === 0 && desired === 0) {
-      logger.log(`normalizeSkill - Skipping skill with zero ratings: ${skill.name}`);
       return null;
     }
     
@@ -78,46 +76,18 @@ export const normalizeSkill = (
  */
 export const getAllSkillsWithMetadata = (categories: Category[]): SkillWithMetadata[] => {
   try {
-    logger.log("getAllSkillsWithMetadata - Processing categories:", {
-      count: categories?.length || 0,
-      isArray: Array.isArray(categories)
-    });
-    
     if (!categories || !Array.isArray(categories) || categories.length === 0) {
-      logger.log("getAllSkillsWithMetadata - No categories");
       return [];
     }
     
-    // For debugging, count initial ratings
-    const initialRatingsCount = categories.reduce((total, category) => {
-      if (!category || !category.skills || !Array.isArray(category.skills)) return total;
-      
-      return total + category.skills.reduce((skillTotal, skill) => {
-        if (!skill || !skill.ratings) return skillTotal;
-        
-        const hasCurrentRating = typeof skill.ratings.current === 'number' && 
-                                !isNaN(skill.ratings.current) && 
-                                skill.ratings.current > 0;
-        const hasDesiredRating = typeof skill.ratings.desired === 'number' && 
-                                !isNaN(skill.ratings.desired) && 
-                                skill.ratings.desired > 0;
-        
-        return skillTotal + (hasCurrentRating ? 1 : 0) + (hasDesiredRating ? 1 : 0);
-      }, 0);
-    }, 0);
-    
-    logger.log(`getAllSkillsWithMetadata - Initial ratings count: ${initialRatingsCount}`);
     
     const allSkills: SkillWithMetadata[] = [];
     
     // Process each category
     for (const category of categories) {
       if (!category || !category.skills || !Array.isArray(category.skills)) {
-        logger.log(`getAllSkillsWithMetadata - Skipping invalid category: ${category?.title || 'unknown'}`);
         continue;
       }
-      
-      logger.log(`getAllSkillsWithMetadata - Processing category: ${category.title} with ${category.skills.length} skills`);
       
       // Process each skill in the category
       for (const skill of category.skills) {
@@ -125,12 +95,10 @@ export const getAllSkillsWithMetadata = (categories: Category[]): SkillWithMetad
         
         if (normalizedSkill) {
           allSkills.push(normalizedSkill);
-          logger.log(`getAllSkillsWithMetadata - Added skill: ${skill.name}, current=${normalizedSkill.ratings.current}, desired=${normalizedSkill.ratings.desired}`);
         }
       }
     }
     
-    logger.log(`getAllSkillsWithMetadata - Found ${allSkills.length} normalized skills from ${initialRatingsCount} initial ratings`);
     return allSkills;
   } catch (error) {
     logger.error("Error in getAllSkillsWithMetadata:", error);

@@ -501,9 +501,9 @@ const MyProfile = () => {
             <Button 
               onClick={handleStartNewAssessment}
               className={`text-white ${isMobile ? 'w-full px-4 py-3' : 'px-6 py-3'}`}
-              style={{ backgroundColor: '#5fac9a' }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = '#6cbdab'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = '#5fac9a'}
+              style={{ backgroundColor: '#2F564D' }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#3a6859'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#2F564D'}
             >
               Start New Assessment
             </Button>

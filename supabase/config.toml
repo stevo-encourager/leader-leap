@@ -2,8 +2,6 @@
 project_id = "hrgoxcdixvpmcbfgltea"
 
 [functions]
-[functions.delete-all-users]
-verify_jwt = true
 [functions.count-users]
 verify_jwt = true
 [functions.generate-insights]

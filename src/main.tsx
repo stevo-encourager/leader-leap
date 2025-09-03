@@ -1,8 +1,6 @@
 import { Buffer } from 'buffer';
 window.Buffer = Buffer;
 
-// Debug logging to verify Buffer polyfill is working
-
 // Handle MutationObserver errors from content scripts
 window.addEventListener('error', (event) => {
   if (event.message && event.message.includes('MutationObserver') && event.message.includes('parameter 1 is not of type \'Node\'')) {

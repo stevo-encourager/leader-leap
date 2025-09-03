@@ -11,6 +11,7 @@ interface ResultsDisplayProps {
   onSignup?: () => void;
   isAuthenticated: boolean;
   assessmentId?: string;
+  shouldGenerateInsights?: boolean;
 }
 
 const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
@@ -20,13 +21,15 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({
   onBack,
   onSignup,
   isAuthenticated,
-  assessmentId
+  assessmentId,
+  shouldGenerateInsights = true
 }) => {
   return (
     <ResultsDashboard 
       categories={categories}
       demographics={demographics}
       assessmentId={assessmentId}
+      shouldGenerateInsights={shouldGenerateInsights}
     />
   );
 };

@@ -336,9 +336,9 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
             <Button 
               onClick={handleNewAssessment}
               className="text-white"
-              style={{ backgroundColor: '#5fac9a' }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = '#6cbdab'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = '#5fac9a'}
+              style={{ backgroundColor: '#2F564D' }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#3a6859'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#2F564D'}
             >
               <Plus className="mr-2 h-4 w-4" />
               Start New Assessment
@@ -429,9 +429,9 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
               <Button 
                 onClick={handleNewAssessment}
                 className="text-white"
-                style={{ backgroundColor: '#5fac9a' }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#6cbdab'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = '#5fac9a'}
+                style={{ backgroundColor: '#2F564D' }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#3a6859'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#2F564D'}
               >
                 <Plus className="mr-2 h-4 w-4" />
                 Start New Assessment

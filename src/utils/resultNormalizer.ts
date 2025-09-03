@@ -6,7 +6,6 @@ import { logger } from './productionLogger';
  * Normalizes categories data to ensure consistent format for display
  */
 export const normalizeCategories = (categories: unknown[]): Category[] => {
-  logger.log("normalizeCategories - Input:", categories);
   
   if (!categories || !Array.isArray(categories) || categories.length === 0) {
     logger.warn("normalizeCategories - Invalid or empty categories input");
@@ -48,7 +47,6 @@ export const normalizeCategories = (categories: unknown[]): Category[] => {
       };
     });
     
-    logger.log("normalizeCategories - Result count:", result.length);
     return result;
   } catch (error) {
     logger.error("Error in normalizeCategories:", error);

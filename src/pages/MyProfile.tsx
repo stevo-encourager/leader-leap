@@ -34,7 +34,7 @@ import {
 
 const MyProfile = () => {
   const navigate = useNavigate();
-  const { user, userProfile, signOut } = useAuth();
+  const { user, userProfile, signOut, initialized } = useAuth();
   const isMobile = useIsMobile();
   const { handleStartNewAssessment } = useAssessment();
   const {
@@ -63,6 +63,8 @@ const MyProfile = () => {
   const [emailPreferencesLoading, setEmailPreferencesLoading] = useState(false);
 
   useEffect(() => {
+    if (!initialized) return; // Wait for auth to initialize
+    
     if (!user) {
       navigate('/login');
       return;
@@ -105,7 +107,7 @@ const MyProfile = () => {
     
     fetchDemographics();
     refreshProfile();
-  }, [user, navigate]);
+  }, [initialized, user, navigate]);
 
   // Load current email preferences
   useEffect(() => {

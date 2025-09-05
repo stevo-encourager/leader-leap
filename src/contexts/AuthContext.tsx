@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { logger } from '@/utils/productionLogger';
+import { sendWelcomeEmail, isRecentSignup } from '@/utils/welcomeEmail';
 
 interface UserProfile {
   id: string;
@@ -106,6 +107,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               } catch (error) {
                 logger.error('Error restoring assessment data after verification:', error);
               }
+            });
+            
+            // Single welcome email call - let backend handle duplicates
+            const userName = session.user.user_metadata?.first_name || session.user.user_metadata?.full_name;
+            sendWelcomeEmail({
+              userId: session.user.id,
+              userEmail: session.user.email!,
+              userName
+            }).catch(error => {
+              console.error('Error triggering welcome email:', error);
             });
           }
           

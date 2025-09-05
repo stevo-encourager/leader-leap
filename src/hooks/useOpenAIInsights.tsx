@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { useAuth } from '@/contexts/AuthContext';
+import { sendWelcomeEmail, isRecentSignup } from '@/utils/welcomeEmail';
 
 interface UseOpenAIInsightsProps {
   categories: Category[];
@@ -133,6 +134,8 @@ export const useOpenAIInsights = ({ categories, demographics, averageGap, assess
           }, 'Generated new insights from API');
           initializationCompleteRef.current = true;
           isOperationInProgressRef.current = false;
+          
+          
           return;
         } else {
           // No insights yet, treat as retryable

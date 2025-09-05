@@ -152,15 +152,15 @@ const DemographicsForm: React.FC<DemographicsFormProps> = ({ demographics, onDem
             onClick={onContinue} 
             disabled={!isFormComplete}
             className="text-white"
-            style={{ backgroundColor: !isFormComplete ? undefined : '#5fac9a' }}
+            style={{ backgroundColor: !isFormComplete ? undefined : '#2F564D' }}
             onMouseEnter={(e) => {
               if (!e.currentTarget.disabled) {
-                e.currentTarget.style.backgroundColor = '#6cbdab';
+                e.currentTarget.style.backgroundColor = '#3a6859';
               }
             }}
             onMouseLeave={(e) => {
               if (!e.currentTarget.disabled) {
-                e.currentTarget.style.backgroundColor = '#5fac9a';
+                e.currentTarget.style.backgroundColor = '#2F564D';
               }
             }}
           >

@@ -63,9 +63,9 @@ const AssessmentInstructions: React.FC<AssessmentInstructionsProps> = ({ onConti
             <Button 
               onClick={onContinue} 
               className="text-white w-[220px]"
-              style={{ backgroundColor: '#5fac9a' }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = '#6cbdab'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = '#5fac9a'}
+              style={{ backgroundColor: '#2F564D' }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#3a6859'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#2F564D'}
             >
               Start Assessment
             </Button>

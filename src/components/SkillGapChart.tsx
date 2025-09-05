@@ -32,11 +32,11 @@ interface ChartData {
 // PDF export constants (centralized for consistency)
 const PDF_RADAR_WIDTH = 480;
 const PDF_RADAR_HEIGHT = 380;
-const PDF_CONTAINER_WIDTH = 630; // Increased outer container for PDF to provide more margin for labels
-const PDF_CONTAINER_HEIGHT = 530; // Increased height to accommodate longer labels
-// Set label radius to 160 for PDF export (480x380px) to keep labels closer to center and prevent cut-off.
-// If you change the chart size, adjust this value to be about 65% of the smallest dimension / 2.
-const PDF_LABEL_RADIUS = 160;
+const PDF_CONTAINER_WIDTH = 540; // Balanced container width
+const PDF_CONTAINER_HEIGHT = 460; // Increased to include legend
+// Set label radius to 125 for PDF export (480x380px) to keep labels closer to center and prevent cut-off.
+// If you change the chart size, adjust this value to be about 52% of the smallest dimension / 2.
+const PDF_LABEL_RADIUS = 125;
 const SCREEN_LABEL_RADIUS = 185; // For on-screen chart
 
 // WARNING: If you change the chart size, you MUST update PDF_CONTAINER_WIDTH, PDF_CONTAINER_HEIGHT, and PDF_LABEL_RADIUS together!
@@ -253,7 +253,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
 
   // Optimized chart margins for mobile and larger chart size - symmetric margins for perfect radar chart
   const chartMargins = isPDF 
-    ? { top: 50, right: 50, left: 50, bottom: 50 } // Equal margins for PDF symmetry
+    ? { top: 60, right: 60, left: 60, bottom: 60 } // Reduced margins for PDF to make chart larger
     : effectiveIsMobile
     ? { top: 20, right: 20, left: 20, bottom: 20 } // Equal margins for mobile symmetry
     : { top: 40, right: 40, left: 40, bottom: 40 }; // Reduced equal margins for desktop - larger chart while maintaining symmetry
@@ -343,20 +343,20 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
         </ResponsiveContainer>
       </div>
 
-      {/* Legend area - Clean styling with proper visual separation */}
+      {/* Legend area - PDF-friendly version */}
       <div 
         style={{ 
           gridArea: 'legend',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: '16px',
+          gap: isPDF ? '8px' : '16px',
           minHeight: 'auto',
           height: 'auto',
           backgroundColor: 'white',
-          padding: '16px 16px 24px 16px', // Extra bottom padding to prevent cropping
+          padding: isPDF ? '12px' : '16px 16px 24px 16px',
           borderRadius: '8px',
-          marginBottom: '8px' // Additional margin to ensure full visibility
+          marginBottom: '8px'
         }}
       >
         {/* Horizontal separator line */}
@@ -367,46 +367,64 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
           flexShrink: 0
         }}></div>
         
-        {/* Legend items */}
-        <div style={{ 
-          display: 'flex', 
-          gap: '32px', 
-          fontSize: '14px',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0
-        }}>
+        {/* PDF-specific colored text legend */}
+        {isPDF ? (
+          <div style={{ 
+            fontSize: '12px',
+            textAlign: 'center',
+            fontWeight: '500',
+            display: 'flex',
+            gap: '24px',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}>
+            <span style={{ color: '#2F564D' }}>■ Current Level</span>
+            <span style={{ color: '#8baca5' }}>■ Desired Level</span>
+          </div>
+        ) : (
+          /* Original legend for web view */
           <div style={{ 
             display: 'flex', 
-            alignItems: 'center', 
-            gap: '8px' 
+            gap: '32px', 
+            fontSize: '14px',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0
           }}>
             <div style={{ 
-              width: '16px', 
-              height: '16px', 
-              backgroundColor: '#2F564D', 
-              opacity: 0.6,
-              flexShrink: 0,
-              borderRadius: '2px'
-            }}></div>
-            <span style={{ color: '#64748b', fontWeight: '500' }}>Current Level</span>
-          </div>
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '8px' 
-          }}>
+              display: 'flex', 
+              alignItems: 'baseline', 
+              gap: '6px' 
+            }}>
+              <div style={{ 
+                width: '12px', 
+                height: '12px', 
+                backgroundColor: '#2F564D', 
+                opacity: 0.6,
+                flexShrink: 0,
+                borderRadius: '2px',
+                marginTop: '2px'
+              }}></div>
+              <span style={{ color: '#64748b', fontWeight: '500' }}>Current Level</span>
+            </div>
             <div style={{ 
-              width: '16px', 
-              height: '16px', 
-              backgroundColor: '#8baca5', 
-              opacity: 0.6,
-              flexShrink: 0,
-              borderRadius: '2px'
-            }}></div>
-            <span style={{ color: '#64748b', fontWeight: '500' }}>Desired Level</span>
+              display: 'flex', 
+              alignItems: 'baseline', 
+              gap: '6px' 
+            }}>
+              <div style={{ 
+                width: '12px', 
+                height: '12px', 
+                backgroundColor: '#8baca5', 
+                opacity: 0.6,
+                flexShrink: 0,
+                borderRadius: '2px',
+                marginTop: '2px'
+              }}></div>
+              <span style={{ color: '#64748b', fontWeight: '500' }}>Desired Level</span>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

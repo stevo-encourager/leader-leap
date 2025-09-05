@@ -323,7 +323,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
             left: '-9999px', 
             top: 0, 
             width: 540, // Must match PDF_CONTAINER_WIDTH
-            height: 440, // Must match PDF_CONTAINER_HEIGHT
+            height: 460, // Must match PDF_CONTAINER_HEIGHT
             zIndex: -1
           }}
         >

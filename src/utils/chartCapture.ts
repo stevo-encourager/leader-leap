@@ -38,11 +38,31 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
       let radarContainer: HTMLElement | null = null;
       let usedSelector = '';
       
-      for (const selector of selectors) {
-        radarContainer = document.querySelector(selector) as HTMLElement;
-        if (radarContainer) {
-          usedSelector = selector;
-          break;
+      // Check if there are multiple charts (including hidden PDF chart)
+      const allCharts = document.querySelectorAll('[data-testid="radar-chart-container"]');
+      
+      // If multiple charts exist, prioritize the one that's positioned off-screen (PDF chart)
+      if (allCharts.length > 1) {
+        for (let i = 0; i < allCharts.length; i++) {
+          const chart = allCharts[i] as HTMLElement;
+          const rect = chart.getBoundingClientRect();
+          // Check if this is the hidden PDF chart (positioned at left: -9999px)
+          if (rect.left < -1000 || chart.parentElement?.style.left === '-9999px') {
+            radarContainer = chart;
+            usedSelector = '[data-testid="radar-chart-container"] (PDF)';
+            break;
+          }
+        }
+      }
+      
+      // If no hidden chart found, fall back to regular selection
+      if (!radarContainer) {
+        for (const selector of selectors) {
+          radarContainer = document.querySelector(selector) as HTMLElement;
+          if (radarContainer) {
+            usedSelector = selector;
+            break;
+          }
         }
       }
       

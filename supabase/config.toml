@@ -2,8 +2,6 @@
 project_id = "hrgoxcdixvpmcbfgltea"
 
 [functions]
-[functions.count-users]
-verify_jwt = true
 [functions.generate-insights]
 verify_jwt = true
 

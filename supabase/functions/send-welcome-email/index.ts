@@ -127,7 +127,7 @@ serve(async (req) => {
               </ul>
               
               <p style="margin: 30px 0;">
-                  <a href="https://leader-leap.com/profile" style="background-color: #2F564D; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Access Your Dashboard</a>
+                  <a href="https://www.leader-leap.com/profile" style="background-color: #2F564D; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Access Your Dashboard</a>
               </p>
               
               <p>Leader Leap is designed to help you understand your leadership competencies and develop the skills needed to achieve your goals.</p>

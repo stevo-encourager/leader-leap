@@ -604,7 +604,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
       {/* Page 5 - Recommended Next Steps & Self-Leadership Coaching */}
       <Page size="A4" style={styles.page}>
         <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Create a 6-month action plan</Text>
-        <Text style={styles.listItem}>• Navigate to <Link src="www.leader-leap.com/profile" style={styles.linkText}>My Profile</Link> and create plan to address your most critical competency gaps</Text>
+        <Text style={styles.listItem}>• Navigate to <Link src="https://www.leader-leap.com/profile" style={styles.linkText}>My Profile</Link> and create plan to address your most critical competency gaps</Text>
         <Text style={styles.listItem}>• Collaborate with your manager, mentor or coach to develop your leadership development strategy</Text>
         <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Self-Leadership Coaching</Text>
         <View style={styles.coachingContainer}>
@@ -613,12 +613,13 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
             <Text style={styles.listItem}>• Learn how to lean into your strengths to achieve your goals</Text>
             <Text style={styles.listItem}>• Understand yourself better and eliminate self-limiting beliefs or obstacles that hold you back</Text>
             <Text style={styles.listItem}>• Establish accountability for practice and reflection</Text>
-            <Text style={[styles.boldText, { marginTop: 10 }]}>Book a free 30-minute discovery call now</Text>
-            <Text style={styles.linkText}>www.encouragercoaching.com</Text>
-            <Image 
-              style={styles.bottomLogo}
-              src="/lovable-uploads/db40277e-6ff0-437e-acf2-faaa2d92671e.png"
-            />
+            <Link src="https://calendar.app.google/PwZrr2JJXVi1Uwrq7" style={[styles.boldText, { marginTop: 10 }]}>Book a free 30-minute discovery call now</Link>
+            <Link src="https://www.encouragercoaching.com">
+              <Image 
+                style={styles.bottomLogo}
+                src="/lovable-uploads/db40277e-6ff0-437e-acf2-faaa2d92671e.png"
+              />
+            </Link>
           </View>
           <Image 
             style={styles.coachingImage}

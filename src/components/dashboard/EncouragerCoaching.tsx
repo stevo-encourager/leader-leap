@@ -20,7 +20,7 @@ const EncouragerCoaching: React.FC = () => {
         <ul className="list-disc list-inside space-y-1 text-xs text-slate-600">
           <li>Create awareness about your leadership patterns</li>
           <li>Design experiments to apply strengths to development areas</li>
-          <li>Establish accountability for practice and reflection</li>
+          <li>Establish regular touchpoints for tracking growth and gaining insights</li>
           <li>Measure progress through regular reassessment</li>
         </ul>
       </div>

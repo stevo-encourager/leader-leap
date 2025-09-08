@@ -17,7 +17,7 @@ const CoachingSupport: React.FC = () => {
         <ul className="list-disc list-inside space-y-2 text-slate-700 text-left">
           <li>Learn how to lean into your strengths to achieve your goals</li>
           <li>Understand yourself better and eliminate self-limiting beliefs or obstacles that hold you back</li>
-          <li>Establish accountability for practice and reflection</li>
+          <li>Establish regular touchpoints for tracking growth and gaining insights</li>
         </ul>
         
         <div className="pt-3 border-t border-slate-100 text-left">
@@ -25,7 +25,7 @@ const CoachingSupport: React.FC = () => {
             href="https://www.encouragercoaching.com" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="text-encourager hover:underline text-base block mb-3 font-bold"
+            className="text-encourager hover:underline text-base block mb-3"
           >
             www.encouragercoaching.com
           </a>
@@ -33,7 +33,7 @@ const CoachingSupport: React.FC = () => {
             href="https://calendar.app.google/PwZrr2JJXVi1Uwrq7" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="text-encourager hover:underline text-base hover:scale-105 transition-transform duration-700 inline-block"
+            className="text-encourager hover:underline text-base hover:scale-105 transition-transform duration-700 inline-block font-bold"
           >
             Book a free 30 minute discovery call
           </a>

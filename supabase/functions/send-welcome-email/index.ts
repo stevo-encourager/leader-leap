@@ -82,7 +82,7 @@ serve(async (req) => {
       );
     }
 
-    const displayName = userName || profile?.first_name || 'there';
+    const displayName = profile?.first_name || 'there';
     const currentDate = new Date().toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -114,9 +114,9 @@ serve(async (req) => {
               
               <p>Welcome to Leader Leap! Thank you for confirming your account and joining our leadership development community.</p>
               
-              <p>Your account is now active and ready to use. You can log in at any time to:</p>
+              <p>Your account is now active and ready to use.</p>
               
-              <h3 style="color: #000000; margin-top: 30px; margin-bottom: 15px;">What you can access in your account:</h3>
+              <h3 style="color: #000000; margin-top: 30px; margin-bottom: 15px;">You can log in at any time to:</h3>
               <ul style="margin: 15px 0; padding-left: 20px;">
                   <li>View your leadership assessment results</li>
                   <li>Download your comprehensive assessment report as a PDF</li>
@@ -132,7 +132,7 @@ serve(async (req) => {
               
               <p>Leader Leap is designed to help you understand your leadership competencies and develop the skills needed to achieve your goals.</p>
               
-              <p>Ready to take your leadership to the next level? Consider working with one of our expert coaches to turn insights into action.</p>
+              <p>Ready to take your leadership to the next level? I would love to partner with you to take these insights and turn them into action.</p>
               
               <p style="margin: 30px 0;">
                   <a href="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ0S-SdZAlPQs8oLSzYyWXuXY7j5SIjRUCSOeq0yo7cz9VSHBKw5r6v9Lei3b7KlRr3UPRUMZmhE" style="background-color: #5fac9a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Book a Free Discovery Call</a>

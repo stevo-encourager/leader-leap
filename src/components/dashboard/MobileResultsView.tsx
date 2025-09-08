@@ -262,6 +262,14 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
               </div>
               
               <div className="space-y-4">
+                {!areInsightsReadyForExport() && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
+                    <p className="text-amber-800 text-sm text-center">
+                      🤖 Hold tight, your report will be ready soon. We're just generating AI insights.
+                    </p>
+                  </div>
+                )}
+                
                 <div className="space-y-3">
                   <Button 
                     className="w-full bg-blue-600 hover:bg-blue-700 text-white"

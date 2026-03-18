@@ -149,11 +149,19 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
           </h1>
         </div>
         <div className="flex items-center gap-4">
-          <img 
-            src="/encouragerfavicon.png" 
-            alt="Company Logo" 
-            className={isMobile ? "h-20" : "h-24"}
-          />
+          {isMobile ? (
+            <img 
+              src="/encouragerfavicon.png" 
+              alt="Company Logo" 
+              className="h-20" 
+            />
+          ) : (
+            <img 
+              src="/encouragercoachinglogo.png" 
+              alt="Encourager Coaching Logo" 
+              className="h-24" 
+            />
+          )}
         </div>
       </div>
       

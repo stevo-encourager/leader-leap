@@ -94,7 +94,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           const emailConfirmedAt = session.user.email_confirmed_at ? new Date(session.user.email_confirmed_at) : null;
           const isRecentEmailConfirmation = emailConfirmedAt && (Date.now() - emailConfirmedAt.getTime()) < 5 * 60 * 1000;
           
-          if (isRecentEmailConfirmation && session.user.email) {
+          // Check if this is an OAuth user (Google, etc.) - they don't need email verification
+          const isOAuthUser = session.user.app_metadata?.provider && session.user.app_metadata.provider !== 'email';
+          
+          // Check if this user was recently created (within last 5 minutes) - covers OAuth signup
+          const createdAt = session.user.created_at ? new Date(session.user.created_at) : null;
+          const isRecentSignup = createdAt && (Date.now() - createdAt.getTime()) < 5 * 60 * 1000;
+          
+          // Trigger welcome flow for recent email confirmations, recent OAuth signups, or new OAuth users
+          if ((isRecentEmailConfirmation || (isOAuthUser && isRecentSignup)) && session.user.email) {
             // Try to restore assessment data after email verification
             import('@/services/assessment/manageAssessmentHistory').then(async ({ restoreAssessmentDataAfterVerification }) => {
               try {

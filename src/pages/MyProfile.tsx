@@ -163,15 +163,15 @@ const MyProfile = () => {
       
       if (error) throw error;
       
-      // Update Brevo subscription
+      // Update newsletter subscription
       if (newValue) {
-        // Subscribe to Brevo
-        const { data, error: brevoError } = await supabase.functions.invoke('brevo-subscribe', {
+        // Subscribe to newsletter
+        const { data, error: resendError } = await supabase.functions.invoke('resend-subscribe', {
           body: { email: user.email }
         });
         
-        if (brevoError) {
-          logger.error('Brevo subscription error:', brevoError);
+        if (resendError) {
+          logger.error('Newsletter subscription error:', resendError);
           toast({
             title: 'Email preferences updated',
             description: 'Your preferences were saved, but there was an issue with the email subscription.',
@@ -184,13 +184,13 @@ const MyProfile = () => {
           });
         }
       } else {
-        // Unsubscribe from Brevo (you'll need to create this function)
-        const { data, error: brevoError } = await supabase.functions.invoke('brevo-unsubscribe', {
+        // Unsubscribe from newsletter
+        const { data, error: resendError } = await supabase.functions.invoke('resend-unsubscribe', {
           body: { email: user.email }
         });
         
-        if (brevoError) {
-          logger.error('Brevo unsubscription error:', brevoError);
+        if (resendError) {
+          logger.error('Newsletter unsubscription error:', resendError);
           toast({
             title: 'Email preferences updated',
             description: 'Your preferences were saved, but there was an issue with the email unsubscription.',

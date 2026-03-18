@@ -63,11 +63,11 @@ const Consent: React.FC = () => {
         setLoading(false);
         return;
       }
-      // If user consents to emails, subscribe to Brevo
+      // If user consents to emails, subscribe to newsletter
       if (receiveEmails && user.email) {
         try {
           // Always use Supabase Edge Function for both development and production
-          const result = await supabase.functions.invoke('brevo-subscribe', {
+          const result = await supabase.functions.invoke('resend-subscribe', {
             body: { 
               email: user.email,
               firstName: user.user_metadata?.first_name,

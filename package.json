@@ -12,7 +12,6 @@
     "seo-check": "node scripts/seo-check.js"
   },
   "dependencies": {
-    "@emailjs/browser": "^4.4.1",
     "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",
@@ -52,7 +51,6 @@
     "cors": "^2.8.5",
     "date-fns": "^3.6.0",
     "dotenv": "^16.5.0",
-    "emailjs-com": "^3.2.0",
     "embla-carousel-react": "^8.3.0",
     "express": "^4.21.2",
     "html2canvas": "^1.4.1",

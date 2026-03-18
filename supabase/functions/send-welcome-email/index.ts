@@ -82,6 +82,26 @@ serve(async (req) => {
       );
     }
 
+    // Atomically mark as sending to prevent race conditions
+    const { error: lockError } = await supabase
+      .from('profiles')
+      .update({ 
+        welcome_email_sent_at: new Date().toISOString()
+      })
+      .eq('id', userId)
+      .is('welcome_email_sent_at', null);
+
+    if (lockError) {
+      console.log('Welcome email already being sent or was sent:', lockError);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          message: 'Welcome email already sent or in progress'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const displayName = profile?.first_name || 'there';
     const currentDate = new Date().toLocaleDateString('en-US', {
       year: 'numeric',
@@ -178,11 +198,10 @@ serve(async (req) => {
 
     const emailResult = await emailResponse.json();
 
-    // Update profile with email sent timestamp and ID
+    // Update profile with email ID
     const { error: updateError } = await supabase
       .from('profiles')
       .update({ 
-        welcome_email_sent_at: new Date().toISOString(),
         welcome_email_id: emailResult.id 
       })
       .eq('id', userId);

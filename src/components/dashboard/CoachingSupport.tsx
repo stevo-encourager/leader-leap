@@ -43,7 +43,7 @@ const CoachingSupport: React.FC = () => {
       {/* Right Card - Photo */}
       <div className="lg:col-span-3 bg-white rounded-lg border border-slate-200 shadow-sm p-6 flex justify-center items-center">
         <img 
-          src="/lovable-uploads/b35e005b-ec23-4976-8796-738f7c856377.png" 
+          src="/steve-leadership-coach-welcome-v2.png" 
           alt="Steve Thompson - Leadership Coach" 
           className="w-full h-full object-cover rounded-lg shadow-lg"
         />

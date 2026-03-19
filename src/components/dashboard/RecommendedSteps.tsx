@@ -10,7 +10,8 @@ const RecommendedSteps: React.FC = () => {
       <SectionHeader 
         icon={ListCheck} 
         title="Create a 6-month action plan" 
-        className="mb-2" 
+        className="mb-2"
+        titleStyle={{ color: '#3a6859' }}
       />
       <ul className="list-disc list-inside space-y-2 text-slate-700">
         <li>Navigate to <Link to="/profile" className="text-encourager underline hover:underline">My Profile</Link> and create plan to address your most critical competency gaps</li>

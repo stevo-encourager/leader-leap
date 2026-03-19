@@ -180,7 +180,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({
   const renderFormattedSummary = (summary: string) => {
     return (
       <div className="mb-8 bg-blue-50 p-6 rounded-lg border border-blue-200">
-        <h3 className="text-xl font-bold text-encourager mb-3 font-montserrat">Assessment Summary</h3>
+        <h3 className="text-xl font-bold mb-3 font-montserrat" style={{ color: '#3a6859' }}>Assessment Summary</h3>
         <FormattedSummary 
           summary={summary}
           className="space-y-4"
@@ -191,7 +191,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({
 
   const renderPriorityAreas = (priorityAreas: PriorityArea[]) => (
     <div className="mb-8">
-      <h3 className="text-xl font-bold text-encourager mb-4 font-montserrat border-b border-encourager/20 pb-2 flex items-center gap-2">
+      <h3 className="text-xl font-bold mb-4 font-montserrat border-b border-encourager/20 pb-2 flex items-center gap-2" style={{ color: '#3a6859' }}>
         <Target className="h-5 w-5" />
         Top 3 Priority Development Areas
       </h3>
@@ -255,7 +255,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({
 
   const renderKeyStrengths = (keyStrengths: KeyStrength[]) => (
     <div className="mb-8">
-      <h3 className="text-xl font-bold text-encourager mb-4 font-montserrat border-b border-encourager/20 pb-2 flex items-center gap-2">
+      <h3 className="text-xl font-bold mb-4 font-montserrat border-b border-encourager/20 pb-2 flex items-center gap-2" style={{ color: '#3a6859' }}>
         <TrendingUp className="h-5 w-5" />
         Key Competencies to Leverage
       </h3>
@@ -328,7 +328,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({
               <Bot className="text-encourager" size={24} strokeWidth={1.5} />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-encourager font-playfair">AI-Powered Insights</h2>
+              <h2 className="text-2xl font-bold font-playfair" style={{ color: '#3a6859' }}>AI-Powered Insights</h2>
               <p className="text-sm text-slate-600 mt-1">
                 Personalised leadership development insights powered by EncouragerGPT
               </p>

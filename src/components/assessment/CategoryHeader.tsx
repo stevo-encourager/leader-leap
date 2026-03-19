@@ -30,13 +30,14 @@ const CategoryHeader: React.FC<CategoryHeaderProps> = ({
                 key={index}
                 className={`h-1 rounded-full ${
                   isMobile ? 'w-3' : 'w-6'
-                } ${index === activeCategory ? 'bg-encourager' : 'bg-slate-200'}`}
+                }`}
+                style={index === activeCategory ? { backgroundColor: '#3a6859' } : { backgroundColor: '#e2e8f0' }}
               />
             ))}
           </div>
         </div>
 
-        <CardTitle className="text-2xl text-[#242323] encourager-header">{category.title}</CardTitle>
+        <CardTitle className="text-2xl encourager-header" style={{ color: '#3a6859' }}>{category.title}</CardTitle>
         <CardDescription className="text-encourager-gray">
           {category.description}
         </CardDescription>

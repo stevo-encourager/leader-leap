@@ -5,7 +5,7 @@ import SectionHeader from './SectionHeader';
 
 const AudienceSection: React.FC = () => {
   return (
-    <Card className="border-none shadow-card hover:shadow-elevated transition-all duration-300" style={{ backgroundColor: '#91ABA5' }}>
+    <Card className="border-none shadow-card hover:shadow-elevated transition-all duration-300" style={{ backgroundColor: '#4e776a' }}>
       <CardContent className="p-6">
         <SectionHeader icon={User} title="Who is this for?" className="[&>h2]:text-white" />
         <div className="space-y-2">

@@ -145,7 +145,7 @@ const ResetPassword = () => {
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <Card className="w-full max-w-md p-6 shadow-lg">
           <div className="mb-6 text-center">
-            <h1 className="text-2xl font-bold text-encourager mb-2">Reset Your Password</h1>
+            <h1 className="text-2xl font-bold mb-2" style={{ color: '#3a6859' }}>Reset Your Password</h1>
             <p className="text-slate-600">
               Enter your new password below
             </p>

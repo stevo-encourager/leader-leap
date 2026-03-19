@@ -239,7 +239,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
                 <Monitor className="text-encourager" size={24} />
               </div>
               <div>
-                <CardTitle className="text-2xl font-bold text-slate-900">
+                <CardTitle className="text-2xl font-bold" style={{ color: '#3a6859' }}>
                   Your Leader Leap Assessment Results
                 </CardTitle>
                 <CardDescription className="text-sm text-muted-foreground mt-1">

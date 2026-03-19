@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#2F564D',
+    color: '#69bda2',
     textAlign: 'center',
     marginBottom: 8,
   },
@@ -44,16 +44,16 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#2F564D',
+    color: '#69bda2',
     marginBottom: 8,
     borderBottomWidth: 2,
-    borderBottomColor: '#2F564D',
+    borderBottomColor: '#69bda2',
     paddingBottom: 4,
   },
   subsectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#2F564D',
+    color: '#69bda2',
     marginBottom: 6,
     marginTop: 12,
   },
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
   },
   linkText: {
     fontSize: 12,
-    color: '#2F564D',
+    color: '#69bda2',
     textDecoration: 'underline',
     marginBottom: 4,
   },

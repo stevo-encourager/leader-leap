@@ -3,7 +3,6 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Gift } from 'lucide-react';
 
 interface IntroductionHeaderProps {
   onStartAssessment?: () => void;
@@ -36,7 +35,13 @@ const IntroductionHeader: React.FC<IntroductionHeaderProps> = ({ onStartAssessme
         />
       </a>
       
-      <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl md:text-5xl'} font-bold text-encourager mb-4 text-center`}>
+      <div className="text-center mb-2">
+        <span className={`${isMobile ? 'text-sm' : 'text-base'} font-semibold`} style={{ color: '#69bda2' }}>
+          Free AI-Powered
+        </span>
+      </div>
+      
+      <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl md:text-5xl'} font-bold mb-4 text-center`} style={{ color: '#3a6859' }}>
         Leader Leap Assessment Tool
       </h1>
       
@@ -44,20 +49,14 @@ const IntroductionHeader: React.FC<IntroductionHeaderProps> = ({ onStartAssessme
         Identify and close the gaps between your current leadership competencies and where you want to be.
       </p>
       
-      <div className="flex items-center justify-center gap-2 mb-4">
-        <Gift size={isMobile ? 14 : 16} style={{ color: '#91ABA5' }} />
-        <span className={`${isMobile ? 'text-sm' : 'text-base'} font-medium`} style={{ color: '#91ABA5' }}>
-          Currently free
-        </span>
-      </div>
       
       <Button 
         size="lg"
         onClick={handleStartClick}
         className="text-white px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 font-medium"
-        style={{ backgroundColor: '#2F564D' }}
-        onMouseEnter={(e) => e.target.style.backgroundColor = '#3a6859'}
-        onMouseLeave={(e) => e.target.style.backgroundColor = '#2F564D'}
+        style={{ backgroundColor: '#69bda2' }}
+        onMouseEnter={(e) => e.target.style.backgroundColor = '#7ac9b0'}
+        onMouseLeave={(e) => e.target.style.backgroundColor = '#69bda2'}
       >
         Start Your Assessment
       </Button>

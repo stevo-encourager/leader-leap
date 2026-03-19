@@ -40,7 +40,7 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({ onStartAssessment }) =>
             {/* Main content */}
             <div className="space-y-6 text-slate-700 leading-relaxed text-base">
               <p className="text-lg">
-                I created this assessment to help anyone looking to improve their leadership skills.
+                I created this free assessment to help anyone looking to improve their leadership skills.
               </p>
               
               <p>
@@ -77,9 +77,9 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({ onStartAssessment }) =>
                       size="lg"
                       onClick={onStartAssessment}
                       className="w-full md:w-auto text-white px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 font-medium"
-                      style={{ backgroundColor: '#2F564D' }}
-                      onMouseEnter={(e) => e.target.style.backgroundColor = '#3a6859'}
-                      onMouseLeave={(e) => e.target.style.backgroundColor = '#2F564D'}
+                      style={{ backgroundColor: '#69bda2' }}
+                      onMouseEnter={(e) => e.target.style.backgroundColor = '#7ac9b0'}
+                      onMouseLeave={(e) => e.target.style.backgroundColor = '#69bda2'}
                     >
                       Start Your Assessment
                     </Button>

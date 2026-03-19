@@ -5,9 +5,10 @@ interface SectionHeaderProps {
   icon?: LucideIcon;
   title: string;
   className?: string;
+  titleStyle?: React.CSSProperties;
 }
 
-const SectionHeader: React.FC<SectionHeaderProps> = ({ icon: Icon, title, className = '' }) => {
+const SectionHeader: React.FC<SectionHeaderProps> = ({ icon: Icon, title, className = '', titleStyle }) => {
   return (
     <div className={`flex items-center gap-3 mb-4 ${className}`}>
       {Icon && (
@@ -15,7 +16,7 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({ icon: Icon, title, classN
           <Icon size={24} strokeWidth={1.5} className="text-slate-600" style={{ stroke: '#475569' }} />
         </div>
       )}
-      <h2 className="text-2xl font-bold text-encourager">{title}</h2>
+      <h2 className="text-2xl font-bold text-encourager" style={titleStyle}>{title}</h2>
     </div>
   );
 };

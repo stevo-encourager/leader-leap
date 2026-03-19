@@ -54,8 +54,8 @@ export default {
 					foreground: 'hsl(var(--card-foreground))'
 				},
 				encourager: {
-					DEFAULT: '#2F564D', // Updated to the new color
-					light: '#3d6f63', // Lighter shade of the base color
+					DEFAULT: '#69bda2', // Updated to the new color
+					light: '#7ac9b0', // Lighter shade of the base color
 					accent: '#8baca5', // New accent color replacing gold
 					gray: '#58595b', // Gray from Encourager branding
 					lightgray: '#f5f5f5', // Light gray background

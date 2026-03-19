@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#2F564D',
+    color: '#69bda2',
     textAlign: 'center',
     marginBottom: 8,
   },
@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#2F564D',
+    color: '#69bda2',
     marginBottom: 12,
     marginTop: 20,
   },

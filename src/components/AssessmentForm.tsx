@@ -139,9 +139,9 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
     <div className="fade-in">
       <div className="flex justify-between items-center mb-8">
         <div className="flex items-center gap-4">
-          <h1 className={`font-bold text-white flex items-center gap-2 bg-encourager px-4 py-2 rounded-md ${
+          <h1 className={`font-bold text-white flex items-center gap-2 px-4 py-2 rounded-md ${
             isMobile ? 'text-xl max-w-[280px] leading-tight' : 'text-3xl'
-          }`}>
+          }`} style={{ backgroundColor: '#3a6859' }}>
             <CircleGauge className="text-white" size={isMobile ? 20 : 28} strokeWidth={1.5} />
             <span className={isMobile ? 'whitespace-pre-line' : ''}>
               {isMobile ? 'Leadership\nAssessment Tool' : 'Leadership Assessment Tool'}

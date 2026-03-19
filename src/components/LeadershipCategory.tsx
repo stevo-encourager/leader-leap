@@ -178,7 +178,9 @@ const SkillAssessment: React.FC<SkillAssessmentProps> = ({ skill, onRatingChange
             onChange={handleCurrentChange}
             className="assessment-slider current-ability w-full h-2 bg-transparent appearance-none cursor-pointer"
             style={{
-              background: `linear-gradient(to right, #2F564D 0%, #2F564D ${(ratings.current / 10) * 100}%, #8baca5 ${(ratings.current / 10) * 100}%, #8baca5 100%)`
+              background: ratings.current === 0 
+                ? '#e2e8f0' // Gray when untouched
+                : `linear-gradient(to right, #69bda2 0%, #69bda2 ${(ratings.current / 10) * 100}%, #e2e8f0 ${(ratings.current / 10) * 100}%, #e2e8f0 100%)`
             }}
           />
         </div>
@@ -208,7 +210,9 @@ const SkillAssessment: React.FC<SkillAssessmentProps> = ({ skill, onRatingChange
             onChange={handleDesiredChange}
             className="assessment-slider w-full h-2 bg-transparent appearance-none cursor-pointer"
             style={{
-              background: `linear-gradient(to right, #2F564D 0%, #2F564D ${(ratings.desired / 10) * 100}%, #8baca5 ${(ratings.desired / 10) * 100}%, #8baca5 100%)`
+              background: ratings.desired === 0 
+                ? '#e2e8f0' // Gray when untouched
+                : `linear-gradient(to right, #69bda2 0%, #69bda2 ${(ratings.desired / 10) * 100}%, #e2e8f0 ${(ratings.desired / 10) * 100}%, #e2e8f0 100%)`
             }}
           />
         </div>

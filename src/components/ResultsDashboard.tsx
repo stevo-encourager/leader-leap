@@ -180,7 +180,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
           <div className="p-6 pt-10 pb-4 border-b border-slate-100">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-slate-900">Your Leader Leap Assessment Results</h1>
+                <h1 className="text-2xl font-bold" style={{ color: '#3a6859' }}>Your Leader Leap Assessment Results</h1>
                 <p className="text-sm text-muted-foreground mt-1 whitespace-nowrap">Review your leadership competency gaps and development opportunities</p>
               </div>
               <div className="flex items-center gap-2">

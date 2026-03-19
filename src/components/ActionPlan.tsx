@@ -715,7 +715,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
   if (isMobile) {
     return (
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4 text-encourager">6-Month Action Plan</h2>
+        <h2 className="text-2xl font-semibold mb-4" style={{ color: '#3a6859' }}>6-Month Action Plan</h2>
         <Card>
           <CardContent className="p-6">
             <div className="text-center">
@@ -739,7 +739,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
   if (loading) {
     return (
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4 text-encourager">6-Month Action Plan</h2>
+        <h2 className="text-2xl font-semibold mb-4" style={{ color: '#3a6859' }}>6-Month Action Plan</h2>
         <Card>
           <CardContent className="p-6">
             <div className="text-center">
@@ -754,7 +754,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
   if (assessments.length === 0) {
     return (
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4 text-encourager">6-Month Action Plan</h2>
+        <h2 className="text-2xl font-semibold mb-4" style={{ color: '#3a6859' }}>6-Month Action Plan</h2>
         <Card>
           <CardContent className="p-6">
             <div className="text-center">
@@ -768,7 +768,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
 
   return (
     <div className="mb-8">
-      <h2 className="text-2xl font-semibold mb-4 text-encourager">6-Month Action Plan</h2>
+      <h2 className="text-2xl font-semibold mb-4" style={{ color: '#3a6859' }}>6-Month Action Plan</h2>
       
       <div className="bg-encourager/5 p-6 rounded-lg border border-encourager/20">
         {/* Instructions */}
@@ -787,7 +787,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
         {/* Assessment Selector */}
       <div className="mb-6">
         <div className="flex items-center gap-3">
-          <Label htmlFor="assessment-select" className="text-xl font-bold text-encourager font-montserrat whitespace-nowrap">
+          <Label htmlFor="assessment-select" className="text-xl font-bold font-montserrat whitespace-nowrap" style={{ color: '#3a6859' }}>
             Action Plan for Assessment:
           </Label>
           <Select value={selectedAssessmentId} onValueChange={setSelectedAssessmentId}>
@@ -849,7 +849,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
                       </div>
                       {isExpanded && (
                         <div className="mb-3">
-                          <h4 className="font-semibold mb-3 text-encourager font-montserrat">Skills Breakdown</h4>
+                          <h4 className="font-semibold mb-3 font-montserrat" style={{ color: '#3a6859' }}>Skills Breakdown</h4>
                           <div className="text-sm text-slate-600 mb-2">
                             {competency.skills.map((skill, index) => (
                               <div key={skill.name} className="ml-4 mb-1">
@@ -886,9 +886,9 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
                           size="sm"
                           onClick={() => createActionPlan(competency)}
                           className="text-white"
-                          style={{ backgroundColor: '#2F564D' }}
-                          onMouseEnter={(e) => e.target.style.backgroundColor = '#3a6859'}
-                          onMouseLeave={(e) => e.target.style.backgroundColor = '#2F564D'}
+                          style={{ backgroundColor: '#69bda2' }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = '#7ac9b0'}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = '#69bda2'}
                         >
                           <Plus className="w-4 h-4 mr-1" />
                           Create Plan
@@ -935,7 +935,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
                     <div className="space-y-6">
                       {/* Goals Section */}
                       <div>
-                        <h4 className="font-semibold mb-3 text-encourager font-montserrat">Short-term Goals</h4>
+                        <h4 className="font-semibold mb-3 font-montserrat" style={{ color: '#3a6859' }}>Short-term Goals</h4>
                         <div className="space-y-3">
                           <div className="grid grid-cols-[1fr_120px_80px] gap-3 items-center mb-2">
                             <span className="text-sm font-medium text-slate-600">Goal Description</span>
@@ -973,7 +973,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
 
                       {/* Quarterly Milestones */}
                       <div>
-                        <h4 className="font-semibold mb-3 text-encourager font-montserrat">Quarterly Milestones</h4>
+                        <h4 className="font-semibold mb-3 font-montserrat" style={{ color: '#3a6859' }}>Quarterly Milestones</h4>
                         <div className="space-y-3">
                           <div className="grid grid-cols-[1fr_120px_80px] gap-3 items-center mb-2">
                             <span className="text-sm font-medium text-slate-600">Milestone Description</span>
@@ -1011,7 +1011,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
 
                       {/* Notes */}
                       <div>
-                        <h4 className="font-semibold mb-3 text-encourager font-montserrat">Notes</h4>
+                        <h4 className="font-semibold mb-3 font-montserrat" style={{ color: '#3a6859' }}>Notes</h4>
                         <div>
                           <Textarea
                             value={currentPlanData.plan_text}
@@ -1027,7 +1027,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
 
                       {/* Resources */}
                       <div>
-                        <h4 className="font-semibold mb-3 text-encourager font-montserrat">Recommended Resources</h4>
+                        <h4 className="font-semibold mb-3 font-montserrat" style={{ color: '#3a6859' }}>Recommended Resources</h4>
                         <div className="bg-slate-50 p-4 rounded border-l-4 border-encourager">
                           <div className="space-y-2">
                             {currentPlanData.resources.map((resource) => (
@@ -1121,7 +1121,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
 
             {/* Summary Section */}
       <div className="mt-8 space-y-6">
-        <h3 className="text-xl font-bold text-encourager font-montserrat">Action Plan Summary</h3>
+        <h3 className="text-xl font-bold font-montserrat" style={{ color: '#3a6859' }}>Action Plan Summary</h3>
         
         {/* Explanatory Text */}
         <div className="bg-slate-50 p-4 rounded-lg border-l-4 border-encourager">
@@ -1136,7 +1136,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
         {/* Short Term Goals Summary */}
         {getAllGoals().length > 0 ? (
           <div>
-            <h4 className="text-xl text-encourager mb-3 font-montserrat">Short-term Goals</h4>
+            <h4 className="text-xl mb-3 font-montserrat" style={{ color: '#3a6859' }}>Short-term Goals</h4>
             <Card>
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
@@ -1170,7 +1170,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
           </div>
         ) : (
           <div>
-            <h4 className="text-xl text-encourager mb-3 font-montserrat">Short-term Goals</h4>
+            <h4 className="text-xl mb-3 font-montserrat" style={{ color: '#3a6859' }}>Short-term Goals</h4>
             <Card>
               <CardContent className="p-6">
                 <div className="text-center text-slate-500">
@@ -1184,7 +1184,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
         {/* Quarterly Milestones Summary */}
         {getAllMilestones().length > 0 ? (
           <div>
-            <h4 className="text-xl text-encourager mb-3 font-montserrat">Quarterly Milestones</h4>
+            <h4 className="text-xl mb-3 font-montserrat" style={{ color: '#3a6859' }}>Quarterly Milestones</h4>
             <Card>
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
@@ -1218,7 +1218,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
           </div>
         ) : (
           <div>
-            <h4 className="text-xl text-encourager mb-3 font-montserrat">Quarterly Milestones</h4>
+            <h4 className="text-xl mb-3 font-montserrat" style={{ color: '#3a6859' }}>Quarterly Milestones</h4>
             <Card>
               <CardContent className="p-6">
                 <div className="text-center text-slate-500">

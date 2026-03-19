@@ -136,7 +136,7 @@ const KeyInsights: React.FC<KeyInsightsProps> = ({
           <BookOpen className="text-encourager" size={24} strokeWidth={1.5} />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-encourager">Skills & Competencies to Work On</h2>
+          <h2 className="text-2xl font-bold" style={{ color: '#3a6859' }}>Skills & Competencies to Work On</h2>
           <p className="text-sm text-slate-500 mt-1">Development recommendations based on your assessment</p>
         </div>
       </div>

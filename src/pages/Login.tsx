@@ -31,7 +31,7 @@ const Login = () => {
         <div className="flex items-center justify-center p-4 flex-1">
           <Card className="w-full max-w-md p-6 shadow-lg">
             <div className="mb-6 text-center">
-              <h1 className="text-2xl font-bold text-encourager mb-2">Login or Sign Up</h1>
+              <h1 className="text-2xl font-bold mb-2" style={{ color: '#3a6859' }}>Login or Sign Up</h1>
               <p className="text-slate-600">
                 Access your previous assessment results
               </p>

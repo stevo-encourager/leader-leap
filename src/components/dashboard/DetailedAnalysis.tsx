@@ -55,7 +55,7 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
               <BarChart2 className="text-encourager" size={24} strokeWidth={1.5} />
             </div>
             <div>
-              <h2 className="text-2xl font-bold text-encourager">Competency Analysis</h2>
+              <h2 className="text-2xl font-bold" style={{ color: '#3a6859' }}>Competency Analysis</h2>
               <p className="text-sm text-muted-foreground mt-1">
                 Visualise and analyse your leadership competency gaps and insights
               </p>

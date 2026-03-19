@@ -11,7 +11,8 @@ const CoachingSupport: React.FC = () => {
         <SectionHeader 
           icon={User} 
           title="Get some expert coaching support" 
-          className="mb-4" 
+          className="mb-4"
+          titleStyle={{ color: '#3a6859' }}
         />
         
         <ul className="list-disc list-inside space-y-2 text-slate-700 text-left">
@@ -20,7 +21,7 @@ const CoachingSupport: React.FC = () => {
           <li>Establish regular touchpoints for tracking growth and gaining insights</li>
         </ul>
         
-        <div className="pt-3 border-t border-slate-100 text-left">
+        <div className="pt-3 border-t border-slate-100 text-center">
           <a 
             href="https://www.encouragercoaching.com" 
             target="_blank" 
@@ -33,7 +34,8 @@ const CoachingSupport: React.FC = () => {
             href="https://calendar.app.google/PwZrr2JJXVi1Uwrq7" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="text-encourager hover:underline text-base hover:scale-105 transition-transform duration-700 inline-block font-bold"
+            className="hover:underline text-base hover:scale-105 transition-transform duration-700 inline-block font-bold"
+            style={{ color: '#3a6859' }}
           >
             Book a free 30 minute discovery call
           </a>

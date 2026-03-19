@@ -83,20 +83,33 @@ serve(async (req) => {
     }
 
     // Atomically mark as sending to prevent race conditions
-    const { error: lockError } = await supabase
+    const { data: updateResult, error: lockError } = await supabase
       .from('profiles')
       .update({ 
         welcome_email_sent_at: new Date().toISOString()
       })
       .eq('id', userId)
-      .is('welcome_email_sent_at', null);
+      .is('welcome_email_sent_at', null)
+      .select();
 
-    if (lockError) {
-      console.log('Welcome email already being sent or was sent:', lockError);
+    // If no rows were updated, another request already processed this user
+    if (!updateResult || updateResult.length === 0) {
+      console.log('Welcome email already being sent or was sent - no rows updated');
       return new Response(
         JSON.stringify({ 
           success: false, 
           message: 'Welcome email already sent or in progress'
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (lockError) {
+      console.log('Welcome email database error:', lockError);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          message: 'Database error checking welcome email status'
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -147,7 +160,7 @@ serve(async (req) => {
               </ul>
               
               <p style="margin: 30px 0;">
-                  <a href="https://www.leader-leap.com/profile" style="background-color: #2F564D; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Access Your Dashboard</a>
+                  <a href="https://www.leader-leap.com/profile" style="background-color: #69bda2; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Access Your Dashboard</a>
               </p>
               
               <p>Leader Leap is designed to help you understand your leadership competencies and develop the skills needed to achieve your goals.</p>

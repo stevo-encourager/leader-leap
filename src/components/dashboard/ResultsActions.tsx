@@ -336,9 +336,9 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
             <Button 
               onClick={handleNewAssessment}
               className="text-white"
-              style={{ backgroundColor: '#2F564D' }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = '#3a6859'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = '#2F564D'}
+              style={{ backgroundColor: '#69bda2' }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#7ac9b0'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#69bda2'}
             >
               <Plus className="mr-2 h-4 w-4" />
               Start New Assessment
@@ -402,15 +402,15 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
                     <TooltipTrigger asChild>
                       <Button 
                         className="flex items-center gap-2 text-white"
-                        style={{ backgroundColor: isPDFExportDisabled ? undefined : '#5fac9a' }}
+                        style={{ backgroundColor: isPDFExportDisabled ? undefined : '#69bda2' }}
                         onMouseEnter={(e) => {
                           if (!e.currentTarget.disabled) {
-                            e.currentTarget.style.backgroundColor = '#6cbdab';
+                            e.currentTarget.style.backgroundColor = '#7ac9b0';
                           }
                         }}
                         onMouseLeave={(e) => {
                           if (!e.currentTarget.disabled) {
-                            e.currentTarget.style.backgroundColor = '#5fac9a';
+                            e.currentTarget.style.backgroundColor = '#69bda2';
                           }
                         }}
                         onClick={handleDownloadPDF}
@@ -429,9 +429,9 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
               <Button 
                 onClick={handleNewAssessment}
                 className="text-white"
-                style={{ backgroundColor: '#2F564D' }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#3a6859'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = '#2F564D'}
+                style={{ backgroundColor: '#69bda2' }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#7ac9b0'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#69bda2'}
               >
                 <Plus className="mr-2 h-4 w-4" />
                 Start New Assessment

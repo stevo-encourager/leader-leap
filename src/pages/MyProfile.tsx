@@ -293,13 +293,13 @@ const MyProfile = () => {
         </div>
         <main className={`mx-auto ${isMobile ? 'w-full px-2 py-6 overflow-hidden' : 'max-w-4xl px-4 py-8'}`}>
           <div className={isMobile ? 'w-full max-w-full overflow-hidden' : ''}>
-            <h1 className="text-3xl font-bold text-encourager mb-8">My Profile</h1>
+            <h1 className="text-3xl font-bold mb-8" style={{ color: '#3a6859' }}>My Profile</h1>
             
             <div className="mb-8">
               <div className="bg-white rounded-lg shadow p-6">
                 <div className="flex flex-col md:flex-row gap-6">
                   <div className="flex-1">
-                    <h2 className="text-xl font-semibold mb-2 text-slate-700 font-montserrat">Personal Details</h2>
+                    <h2 className="text-xl font-semibold mb-2 font-montserrat" style={{ color: '#3a6859' }}>Personal Details</h2>
                     <div className="mb-4">
                       {userProfile?.full_name && (
                         <div className="mb-2 text-slate-700">
@@ -383,7 +383,7 @@ const MyProfile = () => {
                   
                   {demographics && (demographics.role || demographics.yearsOfExperience || demographics.industry) && (
                     <div className="flex-1">
-                      <h3 className="text-xl font-semibold mb-2 text-slate-700 font-montserrat">Demographic Info</h3>
+                      <h3 className="text-xl font-semibold mb-2 font-montserrat" style={{ color: '#3a6859' }}>Demographic Info</h3>
                       {demographics.role && (
                         <div className="mb-2 text-slate-700">
                           <span className="font-medium">Your Role:</span> {demographics.role}
@@ -405,7 +405,7 @@ const MyProfile = () => {
                 
                 {/* Email Preferences Section */}
                 <div className="mt-6 pt-6 border-t border-gray-200">
-                                        <h3 className="text-xl font-semibold mb-4 text-slate-700 font-montserrat">Email Preferences</h3>
+                                        <h3 className="text-xl font-semibold mb-4 font-montserrat" style={{ color: '#3a6859' }}>Email Preferences</h3>
                   <div className="flex items-center space-x-2">
                     <Switch
                       id="email-preferences"
@@ -503,16 +503,16 @@ const MyProfile = () => {
             <Button 
               onClick={handleStartNewAssessment}
               className={`text-white ${isMobile ? 'w-full px-4 py-3' : 'px-6 py-3'}`}
-              style={{ backgroundColor: '#2F564D' }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = '#3a6859'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = '#2F564D'}
+              style={{ backgroundColor: '#69bda2' }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#7ac9b0'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#69bda2'}
             >
               Start New Assessment
             </Button>
           </div>
 
           <div className="mb-8">
-                          <h2 className="text-2xl font-semibold mb-4 text-encourager">Previous Assessments</h2>
+                          <h2 className="text-2xl font-semibold mb-4" style={{ color: '#3a6859' }}>Previous Assessments</h2>
             <div className="flex items-center gap-3 mb-4">
               <Button variant="outline" size="sm" onClick={handleRefresh} disabled={isLoading}>
                 Refresh List

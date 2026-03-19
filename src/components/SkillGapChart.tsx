@@ -100,7 +100,7 @@ const CustomTick = (props: CustomTickProps) => {
           y={labelY + (lineIndex * (isPDF ? 12 : 14)) - ((labelLines.length - 1) * (isPDF ? 6 : 7))}
           textAnchor={anchor}
           dominantBaseline="middle"
-          fill="#2F564D"
+          fill="#3a6859"
           fontSize={isPDF ? "10" : "14"}
           fontWeight="500"
         >
@@ -325,8 +325,8 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             <Radar
               name={isPDF ? "Current State" : "Current Level"}
               dataKey="current"
-              stroke="#2F564D"
-              fill="#2F564D"
+              stroke="#69bda2"
+              fill="#69bda2"
               fillOpacity={0.6}
               strokeWidth={2}
             />
@@ -378,7 +378,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             alignItems: 'center',
             justifyContent: 'center'
           }}>
-            <span style={{ color: '#2F564D' }}>■ Current Level</span>
+            <span style={{ color: '#69bda2' }}>■ Current Level</span>
             <span style={{ color: '#8baca5' }}>■ Desired Level</span>
           </div>
         ) : (
@@ -399,7 +399,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
               <div style={{ 
                 width: '12px', 
                 height: '12px', 
-                backgroundColor: '#2F564D', 
+                backgroundColor: '#69bda2', 
                 opacity: 0.6,
                 flexShrink: 0,
                 borderRadius: '2px',

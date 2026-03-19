@@ -18,7 +18,7 @@ const BenefitCard: React.FC<BenefitCardProps> = ({ icon: Icon, title, descriptio
           <div className="bg-encourager-accent/20 p-2 rounded-full group-hover:bg-encourager-accent/30 transition-colors duration-300">
             <Icon className="text-encourager group-hover:scale-110 transition-transform duration-300" size={18} strokeWidth={1.5} />
           </div>
-          <h3 className="font-bold text-encourager group-hover:text-encourager-light transition-colors duration-300">{title}</h3>
+          <h3 className="font-bold group-hover:text-encourager-light transition-colors duration-300" style={{ color: '#3a6859' }}>{title}</h3>
         </div>
         <p className="text-slate-600 text-sm group-hover:text-slate-800 transition-colors duration-300">{description}</p>
       </CardContent>

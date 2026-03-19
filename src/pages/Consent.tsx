@@ -154,7 +154,7 @@ const Consent: React.FC = () => {
         <Dialog open>
           <DialogContent className="max-w-md w-full">
             <DialogHeader>
-              <DialogTitle className="text-2xl font-bold text-encourager mb-2 text-center">Consent & Preferences</DialogTitle>
+              <DialogTitle className="text-2xl font-bold mb-2 text-center" style={{ color: '#3a6859' }}>Consent & Preferences</DialogTitle>
               <DialogDescription className="text-slate-600 text-center mb-4">
                 Please confirm your consent and email preferences to continue using the app.
               </DialogDescription>

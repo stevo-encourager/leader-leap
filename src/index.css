@@ -15,7 +15,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 162 30% 26%; /* Updated to match #2F564D */
+    --primary: 162 30% 26%; /* Updated to match #69bda2 */
     --primary-foreground: 0 0% 98%;
 
     --secondary: 162 15% 60%; /* Encourager accent - updated to match #8baca5 */
@@ -147,9 +147,9 @@
   width: 20px;
   border-radius: 50%;
   background: white;
-  border: 2px solid #2F564D;
+  border: 2px solid #69bda2;
   cursor: pointer;
-  box-shadow: 0 0 0 2px white, 0 0 0 4px #2F564D, 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 0 2px white, 0 0 0 4px #69bda2, 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .assessment-slider::-moz-range-thumb {
@@ -157,9 +157,9 @@
   width: 20px;
   border-radius: 50%;
   background: white;
-  border: 2px solid #2F564D;
+  border: 2px solid #69bda2;
   cursor: pointer;
-  box-shadow: 0 0 0 2px white, 0 0 0 4px #2F564D, 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 0 2px white, 0 0 0 4px #69bda2, 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Smaller slider thumb styles for Current ability */
@@ -170,7 +170,7 @@
   width: 20px;
   border-radius: 50%;
   background: white;
-  border: 2px solid #2F564D;
+  border: 2px solid #69bda2;
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -180,7 +180,7 @@
   width: 20px;
   border-radius: 50%;
   background: white;
-  border: 2px solid #2F564D;
+  border: 2px solid #69bda2;
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }

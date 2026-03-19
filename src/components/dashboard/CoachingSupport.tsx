@@ -21,7 +21,7 @@ const CoachingSupport: React.FC = () => {
           <p>Establish regular touchpoints for tracking growth and gaining insights</p>
         </div>
         
-        <div className="pt-3 border-t border-slate-100 text-center">
+        <div className="pt-3 border-t border-slate-100 text-left">
           <a 
             href="https://www.encouragercoaching.com" 
             target="_blank" 

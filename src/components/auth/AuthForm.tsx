@@ -396,7 +396,17 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
           </div>
           
           {/* Removed GDPR consent and receive emails checkboxes from signup form */}
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" className="w-full" disabled={isLoading} style={{ backgroundColor: isLoading ? undefined : '#69bda2' }}
+            onMouseEnter={(e) => {
+              if (!isLoading) {
+                e.currentTarget.style.backgroundColor = '#7ac9b0';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isLoading) {
+                e.currentTarget.style.backgroundColor = '#69bda2';
+              }
+            }}>
             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             {isLoading ? 'Creating Account...' : 'Create Account'}
           </Button>

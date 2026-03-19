@@ -97,12 +97,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // Check if this is an OAuth user (Google, etc.) - they don't need email verification
           const isOAuthUser = session.user.app_metadata?.provider && session.user.app_metadata.provider !== 'email';
           
-          // Check if this user was recently created (within last 5 minutes) - covers OAuth signup
+          // Check if this user was recently created (within last 10 minutes) - covers OAuth signup
           const createdAt = session.user.created_at ? new Date(session.user.created_at) : null;
-          const isRecentSignup = createdAt && (Date.now() - createdAt.getTime()) < 5 * 60 * 1000;
+          const isRecentSignup = createdAt && (Date.now() - createdAt.getTime()) < 10 * 60 * 1000;
           
-          // Trigger welcome flow for recent email confirmations, recent OAuth signups, or new OAuth users
-          if ((isRecentEmailConfirmation || (isOAuthUser && isRecentSignup)) && session.user.email) {
+          // For OAuth users, we need to check if they need a welcome email by looking at their profile
+          let shouldTriggerOAuthWelcome = false;
+          if (isOAuthUser && isRecentSignup && session.user.email) {
+            // Check if this OAuth user already has a welcome email sent
+            try {
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('welcome_email_sent_at')
+                .eq('id', session.user.id)
+                .single();
+              
+              // Trigger welcome email if profile doesn't exist yet or no welcome email sent
+              shouldTriggerOAuthWelcome = !profile || !profile.welcome_email_sent_at;
+            } catch (error) {
+              // If we can't check the profile, assume welcome email is needed
+              shouldTriggerOAuthWelcome = true;
+              logger.error('Error checking OAuth user profile for welcome email:', error);
+            }
+          }
+          
+          // Trigger welcome flow for:
+          // 1. Recent email confirmations (email/password users)
+          // 2. OAuth users who haven't received welcome email yet
+          if ((isRecentEmailConfirmation || shouldTriggerOAuthWelcome) && session.user.email) {
             // Try to restore assessment data after email verification
             import('@/services/assessment/manageAssessmentHistory').then(async ({ restoreAssessmentDataAfterVerification }) => {
               try {

@@ -30,34 +30,25 @@ const SystemStatusViewer = () => {
       // Reset error state
       setStats(prev => ({ ...prev, error: null }));
       
-      // Fallback to direct database queries since Edge Function is failing
+      // Use the admin-stats function that bypasses RLS
       
-      // Get profile count
-      const { count: profileCount, error: profileError } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true });
+      const { data: statsData, error: statsError } = await supabase.functions.invoke('admin-stats');
       
-      if (profileError) {
-        logger.error("SystemStatusViewer: Error getting profile count:", profileError);
-        throw new Error(`Error getting profile count: ${profileError.message}`);
+      if (statsError) {
+        logger.error("SystemStatusViewer: Error getting admin stats:", statsError);
+        throw new Error(`Error getting admin stats: ${statsError.message}`);
       }
       
-      // Get assessment count  
-      const { count: assessmentCount, error: assessmentError } = await supabase
-        .from('assessment_results')
-        .select('*', { count: 'exact', head: true });
-      
-      if (assessmentError) {
-        logger.error("SystemStatusViewer: Error getting assessment count:", assessmentError);
-        throw new Error(`Error getting assessment count: ${assessmentError.message}`);
+      if (!statsData.success) {
+        throw new Error(statsData.error || "Failed to get admin stats");
       }
       
       const timestamp = new Date().toLocaleString();
       
       setStats({
-        userCount: null, // Can't access auth.users directly from frontend
-        assessmentCount: assessmentCount || 0,
-        profileCount: profileCount || 0,
+        userCount: statsData.userCount || 0,
+        assessmentCount: statsData.assessmentCount || 0,
+        profileCount: statsData.profileCount || 0,
         error: null,
         lastUpdated: timestamp
       });
@@ -106,14 +97,12 @@ const SystemStatusViewer = () => {
                 <CircleGauge className="animate-spin h-6 w-6 mr-2" />
                 <span className="text-sm">Loading...</span>
               </div>
-            ) : stats.userCount !== null ? (
-              stats.userCount
             ) : (
-              <span className="text-sm text-muted-foreground">N/A</span>
+              stats.userCount !== null ? stats.userCount : 'Error'
             )}
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            {stats.userCount !== null ? 'Supabase Auth accounts' : 'Requires Edge Function'}
+            Supabase Auth accounts
           </p>
         </div>
         
@@ -176,14 +165,14 @@ const SystemStatusViewer = () => {
         </Button>
       </div>
       
-      {/* Note about Edge Function limitation */}
-      {!isLoading && !stats.error && stats.userCount === null && (
-        <Alert variant="default" className="bg-blue-50 border-blue-200 dark:bg-blue-950 dark:border-blue-800">
-          <AlertCircle className="h-4 w-4 text-blue-600" />
-          <AlertTitle className="text-blue-800 dark:text-blue-200">Limited Functionality</AlertTitle>
-          <AlertDescription className="text-blue-700 dark:text-blue-300">
-            Auth user count unavailable - requires working Edge Function to access auth.users table.
-            Profile and assessment counts are working normally.
+      {/* Profile mismatch warning - only show if there's actually a mismatch */}
+      {!isLoading && !stats.error && stats.userCount && stats.profileCount && stats.userCount !== stats.profileCount && (
+        <Alert variant="default" className="bg-amber-50 border-amber-200 dark:bg-amber-950 dark:border-amber-800">
+          <AlertCircle className="h-4 w-4 text-amber-600" />
+          <AlertTitle className="text-amber-800 dark:text-amber-200">Profile Sync Issue</AlertTitle>
+          <AlertDescription className="text-amber-700 dark:text-amber-300">
+            User accounts ({stats.userCount}) and profiles ({stats.profileCount}) don't match. 
+            Some users may not have profiles created automatically.
           </AlertDescription>
         </Alert>
       )}

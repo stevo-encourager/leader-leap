@@ -15,11 +15,11 @@ const CoachingSupport: React.FC = () => {
           titleStyle={{ color: '#3a6859' }}
         />
         
-        <ul className="list-disc list-inside space-y-2 text-slate-700 text-left">
-          <li>Learn how to lean into your strengths to achieve your goals</li>
-          <li>Understand yourself better and eliminate self-limiting beliefs or obstacles that hold you back</li>
-          <li>Establish regular touchpoints for tracking growth and gaining insights</li>
-        </ul>
+        <div className="space-y-2 text-slate-700 text-left">
+          <p>Learn how to lean into your strengths to achieve your goals</p>
+          <p>Understand yourself better and eliminate self-limiting beliefs or obstacles</p>
+          <p>Establish regular touchpoints for tracking growth and gaining insights</p>
+        </div>
         
         <div className="pt-3 border-t border-slate-100 text-center">
           <a 

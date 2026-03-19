@@ -42,11 +42,11 @@ const IntroductionHeader: React.FC<IntroductionHeaderProps> = ({ onStartAssessme
       </div>
       
       <h1 className={`${isMobile ? 'text-2xl' : 'text-4xl md:text-5xl'} font-bold mb-4 text-center`} style={{ color: '#3a6859' }}>
-        Leader Leap Assessment Tool
+        Leadership Assessment Tool
       </h1>
       
       <p className={`${isMobile ? 'text-base' : 'text-xl'} text-slate-600 ${isMobile ? 'max-w-full' : 'max-w-2xl'} text-center mb-8`}>
-        Identify and close the gaps between your current leadership competencies and where you want to be.
+        Identify and close the gaps between your current leadership competencies and where you want to be
       </p>
       
       

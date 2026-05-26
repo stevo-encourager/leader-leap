@@ -617,7 +617,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
             <Link src="https://www.encouragercoaching.com">
               <Image 
                 style={styles.bottomLogo}
-                src="/lovable-uploads/db40277e-6ff0-437e-acf2-faaa2d92671e.png"
+                src="/EncouragerLogoNew.png"
               />
             </Link>
           </View>

@@ -153,7 +153,7 @@ const ActionPlanSummaryPDF: React.FC<ActionPlanSummaryPDFProps> = ({
         <View style={styles.header}>
           <Image 
             style={styles.logo}
-            src="/lovable-uploads/db40277e-6ff0-437e-acf2-faaa2d92671e.png"
+            src="/EncouragerLogoNew.png"
           />
           <Text style={styles.title}>Leader Leap Action Plan Summary</Text>
           <Text style={styles.subtitle}>Generated on {currentDate}</Text>

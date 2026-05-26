@@ -29,7 +29,7 @@ const IntroductionHeader: React.FC<IntroductionHeaderProps> = ({ onStartAssessme
         className="hover:opacity-80 transition-opacity"
       >
         <img 
-          src="/encouragercoachinglogo.png" 
+          src="/EncouragerLogoNew.png" 
           alt="Encourager Logo" 
           className={`${isMobile ? 'h-24' : 'h-32'} object-contain mb-6`} 
         />

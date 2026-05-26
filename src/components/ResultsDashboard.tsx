@@ -185,7 +185,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
               </div>
               <div className="flex items-center gap-2">
                 <img 
-                  src="/encouragercoachinglogo.png" 
+                  src="/EncouragerLogoNew.png" 
                   alt="Encourager Coaching" 
                   className="h-24 w-auto"
                 />

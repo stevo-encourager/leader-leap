@@ -156,12 +156,12 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
     <div className="fade-in">
       <div className="flex justify-between items-center mb-8">
         <div className="flex items-center gap-4">
-          <h1 className={`font-normal text-white flex items-center gap-2 px-4 py-2 rounded-md bg-encourager ${
+          <h1 className={`font-normal font-oswald text-encourager-accent flex items-center gap-2 ${
             isMobile ? 'text-xl max-w-[280px] leading-tight' : 'text-3xl'
           }`}>
-            <CircleGauge className="text-white" size={isMobile ? 20 : 28} strokeWidth={1.5} />
-            <span className={isMobile ? 'whitespace-pre-line' : ''}>
-              {isMobile ? 'Discover Your\nLeadership Gaps' : 'Discover Your Leadership Gaps'}
+            <CircleGauge className="text-encourager-accent" size={isMobile ? 20 : 28} strokeWidth={1.5} />
+            <span>
+              Leader Leap Assessment
             </span>
           </h1>
           {!isMobile && (

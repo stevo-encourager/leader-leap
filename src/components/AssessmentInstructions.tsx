@@ -65,10 +65,11 @@ const AssessmentInstructions: React.FC<AssessmentInstructionsProps> = ({ onConti
                 onClick={onContinue} 
                 className="btn-primary"
               >
-                Start Assessment
+                START ASSESSMENT
               </Button>
             </div>
-            <p className="text-sm text-encourager-accent text-center w-full">Time to complete: approximately 10 minutes</p>
+            <p className="text-sm text-encourager-accent text-center w-full mb-2">Time to complete: approximately 10 minutes</p>
+            <p className="text-sm text-slate-600 font-medium text-center w-full">By the way, this is FREE. No catch at the end!</p>
           </CardFooter>
         </Card>
       </main>

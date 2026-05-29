@@ -7,12 +7,11 @@ const CoachingSupport: React.FC = () => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
       {/* Left Card - Coaching Information */}
-      <div className="lg:col-span-7 bg-slate-50 rounded-lg border border-slate-200 shadow-sm p-6">
+      <div className="lg:col-span-7 bg-encourager-background rounded-lg border border-slate-200 shadow-sm p-6">
         <SectionHeader 
           icon={User} 
           title="Get some expert coaching support" 
           className="mb-4"
-          titleStyle={{ color: '#3a6859' }}
         />
         
         <div className="space-y-2 text-slate-700 text-left">
@@ -22,20 +21,30 @@ const CoachingSupport: React.FC = () => {
         </div>
         
         <div className="pt-3 border-t border-slate-100 text-left">
-          <a 
-            href="https://www.encouragercoaching.com" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="text-encourager hover:underline text-base block mb-3"
-          >
-            www.encouragercoaching.com
-          </a>
+          <div className="mb-3">
+            <a 
+              href="https://www.encourager.co.uk/about" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-encourager-accent hover:text-encourager-accent/90 hover:underline text-base"
+            >
+              Learn more about me
+            </a>
+            <span className="text-slate-400 mx-3">|</span>
+            <a 
+              href="https://www.encourager.co.uk/executive-coaching" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-encourager-accent hover:text-encourager-accent/90 hover:underline text-base"
+            >
+              Understand the process
+            </a>
+          </div>
           <a 
             href="https://calendar.app.google/PwZrr2JJXVi1Uwrq7" 
             target="_blank" 
             rel="noopener noreferrer"
-            className="hover:underline text-base hover:scale-105 transition-transform duration-700 inline-block font-bold"
-            style={{ color: '#3a6859' }}
+            className="hover:underline text-base hover:scale-105 transition-transform duration-700 inline-block font-normal text-encourager-accent"
           >
             Book a free 30 minute discovery call
           </a>
@@ -43,7 +52,7 @@ const CoachingSupport: React.FC = () => {
       </div>
       
       {/* Right Card - Photo */}
-      <div className="lg:col-span-3 bg-white rounded-lg border border-slate-200 shadow-sm p-6 flex justify-center items-center">
+      <div className="lg:col-span-3 bg-encourager-background rounded-lg border border-slate-200 shadow-sm p-6 flex justify-center items-center">
         <img 
           src="/steve-leadership-coach-welcome-v2.png" 
           alt="Steve Thompson - Leadership Coach" 

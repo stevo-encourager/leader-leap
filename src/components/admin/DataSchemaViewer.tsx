@@ -90,25 +90,25 @@ const DataSchemaViewer = () => {
           </TabsList>
           
           <TabsContent value="types" className="space-y-4">
-            <pre className="bg-slate-50 p-4 rounded-md overflow-auto text-sm">
+            <pre className="bg-encourager-background p-4 rounded-md overflow-auto text-sm">
               {JSON.stringify(typeSchema, null, 2)}
             </pre>
           </TabsContent>
           
           <TabsContent value="localstorage" className="space-y-4">
-            <pre className="bg-slate-50 p-4 rounded-md overflow-auto text-sm">
+            <pre className="bg-encourager-background p-4 rounded-md overflow-auto text-sm">
               {JSON.stringify(localStorageSchema, null, 2)}
             </pre>
           </TabsContent>
           
           <TabsContent value="database" className="space-y-4">
-            <pre className="bg-slate-50 p-4 rounded-md overflow-auto text-sm">
+            <pre className="bg-encourager-background p-4 rounded-md overflow-auto text-sm">
               {JSON.stringify(dbSchema, null, 2)}
             </pre>
           </TabsContent>
           
           <TabsContent value="sample" className="space-y-4">
-            <pre className="bg-slate-50 p-4 rounded-md overflow-auto text-sm max-h-96">
+            <pre className="bg-encourager-background p-4 rounded-md overflow-auto text-sm max-h-96">
               {JSON.stringify(sampleData, null, 2)}
             </pre>
           </TabsContent>

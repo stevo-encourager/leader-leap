@@ -248,7 +248,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
             <div className="mt-2 text-center">
               <button
                 type="button"
-                className="text-sm text-encourager underline hover:text-encourager-dark"
+                className="text-sm text-encourager-accent underline hover:text-encourager-accent/80"
                 onClick={() => setShowForgot(true)}
               >
                 Forgot password?
@@ -396,17 +396,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
           </div>
           
           {/* Removed GDPR consent and receive emails checkboxes from signup form */}
-          <Button type="submit" className="w-full" disabled={isLoading} style={{ backgroundColor: isLoading ? undefined : '#69bda2' }}
-            onMouseEnter={(e) => {
-              if (!isLoading) {
-                e.currentTarget.style.backgroundColor = '#7ac9b0';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isLoading) {
-                e.currentTarget.style.backgroundColor = '#69bda2';
-              }
-            }}>
+          <Button type="submit" className="w-full btn-primary" disabled={isLoading}>
             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             {isLoading ? 'Creating Account...' : 'Create Account'}
           </Button>
@@ -414,7 +404,7 @@ const AuthForm: React.FC<AuthFormProps> = ({ onSuccess, showGoogleAuth = true, d
         <div className="mt-4">
           <p className="text-sm text-muted-foreground text-center">
             By signing up, you agree to our Terms of Service and{' '}
-            <a href="/privacy-notice" className="underline text-encourager hover:text-encourager-dark" target="_blank" rel="noopener noreferrer">
+            <a href="/privacy-notice" className="underline text-encourager-accent hover:text-encourager-accent/80" target="_blank" rel="noopener noreferrer">
               Privacy Notice
             </a>.
           </p>

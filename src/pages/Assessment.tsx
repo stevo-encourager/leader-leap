@@ -120,7 +120,7 @@ const Assessment = () => {
   // Wait for auth to initialize before rendering
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-encourager-background flex items-center justify-center">
         <div className="text-center">
           <CircleGauge className="text-encourager animate-spin mx-auto" size={32} />
           <p className="mt-2 text-slate-500">Loading...</p>
@@ -135,7 +135,7 @@ const Assessment = () => {
   return (
     <>
       <SEO title="Assessment - Leader Leap" description="Leadership assessment (private)" additionalMeta={[{ name: 'robots', content: 'noindex, nofollow' }]} />
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-encourager-background">
         <div className={`mx-auto ${isMobile ? 'w-full px-2 py-2 overflow-hidden' : 'max-w-5xl px-4 py-2'}`}>
           <Navigation />
         </div>
@@ -156,7 +156,7 @@ const Assessment = () => {
                 <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-lg font-semibold text-blue-900">Testing Mode</h3>
+                      <h3 className="text-lg font-normal text-blue-900">Testing Mode</h3>
                       <p className="text-sm text-blue-700">Skip the assessment and generate test data (Development Only)</p>
                     </div>
                     <button
@@ -208,7 +208,7 @@ const Assessment = () => {
               
               {currentStep === 'assessment' && !hasValidCategories && (
                 <div className="p-6 bg-red-50 border border-red-200 rounded-md text-red-800">
-                  <h3 className="font-bold mb-2">Error Loading Assessment</h3>
+                  <h3 className="font-normal mb-2">Error Loading Assessment</h3>
                   <p>There was a problem loading the assessment categories. Please try again.</p>
                   {loadError && (
                     <p className="mt-2 text-sm font-medium">Error details: {loadError}</p>

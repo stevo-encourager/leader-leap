@@ -54,11 +54,14 @@ export default {
 					foreground: 'hsl(var(--card-foreground))'
 				},
 				encourager: {
-					DEFAULT: '#69bda2', // Updated to the new color
-					light: '#7ac9b0', // Lighter shade of the base color
-					accent: '#8baca5', // New accent color replacing gold
+					DEFAULT: '#2F5850', // Dark green color
+					light: '#4A6A61', // Lighter shade of the dark green
+					accent: '#C96736', // Bright orange-brown for buttons
+					'accent-hover': '#D97745', // Lighter orange for hover states
 					gray: '#58595b', // Gray from Encourager branding
 					lightgray: '#f5f5f5', // Light gray background
+					background: '#FAF8F1', // Warm off-white page background
+					'background-light': '#FDFCF8', // Lighter warm off-white for cards
 				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
@@ -72,8 +75,8 @@ export default {
 				}
 			},
 			fontFamily: {
-				'montserrat': ['Montserrat', 'sans-serif'],
-				'playfair': ['Playfair Display', 'serif'],
+				'oswald': ['Oswald', 'sans-serif'],
+				'quicksand': ['Quicksand', 'sans-serif'],
 				'notica': ['Noto Sans', 'sans-serif'],
 			},
 			letterSpacing: {

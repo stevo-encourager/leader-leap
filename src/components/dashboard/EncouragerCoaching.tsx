@@ -5,7 +5,7 @@ import SectionHeader from '../introduction/SectionHeader';
 
 const EncouragerCoaching: React.FC = () => {
   return (
-    <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+    <div className="bg-encourager-background p-4 rounded-lg border border-slate-200">
       <SectionHeader 
         icon={User} 
         title="Consider Coaching" 

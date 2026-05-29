@@ -20,6 +20,7 @@ import MyProfile from "./pages/MyProfile";
 import Consent from './pages/Consent';
 import ResetPassword from './pages/ResetPassword';
 import ErrorBoundary from "@/components/ErrorBoundary";
+import StyleGuide from './pages/StyleGuide';
 
 // Configure the QueryClient with optimized defaults
 const queryClient = new QueryClient({
@@ -159,6 +160,11 @@ function App() {
                       <Route path="/profile" element={
                         <ErrorBoundary>
                           <MyProfile />
+                        </ErrorBoundary>
+                      } />
+                      <Route path="/style-guide" element={
+                        <ErrorBoundary>
+                          <StyleGuide />
                         </ErrorBoundary>
                       } />
                       <Route path="/consent" element={

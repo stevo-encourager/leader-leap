@@ -18,7 +18,7 @@ const AssessmentListItem = ({ id, created_at }: AssessmentListItemProps) => {
           className="w-full p-6 text-left flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
         >
           <div>
-            <h3 className="font-medium text-lg" style={{ color: '#3a6859' }}>
+            <h3 className="font-medium text-lg text-encourager">
               Leadership Gap Assessment
             </h3>
             <p className="text-slate-500 text-sm">
@@ -31,10 +31,7 @@ const AssessmentListItem = ({ id, created_at }: AssessmentListItemProps) => {
           <Link to={`/results/${id}`}>
             <Button 
               size="sm" 
-              className="text-white"
-              style={{ backgroundColor: '#69bda2' }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = '#7ac9b0'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = '#69bda2'}
+              className="btn-primary"
             >
               View Results
             </Button>

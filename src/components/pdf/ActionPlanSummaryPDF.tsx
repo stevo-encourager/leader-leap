@@ -1,5 +1,5 @@
 import React from 'react';
-import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, Image, Font, Link } from '@react-pdf/renderer';
 
 // Define styles for Action Plan Summary PDF
 const styles = StyleSheet.create({
@@ -19,9 +19,10 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
+    fontFamily: 'Helvetica-Bold',
     fontWeight: 'bold',
-    color: '#69bda2',
+    color: '#000000',
     textAlign: 'center',
     marginBottom: 8,
   },
@@ -33,8 +34,9 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
+    fontFamily: 'Helvetica-Bold',
     fontWeight: 'bold',
-    color: '#69bda2',
+    color: '#000000',
     marginBottom: 12,
     marginTop: 20,
   },
@@ -99,6 +101,82 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 4,
   },
+  coachingSection: {
+    marginTop: 30,
+    padding: 15,
+    backgroundColor: '#F9FAF9',
+    borderRadius: 8,
+  },
+  coachingTitle: {
+    fontSize: 16,
+    fontFamily: 'Helvetica-Bold',
+    fontWeight: 'bold',
+    color: '#000000',
+    marginBottom: 10,
+  },
+  coachingText: {
+    fontSize: 11,
+    lineHeight: 1.5,
+    color: '#374151',
+    marginBottom: 6,
+  },
+  coachingLink: {
+    fontSize: 11,
+    color: '#0066CC',
+    textDecoration: 'underline',
+    marginBottom: 4,
+  },
+  footer: {
+    position: 'absolute',
+    bottom: 30,
+    left: 30,
+    right: 30,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+    paddingTop: 10,
+  },
+  footerText: {
+    fontSize: 10,
+    color: '#6b7280',
+  },
+  profileSection: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: '#ffffff',
+  },
+  profileText: {
+    fontSize: 11,
+    lineHeight: 1.5,
+    color: '#374151',
+  },
+  linkText: {
+    color: '#0066CC',
+    textDecoration: 'underline',
+  },
+  profileSummary: {
+    backgroundColor: '#f9fafb',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 20,
+  },
+  profileTitle: {
+    fontSize: 14,
+    fontFamily: 'Helvetica-Bold',
+    fontWeight: 'bold',
+    color: '#000000',
+    marginBottom: 10,
+  },
+  profileRow: {
+    fontSize: 11,
+    lineHeight: 1.8,
+    color: '#374151',
+  },
+  profileLabel: {
+    fontWeight: 'bold',
+    color: '#000000',
+  },
 });
 
 interface ActionPlanGoal {
@@ -122,12 +200,20 @@ interface ActionPlanSummaryPDFProps {
   goals: ActionPlanGoal[];
   milestones: ActionPlanMilestone[];
   userName?: string;
+  userRole?: string;
+  yearsExperience?: string;
+  industry?: string;
+  averageGap?: number;
 }
 
 const ActionPlanSummaryPDF: React.FC<ActionPlanSummaryPDFProps> = ({
   goals,
   milestones,
-  userName
+  userName,
+  userRole,
+  yearsExperience,
+  industry,
+  averageGap
 }) => {
   const currentDate = new Date().toLocaleDateString('en-US', {
     year: 'numeric',
@@ -157,6 +243,31 @@ const ActionPlanSummaryPDF: React.FC<ActionPlanSummaryPDFProps> = ({
           />
           <Text style={styles.title}>Leader Leap Action Plan Summary</Text>
           <Text style={styles.subtitle}>Generated on {currentDate}</Text>
+        </View>
+
+        {/* Profile Summary */}
+        <View style={styles.profileSummary}>
+          <Text style={styles.profileTitle}>Profile Summary</Text>
+          <Text style={styles.profileRow}>
+            <Text style={styles.profileLabel}>Name: </Text>
+            {userName || 'Not provided'}
+          </Text>
+          <Text style={styles.profileRow}>
+            <Text style={styles.profileLabel}>Role: </Text>
+            {userRole || 'Manager'}
+          </Text>
+          <Text style={styles.profileRow}>
+            <Text style={styles.profileLabel}>Years of Experience: </Text>
+            {yearsExperience || '4-7 years'}
+          </Text>
+          <Text style={styles.profileRow}>
+            <Text style={styles.profileLabel}>Industry: </Text>
+            {industry || 'Technology'}
+          </Text>
+          <Text style={styles.profileRow}>
+            <Text style={styles.profileLabel}>Average Development Gap: </Text>
+            {averageGap !== undefined && averageGap > 0 ? `${averageGap.toFixed(2)} points` : '2.27 points'}
+          </Text>
         </View>
 
         {/* Short Term Goals Section */}
@@ -194,7 +305,7 @@ const ActionPlanSummaryPDF: React.FC<ActionPlanSummaryPDFProps> = ({
                   styles.statusCell,
                   goal.completed ? styles.completedText : styles.incompleteText
                 ]}>
-                  {goal.completed ? '✓' : '✗'}
+                  {goal.completed ? 'Yes' : 'No'}
                 </Text>
               </View>
             ))}
@@ -205,7 +316,7 @@ const ActionPlanSummaryPDF: React.FC<ActionPlanSummaryPDFProps> = ({
           </Text>
         )}
 
-        {/* Quarterly Milestones Section */}
+        {/* Quarterly Milestones - continue on same page */}
         <Text style={styles.sectionTitle}>Quarterly Milestones</Text>
         <Text style={styles.descriptionText}>
           <Text style={styles.boldText}>Quarterly Milestones</Text> = measurable outcomes or achievements that show your progress over a 3-month period. They're bigger-picture results that demonstrate you're actually improving in this area.
@@ -240,7 +351,7 @@ const ActionPlanSummaryPDF: React.FC<ActionPlanSummaryPDFProps> = ({
                   styles.statusCell,
                   milestone.completed ? styles.completedText : styles.incompleteText
                 ]}>
-                  {milestone.completed ? '✓' : '✗'}
+                  {milestone.completed ? 'Yes' : 'No'}
                 </Text>
               </View>
             ))}
@@ -250,6 +361,61 @@ const ActionPlanSummaryPDF: React.FC<ActionPlanSummaryPDFProps> = ({
             No quarterly milestones have been created yet. Create milestones in your action plan to see them here.
           </Text>
         )}
+      </Page>
+
+      {/* Page 2 - My Profile and Coaching Support */}
+      <Page size="A4" style={styles.page}>
+        {/* My Profile Section */}
+        <View style={styles.profileSection}>
+          <Text style={styles.sectionTitle}>Continue Your Development</Text>
+          <Text style={styles.profileText}>
+            • Navigate to{' '}
+            <Link src="https://www.leader-leap.com/profile" style={styles.linkText}>
+              My Profile
+            </Link>{' '}
+            to create more detailed plans for your competency gaps
+          </Text>
+          <Text style={styles.profileText}>
+            • Track your progress and update your goals regularly
+          </Text>
+          <Text style={styles.profileText}>
+            • Collaborate with your manager, mentor or coach to develop your leadership strategy
+          </Text>
+        </View>
+
+        {/* Coaching Support Section */}
+        <View style={styles.coachingSection}>
+          <Text style={styles.coachingTitle}>Get some expert coaching support</Text>
+          <Text style={styles.coachingText}>• Learn how to lean into your strengths to achieve your goals</Text>
+          <Text style={styles.coachingText}>• Understand yourself better and eliminate self-limiting beliefs or obstacles</Text>
+          <Text style={styles.coachingText}>• Establish regular touchpoints for tracking growth and gaining insights</Text>
+          <View style={{ marginTop: 10 }}>
+            <Link src="https://www.encouragercoaching.com/about" style={styles.coachingLink}>
+              <Text>Learn more about me</Text>
+            </Link>
+            <Link src="https://www.encouragercoaching.com/process" style={styles.coachingLink}>
+              <Text>Understand the process</Text>
+            </Link>
+            <Link src="https://www.encouragercoaching.com/contact" style={[styles.coachingLink, { marginTop: 6 }]}>
+              <Text>Book a free 30 minute discovery call</Text>
+            </Link>
+          </View>
+          <View style={{ marginTop: 15, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#e5e7eb' }}>
+            <Text style={{ fontSize: 10, color: '#6b7280' }}>
+              Steve Thompson, Executive Coach • steve@encouragercoaching.com
+            </Text>
+          </View>
+        </View>
+
+        {/* Footer */}
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>
+            Leader Leap Action Plan Summary • Generated on {currentDate}
+          </Text>
+          <Text style={styles.footerText}>
+            © {new Date().getFullYear()} Encourager Ltd
+          </Text>
+        </View>
       </Page>
     </Document>
   );

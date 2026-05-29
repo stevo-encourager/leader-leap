@@ -150,12 +150,12 @@ const Consent: React.FC = () => {
   return (
     <>
       <SEO title="Consent - Leader Leap" description="Consent page (private)" additionalMeta={[{ name: 'robots', content: 'noindex, nofollow' }]} />
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-encourager-background flex items-center justify-center p-4">
         <Dialog open>
           <DialogContent className="max-w-md w-full">
             <DialogHeader>
-              <DialogTitle className="text-2xl font-bold mb-2 text-center" style={{ color: '#3a6859' }}>Consent & Preferences</DialogTitle>
-              <DialogDescription className="text-slate-600 text-center mb-4">
+              <DialogTitle className="text-2xl font-normal text-center text-black">Consent & Preferences</DialogTitle>
+              <DialogDescription className="text-slate-600 text-center mt-4 mb-4">
                 Please confirm your consent and email preferences to continue using the app.
               </DialogDescription>
             </DialogHeader>

@@ -11,7 +11,7 @@ interface AssessmentInstructionsProps {
 
 const AssessmentInstructions: React.FC<AssessmentInstructionsProps> = ({ onContinue, onBack }) => {
   return (
-    <div className="fade-in min-h-screen bg-slate-50">
+    <div className="fade-in min-h-screen bg-encourager-background">
       <main className="assessment-container max-w-2xl mx-auto px-4 py-8">
         <Card>
           <CardHeader>
@@ -26,7 +26,7 @@ const AssessmentInstructions: React.FC<AssessmentInstructionsProps> = ({ onConti
                   <ArrowRight className="text-encourager" size={16} strokeWidth={1.5} />
                 </div>
                 <p className="text-slate-700">
-                  <span className="font-medium text-slate-900">Self-assessment: </span>Rate your current skill level from 1-10 and set your desired skill level to work towards. Consider context i.e. think about what's truly important for your current role or your next step. Be realistic about where you need to be.
+                  <span className="font-medium text-slate-900">Be ruthlessly honest:</span> Rate where you are today and where you need to be (1-10, from Beginner to Expert).
                 </p>
               </div>
               <div className="flex gap-4 items-center">
@@ -34,7 +34,7 @@ const AssessmentInstructions: React.FC<AssessmentInstructionsProps> = ({ onConti
                   <ArrowRight className="text-encourager" size={16} strokeWidth={1.5} />
                 </div>
                 <p className="text-slate-700">
-                  <span className="font-medium text-slate-900">Complete all ratings: </span>You must select a current and desired rating for every skill before proceeding.
+                  <span className="font-medium text-slate-900">Think strategically:</span> What human skills will set you apart in an AI-enhanced world?
                 </p>
               </div>
               <div className="flex gap-4 items-center">
@@ -42,7 +42,7 @@ const AssessmentInstructions: React.FC<AssessmentInstructionsProps> = ({ onConti
                   <ArrowRight className="text-encourager" size={16} strokeWidth={1.5} />
                 </div>
                 <p className="text-slate-700">
-                  <span className="font-medium text-slate-900">Be honest:</span> This assessment is for your development, so rate your abilities as they truly are, not how you wish they were.
+                  <span className="font-medium text-slate-900">Set realistic targets:</span> Think about where you want to be in one year's time.
                 </p>
               </div>
               <div className="flex gap-4 items-center">
@@ -50,25 +50,25 @@ const AssessmentInstructions: React.FC<AssessmentInstructionsProps> = ({ onConti
                   <ArrowRight className="text-encourager" size={16} strokeWidth={1.5} />
                 </div>
                 <p className="text-slate-700">
-                  <span className="font-medium text-slate-900">Focus on development:</span> Remember that the goal is to identify areas for growth, not to achieve a perfect score.
+                  <span className="font-medium text-slate-900">Complete everything:</span> Every human skill counts. Rate all to continue.
                 </p>
               </div>
             </div>
           </CardContent>
-          <CardFooter className="flex justify-between pt-6">
-            <Button variant="outline" onClick={onBack} className="w-[120px]">
+          <CardFooter className="flex flex-col gap-4 relative">
+            <Button variant="outline" onClick={onBack} className="absolute left-6 top-6">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back
             </Button>
-            <Button 
-              onClick={onContinue} 
-              className="text-white w-[220px]"
-              style={{ backgroundColor: '#69bda2' }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = '#7ac9b0'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = '#69bda2'}
-            >
-              Start Assessment
-            </Button>
+            <div className="flex justify-center w-full pt-6">
+              <Button 
+                onClick={onContinue} 
+                className="btn-primary"
+              >
+                Start Assessment
+              </Button>
+            </div>
+            <p className="text-sm text-encourager-accent text-center w-full">Time to complete: approximately 10 minutes</p>
           </CardFooter>
         </Card>
       </main>

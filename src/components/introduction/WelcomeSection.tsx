@@ -9,8 +9,8 @@ interface WelcomeSectionProps {
 
 const WelcomeSection: React.FC<WelcomeSectionProps> = ({ onStartAssessment }) => {
   return (
-    <Card className="border-none overflow-hidden shadow-elevated bg-gradient-to-br from-white to-slate-50">
-      <CardContent className="p-8">
+    <Card className="border-none overflow-hidden shadow-elevated bg-encourager-background-light">
+      <CardContent className="p-8 pb-12 md:pb-12">
         <div className="relative">
           {/* Large quotation mark background */}
           <div className="absolute top-0 right-0 text-encourager opacity-5 hidden md:block">
@@ -28,7 +28,7 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({ onStartAssessment }) =>
                 />
               </div>
               <div className="flex-1 text-center md:text-left">
-                <h2 className="text-2xl font-bold text-slate-900 mb-2">
+                <h2 className="text-2xl font-normal text-slate-900 mb-2">
                   Hi, I'm Steve
                 </h2>
                 <p className="text-lg text-slate-600 font-medium">
@@ -40,7 +40,7 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({ onStartAssessment }) =>
             {/* Main content */}
             <div className="space-y-6 text-slate-700 leading-relaxed text-base">
               <p className="text-lg">
-                I created this free assessment to help anyone looking to improve their leadership skills.
+                In the age of AI, focusing on personal development has never been more critical. As technology transforms how we work, the uniquely human skills of leadership, emotional intelligence, and strategic thinking become our greatest differentiators. I created this free assessment to help anyone looking to develop and strengthen their leadership competencies.
               </p>
               
               <p>
@@ -59,7 +59,7 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({ onStartAssessment }) =>
                     href="https://www.linkedin.com/in/stevebthompson/" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="text-encourager hover:text-encourager/80 font-semibold transition-colors"
+                    className="text-encourager-accent hover:text-encourager-accent/80 font-normal transition-colors"
                   >
                     LinkedIn
                   </a>{' '}
@@ -72,16 +72,13 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({ onStartAssessment }) =>
                 </div>
                 
                 {onStartAssessment && (
-                  <div className="pt-4 flex justify-center">
+                  <div className="pt-8 flex justify-center">
                     <Button 
                       size="lg"
                       onClick={onStartAssessment}
-                      className="w-full md:w-auto text-white px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 font-medium"
-                      style={{ backgroundColor: '#69bda2' }}
-                      onMouseEnter={(e) => e.target.style.backgroundColor = '#7ac9b0'}
-                      onMouseLeave={(e) => e.target.style.backgroundColor = '#69bda2'}
+                      className="btn-primary w-full md:w-auto px-8 py-6 text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
                     >
-                      Start Your Assessment
+                      START YOUR ASSESSMENT
                     </Button>
                   </div>
                 )}

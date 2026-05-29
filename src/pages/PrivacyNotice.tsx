@@ -8,18 +8,18 @@ const PrivacyNotice = () => {
   return (
     <>
       <SEO title="Privacy Notice - Leader Leap" description="Privacy notice (private)" additionalMeta={[{ name: 'robots', content: 'noindex, nofollow' }]} />
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-encourager-background">
         <div className="max-w-5xl mx-auto px-4 py-2">
           <Navigation />
         </div>
         
         <main className="max-w-4xl mx-auto px-4 py-8">
           <div className="bg-white rounded-lg shadow-sm p-8">
-            <h1 className="text-3xl font-bold mb-8" style={{ color: '#3a6859' }}>Privacy Notice</h1>
+            <h1 className="heading-3 mb-8">Privacy Notice</h1>
             
             <div className="prose prose-slate max-w-none space-y-6">
               <div>
-                <h2 className="text-2xl font-semibold mt-8 mb-4" style={{ color: '#3a6859' }}>Who We Are</h2>
+                <h2 className="text-2xl font-normal mt-8 mb-4 font-oswald text-black">Who We Are</h2>
                 <p>
                   Encourager Limited is the data controller for the personal information you provide to us.
                 </p>
@@ -38,7 +38,7 @@ const PrivacyNotice = () => {
               </div>
               
               <div>
-                <h2 className="text-2xl font-semibold mt-8 mb-4" style={{ color: '#3a6859' }}>What Information We Collect</h2>
+                <h2 className="text-2xl font-normal mt-8 mb-4 font-oswald text-black">What Information We Collect</h2>
                 <p>When you complete our leadership gap assessment, we collect:</p>
                 <ul className="list-disc pl-6 mt-2">
                   <li>Your name</li>
@@ -48,7 +48,7 @@ const PrivacyNotice = () => {
               </div>
               
               <div>
-                <h2 className="text-2xl font-semibold mt-8 mb-4" style={{ color: '#3a6859' }}>Why We Collect This Information</h2>
+                <h2 className="text-2xl font-normal mt-8 mb-4 font-oswald text-black">Why We Collect This Information</h2>
                 <p>We collect your personal information for two purposes:</p>
                 <ol className="list-decimal pl-6 mt-2 space-y-2">
                   <li><strong>To create your account and deliver your assessment results</strong> - We need your email address to create your account and provide access to your personalised leadership gap assessment and AI-powered insights</li>
@@ -57,7 +57,7 @@ const PrivacyNotice = () => {
               </div>
               
               <div>
-                <h2 className="text-2xl font-semibold mt-8 mb-4" style={{ color: '#3a6859' }}>Legal Basis for Processing</h2>
+                <h2 className="text-2xl font-normal mt-8 mb-4 font-oswald text-black">Legal Basis for Processing</h2>
                 <ul className="list-disc pl-6 mt-2 space-y-1">
                   <li><strong>For delivering your assessment results:</strong> Performance of contract (providing the assessment service you requested)</li>
                   <li><strong>For marketing communications:</strong> Your separate, explicit consent (which you can withdraw at any time)</li>
@@ -65,21 +65,21 @@ const PrivacyNotice = () => {
               </div>
               
               <div>
-                <h2 className="text-2xl font-semibold mt-8 mb-4" style={{ color: '#3a6859' }}>International Data Transfers</h2>
+                <h2 className="text-2xl font-normal mt-8 mb-4" className="font-oswald text-black">International Data Transfers</h2>
                 <p>
                   Your anonymised assessment data (competency scores, skill ratings, and professional background information - but not your name or email address) is processed by OpenAI, which is based in the United States. We ensure appropriate safeguards are in place for this transfer through Standard Contractual Clauses approved by the European Commission.
                 </p>
               </div>
               
               <div>
-                <h2 className="text-2xl font-semibold mt-8 mb-4" style={{ color: '#3a6859' }}>Automated Decision-Making</h2>
+                <h2 className="text-2xl font-normal mt-8 mb-4" className="font-oswald text-black">Automated Decision-Making</h2>
                 <p>
                   We use AI technology (provided by OpenAI) to analyse your assessment responses and generate personalised insights and recommendations. This automated processing helps provide tailored leadership development suggestions based on your responses. This processing does not have legal or similarly significant effects on you.
                 </p>
               </div>
               
               <div>
-                <h2 className="text-2xl font-semibold mt-8 mb-4" style={{ color: '#3a6859' }}>How Long We Keep Your Information</h2>
+                <h2 className="text-2xl font-normal mt-8 mb-4" className="font-oswald text-black">How Long We Keep Your Information</h2>
                 <p>
                   We will keep your name and email address for up to 3 years from the date you complete the assessment. This allows us to:
                 </p>
@@ -94,7 +94,7 @@ const PrivacyNotice = () => {
               </div>
               
               <div>
-                <h2 className="text-2xl font-semibold mt-8 mb-4" style={{ color: '#3a6859' }}>Who We Share Your Information With</h2>
+                <h2 className="text-2xl font-normal mt-8 mb-4" className="font-oswald text-black">Who We Share Your Information With</h2>
                 <p>
                   We share your assessment data (leadership competency scores, skill ratings, and professional background information) with OpenAI to generate AI-powered insights and recommendations. This data does not include your name, email address, or any other personally identifiable information. OpenAI processes this anonymised assessment data according to their privacy policy and our data processing agreement.
                 </p>
@@ -104,7 +104,7 @@ const PrivacyNotice = () => {
               </div>
               
               <div>
-                <h2 className="text-2xl font-semibold mt-8 mb-4" style={{ color: '#3a6859' }}>Your Rights</h2>
+                <h2 className="text-2xl font-normal mt-8 mb-4" className="font-oswald text-black">Your Rights</h2>
                 <p>Under GDPR, you have the right to:</p>
                 <ul className="list-disc pl-6 mt-2 space-y-1">
                   <li>Access your personal data</li>
@@ -124,21 +124,21 @@ const PrivacyNotice = () => {
               </div>
               
               <div>
-                <h2 className="text-2xl font-semibold mt-8 mb-4" style={{ color: '#3a6859' }}>How We Protect Your Information</h2>
+                <h2 className="text-2xl font-normal mt-8 mb-4" className="font-oswald text-black">How We Protect Your Information</h2>
                 <p>
                   We take appropriate technical and organisational measures to protect your personal information against unauthorised access, alteration, disclosure or destruction. This includes encryption of data in transit and at rest, access controls, and regular security monitoring.
                 </p>
               </div>
               
               <div>
-                <h2 className="text-2xl font-semibold mt-8 mb-4" style={{ color: '#3a6859' }}>Changes to This Privacy Notice</h2>
+                <h2 className="text-2xl font-normal mt-8 mb-4" className="font-oswald text-black">Changes to This Privacy Notice</h2>
                 <p>
                   We may update this privacy notice from time to time. Any changes will be posted on this page with an updated revision date.
                 </p>
               </div>
               
               <div>
-                <h2 className="text-2xl font-semibold mt-8 mb-4" style={{ color: '#3a6859' }}>Contact Us</h2>
+                <h2 className="text-2xl font-normal mt-8 mb-4" className="font-oswald text-black">Contact Us</h2>
                 <p>
                   If you have any questions about this privacy notice or how we handle your personal data, please contact us at:
                 </p>

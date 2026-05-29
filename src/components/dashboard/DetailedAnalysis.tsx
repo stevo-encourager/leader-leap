@@ -48,40 +48,29 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
 
   return (
     <Card className={`overflow-hidden ${className}`}>
-      <CardHeader className="bg-slate-50 border-b">
+      <CardHeader className="bg-encourager-background border-b">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="bg-encourager-accent/20 p-3 rounded-full">
               <BarChart2 className="text-encourager" size={24} strokeWidth={1.5} />
             </div>
             <div>
-              <h2 className="text-2xl font-bold" style={{ color: '#3a6859' }}>Competency Analysis</h2>
+              <h2 className="text-2xl font-normal">Leadership Competency Analysis</h2>
               <p className="text-sm text-muted-foreground mt-1">
                 Visualise and analyse your leadership competency gaps and insights
               </p>
             </div>
           </div>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <HelpCircle className="h-4 w-4 text-slate-400 cursor-help" />
-              </TooltipTrigger>
-              <TooltipContent className="w-80">
-                <p>View your leadership competency data through different visualizations and insights.</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
         </div>
       </CardHeader>
       <CardContent className="p-0">
         <Tabs defaultValue="radar-chart" className="w-full">
           <TabsList
-            className={`w-full rounded-lg overflow-hidden ${
+            className={`w-full overflow-hidden bg-encourager rounded-none ${
               isMobile 
                 ? 'flex flex-col space-y-1 p-2 h-auto' 
                 : 'grid grid-cols-3'
             }`}
-            style={{ background: '#30574E' }}
           >
             <TabsTrigger
               value="radar-chart"
@@ -114,11 +103,20 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
           
           <TabsContent value="radar-chart" className="mt-0">
             {hasCategories ? (
-              <div className={`w-full p-6 ${isMobile ? 'h-[400px]' : 'h-[600px]'}`}>
-                <SkillGapChart categories={categories} />
+              <div className={`w-full p-6 bg-white ${isMobile ? 'h-[550px]' : 'h-[750px]'}`}>
+                <div className="bg-white rounded-lg border border-slate-200 p-2 pb-4 h-full">
+                  <div className="mb-4 px-2 pt-2 pb-3 border-b border-slate-200">
+                    <h3 className="text-xl font-bold font-quicksand flex items-center gap-2">
+                      <BarChart2 className="h-4 w-4" />
+                      Your Leadership Competency Overview
+                    </h3>
+                    <p className="text-xs text-slate-600 mt-1">Visual comparison of your current abilities versus desired skill levels</p>
+                  </div>
+                  <SkillGapChart categories={categories} />
+                </div>
               </div>
             ) : (
-              <div className={`w-full flex items-center justify-center bg-slate-50 ${isMobile ? 'h-[400px]' : 'h-[600px]'}`}>
+              <div className={`w-full flex items-center justify-center bg-encourager-background ${isMobile ? 'h-[400px]' : 'h-[600px]'}`}>
                 <p className="text-slate-500 text-center">
                   No category data available for visualization. Please complete an assessment first.
                 </p>
@@ -137,7 +135,7 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
                 />
               </div>
             ) : (
-              <div className={`w-full flex items-center justify-center bg-slate-50 ${isMobile ? 'h-[400px]' : 'h-[600px]'}`}>
+              <div className={`w-full flex items-center justify-center bg-encourager-background ${isMobile ? 'h-[400px]' : 'h-[600px]'}`}>
                 <p className="text-slate-500 text-center">
                   No assessment data available for AI insights. Please complete an assessment first.
                 </p>
@@ -151,7 +149,7 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
                 <SkillsAssessment categories={categories} />
               </div>
             ) : (
-              <div className={`w-full flex items-center justify-center bg-slate-50 ${isMobile ? 'h-[400px]' : 'h-[600px]'}`}>
+              <div className={`w-full flex items-center justify-center bg-encourager-background ${isMobile ? 'h-[400px]' : 'h-[600px]'}`}>
                 <p className="text-slate-500 text-center">
                   No assessment data available for skills assessment. Please complete an assessment first.
                 </p>

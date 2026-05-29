@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#69bda2',
+    color: '#000000',
     textAlign: 'center',
     marginBottom: 8,
   },
@@ -44,16 +44,16 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#69bda2',
+    color: '#000000',
     marginBottom: 8,
     borderBottomWidth: 2,
-    borderBottomColor: '#69bda2',
+    borderBottomColor: '#000000',
     paddingBottom: 4,
   },
   subsectionTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#69bda2',
+    color: '#000000',
     marginBottom: 6,
     marginTop: 12,
   },
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
   },
   linkText: {
     fontSize: 12,
-    color: '#69bda2',
+    color: '#0066CC',
     textDecoration: 'underline',
     marginBottom: 4,
   },
@@ -137,11 +137,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#e2e8f0',
     paddingTop: 8,
-  },
-  bottomLogo: {
-    maxWidth: 200,
-    marginTop: 8,
-    alignSelf: 'flex-start',
   },
 });
 
@@ -172,6 +167,7 @@ interface ReactPDFDocumentProps {
   insights: string;
   chartImageDataUrl?: string;
   userName?: string;
+  assessmentDate?: string;
 }
 
 // Add a helper to render markdown links in summary
@@ -213,14 +209,21 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
   demographics,
   insights,
   chartImageDataUrl,
-  userName
+  userName,
+  assessmentDate
 }) => {
   const averageGap = calculateAverageGap(categories);
-  const currentDate = new Date().toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
+  const currentDate = assessmentDate 
+    ? new Date(assessmentDate).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })
+    : new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
 
   // Table font sizes and padding for compact layout
   const tableFontSize = 9;
@@ -349,10 +352,10 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
         <View style={styles.header}>
           <Image 
             style={styles.logo}
-            src="/lovable-uploads/db40277e-6ff0-437e-acf2-faaa2d92671e.png"
+            src="/EncouragerLogoNew.png"
           />
           <Text style={styles.title}>Leader Leap Assessment Results</Text>
-          <Text style={styles.subtitle}>Generated on {currentDate}</Text>
+          <Text style={styles.subtitle}>Assessment taken on {currentDate}</Text>
         </View>
         <Text style={styles.sectionTitle}>Profile Summary</Text>
         {userName && (
@@ -388,8 +391,8 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
 
       {/* Page 2 - Key Insights & Recommendations */}
       <Page size="A4" style={styles.page}>
-        <Text style={styles.sectionTitle}>Key Insights & Recommendations</Text>
-        <Text style={styles.leftAlignedSubtitle}>Personalised leadership development insights powered by EncouragerGPT</Text>
+        <Text style={styles.sectionTitle}>Your Personal Insights</Text>
+        <Text style={styles.leftAlignedSubtitle}>Personalised leadership development insights and recommendations</Text>
 
         {parsedInsights ? (
           <View>
@@ -606,28 +609,18 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
         <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Create a 6-month action plan</Text>
         <Text style={styles.listItem}>• Navigate to <Link src="https://www.leader-leap.com/profile" style={styles.linkText}>My Profile</Link> and create plan to address your most critical competency gaps</Text>
         <Text style={styles.listItem}>• Collaborate with your manager, mentor or coach to develop your leadership development strategy</Text>
-        <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Self-Leadership Coaching</Text>
-        <View style={styles.coachingContainer}>
-          <View style={styles.coachingText}>
-            <Text style={styles.text}>Ready to take your leadership skills to the next level? Our expert coaches can help you:</Text>
-            <Text style={styles.listItem}>• Learn how to lean into your strengths to achieve your goals</Text>
-            <Text style={styles.listItem}>• Understand yourself better and eliminate self-limiting beliefs or obstacles that hold you back</Text>
-            <Text style={styles.listItem}>• Establish regular touchpoints for tracking growth and gaining insights</Text>
-            <Link src="https://calendar.app.google/PwZrr2JJXVi1Uwrq7" style={[styles.boldText, { marginTop: 10 }]}>Book a free 30-minute discovery call now</Link>
-            <Link src="https://www.encouragercoaching.com">
-              <Image 
-                style={styles.bottomLogo}
-                src="/EncouragerLogoNew.png"
-              />
-            </Link>
-          </View>
-          <Image 
-            style={styles.coachingImage}
-            src="/lovable-uploads/b35e005b-ec23-4976-8796-738f7c856377.png"
-          />
-        </View>
-        <Text style={styles.footer}>
-          Leader Leap Assessment Tool • Generated on {currentDate}{'\n'}
+        <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Get some expert coaching support</Text>
+        <Text style={styles.listItem}>• Learn how to lean into your strengths to achieve your goals</Text>
+        <Text style={styles.listItem}>• Understand yourself better and eliminate self-limiting beliefs or obstacles</Text>
+        <Text style={styles.listItem}>• Establish regular touchpoints for tracking growth and gaining insights</Text>
+        <Link src="https://www.encourager.co.uk/about" style={[styles.boldText, { marginTop: 10, color: '#0066CC' }]}>Learn more about me</Link>
+        <Link src="https://www.encourager.co.uk/executive-coaching" style={[styles.boldText, { marginTop: 5, color: '#0066CC' }]}>Understand the process</Link>
+        <Link src="https://calendar.app.google/PwZrr2JJXVi1Uwrq7" style={[styles.boldText, { marginTop: 5, color: '#0066CC' }]}>Book a free 30 minute discovery call</Link>
+        <Text style={[styles.text, { marginTop: 25, fontWeight: 'bold' }]}>Steve Thompson</Text>
+        <Text style={[styles.text, { fontSize: 10 }]}>Executive Coach</Text>
+        <Text style={[styles.text, { fontSize: 10 }]}>steve@encourager.co.uk</Text>
+        <Text style={[styles.footer, { marginTop: 20 }]}>
+          Leader Leap: Discover Your Leadership Gaps • Assessment taken on {currentDate}{'\n'}
           This assessment is designed to help you identify development opportunities and create targeted improvement plans.
         </Text>
       </Page>

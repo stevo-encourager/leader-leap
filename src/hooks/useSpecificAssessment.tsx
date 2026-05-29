@@ -13,7 +13,8 @@ interface UseSpecificAssessmentReturn {
   loadingSpecificAssessment: boolean;
   specificAssessmentData: { 
     categories: Category[], 
-    demographics: Demographics 
+    demographics: Demographics,
+    created_at: string | null
   } | null;
   error: string | null;
 }
@@ -22,7 +23,8 @@ export const useSpecificAssessment = (assessmentId: string | undefined): UseSpec
   const [loadingSpecificAssessment, setLoadingSpecificAssessment] = useState(false);
   const [specificAssessmentData, setSpecificAssessmentData] = useState<{ 
     categories: Category[], 
-    demographics: Demographics 
+    demographics: Demographics,
+    created_at: string | null
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -57,7 +59,8 @@ export const useSpecificAssessment = (assessmentId: string | undefined): UseSpec
         
             setSpecificAssessmentData({
               categories: normalizedCategories,
-              demographics: demographicsData
+              demographics: demographicsData,
+              created_at: result.data.created_at
             });
           } else {
             logger.error("useSpecificAssessment - Failed to validate categories");

@@ -127,7 +127,7 @@ const AITestPanel = () => {
   // Show loading while fetching data
   if (isLoadingData) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-encourager-background">
         <div className="max-w-5xl mx-auto px-4 py-2">
           <Navigation />
         </div>
@@ -143,7 +143,7 @@ const AITestPanel = () => {
   // Show error state
   if (error) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-encourager-background">
         <div className="max-w-5xl mx-auto px-4 py-2">
           <Navigation />
         </div>
@@ -172,7 +172,7 @@ const AITestPanel = () => {
 
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-encourager-background">
       <div className="max-w-5xl mx-auto px-4 py-2">
         <Navigation />
       </div>
@@ -187,7 +187,7 @@ const AITestPanel = () => {
                 <Bot className="text-yellow-600" size={24} />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-yellow-800 font-playfair">AI Insights Test Panel</h1>
+                <h1 className="text-2xl font-normal text-yellow-800 font-oswald">AI Insights Test Panel</h1>
                 <p className="text-yellow-700 mt-1">
                   Testing environment for AI insights generation • Test Assessment ID: {TEST_ASSESSMENT_ID}
                 </p>
@@ -222,7 +222,7 @@ const AITestPanel = () => {
 
         {/* Test Panel Info */}
         <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <h3 className="text-blue-800 font-semibold mb-2">Test Panel Information</h3>
+          <h3 className="text-blue-800 font-normal mb-2">Test Panel Information</h3>
           <ul className="text-blue-700 text-sm space-y-1">
             <li>• Using data from test assessment (ID: {TEST_ASSESSMENT_ID})</li>
             <li>• Click "Regenerate Insights" to test prompt changes</li>

@@ -1,5 +1,5 @@
-import React from 'react';
-import { CircleGauge, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { CircleGauge, AlertTriangle, PlayCircle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Category, Skill } from '@/utils/assessmentTypes';
@@ -9,6 +9,7 @@ import CategoryNavigationControls from './assessment/CategoryNavigationControls'
 import MidpointDialog from './assessment/MidpointDialog';
 import ValidationErrorDisplay from './assessment/ValidationErrorDisplay';
 import HelpButton from './assessment/HelpButton';
+import AssessmentTutorial from './assessment/AssessmentTutorial';
 import { useAssessmentForm } from '@/hooks/useAssessmentForm';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { assessmentLogger } from '@/utils/logger';
@@ -40,6 +41,22 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
   } = useAssessmentForm(categories, initialActiveCategory);
 
   const isMobile = useIsMobile();
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  // Check if first-time user and show tutorial
+  useEffect(() => {
+    const hasSeenTutorial = localStorage.getItem('hasSeenAssessmentTutorial');
+    console.log('Tutorial check - Has seen:', hasSeenTutorial, 'Active category:', activeCategory);
+    if (!hasSeenTutorial && activeCategory === 0) {
+      console.log('Showing tutorial for first-time user');
+      setShowTutorial(true);
+    }
+  }, [activeCategory]);
+
+  const handleTutorialClose = () => {
+    setShowTutorial(false);
+    localStorage.setItem('hasSeenAssessmentTutorial', 'true');
+  };
 
 
 
@@ -108,7 +125,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
     logger.error("AssessmentForm - Invalid categories or activeCategory out of bounds");
     return (
       <div className="p-6 bg-red-50 border border-red-200 rounded-md text-red-800">
-        <h3 className="font-bold mb-2">Error Loading Assessment</h3>
+        <h3 className="font-normal mb-2">Error Loading Assessment</h3>
         <p>There was a problem loading the assessment data. Please try again.</p>
         <Button onClick={onBack} className="mt-4">Back</Button>
       </div>
@@ -122,7 +139,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
     logger.error("AssessmentForm - currentCategory is undefined");
     return (
       <div className="p-6 bg-red-50 border border-red-200 rounded-md text-red-800">
-        <h3 className="font-bold mb-2">Error Loading Category</h3>
+        <h3 className="font-normal mb-2">Error Loading Category</h3>
         <p>There was a problem loading this category. Please try again.</p>
         <Button onClick={onBack} className="mt-4">Back</Button>
       </div>
@@ -139,22 +156,51 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
     <div className="fade-in">
       <div className="flex justify-between items-center mb-8">
         <div className="flex items-center gap-4">
-          <h1 className={`font-bold text-white flex items-center gap-2 px-4 py-2 rounded-md ${
+          <h1 className={`font-normal text-white flex items-center gap-2 px-4 py-2 rounded-md bg-encourager ${
             isMobile ? 'text-xl max-w-[280px] leading-tight' : 'text-3xl'
-          }`} style={{ backgroundColor: '#3a6859' }}>
+          }`}>
             <CircleGauge className="text-white" size={isMobile ? 20 : 28} strokeWidth={1.5} />
             <span className={isMobile ? 'whitespace-pre-line' : ''}>
-              {isMobile ? 'Leadership\nAssessment Tool' : 'Leadership Assessment Tool'}
+              {isMobile ? 'Discover Your\nLeadership Gaps' : 'Discover Your Leadership Gaps'}
             </span>
           </h1>
+          {!isMobile && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setShowTutorial(true);
+                // Clear the flag temporarily for testing
+                // localStorage.removeItem('hasSeenAssessmentTutorial');
+              }}
+              className="flex items-center gap-2"
+            >
+              <PlayCircle size={16} />
+              Tutorial
+            </Button>
+          )}
         </div>
         <div className="flex items-center gap-4">
           {isMobile ? (
-            <img 
-              src="/EncouragerFaviconNew.png" 
-              alt="Company Logo" 
-              className="h-20" 
-            />
+            <>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  setShowTutorial(true);
+                  // Clear the flag temporarily for testing
+                  // localStorage.removeItem('hasSeenAssessmentTutorial');
+                }}
+                className="text-encourager"
+              >
+                <PlayCircle size={20} />
+              </Button>
+              <img 
+                src="/EncouragerFaviconNew.png" 
+                alt="Company Logo" 
+                className="h-20" 
+              />
+            </>
           ) : (
             <img 
               src="/EncouragerLogoNew.png" 
@@ -192,6 +238,11 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
       <MidpointDialog 
         open={showMidpointDialog} 
         onOpenChange={setShowMidpointDialog} 
+      />
+
+      <AssessmentTutorial 
+        isOpen={showTutorial}
+        onClose={handleTutorialClose}
       />
     </div>
   );

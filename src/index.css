@@ -1,8 +1,36 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Quicksand:wght@300;400;500;600;700&family=Noto+Sans:wght@400;500;600&family=Caveat:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Bounce animation for CTA button */
+@keyframes bounceIn {
+  0% {
+    transform: scale(1);
+  }
+  20% {
+    transform: scale(0.95);
+  }
+  40% {
+    transform: scale(1.05);
+  }
+  60% {
+    transform: scale(0.98);
+  }
+  80% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-bounce-in {
+  animation: bounceIn 1s ease-out;
+  animation-delay: 0.5s;
+  animation-fill-mode: both;
+}
 
 @layer base {
   :root {
@@ -15,10 +43,10 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 162 30% 26%; /* Updated to match #69bda2 */
+    --primary: 162 30% 25%; /* Updated to match #2F5850 */
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 162 15% 60%; /* Encourager accent - updated to match #8baca5 */
+    --secondary: 19 58% 50%; /* Encourager accent - updated to match #C96736 */
     --secondary-foreground: 222.2 47.4% 11.2%;
 
     --muted: 210 40% 96.1%;
@@ -32,7 +60,7 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 162 30% 26%;
+    --ring: 162 30% 25%;
 
     --radius: 0.5rem;
 
@@ -44,6 +72,21 @@
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+    
+    /* Brand Color Custom Properties */
+    --color-brand-primary: #2F5850;
+    --color-brand-primary-hover: #3A6B61;
+    --color-brand-accent: #C96736;
+    --color-brand-accent-hover: #D97745;
+    --color-gray-dark: #58595b;
+    --color-gray-light: #f5f5f5;
+    --color-brand-background: #FAF8F1;
+    
+    /* Shadow Custom Properties */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-card: 0px 5px 15px rgba(0, 0, 0, 0.05);
+    --shadow-elevated: 0px 10px 25px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0px 10px 30px rgba(0, 0, 0, 0.08);
   }
 
   .dark {
@@ -92,15 +135,82 @@
   }
 
   body {
-    @apply bg-background text-foreground font-montserrat;
+    @apply bg-background text-foreground font-quicksand;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-playfair;
+    @apply font-oswald;
   }
   
   .notica-text {
     @apply font-['Noto_Sans'] tracking-wider-notica;
+  }
+}
+
+/* Custom Utility Classes */
+@layer components {
+  /* Button Styles */
+  .btn-primary {
+    @apply bg-encourager-accent text-white hover:bg-encourager-accent/90 
+           px-6 py-3 rounded-lg font-medium font-notica uppercase tracking-wider transition-colors
+           focus:outline-none focus:ring-2 focus:ring-encourager-accent/50;
+  }
+  
+  .btn-secondary {
+    @apply bg-encourager text-white hover:bg-encourager-light 
+           px-6 py-3 rounded-lg font-medium font-notica uppercase tracking-wider transition-colors
+           focus:outline-none focus:ring-2 focus:ring-encourager/50;
+  }
+  
+  .btn-outline {
+    @apply border-2 border-encourager text-encourager 
+           hover:bg-encourager hover:text-white 
+           px-6 py-3 rounded-lg font-medium font-notica uppercase tracking-wider transition-all
+           focus:outline-none focus:ring-2 focus:ring-encourager/50;
+  }
+  
+  /* Card Styles */
+  .card-feature {
+    @apply bg-encourager text-white p-6 rounded-lg shadow-card 
+           hover:shadow-elevated transition-shadow;
+  }
+  
+  .card-content {
+    @apply bg-white p-6 rounded-lg shadow-card 
+           hover:shadow-elevated transition-shadow;
+  }
+  
+  /* Typography Styles */
+  .heading-1 {
+    @apply text-4xl md:text-5xl font-normal font-oswald text-black;
+  }
+  
+  .heading-2 {
+    @apply text-3xl md:text-4xl font-normal font-oswald text-black;
+  }
+  
+  .heading-3 {
+    @apply text-2xl md:text-3xl font-normal font-oswald text-black;
+  }
+  
+  .text-accent {
+    @apply text-encourager-accent font-medium;
+  }
+  
+  /* Form Styles */
+  .input-field {
+    @apply border border-gray-300 rounded-md px-4 py-2 
+           focus:border-encourager-accent focus:ring-2 
+           focus:ring-encourager-accent/20 transition-colors;
+  }
+  
+  .label-text {
+    @apply text-sm font-medium text-gray-700 mb-1;
+  }
+  
+  /* Navigation Styles */
+  .nav-button {
+    @apply normal-case tracking-normal font-normal;
   }
 }
 
@@ -147,9 +257,9 @@
   width: 20px;
   border-radius: 50%;
   background: white;
-  border: 2px solid #69bda2;
+  border: 2px solid var(--color-brand-primary);
   cursor: pointer;
-  box-shadow: 0 0 0 2px white, 0 0 0 4px #69bda2, 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 0 2px white, 0 0 0 4px var(--color-brand-primary), 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .assessment-slider::-moz-range-thumb {
@@ -157,9 +267,9 @@
   width: 20px;
   border-radius: 50%;
   background: white;
-  border: 2px solid #69bda2;
+  border: 2px solid var(--color-brand-primary);
   cursor: pointer;
-  box-shadow: 0 0 0 2px white, 0 0 0 4px #69bda2, 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 0 2px white, 0 0 0 4px var(--color-brand-primary), 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Smaller slider thumb styles for Current ability */
@@ -170,7 +280,7 @@
   width: 20px;
   border-radius: 50%;
   background: white;
-  border: 2px solid #69bda2;
+  border: 2px solid var(--color-brand-primary);
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -180,7 +290,7 @@
   width: 20px;
   border-radius: 50%;
   background: white;
-  border: 2px solid #69bda2;
+  border: 2px solid var(--color-brand-primary);
   cursor: pointer;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
@@ -220,7 +330,7 @@
 }
 
 .encourager-header {
-  @apply text-encourager font-bold font-playfair;
+  @apply text-black font-normal font-oswald;
 }
 
 /* Tab isolation styles to prevent content bleeding */
@@ -246,4 +356,19 @@
 
 .robot-spin {
   animation: robotSpin 2s linear infinite;
+}
+
+/* Pulse border animation for tutorial */
+@keyframes pulseBorder {
+  0%, 100% {
+    box-shadow: 0 0 0 2px #C96736;
+  }
+  50% {
+    box-shadow: 0 0 0 4px #C96736;
+  }
+}
+
+.animate-pulse-border {
+  animation: pulseBorder 2s ease-in-out infinite;
+  box-shadow: 0 0 0 2px #C96736;
 }

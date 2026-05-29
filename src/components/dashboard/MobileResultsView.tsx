@@ -18,6 +18,7 @@ interface MobileResultsViewProps {
   categories: Category[];
   demographics: Demographics;
   assessmentId?: string;
+  assessmentDate?: string;
   onBack: () => void;
   onRestart: () => void;
   onSignup?: () => void;
@@ -27,6 +28,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
   categories,
   demographics,
   assessmentId,
+  assessmentDate,
   onBack,
   onRestart,
   onSignup
@@ -153,6 +155,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
           insights={insights || ''}
           chartImageDataUrl={chartImageDataUrl || undefined}
           userName={userProfile?.full_name}
+          assessmentDate={assessmentDate}
         />
       );
       
@@ -239,7 +242,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
                 <Monitor className="text-encourager" size={24} />
               </div>
               <div>
-                <CardTitle className="text-2xl font-bold" style={{ color: '#3a6859' }}>
+                <CardTitle className="text-2xl font-normal">
                   Your Leader Leap Assessment Results
                 </CardTitle>
                 <CardDescription className="text-sm text-muted-foreground mt-1">
@@ -252,7 +255,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
             {/* Mobile-specific content */}
             <div className="text-center py-8">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
-                <h3 className="text-lg font-semibold text-blue-900 mb-2">
+                <h3 className="text-lg font-normal text-blue-900 mb-2">
                   📱 Mobile View Notice
                 </h3>
                 <p className="text-blue-800 text-sm mb-4">
@@ -286,7 +289,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
           </CardContent>
           <CardFooter className="pt-4 pb-6 mt-4 border-t">
             <div className="w-full">
-              <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 w-full">
+              <div className="bg-encourager-background p-4 rounded-lg border border-slate-200 w-full">
                 <ResultsActions 
                   onBack={onBack} 
                   onRestart={onRestart} 
@@ -294,6 +297,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
                   categories={categories}
                   demographics={demographics}
                   assessmentId={assessmentId}
+                  assessmentDate={assessmentDate}
                 />
               </div>
             </div>

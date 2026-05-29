@@ -151,18 +151,7 @@ const DemographicsForm: React.FC<DemographicsFormProps> = ({ demographics, onDem
           <Button 
             onClick={onContinue} 
             disabled={!isFormComplete}
-            className="text-white"
-            style={{ backgroundColor: !isFormComplete ? undefined : '#69bda2' }}
-            onMouseEnter={(e) => {
-              if (!e.currentTarget.disabled) {
-                e.currentTarget.style.backgroundColor = '#7ac9b0';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!e.currentTarget.disabled) {
-                e.currentTarget.style.backgroundColor = '#69bda2';
-              }
-            }}
+            className="btn-primary"
           >
             Continue to Instructions
           </Button>

@@ -54,7 +54,7 @@ const Index = () => {
   // Wait for auth to initialize before rendering
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-encourager-background flex items-center justify-center">
         <div className="text-center">
           <CircleGauge className="text-encourager animate-spin mx-auto" size={32} />
           <p className="mt-2 text-slate-500">Loading...</p>
@@ -102,7 +102,7 @@ const Index = () => {
           ]
         }}
       />
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-encourager-background">
         <div className={`mx-auto ${isMobile ? 'w-full px-2 py-2 overflow-hidden' : 'max-w-5xl px-4 py-2'}`}>
           <Navigation />
         </div>

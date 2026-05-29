@@ -15,7 +15,7 @@ interface IntroductionPageProps {
 const IntroductionPage: React.FC<IntroductionPageProps> = ({ categories, onStartAssessment }) => {
   return (
     <div className="fade-in space-y-6 pt-0">
-      <Card className="border-none overflow-hidden shadow-elevated bg-white">
+      <Card className="border-none overflow-hidden shadow-elevated bg-encourager-background-light">
         <IntroductionHeader onStartAssessment={onStartAssessment} />
       </Card>
 

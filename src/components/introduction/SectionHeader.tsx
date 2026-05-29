@@ -10,13 +10,11 @@ interface SectionHeaderProps {
 
 const SectionHeader: React.FC<SectionHeaderProps> = ({ icon: Icon, title, className = '', titleStyle }) => {
   return (
-    <div className={`flex items-center gap-3 mb-4 ${className}`}>
+    <div className={`flex items-center gap-3 mb-6 ${className}`}>
       {Icon && (
-        <div className="p-3 rounded-full" style={{ backgroundColor: 'white' }}>
-          <Icon size={24} strokeWidth={1.5} className="text-slate-600" style={{ stroke: '#475569' }} />
-        </div>
+        <Icon size={28} strokeWidth={1.5} className="text-encourager-accent-hover" />
       )}
-      <h2 className="text-2xl font-bold text-encourager" style={titleStyle}>{title}</h2>
+      <h3 className="text-xl md:text-2xl font-normal font-oswald text-black" style={titleStyle}>{title}</h3>
     </div>
   );
 };

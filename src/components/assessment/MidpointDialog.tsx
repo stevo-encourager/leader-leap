@@ -28,7 +28,7 @@ const MidpointDialog: React.FC<MidpointDialogProps> = ({ open, onOpenChange }) =
           <div className="h-16 w-16 rounded-full bg-encourager-lightgray flex items-center justify-center text-encourager mb-4">
             <Gauge className="h-8 w-8" />
           </div>
-          <DialogTitle className="text-2xl font-playfair font-semibold text-center text-encourager-gray">
+          <DialogTitle className="text-2xl font-oswald font-normal text-center text-encourager-gray">
             Halfway There!
           </DialogTitle>
           <DialogDescription className="text-center">

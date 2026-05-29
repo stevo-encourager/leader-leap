@@ -276,7 +276,7 @@ const Results = () => {
   // Error state for specific assessment ID
   if (assessmentId && specificAssessmentError) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-encourager-background">
         <div className={`mx-auto ${isMobile ? 'w-full px-2 py-2 overflow-hidden' : 'max-w-5xl px-4 py-2'}`}>
           <Navigation />
         </div>
@@ -305,7 +305,7 @@ const Results = () => {
   // Show mandatory authentication for new assessments
   if (showMandatoryAuth) {
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-encourager-background">
         <div className={`mx-auto ${isMobile ? 'w-full px-2 py-2 overflow-hidden' : 'max-w-5xl px-4 py-2'}`}>
           <Navigation />
         </div>
@@ -321,6 +321,7 @@ const Results = () => {
   // Determine what data to use for display
   let finalDisplayCategories = [];
   let finalDisplayDemographics = {};
+  let finalAssessmentDate: string | undefined = undefined;
   let hasValidData = false;
   
   // Case 1: Viewing specific assessment
@@ -328,6 +329,7 @@ const Results = () => {
 
     finalDisplayCategories = specificAssessmentData.categories;
     finalDisplayDemographics = specificAssessmentData.demographics || {};
+    finalAssessmentDate = specificAssessmentData.created_at || undefined;
     hasValidData = true;
   }
   // Case 2: Using assessment context (just completed)
@@ -356,7 +358,7 @@ const Results = () => {
   if (!hasValidData) {
     
     return (
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-encourager-background">
         <div className={`mx-auto ${isMobile ? 'w-full px-2 py-2 overflow-hidden' : 'max-w-5xl px-4 py-2'}`}>
           <Navigation />
         </div>
@@ -383,7 +385,7 @@ const Results = () => {
   return (
     <>
       <SEO title="Results - Leader Leap" description="Assessment results (private)" additionalMeta={[{ name: 'robots', content: 'noindex, nofollow' }]} />
-      <div className="min-h-screen bg-slate-50">
+      <div className="min-h-screen bg-encourager-background">
         <div className={`mx-auto ${isMobile ? 'w-full px-2 py-2 overflow-hidden' : 'max-w-5xl px-4 py-2'}`}>
           <Navigation />
         </div>
@@ -412,6 +414,7 @@ const Results = () => {
               onSignup={handleShowSignupForm}
               isAuthenticated={!!user}
               assessmentId={assessmentId}
+              assessmentDate={finalAssessmentDate}
             />
           )}
         </main>

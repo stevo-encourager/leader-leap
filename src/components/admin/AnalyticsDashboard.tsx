@@ -157,7 +157,7 @@ const AnalyticsDashboard = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Analytics Dashboard</h2>
+          <h2 className="text-2xl font-normal">Analytics Dashboard</h2>
           <p className="text-muted-foreground">
             Aggregated insights from all assessment data
           </p>
@@ -218,7 +218,7 @@ const AnalyticsDashboard = () => {
                   <BarChart3 className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{competencyChartData.length}</div>
+                  <div className="text-2xl font-normal">{competencyChartData.length}</div>
                   <p className="text-xs text-muted-foreground">
                     Tracked competencies
                   </p>
@@ -231,7 +231,7 @@ const AnalyticsDashboard = () => {
                   <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{Object.keys(analyticsData.skillGaps).length}</div>
+                  <div className="text-2xl font-normal">{Object.keys(analyticsData.skillGaps).length}</div>
                   <p className="text-xs text-muted-foreground">
                     Individual skills tracked
                   </p>
@@ -244,7 +244,7 @@ const AnalyticsDashboard = () => {
                   <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">
+                  <div className="text-2xl font-normal">
                     {competencyChartData.length > 0 
                       ? (competencyChartData.reduce((sum, item) => sum + item.gap, 0) / competencyChartData.length).toFixed(1)
                       : '0'
@@ -262,7 +262,7 @@ const AnalyticsDashboard = () => {
                   <BarChart3 className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{analyticsData.assessmentTrends.completionRate}%</div>
+                  <div className="text-2xl font-normal">{analyticsData.assessmentTrends.completionRate}%</div>
                   <p className="text-xs text-muted-foreground">
                     Assessment completion rate
                   </p>
@@ -365,7 +365,7 @@ const AnalyticsDashboard = () => {
 
                   {/* Detailed Competency Skills Table */}
                   <div className="mt-8">
-                    <h3 className="text-lg font-semibold mb-4">Detailed Competency Skills Breakdown</h3>
+                    <h3 className="text-lg font-normal mb-4">Detailed Competency Skills Breakdown</h3>
                     <div className="border rounded-lg">
                       <Table>
                         <TableHeader>

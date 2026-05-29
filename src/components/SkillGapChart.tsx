@@ -100,7 +100,7 @@ const CustomTick = (props: CustomTickProps) => {
           y={labelY + (lineIndex * (isPDF ? 12 : 14)) - ((labelLines.length - 1) * (isPDF ? 6 : 7))}
           textAnchor={anchor}
           dominantBaseline="middle"
-          fill="#3a6859"
+          className="text-encourager"
           fontSize={isPDF ? "10" : "14"}
           fontWeight="500"
         >
@@ -238,7 +238,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
   if (validChartData.length === 0) {
     chartLogger.warn("No valid chart data to display");
     return (
-      <div className={`flex flex-col items-center justify-center h-full bg-slate-50 rounded-lg p-6 ${className}`}>
+      <div className={`flex flex-col items-center justify-center h-full bg-encourager-background rounded-lg p-6 ${className}`}>
         <p className="text-gray-500 text-center mb-3">
           No valid assessment data available to display in the radar chart.
         </p>
@@ -325,18 +325,18 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             <Radar
               name={isPDF ? "Current State" : "Current Level"}
               dataKey="current"
-              stroke="#69bda2"
-              fill="#69bda2"
-              fillOpacity={0.6}
-              strokeWidth={2}
+              stroke="#1E3C34"
+              fill="#1E3C34"
+              fillOpacity={0.3}
+              strokeWidth={1}
             />
             <Radar
               name={isPDF ? "Desired State" : "Desired Level"}
               dataKey="desired"
-              stroke="#8baca5"
-              fill="#8baca5"
-              fillOpacity={0.6}
-              strokeWidth={2}
+              stroke="#4A7A6C"
+              fill="#4A7A6C"
+              fillOpacity={0.3}
+              strokeWidth={1}
             />
             <Tooltip />
           </RadarChart>
@@ -378,8 +378,8 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             alignItems: 'center',
             justifyContent: 'center'
           }}>
-            <span style={{ color: '#69bda2' }}>■ Current Level</span>
-            <span style={{ color: '#8baca5' }}>■ Desired Level</span>
+            <span style={{ color: 'rgba(47, 88, 80, 0.8)' }}>■ Current Level</span>
+            <span style={{ color: 'rgba(74, 122, 108, 0.6)' }}>■ Desired Level</span>
           </div>
         ) : (
           /* Original legend for web view */
@@ -399,13 +399,12 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
               <div style={{ 
                 width: '12px', 
                 height: '12px', 
-                backgroundColor: '#69bda2', 
-                opacity: 0.6,
+                backgroundColor: 'rgba(47, 88, 80, 0.8)', 
                 flexShrink: 0,
                 borderRadius: '2px',
                 marginTop: '2px'
               }}></div>
-              <span style={{ color: '#64748b', fontWeight: '500' }}>Current Level</span>
+              <span className="text-slate-500 font-medium">Current Level</span>
             </div>
             <div style={{ 
               display: 'flex', 
@@ -415,13 +414,12 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
               <div style={{ 
                 width: '12px', 
                 height: '12px', 
-                backgroundColor: '#8baca5', 
-                opacity: 0.6,
+                backgroundColor: 'rgba(74, 122, 108, 0.6)', 
                 flexShrink: 0,
                 borderRadius: '2px',
                 marginTop: '2px'
               }}></div>
-              <span style={{ color: '#64748b', fontWeight: '500' }}>Desired Level</span>
+              <span className="text-slate-500 font-medium">Desired Level</span>
             </div>
           </div>
         )}

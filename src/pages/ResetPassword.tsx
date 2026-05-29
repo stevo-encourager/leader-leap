@@ -130,7 +130,7 @@ const ResetPassword = () => {
 
   if (isResetting) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-encourager-background flex items-center justify-center p-4">
         <div className="text-center">
           <Loader2 className="text-encourager animate-spin mx-auto" size={32} />
           <p className="mt-2 text-slate-500">Setting up password reset...</p>
@@ -142,10 +142,10 @@ const ResetPassword = () => {
   return (
     <>
       <SEO title="Reset Password - Leader Leap" description="Reset password page (private)" additionalMeta={[{ name: 'robots', content: 'noindex, nofollow' }]} />
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-encourager-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md p-6 shadow-lg">
           <div className="mb-6 text-center">
-            <h1 className="text-2xl font-bold mb-2" style={{ color: '#3a6859' }}>Reset Your Password</h1>
+            <h1 className="text-2xl font-normal mb-2">Reset Your Password</h1>
             <p className="text-slate-600">
               Enter your new password below
             </p>

@@ -101,10 +101,7 @@ const AssessmentsList = ({
                         <Link to={`/results/${assessment.id}`}>
                           <Button 
                             size="sm" 
-                            className="text-white"
-                            style={{ backgroundColor: '#5fac9a' }}
-                            onMouseEnter={(e) => e.target.style.backgroundColor = '#6cbdab'}
-                            onMouseLeave={(e) => e.target.style.backgroundColor = '#5fac9a'}
+                            className="btn-secondary"
                           >
                             {isMobile ? 'View' : 'View Results'}
                           </Button>

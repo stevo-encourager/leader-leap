@@ -22,7 +22,7 @@ const AssessmentLoading: React.FC = () => {
   }, []);
   
   return (
-    <div className="min-h-screen bg-slate-50 flex items-center justify-center fade-in">
+    <div className="min-h-screen bg-encourager-background flex items-center justify-center fade-in">
       <div className="text-center p-6 bg-white rounded-lg shadow-sm border border-slate-100">
         <Loader className="text-encourager animate-spin mx-auto" size={32} />
         <p className="mt-4 text-slate-700 font-medium">{loadingMessages[messageIndex]}</p>

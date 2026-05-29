@@ -25,13 +25,15 @@ interface ResultsDashboardProps {
   demographics?: Demographics;
   assessmentId?: string;
   shouldGenerateInsights?: boolean;
+  assessmentDate?: string;
 }
 
 export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   categories: propCategories = [],
   demographics: propDemographics = {},
   assessmentId: propAssessmentId,
-  shouldGenerateInsights = true
+  shouldGenerateInsights = true,
+  assessmentDate
 }) => {
   const { assessmentId: urlAssessmentId } = useParams<{ assessmentId: string }>();
   const { user } = useAuth();
@@ -121,7 +123,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">Error Loading Results</h2>
+          <h2 className="text-2xl font-normal text-red-600 mb-4">Error Loading Results</h2>
           <p className="text-gray-600">
             {typeof dataError === 'string' ? dataError : 'An error occurred while loading results.'}
           </p>
@@ -134,7 +136,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-600 mb-4">No Assessment Data</h2>
+          <h2 className="text-2xl font-normal text-gray-600 mb-4">No Assessment Data</h2>
           <p className="text-gray-600">No assessment data found for this ID.</p>
         </div>
       </div>
@@ -148,6 +150,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
         categories={memoizedCategories}
         demographics={memoizedDemographics}
         assessmentId={finalAssessmentId}
+        assessmentDate={assessmentDate}
         onBack={handleBack}
         onRestart={handleRestart}
         onSignup={handleSignup}
@@ -168,7 +171,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
 
   // Desktop view
   const desktopContent = (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-encourager-background">
       <SEO 
         title="Leadership Assessment Results" 
         description="Your personalised leadership assessment results and insights"
@@ -177,11 +180,11 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-lg border border-slate-200 shadow-sm">
           {/* Header Section */}
-          <div className="p-6 pt-10 pb-4 border-b border-slate-100">
+          <div className="p-6 pt-10 pb-2 border-b border-slate-100">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold" style={{ color: '#3a6859' }}>Your Leader Leap Assessment Results</h1>
-                <p className="text-sm text-muted-foreground mt-1 whitespace-nowrap">Review your leadership competency gaps and development opportunities</p>
+                <h1 className="heading-1">Your Assessment Results</h1>
+                <p className="text-sm text-muted-foreground mt-3 whitespace-nowrap">Review your leadership competency gaps and development opportunities</p>
               </div>
               <div className="flex items-center gap-2">
                 <img 
@@ -191,6 +194,15 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
                 />
               </div>
             </div>
+            {assessmentDate && (
+              <p className="text-xs text-muted-foreground mt-4 uppercase tracking-wide">
+                Assessment taken on {new Date(assessmentDate).toLocaleDateString('en-GB', { 
+                  day: 'numeric', 
+                  month: 'long', 
+                  year: 'numeric' 
+                })}
+              </p>
+            )}
           </div>
           
           {/* Content Section */}
@@ -228,6 +240,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
             categories={memoizedCategories}
             demographics={memoizedDemographics}
             assessmentId={finalAssessmentId!}
+            assessmentDate={assessmentDate}
             onRestart={handleRestart}
             onBack={handleBack}
             onSignup={handleSignup}

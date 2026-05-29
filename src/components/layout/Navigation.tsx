@@ -37,7 +37,7 @@ const Navigation: React.FC = () => {
           <Button 
             variant="ghost" 
             size="sm" 
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 nav-button"
           >
             <Home size={16} />
             <span>Home</span>
@@ -49,7 +49,7 @@ const Navigation: React.FC = () => {
           <Button 
             variant="ghost" 
             size="sm" 
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 nav-button"
             onClick={() => window.open('mailto:support@encouragercoaching.com', '_blank')}
           >
             <Mail size={16} />
@@ -62,7 +62,7 @@ const Navigation: React.FC = () => {
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2 nav-button"
                 >
                   <User size={16} />
                   <span>My Profile</span>
@@ -75,7 +75,7 @@ const Navigation: React.FC = () => {
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="flex items-center gap-2 text-red-600 hover:text-red-700"
+                    className="flex items-center gap-2 text-red-600 hover:text-red-700 nav-button"
                   >
                     <Settings size={16} />
                     <span>Admin</span>
@@ -89,7 +89,7 @@ const Navigation: React.FC = () => {
                   <Button 
                     variant="ghost" 
                     size="sm" 
-                    className="flex items-center gap-2 text-yellow-600 hover:text-yellow-700"
+                    className="flex items-center gap-2 text-yellow-600 hover:text-yellow-700 nav-button"
                   >
                     <Bot size={16} />
                     <span>AI Test Panel</span>
@@ -99,7 +99,7 @@ const Navigation: React.FC = () => {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 nav-button"
                 onClick={signOut}
               >
                 <LogIn size={16} />
@@ -111,7 +111,7 @@ const Navigation: React.FC = () => {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 nav-button"
               >
                 <LogIn size={16} />
                 <span>Login</span>
@@ -130,7 +130,7 @@ const Navigation: React.FC = () => {
         <Button 
           variant="ghost" 
           size="sm" 
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 nav-button"
         >
           <Home size={16} />
           <span>Home</span>
@@ -142,7 +142,7 @@ const Navigation: React.FC = () => {
           <Button 
             variant="ghost" 
             size="sm" 
-            className="flex items-center gap-1 p-2"
+            className="flex items-center gap-1 p-2 nav-button"
           >
             <Menu size={18} />
           </Button>

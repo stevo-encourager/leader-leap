@@ -1,12 +1,5 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { CircleHelp } from 'lucide-react';
-import { 
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger 
-} from './ui/tooltip';
 import { Category, Skill } from '../utils/assessmentTypes';
 import { assessmentLogger } from '@/utils/logger';
 import { logger } from '@/utils/productionLogger';
@@ -25,7 +18,6 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
   hideHeader = false
 }) => {
   const [isExpanded, setIsExpanded] = useState(!hideHeader);
-  const [tooltipStates, setTooltipStates] = useState<{ [key: string]: boolean }>({});
 
   const handleRatingChange = (skillId: string, ratingType: 'current' | 'desired', value: number) => {
     // Ensure value is a valid number
@@ -87,39 +79,18 @@ const LeadershipCategory: React.FC<LeadershipCategoryProps> = ({
   const shouldShowContent = hideHeader || isExpanded;
 
   return (
-    <Card className="w-full shadow-sm border border-gray-200 mb-6">
+    <Card className="w-full shadow-sm border border-gray-200 mb-6" style={{ backgroundColor: '#FDFCF8' }}>
       {header}
       
       {shouldShowContent && (
-        <CardContent>
+        <CardContent style={{ backgroundColor: '#FDFCF8' }}>
           <div className="space-y-8">
             {category.skills.map((skill, index) => (
-              <Card key={skill.id} className={`border border-gray-100 shadow-sm ${index === 0 ? 'mt-8' : ''}`}>
-                <CardHeader className="pb-2 pt-6">
-                  <div className="flex justify-between items-start">
-                    <div className="flex-1 pr-4">
-                      <h4 className="text-lg font-medium text-gray-800">{skill.name}</h4>
-                      <p className="text-sm text-gray-600">{skill.description}</p>
-                    </div>
-                    <div className="flex-shrink-0">
-                      <TooltipProvider>
-                        <Tooltip open={tooltipStates[skill.id]} onOpenChange={(open) => setTooltipStates(prev => ({ ...prev, [skill.id]: open }))}>
-                          <TooltipTrigger asChild>
-                            <CircleHelp 
-                              className="h-5 w-5 text-gray-600 hover:text-gray-800 cursor-pointer transition-colors" 
-                              onClick={() => setTooltipStates(prev => ({ ...prev, [skill.id]: !prev[skill.id] }))}
-                            />
-                          </TooltipTrigger>
-                          <TooltipContent className="w-80" side="left">
-                            <div className="text-xs text-slate-500 space-y-1">
-                              <p><strong>Current ability:</strong> Rate your current skill level from 1-10</p>
-                              <p><strong>Target level:</strong> Set your desired skill level to work towards. Consider context i.e. think about what's truly important for your current role or your next step. Be realistic about where you need to be.</p>
-                              <p>You must select a rating for every skill before proceeding.</p>
-                            </div>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
+              <Card key={skill.id} className={`border border-gray-100 shadow-sm bg-encourager-background ${index === 0 ? 'mt-8' : ''}`}>
+                <CardHeader className="pb-4 pt-6">
+                  <div>
+                    <h4 className="text-lg font-bold font-quicksand text-gray-800 mb-1">{skill.name}</h4>
+                    <p className="text-sm text-gray-600 mb-4">{skill.description}</p>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -180,7 +151,7 @@ const SkillAssessment: React.FC<SkillAssessmentProps> = ({ skill, onRatingChange
             style={{
               background: ratings.current === 0 
                 ? '#e2e8f0' // Gray when untouched
-                : `linear-gradient(to right, #69bda2 0%, #69bda2 ${(ratings.current / 10) * 100}%, #e2e8f0 ${(ratings.current / 10) * 100}%, #e2e8f0 100%)`
+                : `linear-gradient(to right, #C96736 0%, #C96736 ${(ratings.current / 10) * 100}%, #e2e8f0 ${(ratings.current / 10) * 100}%, #e2e8f0 100%)`
             }}
           />
         </div>
@@ -212,7 +183,7 @@ const SkillAssessment: React.FC<SkillAssessmentProps> = ({ skill, onRatingChange
             style={{
               background: ratings.desired === 0 
                 ? '#e2e8f0' // Gray when untouched
-                : `linear-gradient(to right, #69bda2 0%, #69bda2 ${(ratings.desired / 10) * 100}%, #e2e8f0 ${(ratings.desired / 10) * 100}%, #e2e8f0 100%)`
+                : `linear-gradient(to right, #C96736 0%, #C96736 ${(ratings.desired / 10) * 100}%, #e2e8f0 ${(ratings.desired / 10) * 100}%, #e2e8f0 100%)`
             }}
           />
         </div>

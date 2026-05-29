@@ -12,7 +12,7 @@ const ProfileSummary: React.FC<ProfileSummaryProps> = ({ demographics }) => {
   }
 
   return (
-    <div className="bg-slate-50 p-4 rounded-lg">
+    <div className="bg-encourager-background p-4 rounded-lg">
       <h3 className="text-lg font-medium mb-2">Your Profile</h3>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {demographics.role && (

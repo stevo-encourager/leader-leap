@@ -16,7 +16,7 @@ const ValidationErrorDisplay: React.FC<ValidationErrorDisplayProps> = ({ error, 
       <div className="p-6 bg-red-50 border border-red-200 rounded-md text-red-800">
         <div className="flex items-center gap-2">
           <AlertTriangle className="text-red-500" />
-          <h3 className="font-bold">Data Validation Error</h3>
+          <h3 className="font-normal">Data Validation Error</h3>
         </div>
         <p className="mt-2">{error}</p>
         <p className="mt-2 text-sm">Please return to the home page and try starting the assessment again.</p>

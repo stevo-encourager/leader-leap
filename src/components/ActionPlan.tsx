@@ -120,7 +120,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
   
   // State management
   const [selectedAssessmentId, setSelectedAssessmentId] = useState<string>('');
-  const [selectedAssessmentData, setSelectedAssessmentData] = useState<{ categories: Category[] } | null>(null);
+  const [selectedAssessmentData, setSelectedAssessmentData] = useState<{ categories: Category[], demographics?: any } | null>(null);
   const [actionPlans, setActionPlans] = useState<ActionPlan[]>([]);
   const [expandedCompetencies, setExpandedCompetencies] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
@@ -156,7 +156,10 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
     try {
       const result = await fetchAssessmentByIdAndUserId(assessmentId, user.id);
       if (result.success && result.data) {
-        setSelectedAssessmentData({ categories: result.data.categories });
+        setSelectedAssessmentData({ 
+          categories: result.data.categories,
+          demographics: result.data.demographics 
+        });
       }
     } catch (error) {
       logger.error('Error loading assessment data:', error);
@@ -595,11 +598,24 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
     }
 
     try {
+      // Calculate average gap if we have assessment data
+      let averageGap = 0;
+      if (selectedAssessmentData?.categories) {
+        const gaps = selectedAssessmentData.categories.flatMap(cat => 
+          cat.skills.map(skill => skill.gap)
+        );
+        averageGap = gaps.length > 0 ? gaps.reduce((a, b) => a + b, 0) / gaps.length : 0;
+      }
+
       const pdfDoc = (
         <ActionPlanSummaryPDF
           goals={goals}
           milestones={milestones}
-          userName={user?.user_metadata?.full_name}
+          userName={user?.user_metadata?.full_name || user?.user_metadata?.first_name}
+          userRole={selectedAssessmentData?.demographics?.currentRole || ''}
+          yearsExperience={selectedAssessmentData?.demographics?.yearsExperience || ''}
+          industry={selectedAssessmentData?.demographics?.industry || ''}
+          averageGap={averageGap}
         />
       );
       
@@ -715,7 +731,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
   if (isMobile) {
     return (
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4" style={{ color: '#3a6859' }}>6-Month Action Plan</h2>
+        <h2 className="text-2xl font-normal mb-4">6-Month Action Plan</h2>
         <Card>
           <CardContent className="p-6">
             <div className="text-center">
@@ -739,7 +755,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
   if (loading) {
     return (
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4" style={{ color: '#3a6859' }}>6-Month Action Plan</h2>
+        <h2 className="text-2xl font-normal mb-4">6-Month Action Plan</h2>
         <Card>
           <CardContent className="p-6">
             <div className="text-center">
@@ -754,7 +770,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
   if (assessments.length === 0) {
     return (
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold mb-4" style={{ color: '#3a6859' }}>6-Month Action Plan</h2>
+        <h2 className="text-2xl font-normal mb-4">6-Month Action Plan</h2>
         <Card>
           <CardContent className="p-6">
             <div className="text-center">
@@ -768,26 +784,24 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
 
   return (
     <div className="mb-8">
-      <h2 className="text-2xl font-semibold mb-4" style={{ color: '#3a6859' }}>6-Month Action Plan</h2>
+      <h2 className="text-2xl font-normal mb-4">6-Month Action Plan</h2>
       
-      <div className="bg-encourager/5 p-6 rounded-lg border border-encourager/20">
+      <div className="p-6 rounded-lg border border-gray-200" style={{ backgroundColor: '#FDFCF8' }}>
         {/* Instructions */}
-        <div className="bg-slate-50 p-4 rounded-lg border-l-4 border-encourager mb-6">
-          <p className="text-slate-700 text-sm font-montserrat">
-            Complete your short-term goals and quarterly milestones for the three competencies with the largest gaps.
+        <div className="bg-encourager-background p-4 rounded-lg border-l-4 border-encourager-accent mb-6">
+          <p className="text-slate-700 text-sm font-quicksand">
+            Set goals and milestones for the three competencies with your largest gaps.
           </p>
-          <p className="text-slate-700 text-sm font-montserrat mt-2">
-            <strong>Short-term Goals</strong> = specific actions or tasks you'll complete in the next 1-3 months to improve this competency. Think immediate, concrete steps you can take.
-          </p>
-          <p className="text-slate-700 text-sm font-montserrat mt-2">
-            <strong>Quarterly Milestones</strong> = measurable outcomes or achievements that show your progress over a 3-month period. They're bigger-picture results that demonstrate you're actually improving in this area.
-          </p>
+          <div className="text-slate-700 text-sm font-quicksand mt-2">
+            <p>• <strong>Short-term Goals:</strong> Specific actions you'll take in the next 1-3 months</p>
+            <p>• <strong>Quarterly Milestones:</strong> Measurable results showing your progress over 3 months</p>
+          </div>
         </div>
 
         {/* Assessment Selector */}
       <div className="mb-6">
         <div className="flex items-center gap-3">
-          <Label htmlFor="assessment-select" className="text-xl font-bold font-montserrat whitespace-nowrap" style={{ color: '#3a6859' }}>
+          <Label htmlFor="assessment-select" className="text-xl font-normal font-quicksand whitespace-nowrap" className="text-encourager">
             Action Plan for Assessment:
           </Label>
           <Select value={selectedAssessmentId} onValueChange={setSelectedAssessmentId}>
@@ -830,7 +844,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
                           <Tooltip open={tooltipStates[`competency-${competency.title}`]} onOpenChange={(open) => setTooltipStates(prev => ({ ...prev, [`competency-${competency.title}`]: open }))}>
                             <TooltipTrigger asChild>
                               <CardTitle 
-                                className="text-lg text-slate-700 font-montserrat font-normal cursor-pointer"
+                                className="text-xl md:text-2xl font-normal font-oswald text-black cursor-pointer"
                                 onClick={() => setTooltipStates(prev => ({ ...prev, [`competency-${competency.title}`]: !prev[`competency-${competency.title}`] }))}
                               >
                                 {competency.title} - Gap: {competency.gap}
@@ -848,8 +862,8 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
                         )}
                       </div>
                       {isExpanded && (
-                        <div className="mb-3">
-                          <h4 className="font-semibold mb-3 font-montserrat" style={{ color: '#3a6859' }}>Skills Breakdown</h4>
+                        <div className="mt-4 mb-3">
+                          <h4 className="font-bold mb-3 font-quicksand">Skills Breakdown</h4>
                           <div className="text-sm text-slate-600 mb-2">
                             {competency.skills.map((skill, index) => (
                               <div key={skill.name} className="ml-4 mb-1">
@@ -886,12 +900,12 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
                           size="sm"
                           onClick={() => createActionPlan(competency)}
                           className="text-white"
-                          style={{ backgroundColor: '#69bda2' }}
-                          onMouseEnter={(e) => e.target.style.backgroundColor = '#7ac9b0'}
-                          onMouseLeave={(e) => e.target.style.backgroundColor = '#69bda2'}
+                          className="bg-encourager-accent"
+                          onMouseEnter={(e) => e.target.style.backgroundColor = '#D07A52'}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = '#C96736'}
                         >
                           <Plus className="w-4 h-4 mr-1" />
-                          Create Plan
+                          CREATE PLAN
                         </Button>
                       )}
                       {(existingPlan || (currentPlanData && hasPlanContent(currentPlanData))) && (
@@ -899,22 +913,22 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
                           size="sm"
                           onClick={() => savePlan(competency.title)}
                           disabled={saving.has(competency.title)}
-                          className={unsavedChanges.has(competency.title) ? "bg-orange-500 hover:bg-orange-600" : "bg-encourager hover:bg-encourager-light"}
+                          className={unsavedChanges.has(competency.title) ? "bg-encourager-accent hover:bg-encourager-accent/90 text-white" : "bg-slate-500 hover:bg-slate-600 text-white"}
                         >
                           {saving.has(competency.title) ? (
                             <>
                               <Save className="w-4 h-4 mr-1" />
-                              Saving...
+                              SAVING...
                             </>
                           ) : unsavedChanges.has(competency.title) ? (
                             <>
                               <Save className="w-4 h-4 mr-1" />
-                              Save
+                              SAVE
                             </>
                           ) : (
                             <>
                               <Save className="w-4 h-4 mr-1" />
-                              Saved
+                              SAVED
                             </>
                           )}
                         </Button>
@@ -935,7 +949,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
                     <div className="space-y-6">
                       {/* Goals Section */}
                       <div>
-                        <h4 className="font-semibold mb-3 font-montserrat" style={{ color: '#3a6859' }}>Short-term Goals</h4>
+                        <h4 className="font-bold mb-3 font-quicksand">Short-term Goals</h4>
                         <div className="space-y-3">
                           <div className="grid grid-cols-[1fr_120px_80px] gap-3 items-center mb-2">
                             <span className="text-sm font-medium text-slate-600">Goal Description</span>
@@ -973,7 +987,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
 
                       {/* Quarterly Milestones */}
                       <div>
-                        <h4 className="font-semibold mb-3 font-montserrat" style={{ color: '#3a6859' }}>Quarterly Milestones</h4>
+                        <h4 className="font-bold mb-3 font-quicksand">Quarterly Milestones</h4>
                         <div className="space-y-3">
                           <div className="grid grid-cols-[1fr_120px_80px] gap-3 items-center mb-2">
                             <span className="text-sm font-medium text-slate-600">Milestone Description</span>
@@ -1011,7 +1025,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
 
                       {/* Notes */}
                       <div>
-                        <h4 className="font-semibold mb-3 font-montserrat" style={{ color: '#3a6859' }}>Notes</h4>
+                        <h4 className="font-bold mb-3 font-quicksand">Notes</h4>
                         <div>
                           <Textarea
                             value={currentPlanData.plan_text}
@@ -1027,8 +1041,8 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
 
                       {/* Resources */}
                       <div>
-                        <h4 className="font-semibold mb-3 font-montserrat" style={{ color: '#3a6859' }}>Recommended Resources</h4>
-                        <div className="bg-slate-50 p-4 rounded border-l-4 border-encourager">
+                        <h4 className="font-bold mb-3 font-quicksand">Recommended Resources</h4>
+                        <div className="bg-encourager-background p-4 rounded border-l-4 border-encourager-accent">
                           <div className="space-y-2">
                             {currentPlanData.resources.map((resource) => (
                               <div key={resource.id}>
@@ -1036,7 +1050,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
                                   href={resource.url || '#'} 
                                   target="_blank" 
                                   rel="noopener noreferrer"
-                                  className="text-encourager hover:text-encourager-light text-sm flex items-center gap-1 underline"
+                                  className="text-encourager-accent hover:text-encourager-accent/90 text-sm flex items-center gap-1 underline"
                                 >
                                   <ExternalLink className="h-3 w-3" />
                                   {resource.title}
@@ -1054,17 +1068,17 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
                             size="sm"
                             onClick={() => savePlan(competency.title)}
                             disabled={saving.has(competency.title)}
-                            className="bg-encourager hover:bg-encourager-light"
+                            className="bg-encourager-accent hover:bg-encourager-accent/90 text-white"
                           >
                             {saving.has(competency.title) ? (
                               <>
                                 <Save className="w-4 h-4 mr-1" />
-                                Saving...
+                                SAVING...
                               </>
                             ) : (
                               <>
                                 <Save className="w-4 h-4 mr-1" />
-                                Save
+                                SAVE
                               </>
                             )}
                           </Button>
@@ -1121,13 +1135,12 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
 
             {/* Summary Section */}
       <div className="mt-8 space-y-6">
-        <h3 className="text-xl font-bold font-montserrat" style={{ color: '#3a6859' }}>Action Plan Summary</h3>
+        <h3 className="text-xl font-bold font-quicksand">Action Plan Summary</h3>
         
         {/* Explanatory Text */}
-        <div className="bg-slate-50 p-4 rounded-lg border-l-4 border-encourager">
+        <div className="bg-encourager-background p-4 rounded-lg border-l-4 border-encourager-accent">
           <p className="text-slate-700 text-sm">
-            This summary section will automatically populate with your short-term goals and quarterly milestones once you create action plans for the competencies above. 
-            The tables below will show an overview of all your development goals across all competencies.
+            Complete the action plans above and this summary will automatically show an overview of all your development goals.
           </p>
         </div>
 
@@ -1136,13 +1149,13 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
         {/* Short Term Goals Summary */}
         {getAllGoals().length > 0 ? (
           <div>
-            <h4 className="text-xl mb-3 font-montserrat" style={{ color: '#3a6859' }}>Short-term Goals</h4>
+            <h4 className="text-xl mb-3 font-quicksand font-bold">Short-term Goals</h4>
             <Card>
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b bg-slate-50">
+                      <tr className="border-b bg-encourager-background">
                         <th className="text-left p-3 text-sm font-medium text-slate-700 w-1/2">Description</th>
                         <th className="text-left p-3 text-sm font-medium text-slate-700 w-1/4">Related Competency</th>
                         <th className="text-left p-3 text-sm font-medium text-slate-700 w-1/6">Target Date</th>
@@ -1151,12 +1164,12 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
                     </thead>
                     <tbody>
                       {getAllGoals().map((goal) => (
-                        <tr key={goal.id} className="border-b hover:bg-slate-50">
+                        <tr key={goal.id} className="border-b hover:bg-encourager-background">
                           <td className="p-3 text-sm text-slate-700">{goal.description}</td>
                           <td className="p-3 text-sm text-slate-600">{goal.competency}</td>
                           <td className="p-3 text-sm text-slate-600">{formatDateForDisplay(goal.targetDate)}</td>
                           <td className="p-3 text-center">
-                            <span className={goal.completed ? "text-green-600 font-bold" : "text-slate-400"}>
+                            <span className={goal.completed ? "text-green-600 font-normal" : "text-slate-400"}>
                               {goal.completed ? "✓" : "✗"}
                             </span>
                           </td>
@@ -1170,7 +1183,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
           </div>
         ) : (
           <div>
-            <h4 className="text-xl mb-3 font-montserrat" style={{ color: '#3a6859' }}>Short-term Goals</h4>
+            <h4 className="text-xl mb-3 font-quicksand font-bold">Short-term Goals</h4>
             <Card>
               <CardContent className="p-6">
                 <div className="text-center text-slate-500">
@@ -1184,13 +1197,13 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
         {/* Quarterly Milestones Summary */}
         {getAllMilestones().length > 0 ? (
           <div>
-            <h4 className="text-xl mb-3 font-montserrat" style={{ color: '#3a6859' }}>Quarterly Milestones</h4>
+            <h4 className="text-xl mb-3 font-quicksand font-bold">Quarterly Milestones</h4>
             <Card>
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="border-b bg-slate-50">
+                      <tr className="border-b bg-encourager-background">
                         <th className="text-left p-3 text-sm font-medium text-slate-700 w-1/2">Description</th>
                         <th className="text-left p-3 text-sm font-medium text-slate-700 w-1/4">Related Competency</th>
                         <th className="text-left p-3 text-sm font-medium text-slate-700 w-1/6">Target Date</th>
@@ -1199,12 +1212,12 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
                     </thead>
                     <tbody>
                       {getAllMilestones().map((milestone) => (
-                        <tr key={milestone.id} className="border-b hover:bg-slate-50">
+                        <tr key={milestone.id} className="border-b hover:bg-encourager-background">
                           <td className="p-3 text-sm text-slate-700">{milestone.description}</td>
                           <td className="p-3 text-sm text-slate-600">{milestone.competency}</td>
                           <td className="p-3 text-sm text-slate-600">{formatDateForDisplay(milestone.targetDate)}</td>
                           <td className="p-3 text-center">
-                            <span className={milestone.completed ? "text-green-600 font-bold" : "text-slate-400"}>
+                            <span className={milestone.completed ? "text-green-600 font-normal" : "text-slate-400"}>
                               {milestone.completed ? "✓" : "✗"}
                             </span>
                           </td>
@@ -1218,7 +1231,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
           </div>
         ) : (
           <div>
-            <h4 className="text-xl mb-3 font-montserrat" style={{ color: '#3a6859' }}>Quarterly Milestones</h4>
+            <h4 className="text-xl mb-3 font-quicksand font-bold">Quarterly Milestones</h4>
             <Card>
               <CardContent className="p-6">
                 <div className="text-center text-slate-500">
@@ -1235,24 +1248,18 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
         <Button
           size="sm"
           onClick={handleExportPDF}
-          className="flex items-center gap-2 text-white"
-          style={{ backgroundColor: '#5fac9a' }}
-          onMouseEnter={(e) => e.target.style.backgroundColor = '#6cbdab'}
-          onMouseLeave={(e) => e.target.style.backgroundColor = '#5fac9a'}
+          className="flex items-center gap-2 bg-encourager-accent text-white hover:bg-encourager-accent/90 transition-colors"
         >
           <Download className="h-4 w-4" />
-          Export PDF
+          EXPORT PDF
         </Button>
         <Button
           size="sm"
           onClick={handleExportCSV}
-          className="flex items-center gap-2 text-white"
-          style={{ backgroundColor: '#5fac9a' }}
-          onMouseEnter={(e) => e.target.style.backgroundColor = '#6cbdab'}
-          onMouseLeave={(e) => e.target.style.backgroundColor = '#5fac9a'}
+          className="flex items-center gap-2 bg-encourager-accent text-white hover:bg-encourager-accent/90 transition-colors"
         >
           <FileText className="h-4 w-4" />
-          Export CSV
+          EXPORT CSV
         </Button>
       </div>
       </div>

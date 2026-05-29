@@ -91,7 +91,7 @@ const SystemStatusViewer = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="border rounded-lg p-4 bg-card">
           <h3 className="font-medium text-sm text-muted-foreground mb-2">User Accounts</h3>
-          <div className="text-2xl font-bold">
+          <div className="text-2xl font-normal">
             {isLoading ? (
               <div className="flex items-center">
                 <CircleGauge className="animate-spin h-6 w-6 mr-2" />
@@ -108,7 +108,7 @@ const SystemStatusViewer = () => {
         
         <div className="border rounded-lg p-4 bg-card">
           <h3 className="font-medium text-sm text-muted-foreground mb-2">User Profiles</h3>
-          <div className="text-2xl font-bold">
+          <div className="text-2xl font-normal">
             {isLoading ? (
               <div className="flex items-center">
                 <CircleGauge className="animate-spin h-6 w-6 mr-2" />
@@ -125,7 +125,7 @@ const SystemStatusViewer = () => {
         
         <div className="border rounded-lg p-4 bg-card">
           <h3 className="font-medium text-sm text-muted-foreground mb-2">Assessment Records</h3>
-          <div className="text-2xl font-bold">
+          <div className="text-2xl font-normal">
             {isLoading ? (
               <div className="flex items-center">
                 <CircleGauge className="animate-spin h-6 w-6 mr-2" />

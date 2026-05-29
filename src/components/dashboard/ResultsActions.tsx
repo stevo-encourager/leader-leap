@@ -20,6 +20,7 @@ interface ResultsActionsProps {
   categories?: Category[];
   demographics?: Demographics;
   assessmentId?: string;
+  assessmentDate?: string;
 }
 
 const ResultsActions: React.FC<ResultsActionsProps> = ({ 
@@ -28,7 +29,8 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
   onSignup,
   categories = [],
   demographics = {},
-  assessmentId
+  assessmentId,
+  assessmentDate
 }) => {
 
 
@@ -166,6 +168,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
           insights={insights || ''}
           chartImageDataUrl={chartImageDataUrl || undefined}
           userName={userProfile?.full_name}
+          assessmentDate={assessmentDate}
         />
       );
       
@@ -335,24 +338,21 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
           <>
             <Button 
               onClick={handleNewAssessment}
-              className="text-white"
-              style={{ backgroundColor: '#69bda2' }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = '#7ac9b0'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = '#69bda2'}
+              className="btn-primary"
             >
               <Plus className="mr-2 h-4 w-4" />
-              Start New Assessment
+              START NEW ASSESSMENT
             </Button>
             <Button variant="outline" onClick={onBack}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Your Profile Page
+              YOUR PROFILE PAGE
             </Button>
           </>
         ) : (
           <>
             <Button variant="outline" onClick={onBack}>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Your Profile Page
+              YOUR PROFILE PAGE
             </Button>
             <div className="flex gap-2">
               {!user && (
@@ -401,18 +401,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button 
-                        className="flex items-center gap-2 text-white"
-                        style={{ backgroundColor: isPDFExportDisabled ? undefined : '#69bda2' }}
-                        onMouseEnter={(e) => {
-                          if (!e.currentTarget.disabled) {
-                            e.currentTarget.style.backgroundColor = '#7ac9b0';
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!e.currentTarget.disabled) {
-                            e.currentTarget.style.backgroundColor = '#69bda2';
-                          }
-                        }}
+                        className="btn-primary flex items-center gap-2"
                         onClick={handleDownloadPDF}
                         disabled={isPDFExportDisabled}
                       >
@@ -429,12 +418,12 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
               <Button 
                 onClick={handleNewAssessment}
                 className="text-white"
-                style={{ backgroundColor: '#69bda2' }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#7ac9b0'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = '#69bda2'}
+                className="bg-encourager-accent text-white hover:bg-encourager-accent/90"
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#D07A52'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#C96736'}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                Start New Assessment
+                START NEW ASSESSMENT
               </Button>
             </div>
           </>

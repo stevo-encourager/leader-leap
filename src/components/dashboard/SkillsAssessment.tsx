@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { ListChecks } from 'lucide-react';
 import { Category } from '@/utils/assessmentTypes';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -43,11 +44,12 @@ const SkillsAssessment: React.FC<SkillsAssessmentProps> = ({ categories }) => {
 
   return (
     <div className="space-y-6 skills-assessment-component" data-component="skills-assessment">
-      <div className="text-center">
-        <p className="text-muted-foreground">
-          Your self-assessment scores across all competencies and the individual skills within them
-        </p>
-        <p className="text-muted-foreground text-xs">(shown in order by highest competency gap)</p>
+      <div className="mb-4 px-2 pt-2 pb-3 border-b border-slate-200">
+        <h3 className="text-xl font-bold font-quicksand flex items-center gap-2">
+          <ListChecks className="h-4 w-4" />
+          Your Skills Assessment Overview
+        </h3>
+        <p className="text-xs text-slate-600 mt-1">Detailed breakdown of your self-assessment scores across all competencies</p>
       </div>
       
       <div className="space-y-4">
@@ -56,12 +58,12 @@ const SkillsAssessment: React.FC<SkillsAssessmentProps> = ({ categories }) => {
           return (
             <Card
               key={category.id}
-              className="border border-slate-200 bg-encourager-lightgray"
+              className="border border-slate-200 bg-encourager-background"
             >
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
-                    <CardTitle className="text-lg font-bold mb-2" style={{ color: '#30574E' }}>
+                    <CardTitle className="text-lg font-bold font-quicksand mb-2">
                       {category.title}
                     </CardTitle>
                     <p className="text-sm text-slate-600 leading-relaxed">
@@ -69,13 +71,13 @@ const SkillsAssessment: React.FC<SkillsAssessmentProps> = ({ categories }) => {
                     </p>
                   </div>
                   <div className="flex gap-6 ml-4 items-center">
-                    <span className="font-bold text-sm" style={{ color: '#30574E' }}>
+                    <span className="font-bold text-sm">
                       Current: {category.currentAvg}
                     </span>
-                    <span className="font-bold text-sm" style={{ color: '#30574E' }}>
+                    <span className="font-bold text-sm">
                       Desired: {category.desiredAvg}
                     </span>
-                    <span className="font-bold text-sm" style={{ color: '#B91C1C' }}>
+                    <span className="font-normal text-sm" style={{ color: '#B91C1C' }}>
                       Gap: {category.gap}
                     </span>
                   </div>
@@ -89,7 +91,7 @@ const SkillsAssessment: React.FC<SkillsAssessmentProps> = ({ categories }) => {
                       <div key={skill.id} className="border-l-2 border-slate-200 pl-4">
                         <div className="flex justify-between items-start mb-1">
                           <div className="flex-1">
-                            <div className="font-bold text-sm text-slate-900 mb-1">
+                            <div className="font-normal text-sm text-slate-900 mb-1">
                               {skill.name}
                             </div>
                             <p className="text-xs text-slate-600 leading-relaxed">

@@ -179,21 +179,27 @@ const AIInsights: React.FC<AIInsightsProps> = ({
   // Enhanced helper function to render summary with automatic paragraph formatting and leader links
   const renderFormattedSummary = (summary: string) => {
     return (
-      <div className="mb-8 bg-blue-50 p-6 rounded-lg border border-blue-200">
-        <h3 className="text-xl font-bold mb-3 font-montserrat" style={{ color: '#3a6859' }}>Assessment Summary</h3>
-        <FormattedSummary 
-          summary={summary}
-          className="space-y-4"
-        />
+      <div className="mb-8">
+        <h3 className="text-xl font-bold mb-2 font-quicksand flex items-center gap-2">
+          <Bot className="h-5 w-5" />
+          Your Assessment Summary
+        </h3>
+        <p className="text-sm text-slate-600 mb-4">Overview of your leadership profile with detailed recommendations below</p>
+        <div className="bg-white p-6 rounded-lg border border-slate-200">
+          <FormattedSummary 
+            summary={summary}
+            className="space-y-4"
+          />
+        </div>
       </div>
     );
   };
 
   const renderPriorityAreas = (priorityAreas: PriorityArea[]) => (
     <div className="mb-8">
-      <h3 className="text-xl font-bold mb-4 font-montserrat border-b border-encourager/20 pb-2 flex items-center gap-2" style={{ color: '#3a6859' }}>
+      <h3 className="text-xl font-bold mb-4 font-quicksand  flex items-center gap-2">
         <Target className="h-5 w-5" />
-        Top 3 Priority Development Areas
+        Your Top 3 Priority Development Areas
       </h3>
       <div className="space-y-6">
         {priorityAreas.map((area, index) => {
@@ -202,16 +208,16 @@ const AIInsights: React.FC<AIInsightsProps> = ({
           return (
             <div key={index} className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
               <div className="mb-4">
-                <h4 className="text-lg text-slate-800 font-montserrat">
+                <h4 className="text-lg text-slate-800 font-quicksand">
                   {index + 1}. {area.competency}
                 </h4>
-                <span className="text-sm text-slate-600 bg-slate-100 px-2 py-1 rounded">
+                <span className="text-sm text-slate-600 bg-white px-2 py-1 rounded">
                   Gap: {area.gap.toFixed(1)}
                 </span>
               </div>
               <div className="space-y-4">
                 <div>
-                  <h5 className="text-slate-700 mb-3 font-montserrat">Suggestions:</h5>
+                  <h5 className="text-slate-700 mb-3 font-quicksand">Suggestions:</h5>
                   <ul className="space-y-3">
                     {area.insights && Array.isArray(area.insights) && area.insights.map((insight, insightIndex) => (
                       <li key={insightIndex} className="flex items-start gap-3">
@@ -224,8 +230,8 @@ const AIInsights: React.FC<AIInsightsProps> = ({
                   </ul>
                 </div>
                 {validResources.length > 0 && (
-                  <div className="bg-slate-50 p-4 rounded border-l-4 border-encourager">
-                    <h6 className="text-slate-700 mb-2 font-montserrat">
+                  <div className="pt-4 border-t border-slate-200">
+                    <h6 className="text-slate-700 mb-2 font-quicksand">
                       Recommended Resources:
                     </h6>
                     <div className="space-y-2">
@@ -255,9 +261,9 @@ const AIInsights: React.FC<AIInsightsProps> = ({
 
   const renderKeyStrengths = (keyStrengths: KeyStrength[]) => (
     <div className="mb-8">
-      <h3 className="text-xl font-bold mb-4 font-montserrat border-b border-encourager/20 pb-2 flex items-center gap-2" style={{ color: '#3a6859' }}>
+      <h3 className="text-xl font-bold mb-4 font-quicksand  flex items-center gap-2">
         <TrendingUp className="h-5 w-5" />
-        Key Competencies to Leverage
+        Your Key Competencies to Leverage
       </h3>
       <div className="space-y-6">
         {keyStrengths.map((strength, index) => {
@@ -266,17 +272,17 @@ const AIInsights: React.FC<AIInsightsProps> = ({
           return (
             <div key={index} className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
               <div className="mb-4">
-                <h4 className="text-lg text-slate-800 font-montserrat">
+                <h4 className="text-lg text-slate-800 font-quicksand">
                   Competency: {strength.competency}
                 </h4>
               </div>
               <div className="space-y-4">
                 <div>
-                  <h5 className="text-slate-700 mb-3 font-montserrat">Existing Skill:</h5>
+                  <h5 className="text-slate-700 mb-3 font-quicksand">Existing Skill:</h5>
                   <p className="text-slate-700 leading-relaxed">{strength.example}</p>
                 </div>
                 <div>
-                  <h5 className="text-slate-700 mb-3 font-montserrat">How to leverage further:</h5>
+                  <h5 className="text-slate-700 mb-3 font-quicksand">How to leverage further:</h5>
                   <ul className="space-y-3">
                     {strength.leverage_advice && Array.isArray(strength.leverage_advice) && strength.leverage_advice.map((advice, adviceIndex) => (
                       <li key={adviceIndex} className="flex items-start gap-3">
@@ -289,8 +295,8 @@ const AIInsights: React.FC<AIInsightsProps> = ({
                   </ul>
                 </div>
                 {validResources.length > 0 && (
-                  <div className="bg-slate-50 p-4 rounded border-l-4 border-encourager">
-                    <h6 className="text-slate-700 mb-2 font-montserrat">
+                  <div className="pt-4 border-t border-slate-200">
+                    <h6 className="text-slate-700 mb-2 font-quicksand">
                       Recommended Resources:
                     </h6>
                     <div className="space-y-2">
@@ -319,44 +325,30 @@ const AIInsights: React.FC<AIInsightsProps> = ({
   );
 
   return (
-    <div className="space-y-6">
-      {/* AI-Powered Insights Header */}
-      <div className="bg-encourager/5 p-6 rounded-lg border border-encourager/20">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <div className="bg-encourager-accent/20 p-3 rounded-full">
-              <Bot className="text-encourager" size={24} strokeWidth={1.5} />
-            </div>
-            <div>
-              <h2 className="text-2xl font-bold font-playfair" style={{ color: '#3a6859' }}>AI-Powered Insights</h2>
-              <p className="text-sm text-slate-600 mt-1">
-                Personalised leadership development insights powered by EncouragerGPT
-              </p>
-            </div>
+    <div className="bg-encourager-background p-6 rounded-lg border border-slate-200">
+      <div className="space-y-6">
+
+      {isLoading && (
+        <div className="flex items-center justify-center py-12">
+          <div className="flex items-center gap-3 text-encourager">
+            <Bot className="robot-spin" size={24} />
+            <span className="text-lg">1 minute please, EncouragerGPT is analyzing your test results...</span>
           </div>
         </div>
+      )}
 
-        {isLoading && (
-          <div className="flex items-center justify-center py-12">
-            <div className="flex items-center gap-3 text-encourager">
-              <Bot className="robot-spin" size={24} />
-              <span className="text-lg">1 minute please, EncouragerGPT is analyzing your test results...</span>
-            </div>
+      {error && (
+        <div className="flex items-center gap-3 p-4 border border-slate-200 rounded-lg">
+          <AlertCircle className="text-red-500" size={20} />
+          <div>
+            <p className="text-red-700 font-medium">Unable to generate insights</p>
+            <p className="text-red-600 text-sm">{error}</p>
           </div>
-        )}
+        </div>
+      )}
 
-        {error && (
-          <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <AlertCircle className="text-red-500" size={20} />
-            <div>
-              <p className="text-red-700 font-medium">Unable to generate insights</p>
-              <p className="text-red-600 text-sm">{error}</p>
-            </div>
-          </div>
-        )}
-
-        {insights && !isLoading && (
-          <div className="bg-white rounded-lg p-6 border border-slate-200 shadow-sm">
+      {insights && !isLoading && (
+          <div>
             {(() => {
               const parsedInsights = parseInsights(insights);
               

@@ -49,9 +49,22 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     
-    <!-- Preload critical fonts to prevent FOUT (Flash of Unstyled Text) -->
-    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Quicksand:wght@300;400;500;600;700&family=Noto+Sans:wght@400;500;600&family=Caveat:wght@400;500;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Quicksand:wght@300;400;500;600;700&family=Noto+Sans:wght@400;500;600&family=Caveat:wght@400;500;600;700&display=swap"></noscript>
+    <!-- Preload critical fonts first -->
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/oswald/v53/TK3_WkUHHAIjg75cFRf3bXL8LICs1_FvsUZiZQ.woff2" />
+    <link rel="preload" as="font" type="font/woff2" crossorigin href="https://fonts.gstatic.com/s/quicksand/v31/6xKtdSZaM9iE8KbpRA_hK1QNYuDyPw.woff2" />
+    
+    <!-- Then load the font stylesheets -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Quicksand:wght@300;400;500;600;700&family=Noto+Sans:wght@400;500;600&family=Caveat:wght@400;500;600;700&display=swap" />
+    
+    <!-- Critical CSS to prevent FOUT -->
+    <style>
+      body {
+        font-family: 'Quicksand', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      }
+      h1, h2, h3, h4, h5, h6, .font-oswald {
+        font-family: 'Oswald', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      }
+    </style>
     
     <!-- Optimized resource hints to reduce preloading warnings -->
     <link rel="dns-prefetch" href="https://hrgoxcdixvpmcbfgltea.supabase.co" />

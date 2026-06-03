@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Quicksand:wght@300;400;500;600;700&family=Noto+Sans:wght@400;500;600&family=Caveat:wght@400;500;600;700&display=swap');
+/* Fonts are now preloaded in index.html to prevent FOUT */
 
 @tailwind base;
 @tailwind components;

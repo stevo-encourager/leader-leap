@@ -45,7 +45,7 @@ const MidpointDialog: React.FC<MidpointDialogProps> = ({ open, onOpenChange }) =
         <DialogFooter className="flex-col">
           <Button 
             onClick={() => onOpenChange(false)}
-            className="bg-encourager hover:bg-encourager-light w-full"
+            className="bg-encourager-accent hover:bg-encourager-accent/90 w-full"
           >
             Continue Assessment
           </Button>

@@ -108,9 +108,8 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
                   <div className="mb-4 px-2 pt-2 pb-3 border-b border-slate-200">
                     <h3 className="text-xl font-bold font-quicksand flex items-center gap-2">
                       <BarChart2 className="h-4 w-4" />
-                      Your Leadership Competency Overview
+                      Your Current vs Desired Competency Map
                     </h3>
-                    <p className="text-xs text-slate-600 mt-1">Visual comparison of your current abilities versus desired skill levels</p>
                   </div>
                   <SkillGapChart categories={categories} />
                 </div>

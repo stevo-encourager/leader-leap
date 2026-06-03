@@ -49,7 +49,6 @@ const SkillsAssessment: React.FC<SkillsAssessmentProps> = ({ categories }) => {
           <ListChecks className="h-4 w-4" />
           Your Skills Assessment Overview
         </h3>
-        <p className="text-xs text-slate-600 mt-1">Detailed breakdown of your self-assessment scores across all competencies</p>
       </div>
       
       <div className="space-y-4">

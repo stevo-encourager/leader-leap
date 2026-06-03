@@ -180,11 +180,10 @@ const AIInsights: React.FC<AIInsightsProps> = ({
   const renderFormattedSummary = (summary: string) => {
     return (
       <div className="mb-8">
-        <h3 className="text-xl font-bold mb-2 font-quicksand flex items-center gap-2">
+        <h3 className="text-xl font-bold mb-4 font-quicksand flex items-center gap-2">
           <Bot className="h-5 w-5" />
           Your Assessment Summary
         </h3>
-        <p className="text-sm text-slate-600 mb-4">Overview of your leadership profile with detailed recommendations below</p>
         <div className="bg-white p-6 rounded-lg border border-slate-200">
           <FormattedSummary 
             summary={summary}

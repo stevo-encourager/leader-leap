@@ -50,7 +50,7 @@ const Navigation: React.FC = () => {
             variant="ghost" 
             size="sm" 
             className="flex items-center gap-2 nav-button"
-            onClick={() => window.open('mailto:support@encouragercoaching.com', '_blank')}
+            onClick={() => window.open('mailto:support@encourager.co.uk', '_blank')}
           >
             <Mail size={16} />
             <span>Support</span>
@@ -153,7 +153,7 @@ const Navigation: React.FC = () => {
         >
           {/* Support - always visible */}
           <DropdownMenuItem 
-            onClick={() => window.open('mailto:support@encouragercoaching.com', '_blank')}
+            onClick={() => window.open('mailto:support@encourager.co.uk', '_blank')}
             className="flex items-center gap-2 cursor-pointer"
           >
             <Mail size={16} />

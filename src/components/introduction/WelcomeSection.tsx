@@ -32,7 +32,7 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({ onStartAssessment }) =>
                   Hi, I'm Steve
                 </h2>
                 <p className="text-lg text-slate-600 font-medium">
-                  Executive Coach and creator of the Leader Leap Assessment
+                  Executive Coach and creator of the Leader Leap Leadership Skills Assessment
                 </p>
               </div>
             </div>
@@ -40,7 +40,11 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({ onStartAssessment }) =>
             {/* Main content */}
             <div className="space-y-6 text-slate-700 leading-relaxed text-base">
               <p className="text-lg">
-                In the age of AI, focusing on personal development has never been more critical. As technology transforms how we work, the uniquely human skills of leadership, emotional intelligence, and strategic thinking become our greatest differentiators. I created this free assessment to help anyone looking to develop and strengthen their leadership competencies.
+                In the age of AI, focusing on personal development has never been more critical. As technology transforms how we work, the uniquely human skills of leadership, emotional intelligence, and strategic thinking become our greatest differentiators. I created this free leadership assessment tool to help executives and managers identify leadership gaps and strengthen their leadership skills.
+              </p>
+              
+              <p className="text-base text-encourager font-medium">
+                This leadership gap analysis takes just 10-15 minutes and provides instant personalised leadership coaching recommendations based on your results.
               </p>
               
               <p>

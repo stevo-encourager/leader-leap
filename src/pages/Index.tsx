@@ -66,9 +66,9 @@ const Index = () => {
   return (
     <>
       <SEO 
-        title="Leader Leap Assessment Tool - Leadership Competency Gap Analysis"
-        description="Identify and close leadership competency gaps with our comprehensive assessment tool. Evaluate 11 key leadership areas including strategic thinking, emotional intelligence, and team building."
-        keywords="leadership assessment, competency gap analysis, leadership development, strategic thinking, emotional intelligence, team building, change management, decision making, delegation, negotiation, self-leadership"
+        title="Free Leadership Assessment Tool | Leadership Skills Gap Analysis"
+        description="Take our free leadership assessment to evaluate your skills and identify gaps. Get personalised coaching recommendations for leadership development. Used by executives and managers worldwide."
+        keywords="leadership assessment, leadership skills assessment, leadership coaching, leadership gap analysis, executive coaching, leadership development tool, free leadership test, management skills assessment"
         structuredData={{
           "@context": "https://schema.org",
           "@type": "WebApplication",

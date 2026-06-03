@@ -27,6 +27,7 @@ This guide outlines the SEO improvements implemented for the Leader Leap Assessm
   - Priority levels for each page
   - Change frequency indicators
   - Last modification dates
+  - ✅ Updated to use www.leader-leap.com URLs (June 2026)
 
 ### 4. Dynamic SEO Component
 - Created `src/components/SEO.tsx` for:
@@ -39,6 +40,19 @@ This guide outlines the SEO improvements implemented for the Leader Leap Assessm
 - Updated `public/robots.txt` to include:
   - Sitemap reference
   - Proper crawler directives
+  - ✅ Created comprehensive robots.txt with crawl rules (June 2026)
+  - ✅ Added bad bot blocking
+
+### 6. Keyword Optimization (June 2026)
+- **Enhanced meta tags** for high-value keywords:
+  - "Free Leadership Assessment Tool"
+  - "Leadership Skills Gap Analysis"
+  - "Leadership Coaching"
+  - "Executive Coaching Assessment"
+- **British English spellings** throughout (personalised, analyse, etc.)
+- **Content optimization** in welcome section with natural keyword integration
+- **FAQ Schema** added for rich snippets in search results
+- **Professional Service Schema** for coaching services
 
 ## Additional SEO Recommendations
 
@@ -151,12 +165,17 @@ This guide outlines the SEO improvements implemented for the Leader Leap Assessm
 - [x] Robots.txt optimization
 - [x] Dynamic SEO component
 - [x] Social media meta tags
+- [x] Keyword optimization for leadership terms (June 2026)
+- [x] British English spelling corrections
+- [x] FAQ Schema implementation
+- [x] Professional Service Schema
+- [x] Social share image (encourager-social-share.jpg)
+- [x] Google Search Console setup and sitemap submission
+- [x] Updated all URLs to www.leader-leap.com
 
 ### 🔄 In Progress
-- [ ] Domain-specific URL updates
-- [ ] Open Graph image creation
 - [ ] Google Analytics setup
-- [ ] Page-specific SEO implementation
+- [ ] Waiting for Google to index pages (1 indexed, 7 pending)
 
 ### 📋 To Do
 - [ ] Content optimization

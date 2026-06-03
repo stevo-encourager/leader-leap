@@ -43,7 +43,7 @@ const WelcomeSection: React.FC<WelcomeSectionProps> = ({ onStartAssessment }) =>
                 In the age of AI, focusing on personal development has never been more critical. As technology transforms how we work, the uniquely human skills of leadership, emotional intelligence, and strategic thinking become our greatest differentiators. I created this free leadership assessment tool to help executives and managers identify leadership gaps and strengthen their leadership skills.
               </p>
               
-              <p className="text-base text-encourager font-medium">
+              <p>
                 This leadership gap analysis takes just 10-15 minutes and provides instant personalised leadership coaching recommendations based on your results.
               </p>
               

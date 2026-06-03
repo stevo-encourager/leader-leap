@@ -9,12 +9,42 @@ import { callOpenAI } from './utils/openaiClient.ts';
 import { checkExistingInsights, saveInsights } from './utils/database.ts';
 
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+// Determine allowed origins based on environment
+const getAllowedOrigin = (req: Request): string => {
+  const origin = req.headers.get('origin') || '';
+  
+  // Allowed origins
+  const allowedOrigins = [
+    'https://www.leader-leap.com',
+    'https://leader-leap.com',
+    'http://localhost:8080',
+    'http://localhost:8081',
+    'http://localhost:8082',
+    'http://localhost:8083',
+    'http://127.0.0.1:8080',
+    'http://127.0.0.1:8081',
+    'http://127.0.0.1:8082',
+    'http://127.0.0.1:8083',
+  ];
+  
+  // Also allow Vercel preview deployments
+  if (origin.includes('.vercel.app') || origin.includes('.vercel.sh')) {
+    return origin;
+  }
+  
+  // Return origin if it's in the allowed list, otherwise default to production
+  return allowedOrigins.includes(origin) ? origin : 'https://www.leader-leap.com';
 };
 
+const getCorsHeaders = (req: Request) => ({
+  'Access-Control-Allow-Origin': getAllowedOrigin(req),
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+});
+
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });

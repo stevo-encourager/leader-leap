@@ -1,5 +1,5 @@
 # Robots.txt for Leader Leap Assessment Tool
-# https://leader-leap.com/
+# https://www.leader-leap.com/
 
 # Allow all crawlers
 User-agent: *
@@ -29,7 +29,7 @@ Disallow: /profile/*
 Disallow: /action-plan/*
 
 # Sitemap location
-Sitemap: https://leader-leap.com/sitemap.xml
+Sitemap: https://www.leader-leap.com/sitemap.xml
 
 # Crawl delay (be respectful to smaller sites)
 Crawl-delay: 1

@@ -1,0 +1,48 @@
+# Robots.txt for Leader Leap Assessment Tool
+# https://leader-leap.com/
+
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Disallow admin and private pages
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /api/
+Disallow: /super-admin
+Disallow: /super-admin/*
+Disallow: /.well-known/
+Disallow: /test
+Disallow: /test/*
+
+# Allow important pages explicitly
+Allow: /assessment
+Allow: /login
+Allow: /privacy
+Allow: /privacy-policy
+Allow: /privacy-notice
+Allow: /consent
+
+# Block assessment results (private user data)
+Disallow: /results/*
+Disallow: /profile/*
+Disallow: /action-plan/*
+
+# Sitemap location
+Sitemap: https://leader-leap.com/sitemap.xml
+
+# Crawl delay (be respectful to smaller sites)
+Crawl-delay: 1
+
+# Block bad bots
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Crawl-delay: 10
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /

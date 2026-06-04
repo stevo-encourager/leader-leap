@@ -15,7 +15,7 @@ export const callOpenAI = async (prompt: string, openAIApiKey: string): Promise<
         },
         { role: 'user', content: prompt }
       ],
-      temperature: 0.1,
+      temperature: 0.7,
       max_tokens: 3000
     }),
   });

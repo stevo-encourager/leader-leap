@@ -47,7 +47,7 @@ const queryClient = new QueryClient({
 
 function SuperAdminRoute({ children }) {
   const { user, loading, initialized } = useAuth();
-  const superAdmins = import.meta.env.VITE_ADMIN_EMAILS?.split(',').map(email => email.trim()) || ['steve@encourager.co.uk'];
+  const superAdmins = import.meta.env.VITE_ADMIN_EMAILS?.split(',').map(email => email.trim()) || ['steve.thompson@leader-leap.com'];
   
   // Wait for auth to be initialized
   if (!initialized) {

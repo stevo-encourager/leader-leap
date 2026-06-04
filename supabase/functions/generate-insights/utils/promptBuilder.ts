@@ -235,28 +235,29 @@ const buildValidatedResourcesList = (): string => {
 - The Predictive Index: https://www.predictiveindex.com/
 
 **Leadership Books:**
-- Emotional Intelligence 2.0 by Travis Bradberry: https://amzn.to/45zVPDo
-- Crucial Conversations by Kerry Patterson: https://amzn.to/4koOyLq
-- The 7 Habits of Highly Effective People by Stephen Covey: https://amzn.to/4kn4Sw0
-- Good to Great by Jim Collins: https://amzn.to/4jBi3s9
-- Dare to Lead by Brené Brown: https://amzn.to/454pepe
-- The Leadership Challenge by James Kouzes: https://amzn.to/3HhFyct
-- Primal Leadership by Daniel Goleman: https://amzn.to/43MFg4V
-- Atomic Habits by James Clear: https://amzn.to/4mNWBTM
-- Getting Things Done by David Allen: https://amzn.to/3Zcige4
-- Reinventing Organisations by Frederic Laloux: https://amzn.to/45AG8fa
-- The Pyramid Principle by Barbara Minto: https://amzn.to/3Zc2YWN
-- The Captain Class by Sam Walker: https://amzn.to/43t4vKE
-- Leading Change by John Kotter: https://amzn.to/3Hgp9oD
-- The Power of Habit by Charles Duhigg: https://amzn.to/3FErMzX
-- Build, Excite, Equip by Nicola Graham: https://amzn.to/3Swn0aI
-- The 17 Indisputable Laws of Teamwork by John Maxwell: https://amzn.to/3ZI7QTy
-- Thinking Fast and Slow by Daniel Kahneman: https://amzn.to/3HnnOMD
-- Getting To Yes by Roger Fisher and William Ury: https://amzn.to/4mIcT08
-- Playing To Win by AG Lafley & Roger Martin: https://amzn.to/4kLsXfW
-- Human Skills by Elizabeth Nyamayaro: https://amzn.to/3HA3g3s
-- Radical Candor by Kim Scott: https://amzn.to/3HkG2hT
-- Nonviolent Communication by Marshall B. Rosenberg: https://amzn.to/3T1gWXQ
+- Emotional Intelligence 2.0 by Travis Bradberry: https://amzn.to/4ubKqCF
+- Crucial Conversations by Kerry Patterson: https://amzn.to/43MWHm1
+- The 7 Habits of Highly Effective People by Stephen Covey: https://amzn.to/4dPvKEk
+- Good to Great by Jim Collins: https://amzn.to/4dOdb3h
+- Dare to Lead by Brené Brown: https://amzn.to/4ukmTzs
+- The Leadership Challenge by James Kouzes: https://amzn.to/3Skn1S0
+- Primal Leadership by Daniel Goleman: https://amzn.to/4vv5rsZ
+- Atomic Habits by James Clear: https://amzn.to/3Qm3hwL
+- Getting Things Done by David Allen: https://amzn.to/43c2cuv
+- Reinventing Organisations by Frederic Laloux: https://amzn.to/4emEW30
+- The Pyramid Principle by Barbara Minto: https://amzn.to/3RErFKB
+- The Captain Class by Sam Walker: https://amzn.to/4fV8q9u
+- Leading Change by John Kotter: https://amzn.to/43OtDKY
+- The Power of Habit by Charles Duhigg: https://amzn.to/3PHZJF3
+- Build, Excite, Equip by Nicola Graham: https://amzn.to/3RNlkMQ
+- The 17 Indisputable Laws of Teamwork by John Maxwell: https://amzn.to/3QhZ1OS
+- Thinking Fast and Slow by Daniel Kahneman: https://amzn.to/4obBf3E
+- Getting To Yes by Roger Fisher and William Ury: https://amzn.to/3S177fd
+- Playing To Win by AG Lafley & Roger Martin: https://amzn.to/4vsEbLw
+- Human Skills by Elizabeth Nyamayaro: https://amzn.to/4dYdI1q
+- Radical Candor by Kim Scott: https://amzn.to/4frcRJ4
+- Nonviolent Communication by Marshall B. Rosenberg: https://amzn.to/4vqTrbP
+- Switch by Chip and Dan Heath: https://amzn.to/4vxFp8A
 
 **CRITICAL RESOURCE VALIDATION RULES:**
 - You MUST ONLY use resources from this validated database above
@@ -279,7 +280,7 @@ const buildValidatedResourcesList = (): string => {
 - For Emotional Intelligence competencies, prefer "Emotional Intelligence 2.0" or "Primal Leadership"
 - For Strategic Thinking competencies, prefer "Good to Great" or "Playing To Win"
 - For Team Building competencies, prefer "The Leadership Challenge" or "The 17 Indisputable Laws of Teamwork"
-- For Change Management competencies, prefer "Leading Change" or "The Power of Habit"
+- For Change Management competencies, prefer "Leading Change" or "Switch" or "The Power of Habit"
 - For Decision Making competencies, prefer "Thinking Fast and Slow" or "Getting To Yes"
 - For Time/Priority Management competencies, prefer "Atomic Habits" or "Getting Things Done"
 - For Self-Leadership competencies, prefer "The 7 Habits of Highly Effective People" or "Atomic Habits"
@@ -307,7 +308,7 @@ const buildValidatedResourcesList = (): string => {
 - For Emotional Intelligence competencies, prefer "Emotional Intelligence 2.0" or "Primal Leadership"
 - For Strategic Thinking competencies, prefer "Good to Great" or "Playing To Win"
 - For Team Leadership competencies, prefer "The Leadership Challenge" or "The 17 Indisputable Laws of Teamwork"
-- For Change Management competencies, prefer "Leading Change" or "The Power of Habit"
+- For Change Management competencies, prefer "Leading Change" or "Switch" or "The Power of Habit"
 - For Decision Making competencies, prefer "Thinking Fast and Slow" or "Getting To Yes"
 - For Time/Priority Management competencies, prefer "Atomic Habits" or "Getting Things Done"
 - For Self-Leadership competencies, prefer "The 7 Habits of Highly Effective People" or "Atomic Habits"

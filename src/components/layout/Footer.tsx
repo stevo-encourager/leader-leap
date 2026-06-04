@@ -20,7 +20,7 @@ const Footer: React.FC = () => {
           </Link>
           <span className="text-slate-300">|</span>
           <a 
-            href="mailto:steve@encourager.co.uk" 
+            href="mailto:steve.thompson@leader-leap.com" 
             className="hover:text-encourager transition-colors"
             target="_blank"
             rel="noopener noreferrer"

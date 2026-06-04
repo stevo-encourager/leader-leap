@@ -96,7 +96,7 @@ const UserManagement = () => {
   };
 
   const isAdmin = (email: string) => {
-    const superAdmins = ['steve@encourager.co.uk'];
+    const superAdmins = ['steve.thompson@leader-leap.com'];
     return superAdmins.some(adminEmail => 
       adminEmail.toLowerCase() === email.toLowerCase().trim()
     );

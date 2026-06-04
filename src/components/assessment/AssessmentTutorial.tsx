@@ -27,7 +27,7 @@ const AssessmentTutorial: React.FC<AssessmentTutorialProps> = ({
     },
     {
       title: "Set Your Target Level",
-      description: "Think strategically but realistically: In one year's time, what level would represent meaningful progress? Remember, not every skill needs to be a 10.",
+      description: "Think strategically but realistically: In **one year's time**, what level would represent meaningful progress? Remember, not every skill needs to be a 10.",
       highlight: "target",
       animation: () => animateSlider('target', 8)
     },
@@ -151,10 +151,10 @@ const AssessmentTutorial: React.FC<AssessmentTutorialProps> = ({
 
           {/* Step content */}
           <div className="text-center mb-6">
-            <h4 className="text-xl font-bold font-quicksand text-gray-800 mb-2">
+            <h4 className="text-3xl font-bold font-quicksand text-encourager-accent mb-4">
               {steps[currentStep].title}
             </h4>
-            <p className="text-sm text-gray-600 whitespace-pre-line">
+            <p className="text-base text-gray-800 whitespace-pre-line leading-relaxed">
               {steps[currentStep].description.split('**').map((part, index) => 
                 index % 2 === 1 ? <strong key={index}>{part}</strong> : part
               )}

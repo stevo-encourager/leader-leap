@@ -132,7 +132,7 @@ serve(async (req) => {
       body: JSON.stringify({
         from: 'Leader Leap <steve.thompson@leader-leap.com>',
         to: [userEmail],
-        subject: 'Welcome to Leader Leap - Your Account is Ready!',
+        subject: 'Welcome to Leader Leap - Discover Your Leadership Gaps!',
         html: `
           <!DOCTYPE html>
           <html>
@@ -145,30 +145,30 @@ serve(async (req) => {
               
               <p>Hi ${displayName},</p>
               
-              <p>Welcome to Leader Leap! Thank you for confirming your account and joining our leadership development community.</p>
+              <p>Welcome to Leader Leap! Your account is now active and you're ready to discover your leadership gaps...and do something about them!</p>
               
-              <p>Your account is now active and ready to use.</p>
+              <p><strong>In the age of AI, the uniquely human skills of leadership become our greatest differentiators.</strong> This platform helps you identify exactly where to focus your development to future-proof your career.</p>
               
-              <h3 style="color: #000000; margin-top: 30px; margin-bottom: 15px;">You can log in at any time to:</h3>
+              <h3 style="color: #000000; margin-top: 30px; margin-bottom: 15px;">You can now:</h3>
               <ul style="margin: 15px 0; padding-left: 20px;">
-                  <li>View your leadership assessment results</li>
+                  <li><strong>Gain self-awareness</strong> of your leadership strengths and gaps</li>
                   <li>Download your comprehensive assessment report as a PDF</li>
-                  <li>See your personalised radar chart of leadership competencies</li>
-                  <li>Access AI-powered insights and recommendations</li>
-                  <li>Create and manage action plans for your development</li>
-                  <li>Track your progress over time</li>
+                  <li>View your personalised radar chart of leadership competencies</li>
+                  <li>Access AI-powered insights tailored to your results</li>
+                  <li><strong>Build a targeted</strong> development plan for your gaps</li>
+                  <li><strong>Track your progress</strong> over time</li>
               </ul>
               
               <p style="margin: 30px 0;">
-                  <a href="https://www.leader-leap.com/profile" style="background-color: #C96736; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Access Your Dashboard</a>
+                  <a href="https://www.leader-leap.com/profile" style="background-color: #C96736; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; text-transform: uppercase;">ACCESS YOUR DASHBOARD</a>
               </p>
               
-              <p>Leader Leap is designed to help you understand your leadership competencies and develop the skills needed to achieve your goals.</p>
+              <p>Leader Leap helps you focus on the human skills that will define tomorrow's leaders - emotional intelligence, strategic thinking, and the ability to inspire and develop others.</p>
               
-              <p>Ready to take your leadership to the next level? I would love to partner with you to take these insights and turn them into action.</p>
+              <p>Ready to future-proof your leadership? I'd love to partner with you as your executive coach to turn these insights into real transformation.</p>
               
               <p style="margin: 30px 0;">
-                  <a href="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ0S-SdZAlPQs8oLSzYyWXuXY7j5SIjRUCSOeq0yo7cz9VSHBKw5r6v9Lei3b7KlRr3UPRUMZmhE" style="background-color: #5fac9a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Book a Free Discovery Call</a>
+                  <a href="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ0S-SdZAlPQs8oLSzYyWXuXY7j5SIjRUCSOeq0yo7cz9VSHBKw5r6v9Lei3b7KlRr3UPRUMZmhE" style="background-color: #C96736; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold; text-transform: uppercase;">BOOK A FREE DISCOVERY CALL</a>
               </p>
               
               <p>If you have any questions or need assistance, please don't hesitate to reach out to me directly.</p>
@@ -177,7 +177,7 @@ serve(async (req) => {
                   Best regards,<br>
                   <strong>Steve Thompson</strong><br>
                   Leader Leap | Encourager Coaching<br>
-                  <a href="mailto:steve@leader-leap.com">steve@leader-leap.com</a>
+                  <a href="mailto:steve.thompson@leader-leap.com">steve.thompson@leader-leap.com</a>
               </p>
               
               <div style="margin-top: 20px; font-size: 14px; color: #666;">
@@ -190,7 +190,7 @@ serve(async (req) => {
               <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
               
               <div style="text-align: center; font-size: 12px; color: #666;">
-                  <p style="margin: 5px 0;"><strong>Leader Leap - Empowering Leadership Development</strong></p>
+                  <p style="margin: 5px 0;"><strong>Leader Leap - Future-Proof Your Leadership in the Age of AI</strong></p>
                   <p style="margin: 5px 0;">This email was sent to ${userEmail}. Generated on ${currentDate}.</p>
               </div>
               

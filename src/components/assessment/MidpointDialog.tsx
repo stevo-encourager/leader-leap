@@ -22,17 +22,17 @@ const MidpointDialog: React.FC<MidpointDialogProps> = ({ open, onOpenChange }) =
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogOverlay className="backdrop-blur-md bg-black/30" />
       <DialogContent className="max-w-md">
-        <div className="bg-encourager h-1.5 w-1/2 absolute top-0 left-0"></div>
+        <div className="bg-encourager-accent h-1.5 w-1/2 absolute top-0 left-0"></div>
         
         <DialogHeader className="pt-4 items-center">
-          <div className="h-16 w-16 rounded-full bg-encourager-lightgray flex items-center justify-center text-encourager mb-4">
+          <div className="h-16 w-16 rounded-full bg-encourager-lightgray flex items-center justify-center text-encourager-accent mb-4">
             <Gauge className="h-8 w-8" />
           </div>
           <DialogTitle className="text-2xl font-oswald font-normal text-center text-encourager-gray">
             Halfway There!
           </DialogTitle>
           <DialogDescription className="text-center">
-            <div className="flex items-center justify-center gap-1 text-encourager font-medium">
+            <div className="flex items-center justify-center gap-1 text-encourager-accent font-medium">
               <CheckCircle2 className="h-4 w-4" />
               <span>50% Complete</span>
             </div>
@@ -45,9 +45,9 @@ const MidpointDialog: React.FC<MidpointDialogProps> = ({ open, onOpenChange }) =
         <DialogFooter className="flex-col">
           <Button 
             onClick={() => onOpenChange(false)}
-            className="bg-encourager-accent hover:bg-encourager-accent/90 w-full"
+            className="bg-encourager-accent hover:bg-encourager-accent/90 w-full font-bold"
           >
-            Continue Assessment
+            CONTINUE ASSESSMENT
           </Button>
         </DialogFooter>
       </DialogContent>

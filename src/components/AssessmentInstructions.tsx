@@ -20,38 +20,42 @@ const AssessmentInstructions: React.FC<AssessmentInstructionsProps> = ({ onConti
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex gap-4 items-center">
-                <div className="bg-encourager-accent/10 p-2 rounded-full flex-shrink-0">
-                  <ArrowRight className="text-encourager" size={16} strokeWidth={1.5} />
+            <div className="space-y-6">
+              <div className="flex gap-4 items-start">
+                <div className="bg-encourager-accent/10 p-3 rounded-full flex-shrink-0">
+                  <ArrowRight className="text-encourager-accent" size={18} strokeWidth={2} />
                 </div>
-                <p className="text-slate-700">
-                  <span className="font-medium text-slate-900">Be ruthlessly honest:</span> Rate where you are today and where you need to be (1-10, from Beginner to Expert).
-                </p>
+                <div>
+                  <h3 className="text-lg font-bold font-quicksand text-encourager-accent mb-2">Be ruthlessly honest:</h3>
+                  <p className="text-base text-slate-800 leading-relaxed">Rate where you are today and where you need to be (1-10, from Beginner to Expert).</p>
+                </div>
               </div>
-              <div className="flex gap-4 items-center">
-                <div className="bg-encourager-accent/10 p-2 rounded-full flex-shrink-0">
-                  <ArrowRight className="text-encourager" size={16} strokeWidth={1.5} />
+              <div className="flex gap-4 items-start">
+                <div className="bg-encourager-accent/10 p-3 rounded-full flex-shrink-0">
+                  <ArrowRight className="text-encourager-accent" size={18} strokeWidth={2} />
                 </div>
-                <p className="text-slate-700">
-                  <span className="font-medium text-slate-900">Think strategically:</span> What human skills will set you apart in an AI-enhanced world?
-                </p>
+                <div>
+                  <h3 className="text-lg font-bold font-quicksand text-encourager-accent mb-2">Think strategically:</h3>
+                  <p className="text-base text-slate-800 leading-relaxed">What human skills will set you apart in an AI-enhanced world?</p>
+                </div>
               </div>
-              <div className="flex gap-4 items-center">
-                <div className="bg-encourager-accent/10 p-2 rounded-full flex-shrink-0">
-                  <ArrowRight className="text-encourager" size={16} strokeWidth={1.5} />
+              <div className="flex gap-4 items-start">
+                <div className="bg-encourager-accent/10 p-3 rounded-full flex-shrink-0">
+                  <ArrowRight className="text-encourager-accent" size={18} strokeWidth={2} />
                 </div>
-                <p className="text-slate-700">
-                  <span className="font-medium text-slate-900">Set realistic targets:</span> Think about where you want to be in one year's time.
-                </p>
+                <div>
+                  <h3 className="text-lg font-bold font-quicksand text-encourager-accent mb-2">Set realistic targets:</h3>
+                  <p className="text-base text-slate-800 leading-relaxed">Think about where you want to be in <strong>one year's time</strong>.</p>
+                </div>
               </div>
-              <div className="flex gap-4 items-center">
-                <div className="bg-encourager-accent/10 p-2 rounded-full flex-shrink-0">
-                  <ArrowRight className="text-encourager" size={16} strokeWidth={1.5} />
+              <div className="flex gap-4 items-start">
+                <div className="bg-encourager-accent/10 p-3 rounded-full flex-shrink-0">
+                  <ArrowRight className="text-encourager-accent" size={18} strokeWidth={2} />
                 </div>
-                <p className="text-slate-700">
-                  <span className="font-medium text-slate-900">Complete everything:</span> Every human skill counts. Rate all to continue.
-                </p>
+                <div>
+                  <h3 className="text-lg font-bold font-quicksand text-encourager-accent mb-2">Complete everything:</h3>
+                  <p className="text-base text-slate-800 leading-relaxed">Every human skill counts. Rate all to continue.</p>
+                </div>
               </div>
             </div>
           </CardContent>

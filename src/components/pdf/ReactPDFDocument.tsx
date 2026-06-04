@@ -23,7 +23,8 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
+    fontFamily: 'Helvetica-Bold',
     fontWeight: 'bold',
     color: '#000000',
     textAlign: 'center',
@@ -81,8 +82,8 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   chartImage: {
-    maxWidth: 500,
-    maxHeight: 417, // Maintain 1.2:1 aspect ratio (500/1.2 = 417)
+    maxWidth: 475,
+    maxHeight: 475, // Square for perfect symmetry
     marginBottom: 8,
     alignSelf: 'center',
   },
@@ -123,7 +124,7 @@ const styles = StyleSheet.create({
   linkText: {
     fontSize: 12,
     color: '#0066CC',
-    textDecoration: 'underline',
+    textDecoration: 'none',
     marginBottom: 4,
   },
   footer: {
@@ -137,6 +138,40 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#e2e8f0',
     paddingTop: 8,
+  },
+  profileSummary: {
+    backgroundColor: '#f9fafb',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 20,
+  },
+  profileTitle: {
+    fontSize: 14,
+    fontFamily: 'Helvetica-Bold',
+    fontWeight: 'bold',
+    color: '#000000',
+    marginBottom: 10,
+  },
+  profileRow: {
+    fontSize: 11,
+    lineHeight: 1.8,
+    color: '#374151',
+  },
+  profileLabel: {
+    fontWeight: 'bold',
+    color: '#000000',
+  },
+  summarySection: {
+    backgroundColor: '#f9fafb',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 20,
+  },
+  prioritySection: {
+    backgroundColor: '#f9fafb',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 15,
   },
 });
 
@@ -398,8 +433,8 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
           <View>
             {/* Assessment Summary */}
             {parsedInsights.summary && (
-              <View>
-                <Text style={styles.subsectionTitle}>Assessment Summary</Text>
+              <View style={styles.summarySection}>
+                <Text style={styles.subsectionTitle}>Executive Summary</Text>
                 {(() => {
                   const summary = parsedInsights.summary;
                   // Split into paragraphs (by double newline or single newline)
@@ -446,7 +481,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
             {/* Priority Development Areas with clickable resource links */}
             {parsedInsights.priority_areas && parsedInsights.priority_areas.length > 0 && (
               <View>
-                <Text style={styles.subsectionTitle}>Top 3 Priority Development Areas</Text>
+                <Text style={styles.sectionTitle}>Top 3 Priority Development Areas</Text>
                 {parsedInsights.priority_areas.map((area, index) => {
                   // Enhanced null checking for area
                   if (!area || typeof area !== 'object') {
@@ -467,7 +502,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
                   const formattedResources = parseAndFormatResources(allResources);
 
                   return (
-                    <View key={index} style={styles.priorityItem}>
+                    <View key={index} style={styles.prioritySection}>
                       <Text style={styles.boldText}>
                         {index + 1}. {area.competency || 'Unknown Competency'} (Gap: {(area.gap || 0).toFixed(1)})
                       </Text>
@@ -514,7 +549,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
       <Page size="A4" style={styles.page}>
         {parsedInsights?.key_strengths && parsedInsights.key_strengths.length > 0 && (
           <View>
-            <Text style={{ ...styles.sectionTitle, borderBottomWidth: 0 }}>Key Competencies to Leverage</Text>
+            <Text style={styles.sectionTitle}>Key Competencies to Leverage</Text>
             {parsedInsights.key_strengths.map((strength, index) => {
               // Enhanced null checking for strength
               if (!strength || typeof strength !== 'object') {
@@ -526,7 +561,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
               const formattedResources = parseAndFormatResources(strength.resources || []);
 
               return (
-                <View key={index} style={styles.strengthItem}>
+                <View key={index} style={styles.prioritySection}>
                   <Text style={styles.boldText}>{`${index + 1}. ${strength.competency || 'Unknown Competency'}`}</Text>
                   <Text style={styles.text}>Existing Skill: {strength.example || 'No example provided'}</Text>
                   <Text style={styles.boldText}>How to leverage further:</Text>
@@ -613,12 +648,12 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
         <Text style={styles.listItem}>• Learn how to lean into your strengths to achieve your goals</Text>
         <Text style={styles.listItem}>• Understand yourself better and eliminate self-limiting beliefs or obstacles</Text>
         <Text style={styles.listItem}>• Establish regular touchpoints for tracking growth and gaining insights</Text>
-        <Link src="https://www.encourager.co.uk/about" style={[styles.boldText, { marginTop: 10, color: '#0066CC' }]}>Learn more about me</Link>
-        <Link src="https://www.encourager.co.uk/executive-coaching" style={[styles.boldText, { marginTop: 5, color: '#0066CC' }]}>Understand the process</Link>
-        <Link src="https://calendar.app.google/PwZrr2JJXVi1Uwrq7" style={[styles.boldText, { marginTop: 5, color: '#0066CC' }]}>Book a free 30 minute discovery call</Link>
+        <Link src="https://www.encourager.co.uk/about" style={[styles.boldText, { marginTop: 10, color: '#0066CC', textDecoration: 'none' }]}>Learn more about me</Link>
+        <Link src="https://www.encourager.co.uk/executive-coaching" style={[styles.boldText, { marginTop: 5, color: '#0066CC', textDecoration: 'none' }]}>Understand the process</Link>
+        <Link src="https://calendar.app.google/PwZrr2JJXVi1Uwrq7" style={[styles.boldText, { marginTop: 5, color: '#0066CC', textDecoration: 'none' }]}>Book a free 30 minute discovery call</Link>
         <Text style={[styles.text, { marginTop: 25, fontWeight: 'bold' }]}>Steve Thompson</Text>
         <Text style={[styles.text, { fontSize: 10 }]}>Executive Coach</Text>
-        <Text style={[styles.text, { fontSize: 10 }]}>steve@encourager.co.uk</Text>
+        <Text style={[styles.text, { fontSize: 10 }]}>steve.thompson@leader-leap.com</Text>
         <Text style={[styles.footer, { marginTop: 20 }]}>
           Leader Leap: Discover Your Leadership Gaps • Assessment taken on {currentDate}{'\n'}
           This assessment is designed to help you identify development opportunities and create targeted improvement plans.

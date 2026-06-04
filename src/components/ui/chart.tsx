@@ -74,28 +74,42 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     return null
   }
 
-  return (
-    <style
-      dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
-${prefix} [data-chart=${id}] {
-${colorConfig
-  .map(([key, itemConfig]) => {
-    const color =
-      itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
-      itemConfig.color
-    return color ? `  --color-${key}: ${color};` : null
-  })
-  .join("\n")}
-}
-`
-          )
-          .join("\n"),
-      }}
-    />
-  )
+  // Sanitize inputs to prevent XSS
+  const sanitizeCSS = (value: string): string => {
+    // Remove any potentially dangerous characters/patterns
+    return value.replace(/[<>\"'`]/g, '').substring(0, 100)
+  }
+
+  const sanitizedId = sanitizeCSS(id)
+  
+  const cssRules = Object.entries(THEMES)
+    .map(([theme, prefix]) => {
+      const rules = colorConfig
+        .map(([key, itemConfig]) => {
+          const color =
+            itemConfig.theme?.[theme as keyof typeof itemConfig.theme] ||
+            itemConfig.color
+          
+          if (!color) return null
+          
+          // Sanitize both key and color value
+          const sanitizedKey = sanitizeCSS(key)
+          const sanitizedColor = sanitizeCSS(color)
+          
+          // Validate color format (basic validation)
+          const isValidColor = /^(#[0-9a-f]{3,8}|rgb|hsl|[a-z]+)$/i.test(sanitizedColor)
+          
+          return isValidColor ? `  --color-${sanitizedKey}: ${sanitizedColor};` : null
+        })
+        .filter(Boolean)
+        .join("\n")
+
+      return rules ? `${prefix} [data-chart=${sanitizedId}] {\n${rules}\n}` : ''
+    })
+    .filter(Boolean)
+    .join("\n")
+
+  return <style>{cssRules}</style>
 }
 
 const ChartTooltip = RechartsPrimitive.Tooltip

@@ -402,7 +402,7 @@ const ActionPlanSummaryPDF: React.FC<ActionPlanSummaryPDFProps> = ({
           </View>
           <View style={{ marginTop: 15, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#e5e7eb' }}>
             <Text style={{ fontSize: 10, color: '#6b7280' }}>
-              Steve Thompson, Executive Coach • steve@encouragercoaching.com
+              Steve Thompson, Executive Coach • steve.thompson@leader-leap.com
             </Text>
           </View>
         </View>

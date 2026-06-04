@@ -24,7 +24,7 @@ const Navigation: React.FC = () => {
      !window.location.hostname.includes('lovable.dev'));
   
   // Check if user is super admin
-  const superAdmins = ['steve@encourager.co.uk'];
+  const superAdmins = ['steve.thompson@leader-leap.com'];
   const isSuperAdmin = user && superAdmins.some(
     email => email.toLowerCase() === (user.email || '').toLowerCase().trim()
   );

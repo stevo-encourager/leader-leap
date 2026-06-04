@@ -417,8 +417,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
               )}
               <Button 
                 onClick={handleNewAssessment}
-                className="text-white"
-                className="bg-encourager-accent text-white hover:bg-encourager-accent/90"
+                className="text-white bg-encourager-accent hover:bg-encourager-accent/90"
                 onMouseEnter={(e) => e.target.style.backgroundColor = '#D07A52'}
                 onMouseLeave={(e) => e.target.style.backgroundColor = '#C96736'}
               >

@@ -801,7 +801,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
         {/* Assessment Selector */}
       <div className="mb-6">
         <div className="flex items-center gap-3">
-          <Label htmlFor="assessment-select" className="text-xl font-normal font-quicksand whitespace-nowrap" className="text-encourager">
+          <Label htmlFor="assessment-select" className="text-xl font-normal font-quicksand whitespace-nowrap text-encourager">
             Action Plan for Assessment:
           </Label>
           <Select value={selectedAssessmentId} onValueChange={setSelectedAssessmentId}>
@@ -899,8 +899,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
                         <Button
                           size="sm"
                           onClick={() => createActionPlan(competency)}
-                          className="text-white"
-                          className="bg-encourager-accent"
+                          className="text-white bg-encourager-accent"
                           onMouseEnter={(e) => e.target.style.backgroundColor = '#D07A52'}
                           onMouseLeave={(e) => e.target.style.backgroundColor = '#C96736'}
                         >

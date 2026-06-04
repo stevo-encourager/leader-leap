@@ -30,7 +30,7 @@ export default defineConfig(() => ({
         manualChunks: {
           // Separate heavy libraries into their own chunks
           'pdf': ['@react-pdf/renderer'],
-          'canvas': ['html2canvas', 'html2pdf.js', 'jspdf'],
+          'canvas': ['html2canvas'],
           'charts': ['recharts'],
           'ui': [
             '@radix-ui/react-accordion',

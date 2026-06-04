@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Insights Comparison Tool</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #2F5850;
+            border-bottom: 3px solid #C96736;
+            padding-bottom: 10px;
+        }
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .controls label {
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .controls select {
+            margin-right: 20px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+        .result-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .result-header {
+            background: #2F5850;
+            color: white;
+            padding: 10px;
+            margin: -20px -20px 20px;
+            border-radius: 8px 8px 0 0;
+        }
+        .result-header h3 {
+            margin: 0;
+            font-size: 16px;
+        }
+        .metrics {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+        }
+        .metric-good {
+            color: green;
+        }
+        .metric-bad {
+            color: red;
+        }
+        .summary-preview {
+            background: #fff;
+            padding: 15px;
+            border-left: 3px solid #C96736;
+            margin-top: 15px;
+            line-height: 1.6;
+        }
+        .insights-list {
+            margin-top: 15px;
+        }
+        .insight-item {
+            background: #f9f9f9;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .rating-buttons {
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        .rating-buttons button {
+            padding: 5px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-excellent {
+            background: #4CAF50;
+            color: white;
+        }
+        .btn-good {
+            background: #8BC34A;
+            color: white;
+        }
+        .btn-average {
+            background: #FFC107;
+            color: white;
+        }
+        .btn-poor {
+            background: #FF5722;
+            color: white;
+        }
+        .score-display {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .winner {
+            border: 3px solid #4CAF50;
+            box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Leader Leap AI Insights Testing - Comparison Tool</h1>
+        
+        <div class="controls">
+            <label>Test Case:</label>
+            <select id="testCase">
+                <option>Tech Manager - Balanced Gaps</option>
+                <option>Senior Executive - People Skills Gap</option>
+            </select>
+            
+            <label>Metric Focus:</label>
+            <select id="metricFocus">
+                <option>All Metrics</option>
+                <option>Pattern Recognition</option>
+                <option>Specificity</option>
+                <option>Actionability</option>
+            </select>
+            
+            <button onclick="loadComparison()">Load Results</button>
+            <button onclick="exportRankings()">Export Rankings</button>
+        </div>
+
+        <div class="comparison-grid" id="comparisonGrid">
+            <!-- Results will be loaded here -->
+        </div>
+    </div>
+
+    <script>
+        // This would load actual test results from your test-results directory
+        const mockResults = [
+            {
+                model: "GPT-4o - Medium Temp",
+                prompt: "With Pattern Analysis",
+                qualityMetrics: {
+                    summaryLength: 450,
+                    mentionsPatterns: true,
+                    mentionsSpecificGaps: 4,
+                    usesTransitions: true,
+                    genericPhrases: 1
+                },
+                summary: "Your assessment reveals an interconnected set of development opportunities centered around people leadership. The gaps in delegation (3.0), team building (2.8), and emotional intelligence (3.2) form a pattern suggesting you may be operating more as an individual contributor than a true leader of leaders. However, your strong strategic thinking and decision-making abilities provide an excellent foundation for growth...",
+                insights: [
+                    "Develop a 'delegation dashboard' to track task distribution and team member growth, addressing both your delegation gap and team building simultaneously",
+                    "Implement weekly 'emotional check-ins' using the RULER method to strengthen EQ while building team cohesion",
+                    "Create 'strategy storytelling' sessions where you translate your strategic vision into emotionally resonant narratives"
+                ],
+                userRating: null
+            },
+            {
+                model: "GPT-4o - Low Temp",
+                prompt: "Original Prompt",
+                qualityMetrics: {
+                    summaryLength: 380,
+                    mentionsPatterns: false,
+                    mentionsSpecificGaps: 2,
+                    usesTransitions: false,
+                    genericPhrases: 3
+                },
+                summary: "You have gaps in several leadership competencies. Delegation shows a gap of 3.0 points. Team building has a gap of 2.8 points. Emotional intelligence has a gap of 3.2 points. These are important areas for leaders to develop. You should consider working on these skills to improve your leadership effectiveness...",
+                insights: [
+                    "Work on delegation by giving more tasks to your team",
+                    "Improve team building through team activities",
+                    "Develop emotional intelligence by being more aware of emotions"
+                ],
+                userRating: null
+            }
+        ];
+
+        function loadComparison() {
+            const grid = document.getElementById('comparisonGrid');
+            grid.innerHTML = mockResults.map((result, index) => `
+                <div class="result-card ${result.userRating === 'excellent' ? 'winner' : ''}">
+                    <div class="result-header">
+                        <h3>${result.model} + ${result.prompt}</h3>
+                    </div>
+                    
+                    <div class="metrics">
+                        <div class="metric">
+                            <span>Summary Length:</span>
+                            <span>${result.qualityMetrics.summaryLength} chars</span>
+                        </div>
+                        <div class="metric">
+                            <span>Mentions Patterns:</span>
+                            <span class="${result.qualityMetrics.mentionsPatterns ? 'metric-good' : 'metric-bad'}">
+                                ${result.qualityMetrics.mentionsPatterns ? '✅' : '❌'}
+                            </span>
+                        </div>
+                        <div class="metric">
+                            <span>Specific References:</span>
+                            <span class="${result.qualityMetrics.mentionsSpecificGaps > 2 ? 'metric-good' : 'metric-bad'}">
+                                ${result.qualityMetrics.mentionsSpecificGaps}
+                            </span>
+                        </div>
+                        <div class="metric">
+                            <span>Generic Phrases:</span>
+                            <span class="${result.qualityMetrics.genericPhrases < 2 ? 'metric-good' : 'metric-bad'}">
+                                ${result.qualityMetrics.genericPhrases}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="summary-preview">
+                        <strong>Summary:</strong><br>
+                        ${result.summary}
+                    </div>
+                    
+                    <div class="insights-list">
+                        <strong>Sample Insights:</strong>
+                        ${result.insights.map(insight => `
+                            <div class="insight-item">${insight}</div>
+                        `).join('')}
+                    </div>
+                    
+                    <div class="rating-buttons">
+                        <button class="btn-excellent" onclick="rateResult(${index}, 'excellent')">Excellent</button>
+                        <button class="btn-good" onclick="rateResult(${index}, 'good')">Good</button>
+                        <button class="btn-average" onclick="rateResult(${index}, 'average')">Average</button>
+                        <button class="btn-poor" onclick="rateResult(${index}, 'poor')">Poor</button>
+                    </div>
+                    
+                    ${result.userRating ? `
+                        <div class="score-display" style="color: ${getScoreColor(result.userRating)}">
+                            ${result.userRating.toUpperCase()}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function rateResult(index, rating) {
+            mockResults[index].userRating = rating;
+            loadComparison();
+        }
+
+        function getScoreColor(rating) {
+            const colors = {
+                excellent: '#4CAF50',
+                good: '#8BC34A',
+                average: '#FFC107',
+                poor: '#FF5722'
+            };
+            return colors[rating] || '#666';
+        }
+
+        function exportRankings() {
+            const rankings = mockResults
+                .filter(r => r.userRating)
+                .sort((a, b) => {
+                    const order = ['excellent', 'good', 'average', 'poor'];
+                    return order.indexOf(a.userRating) - order.indexOf(b.userRating);
+                })
+                .map(r => ({
+                    combination: `${r.model} + ${r.prompt}`,
+                    rating: r.userRating,
+                    metrics: r.qualityMetrics
+                }));
+            
+            console.log('Rankings:', rankings);
+            alert('Rankings exported to console. Best combination: ' + rankings[0]?.combination);
+        }
+
+        // Load initial comparison
+        loadComparison();
+    </script>
+</body>
+</html>

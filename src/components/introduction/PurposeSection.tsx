@@ -7,7 +7,7 @@ const PurposeSection: React.FC = () => {
   return (
     <Card className="border-none shadow-card hover:shadow-elevated transition-all duration-300 bg-encourager">
       <CardContent className="p-6">
-        <SectionHeader title="YOUR PURPOSE" icon={Star} titleStyle={{ color: 'white' }} />
+        <SectionHeader title="PURPOSE" icon={Star} titleStyle={{ color: 'white' }} />
         <div className="space-y-3 pl-2">
           <div className="flex items-center gap-3">
             <Check size={20} className="text-encourager-accent-hover flex-shrink-0" />

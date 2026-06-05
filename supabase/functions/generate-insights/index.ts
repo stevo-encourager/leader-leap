@@ -27,8 +27,9 @@ const getAllowedOrigin = (req: Request): string => {
     'http://127.0.0.1:8083',
   ];
   
-  // Also allow Vercel preview deployments
-  if (origin.includes('.vercel.app') || origin.includes('.vercel.sh')) {
+  // Also allow YOUR Vercel preview deployments only
+  // Replace 'your-project-name' with your actual Vercel project name
+  if (origin.includes('leader-leap') && (origin.includes('.vercel.app') || origin.includes('.vercel.sh'))) {
     return origin;
   }
   
@@ -41,6 +42,31 @@ const getCorsHeaders = (req: Request) => ({
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 });
+
+// Simple in-memory rate limiting (resets on function cold start)
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT = 1; // 1 request
+const RATE_LIMIT_WINDOW = 60000; // per minute (in milliseconds)
+
+const checkRateLimit = (identifier: string): boolean => {
+  const now = Date.now();
+  const userLimit = rateLimitMap.get(identifier);
+  
+  if (!userLimit || now > userLimit.resetTime) {
+    // First request or window expired
+    rateLimitMap.set(identifier, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+    return true;
+  }
+  
+  if (userLimit.count >= RATE_LIMIT) {
+    return false; // Rate limit exceeded
+  }
+  
+  // Increment counter
+  userLimit.count++;
+  rateLimitMap.set(identifier, userLimit);
+  return true;
+};
 
 serve(async (req) => {
   const corsHeaders = getCorsHeaders(req);
@@ -77,6 +103,24 @@ serve(async (req) => {
         { 
           status: 401, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+    
+    // STEP 1.5: Rate limiting check
+    const clientIP = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+    const rateLimitKey = `${user.id}-${clientIP}`; // Rate limit per user + IP combination
+    
+    if (!checkRateLimit(rateLimitKey)) {
+      return new Response(
+        JSON.stringify({ error: 'Rate limit exceeded. Please wait a minute before regenerating insights again.' }),
+        { 
+          status: 429, // Too Many Requests
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json',
+            'Retry-After': '60' // Tell client to retry after 60 seconds
+          } 
         }
       );
     }

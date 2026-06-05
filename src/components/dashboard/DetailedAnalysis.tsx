@@ -103,7 +103,7 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
           
           <TabsContent value="radar-chart" className="mt-0">
             {hasCategories ? (
-              <div className={`w-full p-6 bg-white ${isMobile ? 'h-[550px]' : 'h-[750px]'}`}>
+              <div className={`w-full p-6 bg-white ${isMobile ? 'h-[600px]' : 'h-[750px]'}`}>
                 <div className="bg-white rounded-lg border border-slate-200 p-2 pb-4 h-full">
                   <div className="mb-4 px-2 pt-2 pb-3 border-b border-slate-200">
                     <h3 className="text-xl font-bold font-quicksand flex items-center gap-2">
@@ -115,7 +115,7 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
                 </div>
               </div>
             ) : (
-              <div className={`w-full flex items-center justify-center bg-encourager-background ${isMobile ? 'h-[400px]' : 'h-[600px]'}`}>
+              <div className={`w-full flex items-center justify-center bg-encourager-background ${isMobile ? 'h-[500px]' : 'h-[750px]'}`}>
                 <p className="text-slate-500 text-center">
                   No category data available for visualization. Please complete an assessment first.
                 </p>
@@ -125,7 +125,7 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
           
           <TabsContent value="key-insights" className="mt-0">
             {hasCategories ? (
-              <div className={`w-full p-6 overflow-y-auto ${isMobile ? 'h-[400px]' : 'h-[600px]'}`}>
+              <div className={`w-full p-6 overflow-y-auto ${isMobile ? 'h-[500px]' : 'h-[750px]'}`}>
                 <AIInsights 
                   categories={categories}
                   demographics={demographics}
@@ -134,7 +134,7 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
                 />
               </div>
             ) : (
-              <div className={`w-full flex items-center justify-center bg-encourager-background ${isMobile ? 'h-[400px]' : 'h-[600px]'}`}>
+              <div className={`w-full flex items-center justify-center bg-encourager-background ${isMobile ? 'h-[500px]' : 'h-[750px]'}`}>
                 <p className="text-slate-500 text-center">
                   No assessment data available for AI insights. Please complete an assessment first.
                 </p>
@@ -144,11 +144,11 @@ const DetailedAnalysis: React.FC<DetailedAnalysisProps> = ({
 
           <TabsContent value="skills-assessment" className="mt-0 skills-assessment-tab" data-tab="skills-assessment">
             {hasCategories ? (
-              <div className={`w-full p-6 overflow-y-auto ${isMobile ? 'h-[400px]' : 'h-[600px]'}`}>
+              <div className={`w-full p-6 overflow-y-auto ${isMobile ? 'h-[500px]' : 'h-[750px]'}`}>
                 <SkillsAssessment categories={categories} />
               </div>
             ) : (
-              <div className={`w-full flex items-center justify-center bg-encourager-background ${isMobile ? 'h-[400px]' : 'h-[600px]'}`}>
+              <div className={`w-full flex items-center justify-center bg-encourager-background ${isMobile ? 'h-[500px]' : 'h-[750px]'}`}>
                 <p className="text-slate-500 text-center">
                   No assessment data available for skills assessment. Please complete an assessment first.
                 </p>

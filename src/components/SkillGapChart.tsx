@@ -354,7 +354,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
           minHeight: 'auto',
           height: 'auto',
           backgroundColor: 'white',
-          padding: isPDF ? '12px' : '16px 16px 24px 16px',
+          padding: isPDF ? '12px' : '16px 16px 12px 16px',
           borderRadius: '8px',
           marginBottom: '8px'
         }}

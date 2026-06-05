@@ -170,8 +170,6 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
               size="sm"
               onClick={() => {
                 setShowTutorial(true);
-                // Clear the flag temporarily for testing
-                // localStorage.removeItem('hasSeenAssessmentTutorial');
               }}
               className="flex items-center gap-2"
             >
@@ -188,8 +186,6 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
                 size="icon"
                 onClick={() => {
                   setShowTutorial(true);
-                  // Clear the flag temporarily for testing
-                  // localStorage.removeItem('hasSeenAssessmentTutorial');
                 }}
                 className="text-encourager"
               >

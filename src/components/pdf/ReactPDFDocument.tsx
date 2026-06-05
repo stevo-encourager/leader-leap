@@ -649,7 +649,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
         <Text style={styles.listItem}>• Understand yourself better and eliminate self-limiting beliefs or obstacles</Text>
         <Text style={styles.listItem}>• Establish regular touchpoints for tracking growth and gaining insights</Text>
         <Link src="https://www.encourager.co.uk/about" style={[styles.boldText, { marginTop: 10, color: '#0066CC', textDecoration: 'none' }]}>Learn more about me</Link>
-        <Link src="https://www.encourager.co.uk/executive-coaching" style={[styles.boldText, { marginTop: 5, color: '#0066CC', textDecoration: 'none' }]}>Understand the process</Link>
+        <Link src="https://www.encourager.co.uk/services/executive-coaching" style={[styles.boldText, { marginTop: 5, color: '#0066CC', textDecoration: 'none' }]}>Understand the process</Link>
         <Link src="https://calendar.app.google/PwZrr2JJXVi1Uwrq7" style={[styles.boldText, { marginTop: 5, color: '#0066CC', textDecoration: 'none' }]}>Book a free 30 minute discovery call</Link>
         <Text style={[styles.text, { marginTop: 25, fontWeight: 'bold' }]}>Steve Thompson</Text>
         <Text style={[styles.text, { fontSize: 10 }]}>Executive Coach</Text>

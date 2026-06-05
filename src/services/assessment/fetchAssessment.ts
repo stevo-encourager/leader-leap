@@ -72,6 +72,41 @@ export const fetchAssessmentById = async (assessmentId: string): Promise<{
 };
 
 /**
+ * Fetch all assessments for a specific user
+ */
+export const fetchAllAssessmentsByUserId = async (userId: string): Promise<{
+  success: boolean;
+  data?: Array<{ id: string; created_at: string | null; completed: boolean | null }>;
+  error?: string;
+}> => {
+  try {
+    if (!userId || typeof userId !== 'string') {
+      return { success: false, error: "Invalid user ID" };
+    }
+
+    const { data, error } = await supabase
+      .from('assessment_results')
+      .select('id, created_at, completed')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      logger.error('Assessment Service: Database error:', error);
+      return { success: false, error: error.message };
+    }
+
+    if (!data || data.length === 0) {
+      return { success: false, error: "No assessments found" };
+    }
+
+    return { success: true, data: data as Array<{ id: string; created_at: string | null; completed: boolean | null }> };
+  } catch (error) {
+    logger.error('Assessment Service: Exception in fetchAllAssessmentsByUserId:', error);
+    return { success: false, error: "Failed to fetch assessments" };
+  }
+};
+
+/**
  * Fetch the latest assessment for a specific user
  */
 export const fetchLatestAssessmentByUserId = async (userId: string): Promise<{

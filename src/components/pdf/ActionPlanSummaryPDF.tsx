@@ -393,7 +393,7 @@ const ActionPlanSummaryPDF: React.FC<ActionPlanSummaryPDFProps> = ({
             <Link src="https://www.encouragercoaching.com/about" style={styles.coachingLink}>
               <Text>Learn more about me</Text>
             </Link>
-            <Link src="https://www.encouragercoaching.com/process" style={styles.coachingLink}>
+            <Link src="https://www.encourager.co.uk/services/executive-coaching" style={styles.coachingLink}>
               <Text>Understand the process</Text>
             </Link>
             <Link src="https://www.encouragercoaching.com/contact" style={[styles.coachingLink, { marginTop: 6 }]}>

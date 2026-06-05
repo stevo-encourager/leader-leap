@@ -22,7 +22,14 @@ export const formatSummaryIntoParagraphs = (summary: string): string => {
     return "";
   }
 
-  let formatted = summary.replace(/\s+/g, ' ').trim();
+  // Check if the summary already has proper paragraph breaks (\n\n)
+  if (summary.includes('\n\n')) {
+    // Summary already has paragraphs, just return it cleaned up
+    return summary.trim();
+  }
+
+  // Only collapse multiple spaces (not newlines) into single spaces
+  let formatted = summary.replace(/ +/g, ' ').trim();
   
   const transitionPhrases = [
     'However,', 'At the same time,', 'Additionally,', 'Furthermore,', 'Moreover,',
@@ -40,7 +47,6 @@ export const formatSummaryIntoParagraphs = (summary: string): string => {
       const secondPart = formatted.substring(phraseIndex).trim();
       
       if (firstPart.length > 30 && secondPart.length > 30) {
-        console.log(`Split summary using transition phrase: "${phrase}"`);
         return `${firstPart}\n\n${secondPart}`;
       }
     }
@@ -53,25 +59,19 @@ export const formatSummaryIntoParagraphs = (summary: string): string => {
     const firstParagraph = sentences.slice(0, midPoint).join(' ').trim();
     const secondParagraph = sentences.slice(midPoint).join(' ').trim();
     
-    console.log(`Split summary by sentence count: ${sentences.length} sentences, split at ${midPoint}`);
     return `${firstParagraph}\n\n${secondParagraph}`;
   }
   
-  console.log('Summary too short to split, returning as single paragraph');
   return formatted;
 };
 
 // Enhanced function to sanitize JSON strings by escaping control characters
 export const sanitizeJsonString = (jsonString: string): string => {
-  console.log('Starting JSON sanitization, original length:', jsonString.length);
-  
   try {
     // First attempt to parse - if it works, we're good
     JSON.parse(jsonString);
-    console.log('JSON parsing successful on first attempt');
     return jsonString;
   } catch (error) {
-    console.log('JSON parsing failed, attempting to sanitize control characters:', error.message);
     
     // Sanitize control characters using simple iteration through each character
     let sanitized = '';
@@ -129,13 +129,9 @@ export const sanitizeJsonString = (jsonString: string): string => {
       }
     }
     
-    console.log('Control character sanitization completed, new length:', sanitized.length);
-    console.log('Sanitized JSON sample (first 500 chars):', sanitized.substring(0, 500));
-    
     // Try parsing again
     try {
       JSON.parse(sanitized);
-      console.log('JSON sanitization successful');
       return sanitized;
     } catch (secondError) {
       console.error('JSON sanitization failed:', secondError.message);

@@ -331,7 +331,7 @@ const AIInsights: React.FC<AIInsightsProps> = ({
         <div className="flex items-center justify-center py-12">
           <div className="flex items-center gap-3 text-encourager">
             <Bot className="robot-spin" size={24} />
-            <span className="text-lg">1 minute please, EncouragerGPT is analyzing your test results...</span>
+            <span className="text-lg">1 minute please, analyzing your assessment results...</span>
           </div>
         </div>
       )}

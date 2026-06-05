@@ -107,7 +107,7 @@ const ResultsActions: React.FC<ResultsActionsProps> = ({
     const placeholderTexts = [
       'analysing your assessment results',
       'analyzing your assessment results',
-      'EncouragerGPT is analyzing',
+      'analyzing',
       'generating insights',
       'please wait'
     ];

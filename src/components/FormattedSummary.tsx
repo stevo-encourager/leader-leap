@@ -11,9 +11,17 @@ export const FormattedSummary: React.FC<FormattedSummaryProps> = ({
   summary, 
   className = "space-y-4" 
 }) => {
-  // Split summary into paragraphs based on transition phrases
+  // Split summary into paragraphs based on double newlines or transition phrases
   const splitSummary = (text: string): string[] => {
+    // First, try to split by double newlines (the proper way)
+    if (text.includes('\n\n')) {
+      return text.split('\n\n').map(p => p.trim()).filter(p => p.length > 0);
+    }
+    
+    // Fallback: Look for transition phrases if no double newlines found
     const transitionPhrases = [
+      'Moving forward,',
+      'As you review',
       'However,',
       'At the same time,',
       'Additionally,',
@@ -24,17 +32,46 @@ export const FormattedSummary: React.FC<FormattedSummaryProps> = ({
       'Nevertheless,'
     ];
     
-    // Find the first transition phrase that appears in the text
+    // Special handling for the third paragraph pattern
+    const thirdParagraphStarts = [
+      'Moving forward, it is important to reflect',
+      'As you review the detailed development areas'
+    ];
+    
+    // Check for the third paragraph pattern first
+    for (const startPhrase of thirdParagraphStarts) {
+      const index = text.indexOf(startPhrase);
+      if (index !== -1) {
+        // Split before this phrase to ensure it starts a new paragraph
+        const beforeThird = text.substring(0, index).trim();
+        const thirdPart = text.substring(index).trim();
+        
+        // Now split the first part by transition phrases
+        for (const phrase of transitionPhrases) {
+          const transIndex = beforeThird.indexOf(phrase);
+          if (transIndex !== -1 && transIndex > 0) {
+            const firstPart = beforeThird.substring(0, transIndex).trim();
+            const secondPart = beforeThird.substring(transIndex).trim();
+            return [firstPart, secondPart, thirdPart];
+          }
+        }
+        
+        // If no transition found in first part, just split into before and third
+        return [beforeThird, thirdPart];
+      }
+    }
+    
+    // Standard transition phrase splitting (for backward compatibility)
     for (const phrase of transitionPhrases) {
       const index = text.indexOf(phrase);
-      if (index !== -1) {
+      if (index !== -1 && index > 0) {
         const firstPart = text.substring(0, index).trim();
         const secondPart = text.substring(index).trim();
         return [firstPart, secondPart];
       }
     }
     
-    // If no transition phrase found, return as single paragraph
+    // If no splitting points found, return as single paragraph
     return [text];
   };
 

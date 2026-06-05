@@ -127,10 +127,38 @@ serve(async (req) => {
     // STEP 8: Validate insights structure
     validateInsightsStructure(parsedInsights);
 
-    // STEP 9: Format summary
+    // STEP 9: Ensure proper paragraph formatting
     if (parsedInsights.summary) {
-      const formattedSummary = formatSummaryIntoParagraphs(parsedInsights.summary);
-      parsedInsights.summary = formattedSummary;
+      // Force add paragraph breaks if they're missing
+      if (!parsedInsights.summary.includes('\n\n')) {
+        // Look for the "Moving forward" text to force a paragraph break
+        const movingForwardIndex = parsedInsights.summary.indexOf('Moving forward, it is important to reflect');
+        if (movingForwardIndex > 0) {
+          const beforeMovingForward = parsedInsights.summary.substring(0, movingForwardIndex).trim();
+          const movingForwardPart = parsedInsights.summary.substring(movingForwardIndex).trim();
+          
+          // Find a transition phrase for the second paragraph
+          const transitions = ['Additionally,', 'Furthermore,', 'However,', 'Your competencies', 'Your results also'];
+          let secondParaIndex = -1;
+          
+          for (const transition of transitions) {
+            const idx = beforeMovingForward.indexOf(transition);
+            if (idx > 50) { // Make sure it's not too early in the text
+              secondParaIndex = idx;
+              break;
+            }
+          }
+          
+          if (secondParaIndex > 0) {
+            const firstPara = beforeMovingForward.substring(0, secondParaIndex).trim();
+            const secondPara = beforeMovingForward.substring(secondParaIndex).trim();
+            parsedInsights.summary = `${firstPara}\n\n${secondPara}\n\n${movingForwardPart}`;
+          } else {
+            // Just split before "Moving forward"
+            parsedInsights.summary = `${beforeMovingForward}\n\n${movingForwardPart}`;
+          }
+        }
+      }
     }
 
     // STEP 10: Convert resources to markdown format for frontend compatibility

@@ -93,7 +93,7 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     const placeholderTexts = [
       'analysing your assessment results',
       'analyzing your assessment results',
-      'EncouragerGPT is analyzing',
+      'analyzing',
       'generating insights',
       'please wait'
     ];

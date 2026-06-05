@@ -32,7 +32,7 @@ const CoachingSupport: React.FC = () => {
             </a>
             <span className="text-slate-400 mx-3">|</span>
             <a 
-              href="https://www.encourager.co.uk/executive-coaching" 
+              href="https://www.encourager.co.uk/services/executive-coaching" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-encourager-accent hover:text-encourager-accent/90 hover:underline text-base"

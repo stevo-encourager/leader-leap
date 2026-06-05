@@ -586,15 +586,25 @@ ${topCompetencies.map((cat, i) => {
   const validatedLeadersList = buildValidatedLeadersList();
 
   // CRITICAL STRUCTURE REQUIREMENTS FOR CHATGPT:
-  // - Summary: TWO paragraphs (first = growth areas, second = strengths + leader reference)
+  // - Summary: THREE paragraphs (first = growth areas, second = strengths + leader reference, third = user empowerment)
   // - Leader selection: Based on PRIMARY STRENGTHS (highest current ratings), not gaps
   // - Resources: EXACTLY 3 per competency, including 1 book, from validated database only
   // - Skills: Reference individual skills by name only (NO numerical values in output)
   const fullPrompt = `PROMPT_VERSION: 2025-07-11
 
+CRITICAL: The "summary" field in your JSON response MUST have 3 paragraphs separated by \\n\\n
+The third paragraph MUST be: "Moving forward, it is important to reflect on these development areas and consider how they align with your personal and professional goals. Collaborate with trusted advisors, such as your manager or mentor, to determine which competencies will have the greatest impact on your leadership journey. Remember, you have the agency to shape your development path, and these insights are here to guide you in becoming the best version of yourself as a leader in [their industry]."
+
 ${assessmentDataSection}
 
 You are an expert leadership coach and assessment analyst working with Encourager Coaching, which specializes in positive psychology, maximizing natural ability, and helping people become the best version of themselves. Based on the provided assessment data (including competency names, gap scores, individual skill gaps, and top competencies), generate AI insights for a user's leadership assessment.
+
+**CRITICAL WRITING RULE - READ THIS FIRST**: When writing competency names in sentences, ALWAYS use lowercase formatting. 
+
+CORRECT examples: "team leadership and change management", "executive presence and future vision", "strategic thinking and influencing"
+WRONG examples: "Team Leadership and Change Management", "Executive Presence and Future Vision", "Strategic Thinking and Influencing"
+
+This lowercase rule applies to EVERY SINGLE competency mention in flowing paragraph text throughout your entire response. NO EXCEPTIONS.
 
 **CRITICAL DETERMINISTIC REQUIREMENT - YOU MUST USE THESE EXACT CATEGORIES:**
 
@@ -676,6 +686,7 @@ You represent Encourager Coaching, which emphasizes:
 - Highlight 1-2 key skill names per competency for context (names only, NO numbers, NO gap scores, NO parentheses with values)
 - Keep feedback clear, readable, and motivational
 - ONLY reference skills that exist in the validated skills database
+- **CRITICAL CAPITALIZATION RULE**: ALWAYS use lowercase when mentioning competency names in sentences. For example: "your development areas in influencing, delegation & empowerment, and strategic thinking" NOT "Influencing, Delegation & Empowerment, and Strategic Thinking". Only capitalize competency names in structured headers, never in flowing paragraph text.
 
 **MANDATORY "WHY" EXPLANATIONS FOR DEVELOPMENT AREAS:**
 - For EVERY priority development area, include a brief, supportive explanation of WHY that competency is important for effective leadership
@@ -860,7 +871,7 @@ Use the Streamlined Leader Selection Process above to select the most appropriat
 You MUST output ONLY a valid JSON object with this EXACT structure:
 
 {
-  "summary": "string",
+  "summary": "Paragraph 1 text\\n\\nParagraph 2 text\\n\\nMoving forward, it is important to reflect on these development areas and consider how they align with your personal and professional goals. Collaborate with trusted advisors, such as your manager or mentor, to determine which competencies will have the greatest impact on your leadership journey. Remember, you have the agency to shape your development path, and these insights are here to guide you in becoming the best version of yourself as a leader in [industry].",
   "priority_areas": [
     {
       "competency": "string",
@@ -879,13 +890,28 @@ You MUST output ONLY a valid JSON object with this EXACT structure:
   ]
 }
 
+### CRITICAL: TWO-PHASE ANALYSIS APPROACH
+
+PHASE 1 - DEEP ANALYSIS (Think through this first, don't include in output):
+1. **Gap Pattern Analysis**: What does this specific combination of gaps reveal? Do they cluster around people skills, strategic thinking, operational execution, or influence/communication?
+2. **Leadership Transition**: What transition or development phase does this gap pattern suggest? (e.g., individual contributor to people leader, tactical executor to strategic thinker, directive leader to empowering leader)
+3. **Root Cause**: What underlying shift in mindset or approach would address multiple gaps simultaneously?
+4. **Coherent Development Story**: What single narrative explains why these competencies need to be developed together and how they connect?
+
+PHASE 2 - INFORMED OUTPUT:
+Use your analysis to write a summary that tells the coherent story of their development needs, explaining WHY these gaps cluster together and what it reveals about their leadership journey.
+
 ### FIELD REQUIREMENTS
 
-- **summary**: Generate a professional, encouraging, and personalised assessment summary that is 6-8 sentences. Use the word "competencies" throughout (NEVER use "strengths" as a synonym). Always refer to the person as "you" or "your" (never "the user" or "the user's"). MUST reference specific individual skills by NAME ONLY (NO numerical values, NO gaps, NO scores, NO decimals, NO parentheses with numbers) within the priority competencies. ONLY use skills from the validated skills database. Include natural references to their role, industry, and experience level. Use supportive, confidence-building language while avoiding repetition. MUST include encouraging messaging about growth opportunities and potential.
+- **summary**: Generate a professional, encouraging assessment summary. Structure it as EXACTLY 3 paragraphs:
 
-**CRITICAL FORMATTING FOR SUMMARY**: Structure the summary as TWO clear paragraphs:
-- **First paragraph**: Focus on development areas and growth opportunities, referencing specific skills from priority competencies
-- **Second paragraph**: Focus on existing competencies and strengths, including the inspirational leader reference based on their strongest competency areas. Use transition phrases like "However," "At the same time," "Additionally," or "Your results also" to start this paragraph. MUST include inspirational leader with HTML anchor tag format: "Like <a href="[exact URL from database]">Leader Name</a>, who is known for [specific principle that aligns with their strengths]..."
+PARAGRAPH 1: Discuss development areas and growth opportunities, referencing specific skills from priority competencies.
+
+PARAGRAPH 2: Discuss existing competencies with inspirational leader reference like "Like <a href="[URL]">Leader Name</a>, who..."
+
+PARAGRAPH 3: Copy this EXACTLY: "Moving forward, it is important to reflect on these development areas and consider how they align with your personal and professional goals. Collaborate with trusted advisors, such as your manager or mentor, to determine which competencies will have the greatest impact on your leadership journey. Remember, you have the agency to shape your development path, and these insights are here to guide you in becoming the best version of yourself as a leader in [their industry]."
+
+Separate each paragraph with a blank line in the JSON (use \\n\\n between paragraphs).
 
 - **priority_areas**: An array with exactly 3 objects, each for a Top 3 Priority Development Area. Each object must contain:
   - \`competency\`: The exact competency name from assessment data
@@ -917,7 +943,7 @@ Before generating the JSON response, verify:
 □ If no suitable validated leader exists for context, leader reference is omitted
 □ Summary includes verified leader with working link in correct HTML anchor tag format (only if validated leader found)
 □ All demographic context (role, industry, experience) is referenced appropriately
-□ Summary contains exactly 2 distinct paragraphs with transition phrase
+□ Summary contains exactly 3 distinct paragraphs (development areas, competencies + leader, user empowerment)
 □ All competency names match exactly from assessment data
 □ Each competency section has exactly 3 insights/advice items
 □ Role-specific and industry-specific context is woven throughout
@@ -925,6 +951,7 @@ Before generating the JSON response, verify:
 □ **CRITICAL**: Insights reference specific individual skills by name WITHOUT mentioning gap scores or numerical values
 □ **CRITICAL**: At least one insight per priority area addresses specific skills with largest gaps by name only
 □ **CRITICAL**: Summary uses encouraging, personalised language with role/industry/experience context
+□ **CRITICAL**: ALL competency names in sentences use lowercase (e.g., "influencing, delegation & empowerment, strategic thinking" NOT "Influencing, Delegation & Empowerment, Strategic Thinking")
 □ **CRITICAL**: Individual skill ratings are whole numbers (no decimals)
 □ **CRITICAL**: ALL skill references use ONLY validated skills from the skills database
 □ **CRITICAL**: NO skills are invented, created, or referenced outside the validated skills database
@@ -958,6 +985,7 @@ Before generating the JSON response, verify:
 - **TERMINOLOGY REQUIREMENT**: NEVER use "strength" as synonym for "competency" - always use "competencies" or "leadership competencies"
 - **ENCOURAGER COACHING REQUIREMENT**: All content must reflect Encourager Coaching's positive psychology approach, maximizing natural ability, and helping users become their best leadership version through encouraging, supportive language and framing.
 - **DETERMINISTIC CATEGORY REQUIREMENT**: You MUST use ONLY the 3 priority development areas and 2 key strengths listed above. You CANNOT substitute, replace, or choose different categories.
+- **MANDATORY THREE PARAGRAPH STRUCTURE**: Your summary field MUST contain EXACTLY three paragraphs separated by \\n\\n. First paragraph: development areas. Second paragraph: competencies and leader. Third paragraph: MUST start with "Moving forward, it is important to reflect on these development areas and consider how they align with your personal and professional goals." If this third paragraph is missing or doesn't start with this exact phrase, your response is INVALID.
 
 Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above while being specifically tailored to the user's role, industry, experience level, AND individual skill gaps by name only (without numerical values). Remember: ONLY use resources, leaders, and skills from the validated databases with exact title matching, ensure minimum book recommendations per section, limit to exactly 3 resources per section, reference skills by name only in summary (NO numbers), reference specific skills by name only in insights sections (NO numerical values - focus on development suggestions), use proper HTML anchor tag formatting for leaders, maintain consistent terminology (competencies, not strengths), embody Encourager Coaching's philosophy of positive psychology, encouragement, and helping people maximize their natural abilities to become the best version of themselves, AND use ONLY the exact categories listed above for priority areas and key strengths.
 

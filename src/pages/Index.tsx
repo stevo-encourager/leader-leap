@@ -97,9 +97,9 @@ const Index = () => {
             "Decision Making Assessment",
             "Delegation & Empowerment Analysis",
             "Negotiation & Conflict Resolution",
-            "Self & Leadership Presence Planning",
+            "Leading Yourself Planning",
             "Stakeholder Relationships Analysis",
-            "Time Management Assessment",
+            "Personal Effectiveness Assessment",
             "Results Dashboard & Insights"
           ]
         }}

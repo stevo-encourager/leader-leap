@@ -93,8 +93,8 @@ const buildValidatedLeadersList = (): string => {
 - Execution & Operations strengths → Reed Hastings, Brian Chesky, or Reshma Saujani
 - Negotiation & Conflict Resolution strengths → Jamie Dimon, Stewart Butterfield, or Andy Jassy
 - Delegation & Empowerment strengths → Indra Nooyi, Mary Barra, or Marc Benioff
-- Time Management strengths → Vary selection to avoid repetition
-- Self & Leadership Presence strengths → Marc Benioff, Thasunda Brown Duckett, or Elizabeth Nyamayaro
+- Personal Effectiveness strengths → Vary selection to avoid repetition
+- Leading Yourself strengths → Marc Benioff, Thasunda Brown Duckett, or Elizabeth Nyamayaro
 
 **Step 3: Apply Industry Filter (if applicable)**
 - Technology industry → Prefer Satya Nadella, Jensen Huang, Marc Benioff, or Andy Jassy
@@ -256,8 +256,8 @@ ${sections}
 - For Leading People competencies, prefer "The Leadership Challenge" or "The 17 Indisputable Laws of Teamwork"
 - For Execution & Operations competencies, prefer "Leading Change" or "Switch" or "The Power of Habit"; for operational scaling or process & governance specifically, prefer "High Output Management" or "Traction"
 - For Decision Making competencies, prefer "Thinking Fast and Slow" or "Getting To Yes"
-- For Time Management competencies, prefer "Atomic Habits" or "Getting Things Done"
-- For Self & Leadership Presence competencies, prefer "The 7 Habits of Highly Effective People" or "Atomic Habits"
+- For Personal Effectiveness competencies, prefer "Atomic Habits" or "Getting Things Done"
+- For Leading Yourself competencies, prefer "The 7 Habits of Highly Effective People" or "Atomic Habits"
 - For Negotiation & Conflict Resolution competencies, prefer "Getting To Yes" or "Crucial Conversations"
 - For Delegation & Empowerment competencies, prefer "The Leadership Challenge" or "Dare to Lead"
 
@@ -284,8 +284,8 @@ ${sections}
 - For Leading People competencies, prefer "The Leadership Challenge" or "The 17 Indisputable Laws of Teamwork"
 - For Execution & Operations competencies, prefer "Leading Change" or "Switch" or "The Power of Habit"; for operational scaling or process & governance specifically, prefer "High Output Management" or "Traction"
 - For Decision Making competencies, prefer "Thinking Fast and Slow" or "Getting To Yes"
-- For Time Management competencies, prefer "Atomic Habits" or "Getting Things Done"
-- For Self & Leadership Presence competencies, prefer "The 7 Habits of Highly Effective People" or "Atomic Habits"
+- For Personal Effectiveness competencies, prefer "Atomic Habits" or "Getting Things Done"
+- For Leading Yourself competencies, prefer "The 7 Habits of Highly Effective People" or "Atomic Habits"
 - For Negotiation & Conflict Resolution competencies, prefer "Getting To Yes" or "Crucial Conversations"
 - For Delegation & Empowerment competencies, prefer "The Leadership Challenge" or "Dare to Lead"
 

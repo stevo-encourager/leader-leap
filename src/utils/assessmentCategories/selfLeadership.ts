@@ -2,8 +2,8 @@ import { Category } from '../assessmentTypes';
 
 export const selfLeadershipCategory: Category = {
   id: "self-leadership",
-  title: "Self & Leadership Presence",
-  description: "Your self-awareness, resilience and credibility as a senior leader.",
+  title: "Leading Yourself",
+  description: "Your self-awareness, resilience and credibility as a leader.",
   skills: [
     {
       id: "self-awareness",
@@ -20,7 +20,7 @@ export const selfLeadershipCategory: Category = {
     {
       id: "executive-presence",
       name: "Executive Presence",
-      description: "Commands respect in senior forums; communicates with clarity and confidence; credible with the most senior audiences.",
+      description: "Commands respect in all forums; communicates with clarity and confidence; credible with senior audiences.",
       ratings: { current: 0, desired: 0 }
     },
     {

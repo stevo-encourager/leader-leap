@@ -11,17 +11,19 @@ import { timeManagementCategory } from './timeManagement';
 import { selfLeadershipCategory } from './selfLeadership';
 import { Category } from '../assessmentTypes';
 
+// This array order is the order categories are presented in the assessment,
+// results and PDF export.
 export const allCategories = [
-  strategicThinkingCategory,
-  influencingCategory,
-  teamLeadershipCategory,
-  decisionMakingCategory,
-  emotionalIntelligenceCategory,
-  changeManagementCategory,
-  negotiationConflictResolutionCategory,
-  delegationEmpowermentCategory,
-  timeManagementCategory,
-  selfLeadershipCategory
+  selfLeadershipCategory,                 // Leading Yourself
+  emotionalIntelligenceCategory,          // Emotional Intelligence
+  timeManagementCategory,                 // Personal Effectiveness
+  teamLeadershipCategory,                 // Leading People
+  delegationEmpowermentCategory,          // Delegation & Empowerment
+  negotiationConflictResolutionCategory,  // Negotiation & Conflict Resolution
+  influencingCategory,                    // Stakeholder Relationships
+  strategicThinkingCategory,              // Strategy & Commercial
+  decisionMakingCategory,                 // Decision Making
+  changeManagementCategory                // Execution & Operations
 ];
 
 export {

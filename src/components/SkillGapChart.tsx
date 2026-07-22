@@ -76,7 +76,7 @@ const CustomTick = (props: CustomTickProps) => {
       'Execution & Operations': ['Execution &', 'Operations'],
       'Negotiation & Conflict Resolution': ['Negotiation &', 'Conflict Resolution'],
       'Delegation & Empowerment': ['Delegation &', 'Empowerment'],
-      'Self & Leadership Presence': ['Self & Leadership', 'Presence']
+      'Personal Effectiveness': ['Personal', 'Effectiveness']
     };
     
     return longLabels[text] || [text];

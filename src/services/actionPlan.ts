@@ -49,7 +49,7 @@ export const getHighGapCompetencies = (categories: Category[]): HighGapCompetenc
 // Get default resources for a competency
 export const getDefaultResources = (competencyName: string) => {
   const resourceMap: { [key: string]: Array<{ type: 'book' | 'framework' | 'tool'; title: string; description?: string; url?: string }> } = {
-    'Time Management': [
+    'Personal Effectiveness': [
       { type: 'book', title: 'Getting Things Done', description: 'David Allen\'s productivity system', url: 'https://amazon.com' },
       { type: 'framework', title: 'Eisenhower Matrix', description: 'Priority decision framework' },
       { type: 'tool', title: 'Time Blocking', description: 'Calendar-based time management technique' }
@@ -105,7 +105,7 @@ export const getDefaultResources = (competencyName: string) => {
       { type: 'framework', title: 'Situational Leadership', description: 'Adaptive leadership framework' },
       { type: 'tool', title: 'Delegation Matrix', description: 'Task delegation planning tool' }
     ],
-    'Self & Leadership Presence': [
+    'Leading Yourself': [
       { type: 'book', title: 'The 7 Habits of Highly Effective People', description: 'Stephen Covey on personal leadership', url: 'https://amazon.com' },
       { type: 'framework', title: 'Personal Development Plan', description: 'Self-leadership framework' },
       { type: 'tool', title: 'Reflection Journal', description: 'Self-awareness and growth tool' }

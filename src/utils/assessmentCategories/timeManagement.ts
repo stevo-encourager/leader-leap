@@ -3,8 +3,8 @@ import { Category } from '../assessmentTypes';
 
 export const timeManagementCategory: Category = {
   id: "time-priority-management",
-  title: "Time Management",
-  description: "The ability to manage time effectively and prioritize tasks appropriately.",
+  title: "Personal Effectiveness",
+  description: "How you organise and focus your time, attention and energy on what matters most.",
   skills: [
     {
       id: "prioritisation",

@@ -96,11 +96,7 @@ const UserManagement = () => {
   };
 
   const isAdmin = (email: string) => {
-    const superAdmins = [
-      'steve.thompson@leader-leap.com',
-      'steve@encourager.co.uk', 
-      'steve.b.thompson@encourager.co.uk'
-    ];
+    const superAdmins = import.meta.env.VITE_ADMIN_EMAILS?.split(',').map(email => email.trim()) || [];
     return superAdmins.some(adminEmail => 
       adminEmail.toLowerCase() === email.toLowerCase().trim()
     );

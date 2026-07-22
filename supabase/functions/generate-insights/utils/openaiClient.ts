@@ -1,5 +1,51 @@
 
+// Model used when the OPENAI_MODEL secret is unset or blank.
+const DEFAULT_OPENAI_MODEL = 'gpt-4o';
+
+// Completion token ceiling used when OPENAI_MAX_TOKENS is unset or invalid.
+const DEFAULT_MAX_TOKENS = 3000;
+
+/**
+ * Resolve the OpenAI model from the OPENAI_MODEL edge function secret,
+ * falling back to DEFAULT_OPENAI_MODEL. Set with:
+ *   supabase secrets set OPENAI_MODEL=<model-id>
+ * A blank or whitespace-only secret is treated as unset so that clearing the
+ * value falls back to the default rather than sending an empty model id.
+ */
+const resolveOpenAIModel = (): string => {
+  const configured = Deno.env.get('OPENAI_MODEL')?.trim();
+  return configured ? configured : DEFAULT_OPENAI_MODEL;
+};
+
+/**
+ * Resolve the completion token ceiling from the OPENAI_MAX_TOKENS secret,
+ * falling back to DEFAULT_MAX_TOKENS. Set with:
+ *   supabase secrets set OPENAI_MAX_TOKENS=4000
+ * Anything that is not a positive integer (blank, non-numeric, zero, negative,
+ * fractional) falls back to the default rather than sending a value the API
+ * would reject. Too low a ceiling truncates the JSON response mid-structure.
+ */
+const resolveMaxTokens = (): number => {
+  const configured = Deno.env.get('OPENAI_MAX_TOKENS')?.trim();
+  if (!configured) {
+    return DEFAULT_MAX_TOKENS;
+  }
+
+  const parsed = Number(configured);
+  if (!Number.isInteger(parsed) || parsed <= 0) {
+    console.warn(
+      `Invalid OPENAI_MAX_TOKENS value "${configured}" - falling back to ${DEFAULT_MAX_TOKENS}`
+    );
+    return DEFAULT_MAX_TOKENS;
+  }
+
+  return parsed;
+};
+
 export const callOpenAI = async (prompt: string, openAIApiKey: string): Promise<string> => {
+  const model = resolveOpenAIModel();
+  const maxTokens = resolveMaxTokens();
+
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -7,7 +53,7 @@ export const callOpenAI = async (prompt: string, openAIApiKey: string): Promise<
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'gpt-4o',
+      model,
       messages: [
         { 
           role: 'system', 
@@ -16,7 +62,7 @@ export const callOpenAI = async (prompt: string, openAIApiKey: string): Promise<
         { role: 'user', content: prompt }
       ],
       temperature: 0.7,
-      max_tokens: 3000
+      max_tokens: maxTokens
     }),
   });
 

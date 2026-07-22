@@ -7,21 +7,21 @@ export const delegationEmpowermentCategory: Category = {
   description: "The ability to effectively assign responsibilities and empower team members.",
   skills: [
     {
-      id: "task-delegation",
-      name: "Task Delegation",
-      description: "Ability to assign work appropriately based on skills and development needs.",
+      id: "working-through-others",
+      name: "Working Through Others",
+      description: "Gets results through others; gives the right work to the right people with clear outcomes; resists doing it all themselves.",
       ratings: { current: 0, desired: 0 }
     },
     {
-      id: "trust-building",
-      name: "Trust Building",
-      description: "Ability to create an environment of mutual trust and respect.",
+      id: "empowerment-autonomy",
+      name: "Empowerment & Autonomy",
+      description: "Gives people genuine ownership; creates space for others to lead, decide and grow.",
       ratings: { current: 0, desired: 0 }
     },
     {
-      id: "autonomy-support",
-      name: "Autonomy Support",
-      description: "Ability to provide independence while maintaining appropriate oversight.",
+      id: "accountability",
+      name: "Accountability Without Micromanaging",
+      description: "Sets clear expectations and follows up appropriately; trusts people to deliver without hovering.",
       ratings: { current: 0, desired: 0 }
     }
   ]

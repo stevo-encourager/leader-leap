@@ -3,25 +3,25 @@ import { Category } from '../assessmentTypes';
 
 export const changeManagementCategory: Category = {
   id: "change-management",
-  title: "Change Management",
-  description: "The ability to effectively lead and support organisational change initiatives.",
+  title: "Execution & Operations",
+  description: "How well you deliver change, build scalable operations and make sound decisions.",
   skills: [
     {
-      id: "adaptability",
-      name: "Adaptability",
-      description: "Ability to adjust to new conditions and embrace change.",
+      id: "leading-change",
+      name: "Change Management",
+      description: "Plans and lands change effectively; brings people along; manages pace versus due diligence; sustains adoption.",
       ratings: { current: 0, desired: 0 }
     },
     {
-      id: "change-leadership",
-      name: "Change Leadership",
-      description: "Ability to guide teams through transitions and transformations.",
+      id: "operational-scaling",
+      name: "Operational Scaling",
+      description: "Knows what processes, systems and structures a growing organisation needs; puts scalable foundations in place.",
       ratings: { current: 0, desired: 0 }
     },
     {
-      id: "resilience",
-      name: "Resilience",
-      description: "Ability to recover quickly from difficulties and setbacks.",
+      id: "process-governance",
+      name: "Process & Governance",
+      description: "Champions policies and frameworks; ensures consistent adoption across teams; builds an accountable culture.",
       ratings: { current: 0, desired: 0 }
     }
   ]

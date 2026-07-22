@@ -3,25 +3,25 @@ import { Category } from '../assessmentTypes';
 
 export const influencingCategory: Category = {
   id: "influencing",
-  title: "Influencing",
-  description: "Connecting with any audience to inform, persuade, and inspire action",
+  title: "Stakeholder Relationships",
+  description: "How you build and manage relationships inside and beyond the business.",
   skills: [
     {
-      id: "persuasive-messaging",
-      name: "Persuasive Messaging",
-      description: "The ability to craft compelling arguments (verbal, written and visual) that motivate others to adopt new perspectives or take specific actions",
+      id: "stakeholder-management",
+      name: "Stakeholder Management",
+      description: "Manages internal stakeholders up, down and sideways effectively; keeps senior leadership informed; no surprises.",
       ratings: { current: 0, desired: 0 }
     },
     {
-      id: "stakeholder-engagement",
-      name: "Stakeholder Engagement",
-      description: "The ability to identify key decision-makers and tailor communication strategies to gain their support and buy-in",
+      id: "networking-industry-presence",
+      name: "Networking & Industry Presence",
+      description: "Builds a strong professional network; visible and credible in their industry; creates opportunities through connections.",
       ratings: { current: 0, desired: 0 }
     },
     {
-      id: "executive-presence",
-      name: "Executive Presence",
-      description: "The ability to project confidence and credibility while delivering messages that inspire trust and drive behavioral change",
+      id: "external-relationships",
+      name: "External Relationships",
+      description: "Builds and maintains key client, partner and market relationships.",
       ratings: { current: 0, desired: 0 }
     }
   ]

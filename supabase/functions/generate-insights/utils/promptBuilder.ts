@@ -100,7 +100,8 @@ ${leaders}
 - Analyze assessment data to find the competency with the HIGHEST current rating
 - This becomes the primary basis for leader selection
 
-**Step 2: Apply Competency-to-Leader Mapping**
+**Step 2: Apply Competency-to-Leader Mapping (to establish PLAUSIBILITY, not to pick a winner)**
+Use the mapping below to work out which leaders are a plausible thematic fit for the user's primary strength areas. There will usually be SEVERAL plausible fits — collect them all rather than stopping at the first or best one.
 - Strategy & Commercial strengths → Satya Nadella, Paul Polman, Jensen Huang, or Arvind Krishna
 - Stakeholder Relationships strengths → Elizabeth Nyamayaro, Stewart Butterfield, or Whitney Wolfe Herd
 - Leading People strengths → Mary Barra, Brian Chesky, or Marc Benioff
@@ -109,20 +110,22 @@ ${leaders}
 - Execution & Operations strengths → Reed Hastings, Brian Chesky, or Reshma Saujani
 - Negotiation & Conflict Resolution strengths → Jamie Dimon, Stewart Butterfield, or Andy Jassy
 - Delegation & Empowerment strengths → Indra Nooyi, Mary Barra, or Marc Benioff
-- Personal Effectiveness strengths → Vary selection to avoid repetition
+- Personal Effectiveness strengths → Marc Benioff, Reshma Saujani, Brian Chesky, or Thasunda Brown Duckett
 - Leading Yourself strengths → Marc Benioff, Thasunda Brown Duckett, or Elizabeth Nyamayaro
 
-**Step 3: Apply Industry Filter (if applicable)**
-- Technology industry → Prefer Satya Nadella, Jensen Huang, Marc Benioff, or Andy Jassy
-- Finance industry → Prefer Jamie Dimon or Thasunda Brown Duckett
-- Other industries → Use competency mapping from Step 2
+**Step 3: Widen the Plausible Set with Industry Context (if applicable)**
+- Technology industry → Satya Nadella, Jensen Huang, Marc Benioff and Andy Jassy are also plausible
+- Finance industry → Jamie Dimon and Thasunda Brown Duckett are also plausible
+- Other industries → Use the competency mapping from Step 2
+- Industry context ADDS to the plausible set; it does not override it or decide the winner
 
-**Step 4: Final Selection Rules**
-- NEVER default to Indra Nooyi unless Strategic Planning, Delegation, or Empowerment are the PRIMARY STRENGTHS
-- ALWAYS vary leader selection - avoid repeating the same leader across assessments
-- Where two leaders fit equally well, prefer the less frequently cited one over the most famous.
-- If multiple leaders from Steps 2-3 could apply, select based on best industry/role fit
-- If no perfect match exists, omit leader reference entirely rather than forcing a poor fit
+**Step 4: Final Selection Rule — POSITIONAL, NOT PREFERENTIAL**
+- First identify ALL leaders from the list whose themes plausibly fit the user's primary strength areas — there will usually be several.
+- Then select whichever of those plausible fits appears EARLIEST in the leaders list as presented above.
+- Do NOT prefer the single most famous or most obvious thematic match; any plausible fit selected this way is correct.
+- Do NOT re-rank the plausible set by fame, industry, role or "best fit" — once the set is established, position in the list above is the ONLY tie-break.
+- No leader is special-cased: every name, including Indra Nooyi, is eligible only when plausibly fitting, and is then chosen purely on list position.
+- If NO leader plausibly fits, omit the leader reference entirely rather than forcing a poor fit.
 `;
 };
 
@@ -680,6 +683,7 @@ You represent Encourager Coaching, which emphasizes:
 - Do NOT open with the formula "As a [role] in [industry] with [X] years of experience..." — weave role/industry/experience in naturally or via specifics instead.
 - BANNED words/phrases in the summary: "enhance", "leverage", "foster", "enable you to", "which is crucial for", "which is essential for", "your leadership journey", "exciting opportunities".
 - Short sentences are welcome. Vary rhythm. One vivid, specific claim beats three generic ones.
+- In the strengths paragraph, write in PRESENT TENSE about what the person already does — never use "Developing", "Improving", "Building" or other development framing there; those belong in paragraph 1 only. Say "You work through others and hold people accountable without hovering", not "Developing your ability to work through others suggests...".
 
 **STYLE EXEMPLAR (structure and voice to imitate — do not copy content):**
 "Three things stand out. First, self-awareness and executive presence: the more clearly you see your own impact, the more confidently you'll carry the room. Second, stakeholder management and networking: your influence currently runs ahead of your network; closing that gap opens doors. Third, empathy and social awareness — reading people well is what turns a capable team lead into one people want to follow.
@@ -712,9 +716,10 @@ You're already strong at delegating and letting your team run — that's a real 
 - Use encouraging language, but keep it plain and brief. In the SUMMARY, the "why" should be implied by a concrete claim rather than spelled out with connective filler — and must respect the banned list above (no "enable you to", "which is crucial for", "which is essential for").
 
 **MANDATORY ENCOURAGEMENT FOR COMPETENCY AREAS:**
+- **PRESENT TENSE — CRITICAL**: In the strengths paragraph, write in PRESENT TENSE about what the person already does — never use "Developing", "Improving", "Building" or other development framing there; those belong in paragraph 1 only. Say "You work through others and hold people accountable without hovering", not "Developing your ability to work through others suggests...".
 - When discussing competencies where the user is stronger, provide positive reinforcement and encouragement
-- Suggest what type of leader the user might be based on their competencies and skills
-- Use phrases like "Perhaps you're the type of leader who leads with [competency/skill]..." or "Your natural strength in [competency] suggests you may be..."
+- Name what type of leader they already are, based on their competencies and skills
+- State it directly in the present tense: "You lead with [competency/skill]" or "You're the kind of leader who...". Avoid hedged, forward-looking constructions like "suggests you may be..."
 - Include messaging about how these competencies shape their personal brand and confidence as a leader (in the summary, say this plainly — the words "leverage" and "foster" are banned there)
 - Emphasize how these competencies are foundational to their unique leadership style and potential
 
@@ -825,13 +830,15 @@ ${validatedLeadersList}
 - Always use the exact leader name and corresponding URL as specified in the database
 
 **ENHANCED LEADER SELECTION ALGORITHM:**
-Use the Streamlined Leader Selection Process above to select the most appropriate inspirational leader based on the user's PRIMARY STRENGTHS (highest current ratings), industry context (${assessmentSummary.demographics.industry || 'Not specified'}), role level (${assessmentSummary.demographics.role || 'Not specified'}), and experience (${assessmentSummary.demographics.yearsOfExperience || 'Not specified'} years). Base selection on where the user is ALREADY STRONG, not on their development areas, to show "you're like this successful leader" and reinforce their existing leadership identity.
+Use the Streamlined Leader Selection Process above. First identify ALL leaders from the list whose themes plausibly fit the user's primary strength areas — there will usually be several. Then select whichever of those plausible fits appears EARLIEST in the leaders list as presented above. Do not prefer the single most famous or most obvious thematic match; any plausible fit selected this way is correct.
 
-**Leader Quality Validation:**
-- Every leader reference must directly relate to the specific leadership principle being discussed
-- Ensure the leader's known expertise aligns with the user's industry context when possible
-- Match leader examples to user's experience level and role context
-- NEVER default to Indra Nooyi unless her specific expertise directly matches the user's primary STRENGTH areas
+Plausibility is judged on the user's PRIMARY STRENGTHS (highest current ratings), with industry context (${assessmentSummary.demographics.industry || 'Not specified'}), role level (${assessmentSummary.demographics.role || 'Not specified'}) and experience (${assessmentSummary.demographics.yearsOfExperience || 'Not specified'} years) widening the plausible set rather than deciding the winner. Base plausibility on where the user is ALREADY STRONG, not on their development areas, to show "you're like this successful leader" and reinforce their existing leadership identity.
+
+**Leader Quality Validation (these define PLAUSIBILITY only — they never override the positional rule in Step 4):**
+- Every leader reference must plausibly relate to the leadership principle being discussed
+- A leader whose known expertise sits near the user's industry context is plausible; one whose expertise is unrelated to any of their primary strengths is not
+- A leader who fits the user's experience level and role context is plausible
+- Once the plausible set is established, do NOT rank it — take whichever member appears earliest in the leaders list above. A less famous or less "obvious" plausible fit is equally correct.
 
 ### ENHANCED QUALITY STANDARDS
 
@@ -855,7 +862,7 @@ Use the Streamlined Leader Selection Process above to select the most appropriat
 
 ### INSPIRATIONAL LEADER SELECTION
 
-**Choose leaders whose names appear EXACTLY in the validated leaders list above, ensuring they exemplify the specific leadership principle being discussed and are relevant to the user's industry context.**
+**Choose leaders whose names appear EXACTLY in the validated leaders list above. Build the set of plausible fits (theme relates to the leadership principle being discussed and to the user's context), then take whichever plausible fit appears EARLIEST in that list — see Step 4 of the Streamlined Leader Selection Process.**
 
 **CRITICAL: You MUST ONLY use leaders from the validated database above. Do not reference any leader not explicitly listed.**
 

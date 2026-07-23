@@ -85,7 +85,15 @@ const VALIDATED_LEADERS: ValidatedLeader[] = [
 
 // Build the validated leaders list for the prompt - ENHANCED WITH BETTER SELECTION LOGIC
 const buildValidatedLeadersList = (random: RandomFn): string => {
-  const leaders = shuffle(VALIDATED_LEADERS, random)
+  const shuffled = shuffle(VALIDATED_LEADERS, random);
+
+  // Observability: pair this with the leader the model actually selects. If
+  // selection is genuinely positional-among-plausible, the pick should track
+  // the head of this list across requests; if the same name keeps winning from
+  // deep in the order, the model is still gravitating to a favourite instead.
+  console.log(`Leader shuffle: first five = ${shuffled.slice(0, 5).map(leader => leader.name).join(', ')}`);
+
+  const leaders = shuffled
     .map(leader => `**${leader.theme}:**\n- ${leader.name} (${leader.descriptor}) - ${leader.url}`)
     .join('\n\n');
 

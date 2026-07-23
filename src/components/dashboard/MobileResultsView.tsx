@@ -9,8 +9,9 @@ import { toast } from '@/hooks/use-toast';
 import { useInsights } from '@/hooks/InsightsProvider';
 import { pdf } from '@react-pdf/renderer';
 import ReactPDFDocument from '../pdf/ReactPDFDocument';
-import { captureRadarChartAsPNG } from '@/utils/chartCapture';
+import { captureRadarChartAsPNG, type CapturedChart } from '@/utils/chartCapture';
 import SkillGapChart from '../SkillGapChart';
+import { PDF_CAPTURE_WIDTH, PDF_CAPTURE_HEIGHT } from '@/components/skillGapChartTheme';
 import ResultsActions from './ResultsActions';
 import { logger } from '@/utils/productionLogger';
 
@@ -136,24 +137,27 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     setIsDownloading(true);
     
     // Declare variables outside try block for cleanup in finally
-    let chartImageDataUrl: string | null = null;
-    
+    let capturedChart: CapturedChart | null = null;
+
           try {
         // Step 1: Capture the radar chart with enhanced error handling
         try {
-          chartImageDataUrl = await captureRadarChartAsPNG();
+          capturedChart = await captureRadarChartAsPNG();
         } catch (chartError) {
         logger.error('📱 MobilePDF: Chart capture error:', chartError);
         // Continue without chart - don't fail the entire PDF generation
       }
-      
-      // Step 2: Generate PDF document
+
+      // Step 2: Generate PDF document. The captured canvas dimensions travel with the
+      // image so the embed aspect always matches what was actually photographed.
       const pdfDoc = (
         <ReactPDFDocument
           categories={categories}
           demographics={demographics}
           insights={insights || ''}
-          chartImageDataUrl={chartImageDataUrl || undefined}
+          chartImageDataUrl={capturedChart?.dataUrl}
+          chartImageWidth={capturedChart?.width}
+          chartImageHeight={capturedChart?.height}
           userName={userProfile?.full_name}
           assessmentDate={assessmentDate}
         />
@@ -210,8 +214,8 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
       setIsExportingPDF(false); // Clean up hidden chart
       
       // Clean up blob URL if it was created
-      if (chartImageDataUrl) {
-        URL.revokeObjectURL(chartImageDataUrl);
+      if (capturedChart?.dataUrl) {
+        URL.revokeObjectURL(capturedChart.dataUrl);
       }
     }
   };
@@ -220,13 +224,15 @@ const MobileResultsView: React.FC<MobileResultsViewProps> = ({
     <>
       {/* Hidden/offscreen radar chart for PDF export - Match SkillGapChart expectations */}
       {isExportingPDF && (
-        <div 
-          style={{ 
-            position: 'absolute', 
-            left: '-9999px', 
-            top: 0, 
-            width: 600,
-            height: 500,
+        // Sized from the shared constants: this wrapper was 600x500, which matched
+        // neither the capture box nor the desktop wrapper.
+        <div
+          style={{
+            position: 'absolute',
+            left: '-9999px',
+            top: 0,
+            width: PDF_CAPTURE_WIDTH,
+            height: PDF_CAPTURE_HEIGHT,
             zIndex: -1
           }}
         >

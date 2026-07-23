@@ -7,9 +7,19 @@ import {
   PolarAngleAxis, 
   PolarRadiusAxis,
   Radar,
-  Tooltip
+  Tooltip,
+  Customized
 } from 'recharts';
 import { Category } from '@/utils/assessmentTypes';
+import {
+  RADAR_THEME,
+  PDF_CAPTURE_WIDTH,
+  PDF_CAPTURE_HEIGHT,
+  hexToRgba,
+  resolveGroupSpans,
+  polarPoint,
+  type GroupSpan
+} from './skillGapChartTheme';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { chartLogger } from '@/utils/logger';
@@ -21,6 +31,8 @@ interface SkillGapChartProps {
 }
 
 interface ChartData {
+  /** Stable category ID - used to match categories to their competency group. */
+  id: string;
   subject: string;
   current: number;
   desired: number;
@@ -32,8 +44,12 @@ interface ChartData {
 // PDF export constants (centralized for consistency)
 const PDF_RADAR_WIDTH = 480;
 const PDF_RADAR_HEIGHT = 380;
-const PDF_CONTAINER_WIDTH = 540; // Balanced container width
-const PDF_CONTAINER_HEIGHT = 460; // Increased to include legend
+// Capture-box size now lives in skillGapChartTheme so ReactPDFDocument can derive
+// its embedded image aspect from the same numbers. Tall enough for the radar plus
+// BOTH legend rows; html2canvas captures at offsetWidth/offsetHeight, so anything
+// overflowing this box is clipped out of the PDF image.
+const PDF_CONTAINER_WIDTH = PDF_CAPTURE_WIDTH;
+const PDF_CONTAINER_HEIGHT = PDF_CAPTURE_HEIGHT;
 // Set label radius to 125 for PDF export (480x380px) to keep labels closer to center and prevent cut-off.
 // If you change the chart size, adjust this value to be about 52% of the smallest dimension / 2.
 const PDF_LABEL_RADIUS = 125;
@@ -41,6 +57,80 @@ const SCREEN_LABEL_RADIUS = 185; // For on-screen chart
 
 // WARNING: If you change the chart size, you MUST update PDF_CONTAINER_WIDTH, PDF_CONTAINER_HEIGHT, and PDF_LABEL_RADIUS together!
 // The PDF export depends on these being in sync to prevent label cutoff. See ResultsActions.tsx and chartCapture.ts for details.
+
+interface RadarGroupArcsProps {
+  groupSpans?: GroupSpan[] | null;
+  // Injected by recharts' <Customized> via cloneElement - see recharts/component/Customized.
+  angleAxisMap?: Record<string, unknown>;
+  formattedGraphicalItems?: { props?: { points?: { angle?: number }[] } }[];
+}
+
+/**
+ * Draws one arc per competency group just outside the outer ring.
+ *
+ * Reads the chart's real polar geometry (cx/cy/outerRadius/startAngle/endAngle) from
+ * the angle axis rather than recomputing it, so the arcs scale with the chart at any
+ * container size - including the narrower mobile layout and the fixed PDF size.
+ * Bails out silently if the geometry is unavailable.
+ */
+const RadarGroupArcs = (props: RadarGroupArcsProps) => {
+  const { groupSpans, angleAxisMap, formattedGraphicalItems } = props;
+  if (!groupSpans || groupSpans.length === 0) return null;
+
+  const axis = angleAxisMap ? (Object.values(angleAxisMap)[0] as Record<string, number> | undefined) : undefined;
+  if (!axis) return null;
+
+  const { cx, cy, outerRadius, startAngle, endAngle } = axis;
+  const geometry = [cx, cy, outerRadius, startAngle, endAngle];
+  if (!geometry.every(v => typeof v === 'number' && Number.isFinite(v))) return null;
+
+  const count = Math.max(...groupSpans.map(s => s.endIndex)) + 1;
+  if (count <= 0) return null;
+
+  const step = (endAngle - startAngle) / count;
+  if (!Number.isFinite(step) || step === 0) return null;
+
+  // Prefer the vertex angles recharts actually rendered; fall back to even spacing.
+  const points = formattedGraphicalItems?.[0]?.props?.points;
+  const angleAt = (i: number): number => {
+    const p = Array.isArray(points) ? points[i] : undefined;
+    if (p && typeof p.angle === 'number' && Number.isFinite(p.angle)) return p.angle;
+    return startAngle + i * step;
+  };
+
+  const arcRadius = outerRadius * (1 + RADAR_THEME.groupArc.radiusOffsetRatio);
+  const halfGap = RADAR_THEME.groupArc.gapDegrees / 2;
+  const dir = step < 0 ? -1 : 1;
+  const sweepFlag = dir < 0 ? 1 : 0;
+
+  return (
+    <g className="radar-group-arcs" style={{ pointerEvents: 'none' }}>
+      {groupSpans.map(span => {
+        // Each category owns a band of +/- half a step around its vertex; the group
+        // arc spans from the outer edge of its first member to that of its last.
+        const arcStart = angleAt(span.startIndex) - step / 2 + dir * halfGap;
+        const arcEnd = angleAt(span.endIndex) + step / 2 - dir * halfGap;
+        const sweep = Math.abs(arcEnd - arcStart);
+        if (!Number.isFinite(sweep) || sweep <= 0) return null;
+
+        const p0 = polarPoint(cx, cy, arcRadius, arcStart);
+        const p1 = polarPoint(cx, cy, arcRadius, arcEnd);
+        const largeArc = sweep > 180 ? 1 : 0;
+
+        return (
+          <path
+            key={span.key}
+            d={`M ${p0.x} ${p0.y} A ${arcRadius} ${arcRadius} 0 ${largeArc} ${sweepFlag} ${p1.x} ${p1.y}`}
+            fill="none"
+            stroke={span.color}
+            strokeWidth={RADAR_THEME.groupArc.strokeWidth}
+            strokeLinecap={RADAR_THEME.groupArc.strokeLinecap}
+          />
+        );
+      })}
+    </g>
+  );
+};
 
 // Custom tick component for competency names with optimized spacing
 interface CustomTickProps {
@@ -110,6 +200,174 @@ const CustomTick = (props: CustomTickProps) => {
         </text>
       ))}
     </g>
+  );
+};
+
+// --- LEGEND -----------------------------------------------------------------
+// Rendered as ONE inline SVG rather than flex rows. html2canvas re-implements
+// layout itself and resolves flexbox cross-axis alignment differently from the
+// browser, which left the swatches sitting off their labels in the captured PNG
+// while looking perfect on screen. SVG has no layout to reinterpret: every mark
+// and glyph is at an explicit coordinate, so it rasterises identically.
+
+const LEGEND_FONT_FAMILY = 'Helvetica, Arial, sans-serif';
+const LEGEND_FONT_WEIGHT = 500;
+const LEGEND_TEXT_COLOR = '#64748b';
+/**
+ * Text baseline offset from an item's vertical centre, as a fraction of font size.
+ * Deliberately a manual offset rather than dominant-baseline: html2canvas honours
+ * explicit y coordinates reliably but handles dominant-baseline inconsistently -
+ * which is the same class of bug we are fixing here.
+ */
+const LEGEND_BASELINE_RATIO = 0.34;
+
+/** Reused across calls; creating a canvas per measurement is needless churn. */
+let legendMeasureCanvas: HTMLCanvasElement | null = null;
+
+/**
+ * Measure a label in the exact font the SVG will render it in, so items can be
+ * laid out at explicit x coordinates. Falls back to a rough estimate when no DOM
+ * is available (the chart is client-only, so this is belt-and-braces).
+ */
+const measureLegendText = (text: string, fontSize: number): number => {
+  if (typeof document === 'undefined') return text.length * fontSize * 0.55;
+  if (!legendMeasureCanvas) legendMeasureCanvas = document.createElement('canvas');
+  const ctx = legendMeasureCanvas.getContext('2d');
+  if (!ctx) return text.length * fontSize * 0.55;
+  ctx.font = `${LEGEND_FONT_WEIGHT} ${fontSize}px ${LEGEND_FONT_FAMILY}`;
+  return ctx.measureText(text).width;
+};
+
+interface LegendMark {
+  kind: 'swatch' | 'dash';
+  label: string;
+  fill?: string;
+  stroke?: string;
+  strokeWidth?: number;
+}
+
+interface RadarLegendProps {
+  isPDF: boolean;
+  /** Same guard as the group arcs - false for historical category orders. */
+  showGroups: boolean;
+}
+
+const RadarLegend = ({ isPDF, showGroups }: RadarLegendProps) => {
+  const swatchSize = 12;
+  const dashWidth = 22;
+  const markGap = 6;
+  const rowHeight = isPDF ? 16 : 18;
+  const rowGap = isPDF ? 8 : 12;
+  const row1Font = isPDF ? 12 : 14;
+  const row2Font = isPDF ? 11 : 13;
+  const row1Spacing = isPDF ? 24 : 32;
+  const row2Spacing = isPDF ? 16 : 20;
+
+  const row1: LegendMark[] = [
+    {
+      kind: 'swatch',
+      label: 'Current Level',
+      fill: hexToRgba(RADAR_THEME.current.fill, RADAR_THEME.current.fillOpacity),
+      stroke: RADAR_THEME.current.stroke,
+      strokeWidth: 2,
+    },
+    { kind: 'dash', label: 'Desired Level' },
+  ];
+  const row2: LegendMark[] = RADAR_THEME.groups.map(group => ({
+    kind: 'swatch',
+    label: group.name,
+    fill: group.color,
+  }));
+
+  const markWidth = (mark: LegendMark) => (mark.kind === 'dash' ? dashWidth : swatchSize);
+  const itemWidth = (mark: LegendMark, font: number) =>
+    markWidth(mark) + markGap + measureLegendText(mark.label, font);
+  const rowWidth = (items: LegendMark[], font: number, spacing: number) =>
+    items.reduce((sum, mark) => sum + itemWidth(mark, font), 0) +
+    spacing * Math.max(0, items.length - 1);
+
+  const row1Width = rowWidth(row1, row1Font, row1Spacing);
+  const row2Width = showGroups ? rowWidth(row2, row2Font, row2Spacing) : 0;
+  const svgWidth = Math.ceil(Math.max(row1Width, row2Width));
+  const svgHeight = showGroups ? rowHeight * 2 + rowGap : rowHeight;
+
+  const renderRow = (items: LegendMark[], font: number, spacing: number, width: number, rowIndex: number) => {
+    const centreY = rowIndex * (rowHeight + rowGap) + rowHeight / 2;
+    let x = (svgWidth - width) / 2; // centre the row within the SVG
+    const nodes: JSX.Element[] = [];
+
+    items.forEach((mark, i) => {
+      if (mark.kind === 'swatch') {
+        // Stroke straddles the path, so inset by half the stroke to keep the
+        // painted swatch exactly swatchSize across.
+        const inset = (mark.strokeWidth ?? 0) / 2;
+        nodes.push(
+          <rect
+            key={`mark-${rowIndex}-${i}`}
+            x={x + inset}
+            y={centreY - swatchSize / 2 + inset}
+            width={swatchSize - inset * 2}
+            height={swatchSize - inset * 2}
+            rx={2}
+            fill={mark.fill}
+            stroke={mark.stroke ?? 'none'}
+            strokeWidth={mark.strokeWidth ?? 0}
+          />
+        );
+      } else {
+        nodes.push(
+          <line
+            key={`mark-${rowIndex}-${i}`}
+            x1={x}
+            y1={centreY}
+            x2={x + dashWidth}
+            y2={centreY}
+            stroke={RADAR_THEME.desired.stroke}
+            strokeWidth={RADAR_THEME.desired.strokeWidth}
+            strokeDasharray={RADAR_THEME.desired.strokeDasharray}
+          />
+        );
+      }
+
+      nodes.push(
+        <text
+          key={`text-${rowIndex}-${i}`}
+          x={x + markWidth(mark) + markGap}
+          y={centreY + font * LEGEND_BASELINE_RATIO}
+          fontFamily={LEGEND_FONT_FAMILY}
+          fontSize={font}
+          fontWeight={LEGEND_FONT_WEIGHT}
+          fill={LEGEND_TEXT_COLOR}
+        >
+          {mark.label}
+        </text>
+      );
+
+      x += itemWidth(mark, font) + spacing;
+    });
+
+    return nodes;
+  };
+
+  const description = showGroups
+    ? `Current Level, Desired Level, and competency groups: ${RADAR_THEME.groups.map(g => g.name).join(', ')}`
+    : 'Current Level and Desired Level';
+
+  return (
+    <svg
+      width={svgWidth}
+      height={svgHeight}
+      viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+      // maxWidth/height:auto let the whole legend scale down proportionally on
+      // narrow screens instead of overflowing. The PDF container is fixed and
+      // wider than the legend, so no scaling happens there.
+      style={{ display: 'block', margin: '0 auto', maxWidth: '100%', height: 'auto' }}
+      role="img"
+      aria-label={description}
+    >
+      {renderRow(row1, row1Font, row1Spacing, row1Width, 0)}
+      {showGroups && renderRow(row2, row2Font, row2Spacing, row2Width, 1)}
+    </svg>
   );
 };
 
@@ -209,6 +467,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
         const avgDesired = parseFloat((totalDesired / validSkillCount).toFixed(1));
         const displayTitle = category.title || "Unknown Category";
         result.push({
+          id: category.id || '',
           subject: displayTitle,
           current: avgCurrent,
           desired: avgDesired,
@@ -228,9 +487,17 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
   }, [safeCategories, isPDF]);
 
   const validChartData = chartData.filter(
-    item => item.skillCount && item.skillCount > 0 && 
-           ((item.current > 0 || item.desired > 0) && 
+    item => item.skillCount && item.skillCount > 0 &&
+           ((item.current > 0 || item.desired > 0) &&
            (!isNaN(item.current) && !isNaN(item.desired)))
+  );
+
+  // Null for historical assessments stored in the old category order - see
+  // resolveGroupSpans. Gates both the arcs and the group legend row.
+  const groupSpans = useMemo(
+    () => resolveGroupSpans(validChartData.map(d => d.id)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [validChartData.map(d => d.id).join('|')]
   );
   
 
@@ -259,6 +526,7 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
     : effectiveIsMobile
     ? { top: 20, right: 20, left: 20, bottom: 20 } // Equal margins for mobile symmetry
     : { top: 40, right: 40, left: 40, bottom: 40 }; // Reduced equal margins for desktop - larger chart while maintaining symmetry
+
 
 
 
@@ -327,19 +595,33 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
             <Radar
               name={isPDF ? "Current State" : "Current Level"}
               dataKey="current"
-              stroke="#1E3C34"
-              fill="#1E3C34"
-              fillOpacity={0.3}
-              strokeWidth={1}
+              stroke={RADAR_THEME.current.stroke}
+              fill={RADAR_THEME.current.fill}
+              fillOpacity={RADAR_THEME.current.fillOpacity}
+              strokeWidth={RADAR_THEME.current.strokeWidth}
+              dot={{
+                r: RADAR_THEME.current.dotRadius,
+                fill: RADAR_THEME.current.stroke,
+                // Explicit override - recharts otherwise leaks the Radar's own
+                // fillOpacity onto the dots and washes them out.
+                fillOpacity: RADAR_THEME.current.dotFillOpacity,
+                stroke: RADAR_THEME.current.dotStroke,
+                strokeWidth: RADAR_THEME.current.dotStrokeWidth,
+                strokeOpacity: 1
+              }}
             />
             <Radar
               name={isPDF ? "Desired State" : "Desired Level"}
               dataKey="desired"
-              stroke="#4A7A6C"
-              fill="#4A7A6C"
-              fillOpacity={0.3}
-              strokeWidth={1}
+              stroke={RADAR_THEME.desired.stroke}
+              fill="none"
+              fillOpacity={0}
+              strokeWidth={RADAR_THEME.desired.strokeWidth}
+              strokeDasharray={RADAR_THEME.desired.strokeDasharray}
+              dot={false}
             />
+            {/* Competency group arcs - suppressed for historical category orders. */}
+            {groupSpans && <Customized component={<RadarGroupArcs groupSpans={groupSpans} />} />}
             <Tooltip />
           </RadarChart>
         </ResponsiveContainer>
@@ -362,69 +644,20 @@ const SkillGapChart: React.FC<SkillGapChartProps> = ({ categories, className = "
         }}
       >
         {/* Horizontal separator line */}
-        <div style={{ 
-          width: '100%', 
-          height: '1px', 
+        <div style={{
+          width: '100%',
+          height: '1px',
           backgroundColor: '#e2e8f0',
           flexShrink: 0
         }}></div>
-        
-        {/* PDF-specific colored text legend */}
-        {isPDF ? (
-          <div style={{ 
-            fontSize: '12px',
-            textAlign: 'center',
-            fontWeight: '500',
-            display: 'flex',
-            gap: '24px',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}>
-            <span style={{ color: 'rgba(47, 88, 80, 0.8)' }}>■ Current Level</span>
-            <span style={{ color: 'rgba(74, 122, 108, 0.6)' }}>■ Desired Level</span>
-          </div>
-        ) : (
-          /* Original legend for web view */
-          <div style={{ 
-            display: 'flex', 
-            gap: '32px', 
-            fontSize: '14px',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0
-          }}>
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'baseline', 
-              gap: '6px' 
-            }}>
-              <div style={{ 
-                width: '12px', 
-                height: '12px', 
-                backgroundColor: 'rgba(47, 88, 80, 0.8)', 
-                flexShrink: 0,
-                borderRadius: '2px',
-                marginTop: '2px'
-              }}></div>
-              <span className="text-slate-500 font-medium">Current Level</span>
-            </div>
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'baseline', 
-              gap: '6px' 
-            }}>
-              <div style={{ 
-                width: '12px', 
-                height: '12px', 
-                backgroundColor: 'rgba(74, 122, 108, 0.6)', 
-                flexShrink: 0,
-                borderRadius: '2px',
-                marginTop: '2px'
-              }}></div>
-              <span className="text-slate-500 font-medium">Desired Level</span>
-            </div>
-          </div>
-        )}
+
+        {/*
+          Legend is a single inline SVG (see RadarLegend). It lives INSIDE
+          [data-testid="radar-chart-container"] - the element chartCapture.ts
+          photographs - so it appears in the PDF. Row 2 (groups) is gated on the
+          same historical-order guard as the arcs.
+        */}
+        <RadarLegend isPDF={isPDF} showGroups={Boolean(groupSpans)} />
       </div>
     </div>
   );

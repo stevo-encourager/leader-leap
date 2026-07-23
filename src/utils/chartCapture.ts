@@ -13,7 +13,20 @@ import { logger } from './productionLogger';
  * The data-testid="radar-chart-container" attribute in SkillGapChart.tsx must match
  * the primary selector here, or PDF exports will fail.
  */
-export const captureRadarChartAsPNG = async (): Promise<string | null> => {
+/**
+ * A captured chart plus the ACTUAL pixel dimensions of the canvas produced.
+ *
+ * The consumer derives its embed aspect from these real numbers rather than from
+ * the PDF_CAPTURE_* constants, so CSS overriding the container's rendered size can
+ * no longer distort the embedded image.
+ */
+export interface CapturedChart {
+  dataUrl: string;
+  width: number;
+  height: number;
+}
+
+export const captureRadarChartAsPNG = async (): Promise<CapturedChart | null> => {
   return new Promise((resolve) => {
     
     // Wait for chart to fully render
@@ -102,7 +115,18 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
       try {
         // Wait a bit more for any animations to complete
         await new Promise(resolve => setTimeout(resolve, 500));
-        
+
+        // DIAGNOSTIC: the container's LIVE rendered size at capture time. If this
+        // differs from PDF_CAPTURE_WIDTH x PDF_CAPTURE_HEIGHT (540x510), CSS is
+        // overriding the fixed size and the true captured aspect is not what the
+        // PDF embed assumed - which is what squashes the chart.
+        const liveWidth = radarContainer.offsetWidth;
+        const liveHeight = radarContainer.offsetHeight;
+        console.log(
+          `ChartCapture: selector=${usedSelector} container=${liveWidth}x${liveHeight} ` +
+          `containerAspect=${(liveHeight / liveWidth).toFixed(4)}`
+        );
+
         // Use html2canvas with settings optimized for chart capture
         const canvas = await html2canvas(radarContainer, {
           backgroundColor: '#ffffff',
@@ -129,17 +153,23 @@ export const captureRadarChartAsPNG = async (): Promise<string | null> => {
         if (canvas.width === 0 || canvas.height === 0) {
           throw new Error('Generated canvas has zero dimensions');
         }
-        
+
+        console.log(
+          `ChartCapture: canvas=${canvas.width}x${canvas.height} ` +
+          `canvasAspect=${(canvas.height / canvas.width).toFixed(4)} ` +
+          `(embed height is derived from THIS aspect)`
+        );
+
         // Convert to PNG data URL with high quality
         const pngDataUrl = canvas.toDataURL('image/png', 1.0);
-        
+
         // Validate that we have substantial image data
         if (pngDataUrl.length > 2000) {
-          resolve(pngDataUrl);
+          resolve({ dataUrl: pngDataUrl, width: canvas.width, height: canvas.height });
         } else {
           resolve(null);
         }
-        
+
       } catch (error) {
         resolve(null);
       }

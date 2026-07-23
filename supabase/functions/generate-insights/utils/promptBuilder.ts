@@ -161,7 +161,7 @@ const LEADERSHIP_RESOURCES: LeadershipResource[] = [
   { title: 'SBI Feedback Model', section: 'Communication & Feedback', url: 'https://www.ccl.org/articles/leading-effectively-articles/closing-the-gap-between-intent-vs-impact-sbii/' },
   { title: 'Radical Candor Framework', section: 'Communication & Feedback', url: 'https://www.radicalcandor.com/our-approach/' },
   { title: 'What is Nonviolent Communication', section: 'Communication & Feedback', url: 'https://positivepsychology.com/non-violent-communication/' },
-  { title: 'Active Listening Techniques', section: 'Communication & Feedback', url: 'https://www.mindtools.com/CommSkll/ActiveListening.htm' },
+  { title: 'Active Listening Techniques', section: 'Communication & Feedback', url: 'https://executive.berkeley.edu/thought-leadership/blog/art-active-listening' },
   { title: 'OODA Loop', section: 'Decision Making', url: 'https://thedecisionlab.com/reference-guide/computer-science/the-ooda-loop' },
   { title: 'DACI Decision Making Framework', section: 'Decision Making', url: 'https://www.atlassian.com/team-playbook/plays/daci' },
   { title: 'RACI \'Responsibility Assignment Matrix\'', section: 'Decision Making', url: 'https://www.teamgantt.com/blog/raci-chart-definition-tips-and-example' },

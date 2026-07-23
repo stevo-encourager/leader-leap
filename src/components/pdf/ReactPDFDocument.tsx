@@ -4,6 +4,12 @@ import { Document, Page, Text, View, StyleSheet, Image, Link } from '@react-pdf/
 import { Category, Demographics } from '@/utils/assessmentTypes';
 import { calculateAverageGap } from '@/utils/assessmentCalculations/averages';
 import { logger } from '@/utils/productionLogger';
+import { PDF_CAPTURE_ASPECT } from '@/components/skillGapChartTheme';
+
+// Embedded radar chart width in PDF points (the page-fit budget). Height is computed
+// per-render from the ACTUAL captured canvas dimensions - see chartEmbedHeight below.
+// PDF_CAPTURE_ASPECT is only the fallback for when no dimensions were reported.
+const PDF_CHART_EMBED_WIDTH = 475;
 
 // Define styles for React PDF
 const styles = StyleSheet.create({
@@ -80,10 +86,12 @@ const styles = StyleSheet.create({
     marginVertical: 15,
     backgroundColor: '#ffffff',
     width: '100%',
+    // No height/maxHeight here on purpose: the container must size FROM the image,
+    // never constrain it. See the minHeight note on the chart Image below.
   },
   chartImage: {
-    maxWidth: 475,
-    maxHeight: 475, // Square for perfect symmetry
+    // width/height are applied per-render from the real canvas dimensions, NOT here -
+    // a static height cannot track whatever the DOM actually rendered at capture time.
     marginBottom: 8,
     alignSelf: 'center',
   },
@@ -201,6 +209,9 @@ interface ReactPDFDocumentProps {
   demographics: Demographics;
   insights: string;
   chartImageDataUrl?: string;
+  /** Real pixel dimensions of the captured canvas, from captureRadarChartAsPNG. */
+  chartImageWidth?: number;
+  chartImageHeight?: number;
   userName?: string;
   assessmentDate?: string;
 }
@@ -244,10 +255,35 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
   demographics,
   insights,
   chartImageDataUrl,
+  chartImageWidth,
+  chartImageHeight,
   userName,
   assessmentDate
 }) => {
   const averageGap = calculateAverageGap(categories);
+
+  /**
+   * Embed height from the ACTUAL captured canvas, so the image can never be
+   * distorted regardless of what the DOM rendered at capture time. Falls back to the
+   * capture-box constant only when no dimensions were reported (older callers).
+   */
+  const measuredAspect =
+    chartImageWidth && chartImageHeight && chartImageWidth > 0
+      ? chartImageHeight / chartImageWidth
+      : null;
+  const usingMeasuredAspect = measuredAspect !== null;
+  const capturedAspect = measuredAspect ?? PDF_CAPTURE_ASPECT;
+  const chartEmbedHeight = Math.round(PDF_CHART_EMBED_WIDTH * capturedAspect);
+
+  // DIAGNOSTIC: proves the captured dimensions arrive as real numbers rather than
+  // undefined silently falling back to the constant. usingMeasuredAspect=false means
+  // the props are not reaching this component.
+  console.log(
+    `ReactPDFDocument: chartImageWidth=${chartImageWidth} (${typeof chartImageWidth}) ` +
+    `chartImageHeight=${chartImageHeight} (${typeof chartImageHeight}) ` +
+    `usingMeasuredAspect=${usingMeasuredAspect} aspect=${capturedAspect.toFixed(4)} ` +
+    `embed=${PDF_CHART_EMBED_WIDTH}x${chartEmbedHeight}pt`
+  );
   const currentDate = assessmentDate 
     ? new Date(assessmentDate).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -409,8 +445,23 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
         <Text style={[styles.sectionTitle, { marginTop: 15 }]}>Competency Analysis - Radar Chart</Text>
         <View style={styles.chartContainer}>
           {chartImageDataUrl && chartImageDataUrl.startsWith('data:image/') ? (
-            <Image 
-              style={styles.chartImage}
+            <Image
+              style={[
+                styles.chartImage,
+                {
+                  width: PDF_CHART_EMBED_WIDTH,
+                  height: chartEmbedHeight,
+                  // minWidth/minHeight are load-bearing, not belt-and-braces.
+                  // @react-pdf forces every node's flexShrink to 1 - setFlexShrink does
+                  // `value || 1`, so `flexShrink: 0` silently becomes 1 and cannot be
+                  // opted out of. The Page is a fixed-height flex column, so once page 1
+                  // content exceeds the A4 body Yoga compresses this image VERTICALLY
+                  // (width is untouched), distorting the radar. A min constraint is the
+                  // only floor Yoga will not shrink past.
+                  minWidth: PDF_CHART_EMBED_WIDTH,
+                  minHeight: chartEmbedHeight,
+                }
+              ]}
               src={chartImageDataUrl}
             />
           ) : (

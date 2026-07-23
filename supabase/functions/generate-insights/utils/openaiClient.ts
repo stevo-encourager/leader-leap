@@ -46,6 +46,8 @@ export const callOpenAI = async (prompt: string, openAIApiKey: string): Promise<
   const model = resolveOpenAIModel();
   const maxTokens = resolveMaxTokens();
 
+  console.log(`OpenAI request: model=${model} max_tokens=${maxTokens}`);
+
   const response = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {

@@ -16,7 +16,16 @@ import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
 import { allCategories } from '../src/utils/assessmentCategories/index.ts';
-import { buildAssessmentData, buildPrompt } from '../supabase/functions/generate-insights/utils/promptBuilder.ts';
+import {
+  buildAssessmentData,
+  buildPrompt,
+  createSeededRandom,
+} from '../supabase/functions/generate-insights/utils/promptBuilder.ts';
+
+// The validated leaders list is shuffled on every prompt build in production.
+// A fixed seed keeps this example byte-identical between runs, so a diff only
+// ever reflects a real change to the categories or the prompt.
+const SHUFFLE_SEED = 20260722;
 
 const OUTPUT_FILE = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'example-ai-prompt.txt');
 
@@ -43,7 +52,7 @@ const gaps = categories.flatMap(category =>
 const averageGap = gaps.reduce((total, gap) => total + gap, 0) / gaps.length;
 
 const assessmentSummary = buildAssessmentData(categories, averageGap, DEMOGRAPHICS);
-const prompt = buildPrompt(assessmentSummary);
+const prompt = buildPrompt(assessmentSummary, { random: createSeededRandom(SHUFFLE_SEED) });
 
 writeFileSync(OUTPUT_FILE, prompt, 'utf8');
 

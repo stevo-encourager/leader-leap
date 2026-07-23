@@ -1,3 +1,4 @@
+import { isBookResource, findNonBookResourceFor } from './promptBuilder.ts';
 
 export const validateEnvironmentVariables = () => {
   const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
@@ -94,5 +95,144 @@ export const validateInsightsStructure = (insights: any): void => {
     if (strength.resources && !Array.isArray(strength.resources)) {
       throw new Error('Invalid key strength structure - resources must be an array');
     }
+  }
+};
+
+// --- BOOK COUNT ENFORCEMENT -------------------------------------------------
+// The prompt demands exactly one book per competency section, but even
+// full-size models violate it (e.g. "Getting To Yes" AND "Crucial
+// Conversations" in the same section). Rather than rejecting the whole
+// response, repair it: keep the first book and swap surplus books for
+// validated non-book resources. Sections with zero books are left alone - the
+// prompt already handles that case.
+
+/** Shapes the model may emit. Fields are optional because output is untrusted. */
+interface InsightResource {
+  type?: string;
+  title?: string;
+  name?: string;
+  [key: string]: unknown;
+}
+
+type ResourceEntry = string | InsightResource;
+
+interface InsightSection {
+  competency?: string;
+  resources?: ResourceEntry[];
+  insights?: string[];
+  leverage_advice?: string[];
+}
+
+interface ParsedInsights {
+  priority_areas?: InsightSection[];
+  key_strengths?: InsightSection[];
+}
+
+/** Resources arrive as plain strings or as objects carrying a title/name. */
+const resourceNameOf = (resource: ResourceEntry): string => {
+  if (typeof resource === 'string') return resource;
+  if (resource && typeof resource === 'object') {
+    return String(resource.title ?? resource.name ?? '');
+  }
+  return '';
+};
+
+/**
+ * Rebuild a resource in its original shape with a new name. Replacements are
+ * always non-book resources, so any `type: 'book'` metadata is corrected too -
+ * otherwise a framework would keep being labelled (and rendered) as a book.
+ */
+const withResourceName = (original: ResourceEntry, name: string): ResourceEntry => {
+  if (typeof original === 'string') return name;
+  if (original && typeof original === 'object') {
+    const updated: InsightResource = { ...original };
+    if (updated.type === 'book') {
+      updated.type = 'framework';
+    }
+    if ('title' in updated) {
+      updated.title = name;
+    } else {
+      updated.name = name;
+    }
+    return updated;
+  }
+  return name;
+};
+
+const enforceBookLimitForSection = (
+  section: InsightSection,
+  competency: string,
+  narrative: string[] | undefined,
+  label: string
+): number => {
+  const resources = section?.resources;
+  if (!Array.isArray(resources) || resources.length === 0) return 0;
+
+  const bookPositions = resources
+    .map((resource: ResourceEntry, index: number) => ({ index, name: resourceNameOf(resource) }))
+    .filter(entry => entry.name && isBookResource(entry.name));
+
+  if (bookPositions.length < 2) return 0;
+
+  const contextText = Array.isArray(narrative) ? narrative.join(' ') : '';
+  let corrections = 0;
+
+  // Keep the first book; replace every subsequent one.
+  for (const surplus of bookPositions.slice(1)) {
+    const currentNames = resources.map(resourceNameOf).filter(Boolean);
+    const replacement = findNonBookResourceFor(competency, contextText, currentNames);
+
+    if (!replacement) {
+      console.log(
+        `Book limit: ${label} "${competency}" has surplus book "${surplus.name}" but no replacement resource was available - leaving as is`
+      );
+      continue;
+    }
+
+    console.log(
+      `Book limit: ${label} "${competency}" had ${bookPositions.length} books - replacing "${surplus.name}" with "${replacement}"`
+    );
+    resources[surplus.index] = withResourceName(resources[surplus.index], replacement);
+    corrections += 1;
+  }
+
+  return corrections;
+};
+
+/**
+ * Enforce the one-book-per-section rule across the parsed insights, mutating
+ * `insights` in place. Logs every correction so the function logs show how
+ * often the model gets this wrong.
+ */
+export const enforceBookLimits = (insights: unknown): void => {
+  if (!insights || typeof insights !== 'object') return;
+
+  const parsed = insights as ParsedInsights;
+  let corrections = 0;
+
+  if (Array.isArray(parsed.priority_areas)) {
+    for (const area of parsed.priority_areas) {
+      corrections += enforceBookLimitForSection(
+        area,
+        String(area?.competency ?? 'unknown'),
+        area?.insights,
+        'priority area'
+      );
+    }
+  }
+
+  if (Array.isArray(parsed.key_strengths)) {
+    for (const strength of parsed.key_strengths) {
+      corrections += enforceBookLimitForSection(
+        strength,
+        String(strength?.competency ?? 'unknown'),
+        strength?.leverage_advice,
+        'key strength'
+      );
+    }
+  }
+
+  if (corrections > 0) {
+    console.log(`Book limit: applied ${corrections} correction(s) to model output`);
   }
 };

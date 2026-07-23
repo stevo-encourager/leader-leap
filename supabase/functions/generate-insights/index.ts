@@ -2,7 +2,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { validateEnvironmentVariables, validateInsightsStructure } from './utils/validation.ts';
+import { validateEnvironmentVariables, validateInsightsStructure, enforceBookLimits } from './utils/validation.ts';
 import { cleanJsonResponse, formatSummaryIntoParagraphs, sanitizeJsonString } from './utils/formatting.ts';
 import { buildAssessmentData, buildPrompt, formatResourceMarkdown } from './utils/promptBuilder.ts';
 import { callOpenAI } from './utils/openaiClient.ts';
@@ -170,6 +170,9 @@ serve(async (req) => {
 
     // STEP 8: Validate insights structure
     validateInsightsStructure(parsedInsights);
+
+    // STEP 8b: Repair book-count violations the model makes despite the prompt
+    enforceBookLimits(parsedInsights);
 
     // STEP 9: Ensure proper paragraph formatting
     if (parsedInsights.summary) {

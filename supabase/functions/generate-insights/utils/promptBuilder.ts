@@ -25,58 +25,74 @@ ${sections}
 `;
 };
 
+/** Source of randomness, injectable so example output can be made deterministic. */
+export type RandomFn = () => number;
+
+/**
+ * Small deterministic PRNG (mulberry32). Used by
+ * scripts/generate-example-prompt.ts so the committed example prompt stays
+ * byte-identical between runs; production passes no seed and gets Math.random.
+ */
+export const createSeededRandom = (seed: number): RandomFn => {
+  let state = seed >>> 0;
+  return () => {
+    state = (state + 0x6d2b79f5) >>> 0;
+    let t = state;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+};
+
+/** Fisher-Yates shuffle. Returns a new array; does not mutate the input. */
+const shuffle = <T>(items: T[], random: RandomFn): T[] => {
+  const result = [...items];
+  for (let i = result.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+};
+
+interface ValidatedLeader {
+  theme: string;
+  name: string;
+  descriptor: string;
+  url: string;
+}
+
+// Order here is NOT the order presented to the model - the list is shuffled on
+// every prompt build. The model was over-selecting whichever leaders appeared
+// first, which made Nadella and Benioff recur across similar profiles.
+const VALIDATED_LEADERS: ValidatedLeader[] = [
+  { theme: 'Transformational & Empathetic Leadership', name: 'Satya Nadella', descriptor: 'Microsoft transformation, empathetic leadership, emotional intelligence focus', url: 'https://www.linkedin.com/in/satyanadella/' },
+  { theme: 'Collaborative & Inclusive Leadership', name: 'Mary Barra', descriptor: 'Automotive transformation, inclusive culture, team building excellence', url: 'https://www.linkedin.com/in/mary-barra/' },
+  { theme: 'Values-Based & Learning-Oriented Leadership', name: 'Marc Benioff', descriptor: 'Values-driven business, continuous learning, professional development focus', url: 'https://www.linkedin.com/in/marcbenioff/' },
+  { theme: 'Strategic & Empowering Leadership', name: 'Indra Nooyi', descriptor: 'Strategic thinking excellence, employee empowerment, delegation mastery', url: 'https://www.linkedin.com/in/indranooyi/' },
+  { theme: '"Founder Mode" & Humble Inquiry Leadership', name: 'Brian Chesky', descriptor: 'Scaling organizations, staying connected to mission, adaptability', url: 'https://www.linkedin.com/in/brianchesky/' },
+  { theme: 'Data-Driven & High-Performance Culture Leadership', name: 'Reed Hastings', descriptor: 'Performance culture, data-driven decisions, change leadership', url: 'https://www.linkedin.com/in/reedhastings/' },
+  { theme: 'Servant Leadership & Financial Inclusion', name: 'Thasunda Brown Duckett', descriptor: 'Community impact, servant leadership, relationship management', url: 'https://www.linkedin.com/in/thasunda-brown-duckett-22b15523/' },
+  { theme: 'Sustainable & Mission-Driven Leadership', name: 'Paul Polman', descriptor: 'Sustainable business, long-term thinking, strategic vision', url: 'https://www.linkedin.com/in/paulpolman/' },
+  { theme: 'Direct & Crisis Management Leadership', name: 'Jamie Dimon', descriptor: 'Crisis leadership, direct communication, decisiveness', url: 'https://www.linkedin.com/in/jamiedimon/' },
+  { theme: 'Technical Visionary & Innovation Leadership', name: 'Jensen Huang', descriptor: 'Innovation leadership, technical vision, future-focused thinking', url: 'https://www.linkedin.com/in/jenhsunhuang/' },
+  { theme: 'Principle-Based & "Why Culture" Leadership', name: 'Andy Jassy', descriptor: 'Principle-centered decisions, cultural alignment, trust building', url: 'https://www.linkedin.com/in/andy-jassy-8b1615/' },
+  { theme: 'Transparent, Creative, and Human-Centered', name: 'Stewart Butterfield', descriptor: 'Transparent communication, creative leadership, collaboration focus', url: 'https://www.linkedin.com/in/butterfield/' },
+  { theme: 'Empathetic, Empowering, and Purpose-Driven', name: 'Whitney Wolfe Herd', descriptor: 'Purpose-driven innovation, empathetic leadership, empowerment focus', url: 'https://en.wikipedia.org/wiki/Whitney_Wolfe_Herd' },
+  { theme: 'Tech-Forward, Ethical, and Strategic Transformation', name: 'Arvind Krishna', descriptor: 'Ethical technology, transformation leadership, strategic planning', url: 'https://www.linkedin.com/in/arvindkrishna/' },
+  { theme: 'Bold, Mission-Driven, Inclusion-Focused', name: 'Reshma Saujani', descriptor: 'Bold advocacy, inclusion-focused leadership, resilience', url: 'https://www.linkedin.com/in/reshma-saujani/' },
+  { theme: 'Global Advocacy, Partnership-Driven, Narrative Empowerment', name: 'Elizabeth Nyamayaro', descriptor: 'Global impact, partnership building, stakeholder engagement', url: 'https://www.linkedin.com/in/enyamayaro/' },
+];
+
 // Build the validated leaders list for the prompt - ENHANCED WITH BETTER SELECTION LOGIC
-const buildValidatedLeadersList = (): string => {
+const buildValidatedLeadersList = (random: RandomFn): string => {
+  const leaders = shuffle(VALIDATED_LEADERS, random)
+    .map(leader => `**${leader.theme}:**\n- ${leader.name} (${leader.descriptor}) - ${leader.url}`)
+    .join('\n\n');
+
   return `
 **VALIDATED INSPIRATIONAL LEADERS - USE ONLY THESE LEADERS:**
 
-**Transformational & Empathetic Leadership:**
-- Satya Nadella (Microsoft transformation, empathetic leadership, emotional intelligence focus) - https://www.linkedin.com/in/satyanadella/
-
-**Collaborative & Inclusive Leadership:**
-- Mary Barra (Automotive transformation, inclusive culture, team building excellence) - https://www.linkedin.com/in/mary-barra/
-
-**Values-Based & Learning-Oriented Leadership:**
-- Marc Benioff (Values-driven business, continuous learning, professional development focus) - https://www.linkedin.com/in/marcbenioff/
-
-**Strategic & Empowering Leadership:**
-- Indra Nooyi (Strategic thinking excellence, employee empowerment, delegation mastery) - https://www.linkedin.com/in/indranooyi/
-
-**"Founder Mode" & Humble Inquiry Leadership:**
-- Brian Chesky (Scaling organizations, staying connected to mission, adaptability) - https://www.linkedin.com/in/brianchesky/
-
-**Data-Driven & High-Performance Culture Leadership:**
-- Reed Hastings (Performance culture, data-driven decisions, change leadership) - https://www.linkedin.com/in/reedhastings/
-
-**Servant Leadership & Financial Inclusion:**
-- Thasunda Brown Duckett (Community impact, servant leadership, relationship management) - https://www.linkedin.com/in/thasunda-brown-duckett-22b15523/
-
-**Sustainable & Mission-Driven Leadership:**
-- Paul Polman (Sustainable business, long-term thinking, strategic vision) - https://www.linkedin.com/in/paulpolman/
-
-**Direct & Crisis Management Leadership:**
-- Jamie Dimon (Crisis leadership, direct communication, decisiveness) - https://www.linkedin.com/in/jamiedimon/
-
-**Technical Visionary & Innovation Leadership:**
-- Jensen Huang (Innovation leadership, technical vision, future-focused thinking) - https://www.linkedin.com/in/jenhsunhuang/
-
-**Principle-Based & "Why Culture" Leadership:**
-- Andy Jassy (Principle-centered decisions, cultural alignment, trust building) - https://www.linkedin.com/in/andy-jassy-8b1615/
-
-**Transparent, Creative, and Human-Centered:**
-- Stewart Butterfield (Transparent communication, creative leadership, collaboration focus) - https://www.linkedin.com/in/butterfield/
-
-**Empathetic, Empowering, and Purpose-Driven:**
-- Whitney Wolfe Herd (Purpose-driven innovation, empathetic leadership, empowerment focus) - https://en.wikipedia.org/wiki/Whitney_Wolfe_Herd
-
-**Tech-Forward, Ethical, and Strategic Transformation:**
-- Arvind Krishna (Ethical technology, transformation leadership, strategic planning) - https://www.linkedin.com/in/arvindkrishna/
-
-**Bold, Mission-Driven, Inclusion-Focused:**
-- Reshma Saujani (Bold advocacy, inclusion-focused leadership, resilience) - https://www.linkedin.com/in/reshma-saujani/
-
-**Global Advocacy, Partnership-Driven, Narrative Empowerment:**
-- Elizabeth Nyamayaro (Global impact, partnership building, stakeholder engagement) - https://www.linkedin.com/in/enyamayaro/
+${leaders}
 
 **STREAMLINED LEADER SELECTION PROCESS:**
 
@@ -104,6 +120,7 @@ const buildValidatedLeadersList = (): string => {
 **Step 4: Final Selection Rules**
 - NEVER default to Indra Nooyi unless Strategic Planning, Delegation, or Empowerment are the PRIMARY STRENGTHS
 - ALWAYS vary leader selection - avoid repeating the same leader across assessments
+- Where two leaders fit equally well, prefer the less frequently cited one over the most famous.
 - If multiple leaders from Steps 2-3 could apply, select based on best industry/role fit
 - If no perfect match exists, omit leader reference entirely rather than forcing a poor fit
 `;
@@ -208,6 +225,77 @@ const LEADERSHIP_RESOURCES: LeadershipResource[] = [
 // Name as shown to the model in the prompt and rendered back to the user.
 const resourceDisplayName = (resource: LeadershipResource): string =>
   resource.author ? `${resource.title} by ${resource.author}` : resource.title;
+
+const BOOKS_SECTION = 'Leadership Books';
+
+const BOOK_DISPLAY_NAMES: string[] = LEADERSHIP_RESOURCES
+  .filter(resource => resource.section === BOOKS_SECTION)
+  .map(resourceDisplayName);
+
+const NON_BOOK_RESOURCES: LeadershipResource[] = LEADERSHIP_RESOURCES
+  .filter(resource => resource.section !== BOOKS_SECTION);
+
+const normalise = (value: string): string => value.trim().toLowerCase();
+
+/**
+ * True when a resource name refers to an entry in the Leadership Books section
+ * of the canonical database. Tolerates the model shortening a title (dropping
+ * "by <author>"), matching how formatResourceMarkdown resolves names.
+ */
+export const isBookResource = (resourceName: string): boolean => {
+  const candidate = normalise(resourceName);
+  if (!candidate) return false;
+
+  return BOOK_DISPLAY_NAMES.some(bookName => {
+    const book = normalise(bookName);
+    return candidate === book || candidate.includes(book) || book.includes(candidate);
+  });
+};
+
+/**
+ * Choose a validated non-book resource to stand in for a surplus book.
+ *
+ * Preference order:
+ *  1. a non-book resource already named in the section's own narrative text,
+ *     so the swap reinforces what the model actually wrote;
+ *  2. a resource whose canonical section overlaps wording with the competency;
+ *  3. any remaining non-book resource.
+ *
+ * `excludeNames` prevents duplicating a resource already in the section.
+ */
+export const findNonBookResourceFor = (
+  competencyTitle: string,
+  contextText: string,
+  excludeNames: string[]
+): string | null => {
+  const excluded = new Set(excludeNames.map(normalise));
+  const available = NON_BOOK_RESOURCES
+    .map(resource => ({ resource, name: resourceDisplayName(resource) }))
+    .filter(entry => !excluded.has(normalise(entry.name)));
+
+  if (available.length === 0) return null;
+
+  const context = normalise(contextText);
+  const mentioned = available.find(entry => context.includes(normalise(entry.name)));
+  if (mentioned) return mentioned.name;
+
+  const competencyWords = normalise(competencyTitle)
+    .split(/[^a-z]+/)
+    .filter(word => word.length > 3);
+
+  let best = available[0];
+  let bestScore = -1;
+  for (const entry of available) {
+    const sectionWords = normalise(entry.resource.section).split(/[^a-z]+/);
+    const score = competencyWords.filter(word => sectionWords.includes(word)).length;
+    if (score > bestScore) {
+      best = entry;
+      bestScore = score;
+    }
+  }
+
+  return best.name;
+};
 
 // Build the validated resources list, grouped by section, from the canonical
 // database above. Titles and authors only - the model never uses the URLs;
@@ -422,7 +510,17 @@ export function buildAssessmentData(categories: any[], averageGap: number, demog
   };
 }
 
-export const buildPrompt = (assessmentSummary: any): string => {
+/**
+ * Options for prompt construction.
+ * `random` exists so scripts/generate-example-prompt.ts can pass a seeded PRNG
+ * and get byte-identical output; production omits it and gets true variety.
+ */
+export interface BuildPromptOptions {
+  random?: RandomFn;
+}
+
+export const buildPrompt = (assessmentSummary: any, options: BuildPromptOptions = {}): string => {
+  const random = options.random ?? Math.random;
 
 
   // Validate assessment summary structure
@@ -481,7 +579,7 @@ ${topCompetencies.map((cat, i) => {
   // Build validated resource lists - these are the ONLY resources ChatGPT can use
   const validatedSkillsList = buildValidatedSkillsList(assessmentSummary.categoryBreakdown);
   const validatedResourcesList = buildValidatedResourcesList();
-  const validatedLeadersList = buildValidatedLeadersList();
+  const validatedLeadersList = buildValidatedLeadersList(random);
 
   // CRITICAL STRUCTURE REQUIREMENTS FOR CHATGPT:
   // - Summary: THREE paragraphs (first = growth areas, second = strengths + leader reference, third = user empowerment)
@@ -586,6 +684,12 @@ You represent Encourager Coaching, which emphasizes:
 - Keep feedback clear, readable, and motivational
 - ONLY reference skills that exist in the validated skills database
 - **CRITICAL CAPITALIZATION RULE**: ALWAYS use lowercase when mentioning competency names in sentences. For example: "your development areas in influencing, delegation & empowerment, and strategic thinking" NOT "Influencing, Delegation & Empowerment, and Strategic Thinking". Only capitalize competency names in structured headers, never in flowing paragraph text.
+
+**SUMMARY READABILITY RULES:**
+- Name each priority competency AT MOST ONCE in the summary. After its first mention, refer directly to its skills without restating the competency name.
+- Do NOT open with a sentence that lists all three priority competencies and then re-name each one again in subsequent sentences.
+- Let the skills carry the narrative: "Developing your ability to work through others and hold accountability without micromanaging will..." reads better than "Developing your competencies in delegation & empowerment, particularly in working through others..."
+- The same applies to the strengths paragraph: name each key competency once, then speak in skills.
 
 **MANDATORY "WHY" EXPLANATIONS FOR DEVELOPMENT AREAS:**
 - For EVERY priority development area, include a brief, supportive explanation of WHY that competency is important for effective leadership
@@ -843,6 +947,7 @@ Before generating the JSON response, verify:
 □ Summary includes verified leader with working link in correct HTML anchor tag format (only if validated leader found)
 □ All demographic context (role, industry, experience) is referenced appropriately
 □ Summary contains exactly 3 distinct paragraphs (development areas, competencies + leader, user empowerment)
+□ Each competency name appears at most once in the summary.
 □ All competency names match exactly from assessment data
 □ Each competency section has exactly 3 insights/advice items
 □ Role-specific and industry-specific context is woven throughout

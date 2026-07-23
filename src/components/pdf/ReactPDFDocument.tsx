@@ -387,7 +387,7 @@ const ReactPDFDocument: React.FC<ReactPDFDocumentProps> = ({
         <View style={styles.header}>
           <Image 
             style={styles.logo}
-            src="/EncouragerLogoNew.png"
+            src="/LeaderLeapLogo.png"
           />
           <Text style={styles.title}>Leader Leap Assessment Results</Text>
           <Text style={styles.subtitle}>Assessment taken on {currentDate}</Text>

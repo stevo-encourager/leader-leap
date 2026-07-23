@@ -199,8 +199,8 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
             </>
           ) : (
             <img 
-              src="/EncouragerLogoNew.png" 
-              alt="Encourager Coaching Logo" 
+              src="/LeaderLeapLogo.png"
+              alt="Leader Leap Logo"
               className="h-24" 
             />
           )}

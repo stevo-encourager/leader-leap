@@ -188,8 +188,8 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
               </div>
               <div className="flex items-center gap-2">
                 <img 
-                  src="/EncouragerLogoNew.png" 
-                  alt="Encourager Coaching" 
+                  src="/LeaderLeapLogo.png"
+                  alt="Leader Leap"
                   className="h-24 w-auto"
                 />
               </div>

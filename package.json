@@ -9,7 +9,9 @@
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
-    "seo-check": "node scripts/seo-check.js"
+    "seo-check": "node scripts/seo-check.js",
+    "generate:example-prompt": "npx --yes tsx scripts/generate-example-prompt.ts",
+    "verify:categories": "npx --yes tsx scripts/verify-categories.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",

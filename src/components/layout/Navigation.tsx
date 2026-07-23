@@ -24,11 +24,8 @@ const Navigation: React.FC = () => {
      !window.location.hostname.includes('lovable.dev'));
   
   // Check if user is super admin
-  const superAdmins = [
-    'steve.thompson@leader-leap.com',
-    'steve@encourager.co.uk',
-    'steve.b.thompson@encourager.co.uk'
-  ];
+  // TODO: Replace with database check of profiles.is_admin field
+  const superAdmins = import.meta.env.VITE_ADMIN_EMAILS?.split(',').map(email => email.trim()) || [];
   const isSuperAdmin = user && superAdmins.some(
     email => email.toLowerCase() === (user.email || '').toLowerCase().trim()
   );

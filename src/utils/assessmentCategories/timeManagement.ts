@@ -3,25 +3,25 @@ import { Category } from '../assessmentTypes';
 
 export const timeManagementCategory: Category = {
   id: "time-priority-management",
-  title: "Time/Priority Management",
-  description: "The ability to manage time effectively and prioritize tasks appropriately.",
+  title: "Personal Effectiveness",
+  description: "How you organise and focus your time, attention and energy on what matters most.",
   skills: [
     {
-      id: "time-management",
-      name: "Time Management",
-      description: "Ability to use time efficiently and productively.",
+      id: "prioritisation",
+      name: "Prioritisation",
+      description: "Focuses on the vital few over the trivial many; says no well; aligns time with what matters most.",
       ratings: { current: 0, desired: 0 }
     },
     {
-      id: "prioritization",
-      name: "Prioritization",
-      description: "Ability to determine which tasks are most important and urgent.",
+      id: "focus-deep-work",
+      name: "Focus & Deep Work",
+      description: "Protects time for substantive thinking; manages interruptions; avoids being permanently reactive.",
       ratings: { current: 0, desired: 0 }
     },
     {
-      id: "work-life-balance",
-      name: "Work-Life Balance",
-      description: "Ability to maintain healthy boundaries between professional and personal life.",
+      id: "sustainable-pace",
+      name: "Sustainable Pace",
+      description: "Maintains work-life balance; manages own energy; models healthy working patterns for the team.",
       ratings: { current: 0, desired: 0 }
     }
   ]

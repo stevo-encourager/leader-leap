@@ -1,57 +1,20 @@
 // Build the validated skills list for the prompt - ONLY THESE SKILLS CAN BE REFERENCED
-const buildValidatedSkillsList = (): string => {
+//
+// Generated dynamically from the assessment data supplied at runtime, which
+// originates from src/utils/assessmentCategories. Do NOT reintroduce a
+// hardcoded copy here: this list silently drifted out of sync with the
+// categories once already, which caused the model to be handed a rulebook
+// forbidding it from naming any skill the user had actually rated.
+const buildValidatedSkillsList = (categoryBreakdown: any[]): string => {
+  const sections = (categoryBreakdown || [])
+    .filter((cat: any) => cat && cat.title && Array.isArray(cat.allSkills) && cat.allSkills.length > 0)
+    .map((cat: any) => `**${cat.title}:**\n${cat.allSkills.map((name: string) => `- ${name}`).join('\n')}`)
+    .join('\n\n');
+
   return `
 **VALIDATED SKILLS DATABASE - REFERENCE ONLY THESE SKILLS:**
 
-**Strategic Thinking/Vision:**
-- Future Vision
-- Big Picture Thinking
-- Strategic Planning
-
-**Influencing:**
-- Persuasive Messaging
-- Stakeholder Engagement
-- Executive Presence
-
-**Team Leadership:**
-- Team Motivation
-- Team Development
-- Collaboration
-
-**Decision Making:**
-- Critical Thinking
-- Problem Solving
-- Decisiveness
-
-**Emotional Intelligence:**
-- Self-Awareness
-- Empathy
-- Relationship Management
-
-**Change Management:**
-- Adaptability
-- Change Leadership
-- Resilience
-
-**Negotiation & Conflict Resolution:**
-- Conflict Resolution
-- Strategic Negotiation
-- Facilitation & Mediation
-
-**Delegation & Empowerment:**
-- Task Delegation
-- Trust Building
-- Autonomy Support
-
-**Time/Priority Management:**
-- Time Management
-- Prioritization
-- Work-Life Balance
-
-**Self-Leadership:**
-- Continuous Learning
-- Feedback Reception
-- Career Planning
+${sections}
 
 **CRITICAL SKILL REFERENCE RULES:**
 - You MUST ONLY reference skills from this validated list above
@@ -122,16 +85,16 @@ const buildValidatedLeadersList = (): string => {
 - This becomes the primary basis for leader selection
 
 **Step 2: Apply Competency-to-Leader Mapping**
-- Strategic Thinking/Vision strengths → Satya Nadella, Paul Polman, Jensen Huang, or Arvind Krishna
-- Influencing strengths → Elizabeth Nyamayaro, Stewart Butterfield, or Whitney Wolfe Herd  
-- Team Leadership strengths → Mary Barra, Brian Chesky, or Marc Benioff
+- Strategy & Commercial strengths → Satya Nadella, Paul Polman, Jensen Huang, or Arvind Krishna
+- Stakeholder Relationships strengths → Elizabeth Nyamayaro, Stewart Butterfield, or Whitney Wolfe Herd
+- Leading People strengths → Mary Barra, Brian Chesky, or Marc Benioff
 - Decision Making strengths → Jamie Dimon, Reed Hastings, or Andy Jassy
 - Emotional Intelligence strengths → Thasunda Brown Duckett, Satya Nadella, or Whitney Wolfe Herd
-- Change Management strengths → Reed Hastings, Brian Chesky, or Reshma Saujani
+- Execution & Operations strengths → Reed Hastings, Brian Chesky, or Reshma Saujani
 - Negotiation & Conflict Resolution strengths → Jamie Dimon, Stewart Butterfield, or Andy Jassy
 - Delegation & Empowerment strengths → Indra Nooyi, Mary Barra, or Marc Benioff
-- Time/Priority Management strengths → Vary selection to avoid repetition
-- Self-Leadership strengths → Marc Benioff, Thasunda Brown Duckett, or Elizabeth Nyamayaro
+- Personal Effectiveness strengths → Vary selection to avoid repetition
+- Leading Yourself strengths → Marc Benioff, Thasunda Brown Duckett, or Elizabeth Nyamayaro
 
 **Step 3: Apply Industry Filter (if applicable)**
 - Technology industry → Prefer Satya Nadella, Jensen Huang, Marc Benioff, or Andy Jassy
@@ -146,118 +109,129 @@ const buildValidatedLeadersList = (): string => {
 `;
 };
 
-// Build the validated resources list - ENHANCED WITH EXACT URLs
+// --- CANONICAL RESOURCE DATABASE ------------------------------------------
+// Single source of truth for every resource the model may recommend.
+// Both the prompt's resource list AND formatResourceMarkdown() are derived
+// from this array, so each title, author and URL exists in exactly one place.
+// Do NOT reintroduce a second hand-maintained copy: the previous prose list
+// and link map drifted apart on every one of their shared entries.
+// Entries without a `url` render as plain text rather than a link.
+interface LeadershipResource {
+  title: string;
+  author?: string;
+  section: string;
+  url?: string;
+}
+
+const LEADERSHIP_RESOURCES: LeadershipResource[] = [
+  { title: 'The Eisenhower Matrix - Priority Management', section: 'Time Management & Productivity', url: 'https://www.eisenhower.me/eisenhower-matrix/' },
+  { title: 'The Pomodoro Technique', section: 'Time Management & Productivity', url: 'https://www.techtarget.com/whatis/definition/pomodoro-technique' },
+  { title: 'Getting Things Done (GTD) Methodology', section: 'Time Management & Productivity', url: 'https://gettingthingsdone.com/what-is-gtd/' },
+  { title: 'SMART Goals Framework', section: 'Goal Setting & Planning', url: 'https://corporatefinanceinstitute.com/resources/management/smart-goal/' },
+  { title: 'Objectives and Key Results (OKRs)', section: 'Goal Setting & Planning', url: 'https://www.whatmatters.com/faqs/okr-meaning-definition-example/' },
+  { title: 'OKR Framework Guide', section: 'Goal Setting & Planning', url: 'https://www.atlassian.com/agile/agile-at-scale/okr' },
+  { title: 'SBI Feedback Model', section: 'Communication & Feedback', url: 'https://www.ccl.org/articles/leading-effectively-articles/closing-the-gap-between-intent-vs-impact-sbii/' },
+  { title: 'Radical Candor Framework', section: 'Communication & Feedback', url: 'https://www.radicalcandor.com/our-approach/' },
+  { title: 'What is Nonviolent Communication', section: 'Communication & Feedback', url: 'https://positivepsychology.com/non-violent-communication/' },
+  { title: 'Active Listening Techniques', section: 'Communication & Feedback', url: 'https://www.mindtools.com/CommSkll/ActiveListening.htm' },
+  { title: 'OODA Loop', section: 'Decision Making', url: 'https://thedecisionlab.com/reference-guide/computer-science/the-ooda-loop' },
+  { title: 'DACI Decision Making Framework', section: 'Decision Making', url: 'https://www.atlassian.com/team-playbook/plays/daci' },
+  { title: 'RACI \'Responsibility Assignment Matrix\'', section: 'Decision Making', url: 'https://www.teamgantt.com/blog/raci-chart-definition-tips-and-example' },
+  { title: 'SWOT Analysis Framework', section: 'Strategic Thinking', url: 'https://www.mindtools.com/pages/article/newTMC_05.htm' },
+  { title: 'Design Thinking Process by IDEO', section: 'Strategic Thinking', url: 'https://designthinking.ideo.com/' },
+  { title: 'Scenario Planning: Step by Step Guide', section: 'Strategic Thinking', url: 'https://www.professionalacademy.com/blogs/a-step-by-step-guide-to-scenario-planning/' },
+  { title: 'Emotional Intelligence', author: 'Daniel Goleman', section: 'Emotional Intelligence', url: 'https://www.danielgoleman.info/topics/emotional-intelligence/' },
+  { title: '16 Personalities test (MBTI)', section: 'Emotional Intelligence', url: 'https://www.16personalities.com/free-personality-test' },
+  { title: 'The Speed of Trust', author: 'Stephen Covey', section: 'Trust & Relationship Building', url: 'https://www.speedoftrust.com/' },
+  { title: 'The Trust Equation', section: 'Trust & Relationship Building', url: 'https://trustedadvisor.com/why-trust-matters/understanding-trust/understanding-the-trust-equation' },
+  { title: '7 Models for Delegation', section: 'Delegation & Empowerment', url: 'https://blog.hptbydts.com/7-models-for-delegation' },
+  { title: 'Situational Leadership: What it is and how to build it', section: 'Delegation & Empowerment', url: 'https://www.betterup.com/blog/situational-leadership-examples' },
+  { title: 'Performance management that puts people first', section: 'Performance Management', url: 'https://www.mckinsey.com/capabilities/people-and-organizational-performance/our-insights/in-the-spotlight-performance-management-that-puts-people-first' },
+  { title: 'Effective One-on-One Meetings', section: 'Performance Management', url: 'https://www.manager-tools.com/2005/07/the-single-most-effective-management-tool-part-1' },
+  { title: 'Thomas-Kilmann Conflict Resolution Model', section: 'Conflict Resolution', url: 'https://www.mtdtraining.com/blog/thomas-kilmann-conflict-management-model.htm' },
+  { title: 'Interest-Based Negotiation (framework guide)', section: 'Conflict Resolution', url: 'https://www.uhab.org/resource/successful-conflict-resolution-getting-to-yes/' },
+  { title: 'ADKAR Change Management Model', section: 'Change Management', url: 'https://www.prosci.com/methodology/adkar' },
+  { title: 'Kotter\'s 8-Step Change Process', section: 'Change Management', url: 'https://www.kotterinc.com/8-steps-process-for-leading-change/' },
+  { title: 'Bridges Transition Model', section: 'Change Management', url: 'https://wmbridges.com/about/what-is-transition/' },
+  { title: 'Lewin\'s 3-Stage Change Model', section: 'Change Management', url: 'https://uk.indeed.com/career-advice/career-development/lewins-change-model' },
+  { title: 'Tuckman\'s Team Development Model', section: 'Team Development', url: 'https://www.thecoachingtoolscompany.com/get-your-team-performing-beautifully-with-this-powerful-group-development-model/' },
+  { title: 'Creating A Team Charter', section: 'Team Development', url: 'https://miro.com/organizational-chart/what-is-a-team-charter/#how-to-make-a-team-charter' },
+  { title: 'Ways of Working & Guiding Principles', section: 'Team Development', url: 'https://www.youtube.com/watch?v=aZ-yZSNd3l4' },
+  { title: 'A Guide to Harnessing Psychological Safety', section: 'Team Development', url: 'https://www.encouragercoaching.com/post/unshackling-potential-a-guide-to-harnessing-psychological-safety' },
+  { title: 'Why It\'s Necessary to Improve Team Communication', section: 'Team Communication', url: 'https://www.apu.apus.edu/area-of-study/business-and-management/resources/why-it-is-necessary-to-improve-team-communication/' },
+  { title: '3 Easy Steps to Staff Meetings That Don\'t Suck', section: 'Team Communication', url: 'https://www.radicalcandor.com/blog/effective-staff-meetings/' },
+  { title: '70-20-10 Learning and Development Model', section: 'Learning & Development', url: 'https://www.ccl.org/articles/leading-effectively-articles/70-20-10-rule/' },
+  { title: 'What is a Growth Mindset', section: 'Learning & Development', url: 'https://www.renaissance.com/edword/growth-mindset/' },
+  { title: 'Deliberate Practice Framework', section: 'Learning & Development', url: 'https://jamesclear.com/deliberate-practice-theory' },
+  { title: 'GROW Coaching Model', section: 'Coaching & Mentoring', url: 'https://www.coachingcultureatwork.com/the-grow-model/' },
+  { title: 'How to have a Coaching Conversation', section: 'Coaching & Mentoring', url: 'https://www.ccl.org/articles/leading-effectively-articles/how-to-have-a-coaching-conversation/' },
+  { title: 'How to create a career development plan in 5 steps', section: 'Career Development', url: 'https://uk.indeed.com/career-advice/career-development/how-to-create-a-career-development-plan' },
+  { title: 'Why It\'s ALWAYS A Good Idea To Build Your Personal Brand', section: 'Career Development', url: 'https://www.linkedin.com/pulse/why-its-always-good-idea-build-your-personal-brand-gary-vaynerchuk-95k3c/' },
+  { title: 'Strategic Networking for Leaders', section: 'Career Development', url: 'https://hbr.org/2016/05/learn-to-love-networking' },
+  { title: 'The 5 Whys Technique', section: 'Problem Solving', url: 'https://www.youtube.com/watch?v=wLHLWNzYNAU' },
+  { title: 'Unit Economics / P&L Review Practice', section: 'Commercial & Financial' },
+  { title: 'Process Documentation and KPI Cadence', section: 'Operational Scaling & Process' },
+  { title: 'Deliberate Network Mapping', section: 'Networking & Industry Presence' },
+  { title: 'StrengthsFinder 2.0', section: 'Assessment Tools', url: 'https://www.gallup.com/cliftonstrengths' },
+  { title: 'The Predictive Index', section: 'Assessment Tools', url: 'https://www.predictiveindex.com/' },
+  { title: 'Emotional Intelligence 2.0', author: 'Travis Bradberry', section: 'Leadership Books', url: 'https://amzn.to/45zVPDo' },
+  { title: 'Crucial Conversations', author: 'Kerry Patterson', section: 'Leadership Books', url: 'https://amzn.to/4koOyLq' },
+  { title: 'The 7 Habits of Highly Effective People', author: 'Stephen Covey', section: 'Leadership Books', url: 'https://amzn.to/4kn4Sw0' },
+  { title: 'Good to Great', author: 'Jim Collins', section: 'Leadership Books', url: 'https://amzn.to/4jBi3s9' },
+  { title: 'Dare to Lead', author: 'Brené Brown', section: 'Leadership Books', url: 'https://amzn.to/454pepe' },
+  { title: 'The Leadership Challenge', author: 'James Kouzes', section: 'Leadership Books', url: 'https://amzn.to/3HhFyct' },
+  { title: 'Primal Leadership', author: 'Daniel Goleman', section: 'Leadership Books', url: 'https://amzn.to/43MFg4V' },
+  { title: 'Atomic Habits', author: 'James Clear', section: 'Leadership Books', url: 'https://amzn.to/4mNWBTM' },
+  { title: 'Getting Things Done', author: 'David Allen', section: 'Leadership Books', url: 'https://amzn.to/3Zcige4' },
+  { title: 'Reinventing Organisations', author: 'Frederic Laloux', section: 'Leadership Books', url: 'https://amzn.to/45AG8fa' },
+  { title: 'The Pyramid Principle', author: 'Barbara Minto', section: 'Leadership Books', url: 'https://amzn.to/3Zc2YWN' },
+  { title: 'The Captain Class', author: 'Sam Walker', section: 'Leadership Books', url: 'https://amzn.to/43t4vKE' },
+  { title: 'Leading Change', author: 'John Kotter', section: 'Leadership Books', url: 'https://amzn.to/3Hgp9oD' },
+  { title: 'The Power of Habit', author: 'Charles Duhigg', section: 'Leadership Books', url: 'https://amzn.to/3FErMzX' },
+  { title: 'Build, Excite, Equip', author: 'Nicola Graham', section: 'Leadership Books', url: 'https://amzn.to/3Swn0aI' },
+  { title: 'The 17 Indisputable Laws of Teamwork', author: 'John Maxwell', section: 'Leadership Books', url: 'https://amzn.to/3ZI7QTy' },
+  { title: 'Thinking Fast and Slow', author: 'Daniel Kahneman', section: 'Leadership Books', url: 'https://amzn.to/3HnnOMD' },
+  { title: 'Getting To Yes', author: 'Roger Fisher and William Ury', section: 'Leadership Books', url: 'https://amzn.to/4mIcT08' },
+  { title: 'Playing To Win', author: 'AG Lafley & Roger Martin', section: 'Leadership Books', url: 'https://amzn.to/4kLsXfW' },
+  { title: 'Human Skills', author: 'Elizabeth Nyamayaro', section: 'Leadership Books', url: 'https://amzn.to/3HA3g3s' },
+  { title: 'Radical Candor', author: 'Kim Scott', section: 'Leadership Books', url: 'https://amzn.to/3HkG2hT' },
+  { title: 'Nonviolent Communication', author: 'Marshall B. Rosenberg', section: 'Leadership Books', url: 'https://amzn.to/3T1gWXQ' },
+  { title: 'Switch', author: 'Chip and Dan Heath', section: 'Leadership Books', url: 'https://amzn.to/4hpRzMD' },
+  { title: 'Financial Intelligence', author: 'Karen Berman and Joe Knight', section: 'Leadership Books', url: 'https://amzn.to/4fyVTHb' },
+  { title: 'Scaling Up', author: 'Verne Harnish', section: 'Leadership Books', url: 'https://amzn.to/4b9307D' },
+  { title: 'Never Eat Alone', author: 'Keith Ferrazzi', section: 'Leadership Books', url: 'https://amzn.to/4vKQQJH' },
+  { title: 'Give and Take', author: 'Adam Grant', section: 'Leadership Books', url: 'https://amzn.to/4yud70N' },
+  { title: 'High Output Management', author: 'Andy Grove', section: 'Leadership Books', url: 'https://amzn.to/4bUQLf8' },
+  { title: 'Traction', author: 'Gino Wickman', section: 'Leadership Books', url: 'https://amzn.to/3Rkewq9' },
+];
+
+// Name as shown to the model in the prompt and rendered back to the user.
+const resourceDisplayName = (resource: LeadershipResource): string =>
+  resource.author ? `${resource.title} by ${resource.author}` : resource.title;
+
+// Build the validated resources list, grouped by section, from the canonical
+// database above. Titles and authors only - the model never uses the URLs;
+// formatResourceMarkdown() attaches links to whatever the model returns.
 const buildValidatedResourcesList = (): string => {
+  const sectionOrder: string[] = [];
+  const bySection = new Map<string, string[]>();
+
+  for (const resource of LEADERSHIP_RESOURCES) {
+    if (!bySection.has(resource.section)) {
+      bySection.set(resource.section, []);
+      sectionOrder.push(resource.section);
+    }
+    bySection.get(resource.section)!.push(`- ${resourceDisplayName(resource)}`);
+  }
+
+  const sections = sectionOrder
+    .map(section => `**${section}:**\n${bySection.get(section)!.join('\n')}`)
+    .join('\n\n');
+
   return `
 **VALIDATED RESOURCE DATABASE - USE ONLY THESE RESOURCES:**
 
-**Time Management & Productivity:**
-- The Eisenhower Matrix - Priority Management: https://www.eisenhower.me/eisenhower-matrix/
-- The Pomodoro Technique: https://www.techtarget.com/whatis/definition/pomodoro-technique
-- Getting Things Done (GTD) Methodology: https://gettingthingsdone.com/what-is-gtd/
-
-**Goal Setting & Planning:**
-- SMART Goals Framework: https://corporatefinanceinstitute.com/resources/management/smart-goal/
-- Objectives and Key Results (OKRs): https://www.whatmatters.com/faqs/okr-meaning-definition-example/
-- OKR Framework Guide: https://www.atlassian.com/agile/agile-at-scale/okr
-
-**Communication & Feedback:**
-- SBI Feedback Model: https://www.ccl.org/articles/leading-effectively-articles/closing-the-gap-between-intent-vs-impact-sbii/
-- Radical Candor Framework: https://www.radicalcandor.com/our-approach/
-- What is Nonviolent Communication: https://positivepsychology.com/non-violent-communication/
-- Active Listening Techniques: https://www.mindtools.com/CommSkll/ActiveListening.htm
-
-**Decision Making:**
-- OODA Loop: https://thedecisionlab.com/reference-guide/computer-science/the-ooda-loop
-- DACI Decision Making Framework: https://www.atlassian.com/team-playbook/plays/daci
-- RACI 'Responsibility Assignment Matrix': https://www.teamgantt.com/blog/raci-chart-definition-tips-and-example
-
-**Strategic Thinking:**
-- SWOT Analysis Framework: https://www.mindtools.com/pages/article/newTMC_05.htm
-- Design Thinking Process by IDEO: https://designthinking.ideo.com/
-- Scenario Planning: Step by Step Guide: https://www.professionalacademy.com/blogs/a-step-by-step-guide-to-scenario-planning/
-
-**Emotional Intelligence:**
-- Emotional Intelligence by Daniel Goleman: https://www.danielgoleman.info/topics/emotional-intelligence/
-- 16 Personalities test (MBTI): https://www.16personalities.com/free-personality-test
-
-**Trust & Relationship Building:**
-- The Speed of Trust by Stephen Covey: https://www.speedoftrust.com/
-- The Trust Equation: https://trustedadvisor.com/why-trust-matters/understanding-trust/understanding-the-trust-equation
-
-**Delegation & Empowerment:**
-- 7 Models for Delegation: https://blog.hptbydts.com/7-models-for-delegation
-- Situational Leadership: What it is and how to build it: https://www.betterup.com/blog/situational-leadership-examples
-
-**Performance Management:**
-- Performance management that puts people first: https://www.mckinsey.com/capabilities/people-and-organizational-performance/our-insights/in-the-spotlight-performance-management-that-puts-people-first
-- Effective One-on-One Meetings: https://www.manager-tools.com/2005/07/the-single-most-effective-management-tool-part-1
-
-**Conflict Resolution:**
-- Thomas-Kilmann Conflict Resolution Model: https://www.mtdtraining.com/blog/thomas-kilmann-conflict-management-model.htm
-- Getting to Yes - Interest-Based Negotiation: https://www.uhab.org/resource/successful-conflict-resolution-getting-to-yes/
-
-**Change Management:**
-- ADKAR Change Management Model: https://www.prosci.com/methodology/adkar
-- Kotter's 8-Step Change Process: https://www.kotterinc.com/8-steps-process-for-leading-change/
-- Bridges Transition Model: https://wmbridges.com/about/what-is-transition/
-- Lewin's 3-Stage Change Model: https://uk.indeed.com/career-advice/career-development/lewins-change-model
-
-**Team Development:**
-- Tuckman's Team Development Model: https://www.thecoachingtoolscompany.com/get-your-team-performing-beautifully-with-this-powerful-group-development-model/
-- Creating A Team Charter: https://miro.com/organizational-chart/what-is-a-team-charter/#how-to-make-a-team-charter
-- Ways of Working & Guiding Principles: https://www.youtube.com/watch?v=aZ-yZSNd3l4
-- A Guide to Harnessing Psychological Safety: https://www.encouragercoaching.com/post/unshackling-potential-a-guide-to-harnessing-psychological-safety
-
-**Team Communication:**
-- Why It's Necessary to Improve Team Communication: https://www.apu.apus.edu/area-of-study/business-and-management/resources/why-it-is-necessary-to-improve-team-communication/
-- 3 Easy Steps to Staff Meetings That Don't Suck: https://www.radicalcandor.com/blog/effective-staff-meetings/
-
-**Learning & Development:**
-- 70-20-10 Learning and Development Model: https://www.ccl.org/articles/leading-effectively-articles/70-20-10-rule/
-- What is a Growth Mindset: https://www.renaissance.com/edword/growth-mindset/
-- Deliberate Practice Framework: https://jamesclear.com/deliberate-practice-theory
-
-**Coaching & Mentoring:**
-- GROW Coaching Model: https://www.coachingcultureatwork.com/the-grow-model/
-- How to have a Coaching Conversation: https://www.ccl.org/articles/leading-effectively-articles/how-to-have-a-coaching-conversation/
-
-**Career Development:**
-- How to create a career development plan in 5 steps: https://uk.indeed.com/career-advice/career-development/how-to-create-a-career-development-plan
-- Why It's ALWAYS A Good Idea To Build Your Personal Brand: https://www.linkedin.com/pulse/why-its-always-good-idea-build-your-personal-brand-gary-vaynerchuk-95k3c/
-- Strategic Networking for Leaders: https://hbr.org/2016/05/learn-to-love-networking
-
-**Problem Solving:**
-- The 5 Whys Technique: https://www.youtube.com/watch?v=wLHLWNzYNAU
-
-**Assessment Tools:**
-- StrengthsFinder 2.0: https://www.gallup.com/cliftonstrengths
-- The Predictive Index: https://www.predictiveindex.com/
-
-**Leadership Books:**
-- Emotional Intelligence 2.0 by Travis Bradberry: https://amzn.to/4ubKqCF
-- Crucial Conversations by Kerry Patterson: https://amzn.to/43MWHm1
-- The 7 Habits of Highly Effective People by Stephen Covey: https://amzn.to/4dPvKEk
-- Good to Great by Jim Collins: https://amzn.to/4dOdb3h
-- Dare to Lead by Brené Brown: https://amzn.to/4ukmTzs
-- The Leadership Challenge by James Kouzes: https://amzn.to/3Skn1S0
-- Primal Leadership by Daniel Goleman: https://amzn.to/4vv5rsZ
-- Atomic Habits by James Clear: https://amzn.to/3Qm3hwL
-- Getting Things Done by David Allen: https://amzn.to/43c2cuv
-- Reinventing Organisations by Frederic Laloux: https://amzn.to/4emEW30
-- The Pyramid Principle by Barbara Minto: https://amzn.to/3RErFKB
-- The Captain Class by Sam Walker: https://amzn.to/4fV8q9u
-- Leading Change by John Kotter: https://amzn.to/43OtDKY
-- The Power of Habit by Charles Duhigg: https://amzn.to/3PHZJF3
-- Build, Excite, Equip by Nicola Graham: https://amzn.to/3RNlkMQ
-- The 17 Indisputable Laws of Teamwork by John Maxwell: https://amzn.to/3QhZ1OS
-- Thinking Fast and Slow by Daniel Kahneman: https://amzn.to/4obBf3E
-- Getting To Yes by Roger Fisher and William Ury: https://amzn.to/3S177fd
-- Playing To Win by AG Lafley & Roger Martin: https://amzn.to/4vsEbLw
-- Human Skills by Elizabeth Nyamayaro: https://amzn.to/4dYdI1q
-- Radical Candor by Kim Scott: https://amzn.to/4frcRJ4
-- Nonviolent Communication by Marshall B. Rosenberg: https://amzn.to/4vqTrbP
-- Switch by Chip and Dan Heath: https://amzn.to/4vxFp8A
+${sections}
 
 **CRITICAL RESOURCE VALIDATION RULES:**
 - You MUST ONLY use resources from this validated database above
@@ -276,14 +250,14 @@ const buildValidatedResourcesList = (): string => {
 **ENHANCED BOOK SELECTION RULES:**
 - Select books that most closely align with the specific competency being discussed
 - If multiple books are relevant, choose the one that best matches the user's industry or role context
-- For Influencing competencies, prefer "Crucial Conversations" or "Radical Candor"
+- For Stakeholder Relationships competencies, prefer "Crucial Conversations" or "Radical Candor"; for networking and industry presence specifically, prefer "Never Eat Alone" or "Give and Take"
 - For Emotional Intelligence competencies, prefer "Emotional Intelligence 2.0" or "Primal Leadership"
-- For Strategic Thinking competencies, prefer "Good to Great" or "Playing To Win"
-- For Team Building competencies, prefer "The Leadership Challenge" or "The 17 Indisputable Laws of Teamwork"
-- For Change Management competencies, prefer "Leading Change" or "Switch" or "The Power of Habit"
+- For Strategy & Commercial competencies, prefer "Good to Great" or "Playing To Win"; for commercial acumen, financial literacy or growth leadership specifically, prefer "Financial Intelligence" or "Scaling Up"
+- For Leading People competencies, prefer "The Leadership Challenge" or "The 17 Indisputable Laws of Teamwork"
+- For Execution & Operations competencies, prefer "Leading Change" or "Switch" or "The Power of Habit"; for operational scaling or process & governance specifically, prefer "High Output Management" or "Traction"
 - For Decision Making competencies, prefer "Thinking Fast and Slow" or "Getting To Yes"
-- For Time/Priority Management competencies, prefer "Atomic Habits" or "Getting Things Done"
-- For Self-Leadership competencies, prefer "The 7 Habits of Highly Effective People" or "Atomic Habits"
+- For Personal Effectiveness competencies, prefer "Atomic Habits" or "Getting Things Done"
+- For Leading Yourself competencies, prefer "The 7 Habits of Highly Effective People" or "Atomic Habits"
 - For Negotiation & Conflict Resolution competencies, prefer "Getting To Yes" or "Crucial Conversations"
 - For Delegation & Empowerment competencies, prefer "The Leadership Challenge" or "Dare to Lead"
 
@@ -304,14 +278,14 @@ const buildValidatedResourcesList = (): string => {
 **ENHANCED BOOK SELECTION RULES:**
 - Select books that most closely align with the specific competency being discussed
 - If multiple books are relevant, choose the one that best matches the user's industry or role context
-- For Influencing competencies, prefer "Crucial Conversations" or "Radical Candor"
+- For Stakeholder Relationships competencies, prefer "Crucial Conversations" or "Radical Candor"; for networking and industry presence specifically, prefer "Never Eat Alone" or "Give and Take"
 - For Emotional Intelligence competencies, prefer "Emotional Intelligence 2.0" or "Primal Leadership"
-- For Strategic Thinking competencies, prefer "Good to Great" or "Playing To Win"
-- For Team Leadership competencies, prefer "The Leadership Challenge" or "The 17 Indisputable Laws of Teamwork"
-- For Change Management competencies, prefer "Leading Change" or "Switch" or "The Power of Habit"
+- For Strategy & Commercial competencies, prefer "Good to Great" or "Playing To Win"; for commercial acumen, financial literacy or growth leadership specifically, prefer "Financial Intelligence" or "Scaling Up"
+- For Leading People competencies, prefer "The Leadership Challenge" or "The 17 Indisputable Laws of Teamwork"
+- For Execution & Operations competencies, prefer "Leading Change" or "Switch" or "The Power of Habit"; for operational scaling or process & governance specifically, prefer "High Output Management" or "Traction"
 - For Decision Making competencies, prefer "Thinking Fast and Slow" or "Getting To Yes"
-- For Time/Priority Management competencies, prefer "Atomic Habits" or "Getting Things Done"
-- For Self-Leadership competencies, prefer "The 7 Habits of Highly Effective People" or "Atomic Habits"
+- For Personal Effectiveness competencies, prefer "Atomic Habits" or "Getting Things Done"
+- For Leading Yourself competencies, prefer "The 7 Habits of Highly Effective People" or "Atomic Habits"
 - For Negotiation & Conflict Resolution competencies, prefer "Getting To Yes" or "Crucial Conversations"
 - For Delegation & Empowerment competencies, prefer "The Leadership Challenge" or "Dare to Lead"
 
@@ -343,105 +317,21 @@ const validateSkillNamesForSummary = (skillNames: string[]): string[] => {
   });
 };
 
-// --- RESOURCE NAME TO URL MAPPING ---
-const VALIDATED_RESOURCE_LINKS: Record<string, string> = {
-  // Time Management & Productivity
-  'The Eisenhower Matrix - Priority Management': 'https://www.eisenhower.me/eisenhower-matrix/',
-  'The Pomodoro Technique': 'https://www.techtarget.com/whatis/definition/pomodoro-technique',
-  'Getting Things Done (GTD) Methodology': 'https://gettingthingsdone.com/what-is-gtd/',
-  // Goal Setting & Planning
-  'SMART Goals Framework': 'https://corporatefinanceinstitute.com/resources/management/smart-goal/',
-  'Objectives and Key Results (OKRs)': 'https://www.whatmatters.com/faqs/okr-meaning-definition-example/',
-  'OKR Framework Guide': 'https://www.atlassian.com/agile/agile-at-scale/okr',
-  // Communication & Feedback
-  'SBI Feedback Model': 'https://www.ccl.org/articles/leading-effectively-articles/closing-the-gap-between-intent-vs-impact-sbii/',
-  'Radical Candor Framework': 'https://www.radicalcandor.com/our-approach/',
-  'What is Nonviolent Communication': 'https://positivepsychology.com/non-violent-communication/',
-  'Active Listening Techniques': 'https://www.mindtools.com/CommSkll/ActiveListening.htm',
-  // Decision Making
-  'OODA Loop': 'https://thedecisionlab.com/reference-guide/computer-science/the-ooda-loop',
-  'DACI Decision Making Framework': 'https://www.atlassian.com/team-playbook/plays/daci',
-  "RACI 'Responsibility Assignment Matrix'": 'https://www.teamgantt.com/blog/raci-chart-definition-tips-and-example',
-  // Strategic Thinking
-  'SWOT Analysis Framework': 'https://www.mindtools.com/pages/article/newTMC_05.htm',
-  'Design Thinking Process by IDEO': 'https://designthinking.ideo.com/',
-  'Scenario Planning: Step by Step Guide': 'https://www.professionalacademy.com/blogs/a-step-by-step-guide-to-scenario-planning/',
-  // Emotional Intelligence
-  'Emotional Intelligence by Daniel Goleman': 'https://www.danielgoleman.info/topics/emotional-intelligence/',
-  '16 Personalities test (MBTI)': 'https://www.16personalities.com/free-personality-test',
-  // Trust & Relationship Building
-  'The Speed of Trust by Stephen Covey': 'https://www.speedoftrust.com/',
-  'The Trust Equation': 'https://trustedadvisor.com/why-trust-matters/understanding-trust/understanding-the-trust-equation',
-  // Delegation & Empowerment
-  '7 Models for Delegation': 'https://blog.hptbydts.com/7-models-for-delegation',
-  'Situational Leadership: What it is and how to build it': 'https://www.betterup.com/blog/situational-leadership-examples',
-  // Performance Management
-  'Performance management that puts people first': 'https://www.mckinsey.com/capabilities/people-and-organizational-performance/our-insights/in-the-spotlight-performance-management-that-puts-people-first',
-  'Effective One-on-One Meetings': 'https://www.manager-tools.com/2005/07/the-single-most-effective-management-tool-part-1',
-  // Conflict Resolution
-  'Thomas-Kilmann Conflict Resolution Model': 'https://www.mtdtraining.com/blog/thomas-kilmann-conflict-management-model.htm',
-  'Getting to Yes - Interest-Based Negotiation': 'https://www.uhab.org/resource/successful-conflict-resolution-getting-to-yes/',
-  // Change Management
-  'ADKAR Change Management Model': 'https://www.prosci.com/methodology/adkar',
-  "Kotter's 8-Step Change Process": 'https://www.kotterinc.com/8-steps-process-for-leading-change/',
-  "Bridges Transition Model": 'https://wmbridges.com/about/what-is-transition/',
-  "Lewin's 3-Stage Change Model": 'https://uk.indeed.com/career-advice/career-development/lewins-change-model',
-  // Team Development
-  "Tuckman's Team Development Model": 'https://www.thecoachingtoolscompany.com/get-your-team-performing-beautifully-with-this-powerful-group-development-model/',
-  'Creating A Team Charter': 'https://miro.com/organizational-chart/what-is-a-team-charter/#how-to-make-a-team-charter',
-  'Ways of Working & Guiding Principles': 'https://www.youtube.com/watch?v=aZ-yZSNd3l4',
-  'A Guide to Harnessing Psychological Safety': 'https://www.encouragercoaching.com/post/unshackling-potential-a-guide-to-harnessing-psychological-safety',
-  // Team Communication
-  "Why It's Necessary to Improve Team Communication": 'https://www.apu.apus.edu/area-of-study/business-and-management/resources/why-it-is-necessary-to-improve-team-communication/',
-  "3 Easy Steps to Staff Meetings That Don't Suck": 'https://www.radicalcandor.com/blog/effective-staff-meetings/',
-  // Learning & Development
-  '70-20-10 Learning and Development Model': 'https://www.ccl.org/articles/leading-effectively-articles/70-20-10-rule/',
-  'What is a Growth Mindset': 'https://www.renaissance.com/edword/growth-mindset/',
-  'Deliberate Practice Framework': 'https://jamesclear.com/deliberate-practice-theory',
-  // Coaching & Mentoring
-  'GROW Coaching Model': 'https://www.coachingcultureatwork.com/the-grow-model/',
-  'How to have a Coaching Conversation': 'https://www.ccl.org/articles/leading-effectively-articles/how-to-have-a-coaching-conversation/',
-  // Career Development
-  'How to create a career development plan in 5 steps': 'https://uk.indeed.com/career-advice/career-development/how-to-create-a-career-development-plan',
-  "Why It's ALWAYS A Good Idea To Build Your Personal Brand": 'https://www.linkedin.com/pulse/why-its-always-good-idea-build-your-personal-brand-gary-vaynerchuk-95k3c/',
-  'Strategic Networking for Leaders': 'https://hbr.org/2016/05/learn-to-love-networking',
-  // Problem Solving
-  'The 5 Whys Technique': 'https://www.youtube.com/watch?v=wLHLWNzYNAU',
-  // Assessment Tools
-  'StrengthsFinder 2.0': 'https://www.gallup.com/cliftonstrengths',
-  'The Predictive Index': 'https://www.predictiveindex.com/',
-  // Leadership Books
-  'Emotional Intelligence 2.0 by Travis Bradberry': 'https://amzn.to/45zVPDo',
-  'Crucial Conversations by Kerry Patterson': 'https://amzn.to/4koOyLq',
-  'The 7 Habits of Highly Effective People by Stephen Covey': 'https://amzn.to/4kn4Sw0',
-  'Good to Great by Jim Collins': 'https://amzn.to/4jBi3s9',
-  'Dare to Lead by Brené Brown': 'https://amzn.to/454pepe',
-  'The Leadership Challenge by James Kouzes': 'https://amzn.to/3HhFyct',
-  'Primal Leadership by Daniel Goleman': 'https://amzn.to/43MFg4V',
-  'Atomic Habits by James Clear': 'https://amzn.to/4mNWBTM',
-  'Getting Things Done by David Allen': 'https://amzn.to/3Zcige4',
-  'Reinventing Organisations by Frederic Laloux': 'https://amzn.to/45AG8fa',
-  'The Pyramid Principle by Barbara Minto': 'https://amzn.to/3Zc2YWN',
-  'The Captain Class by Sam Walker': 'https://amzn.to/43t4vKE',
-  'Leading Change by John Kotter': 'https://amzn.to/3Hgp9oD',
-  'The Power of Habit by Charles Duhigg': 'https://amzn.to/3FErMzX',
-  'Build, Excite, Equip by Nicola Graham': 'https://amzn.to/3Swn0aI',
-  'The 17 Indisputable Laws of Teamwork by John Maxwell': 'https://amzn.to/3ZI7QTy',
-  'Thinking Fast and Slow by Daniel Kahneman': 'https://amzn.to/3HnnOMD',
-  'Getting To Yes by Roger Fisher and William Ury': 'https://amzn.to/4mIcT08',
-  'Playing To Win by AG Lafley & Roger Martin': 'https://amzn.to/4kLsXfW',
-  'Human Skills by Elizabeth Nyamayaro': 'https://amzn.to/3HA3g3s',
-  'Radical Candor by Kim Scott': 'https://amzn.to/3HkG2hT',
-  'Nonviolent Communication by Marshall B. Rosenberg': 'https://amzn.to/3T1gWXQ',
-};
+// Display name -> URL, derived once from the canonical database. Resources
+// without a URL are absent here and fall through to plain-text rendering.
+const RESOURCE_URLS_BY_NAME: Map<string, string> = new Map(
+  LEADERSHIP_RESOURCES
+    .filter(resource => resource.url)
+    .map(resource => [resourceDisplayName(resource), resource.url as string] as [string, string])
+);
 
 export function formatResourceMarkdown(resourceName: string): string {
   // First, try to find an exact match
-  const url = VALIDATED_RESOURCE_LINKS[resourceName];
+  const url = RESOURCE_URLS_BY_NAME.get(resourceName);
   if (url) {
     return `[${resourceName}](${url})`;
   }
-  
+
   // If no exact match, check if the resource name contains a URL (format: "Name: URL")
   const urlMatch = resourceName.match(/^(.+?):\s*(https?:\/\/.+)$/);
   if (urlMatch) {
@@ -449,14 +339,14 @@ export function formatResourceMarkdown(resourceName: string): string {
     const url = urlMatch[2].trim();
     return `[${name}](${url})`;
   }
-  
+
   // If still no match, try to find a partial match in the validated resources
-  for (const [validName, validUrl] of Object.entries(VALIDATED_RESOURCE_LINKS)) {
+  for (const [validName, validUrl] of RESOURCE_URLS_BY_NAME) {
     if (resourceName.includes(validName) || validName.includes(resourceName)) {
       return `[${validName}](${validUrl})`;
     }
   }
-  
+
   // Fallback to plain name if no URL found
   return resourceName;
 }
@@ -475,8 +365,15 @@ export function buildAssessmentData(categories: any[], averageGap: number, demog
     let totalDesired = 0;
     let validSkillCount = 0;
     let topGapSkills: any[] = [];
+    let allSkills: string[] = [];
 
     if (cat.skills && Array.isArray(cat.skills)) {
+      // Full skill-name roster for this category, used to build the validated
+      // skills database in the prompt. Must stay complete - not just top gaps.
+      allSkills = cat.skills
+        .map((skill: any) => skill?.name || skill?.title || '')
+        .filter((name: string) => name.length > 0);
+
       // Calculate skill-level gaps and find top gap skills
       topGapSkills = cat.skills.map((skill: any) => {
         // Handle both old format (ratings object) and new format (direct properties)
@@ -511,6 +408,7 @@ export function buildAssessmentData(categories: any[], averageGap: number, demog
       averageDesiredRating: avgDesired,
       gap,
       topGapSkills,
+      allSkills,
     };
   });
 
@@ -581,7 +479,7 @@ ${topCompetencies.map((cat, i) => {
 `;
 
   // Build validated resource lists - these are the ONLY resources ChatGPT can use
-  const validatedSkillsList = buildValidatedSkillsList();
+  const validatedSkillsList = buildValidatedSkillsList(assessmentSummary.categoryBreakdown);
   const validatedResourcesList = buildValidatedResourcesList();
   const validatedLeadersList = buildValidatedLeadersList();
 
@@ -590,7 +488,7 @@ ${topCompetencies.map((cat, i) => {
   // - Leader selection: Based on PRIMARY STRENGTHS (highest current ratings), not gaps
   // - Resources: EXACTLY 3 per competency, including 1 book, from validated database only
   // - Skills: Reference individual skills by name only (NO numerical values in output)
-  const fullPrompt = `PROMPT_VERSION: 2025-07-11
+  const fullPrompt = `PROMPT_VERSION: 2026-07-22
 
 CRITICAL: The "summary" field in your JSON response MUST have 3 paragraphs separated by \\n\\n
 The third paragraph MUST be: "Moving forward, it is important to reflect on these development areas and consider how they align with your personal and professional goals. Collaborate with trusted advisors, such as your manager or mentor, to determine which competencies will have the greatest impact on your leadership journey. Remember, you have the agency to shape your development path, and these insights are here to guide you in becoming the best version of yourself as a leader in [their industry]."
@@ -601,8 +499,8 @@ You are an expert leadership coach and assessment analyst working with Encourage
 
 **CRITICAL WRITING RULE - READ THIS FIRST**: When writing competency names in sentences, ALWAYS use lowercase formatting. 
 
-CORRECT examples: "team leadership and change management", "executive presence and future vision", "strategic thinking and influencing"
-WRONG examples: "Team Leadership and Change Management", "Executive Presence and Future Vision", "Strategic Thinking and Influencing"
+CORRECT examples: "leading people and change management", "executive presence and strategic thinking", "commercial acumen and stakeholder relationships"
+WRONG examples: "Leading People and Change Management", "Executive Presence and Strategic Thinking", "Commercial Acumen and Stakeholder Relationships"
 
 This lowercase rule applies to EVERY SINGLE competency mention in flowing paragraph text throughout your entire response. NO EXCEPTIONS.
 
@@ -652,12 +550,12 @@ ${validatedSkillsList}
 - If no validated skill matches your intended concept, reference only the competency name instead
 
 **Example Integration for Summary:**
-Instead of: "Improve your decision making competency, particularly in Strategic Decision Making (gap: 4.0)"
-Write: "Improve your decision making competency, particularly in areas such as Critical Thinking and Problem Solving"
+Instead of: "Improve your decision making competency, particularly in Sound Judgement (gap: 4.0)"
+Write: "Improve your decision making competency, particularly in areas such as Sound Judgement and Risk Assessment"
 
 **Example Integration for Insights:**
-Use: "Implement the OODA Loop to enhance your decision-making process, particularly in Critical Thinking and Problem Solving"
-NOT: "Implement the OODA Loop to enhance your decision-making process, particularly in Critical Thinking (gap: 4.0) and Problem Solving (gap: 3.5)"
+Use: "Implement the OODA Loop to enhance your decision-making process, particularly in Sound Judgement and Risk Assessment"
+NOT: "Implement the OODA Loop to enhance your decision-making process, particularly in Sound Judgement (gap: 4.0) and Risk Assessment (gap: 3.5)"
 
 ### ENCOURAGER COACHING ETHOS AND APPROACH
 
@@ -667,6 +565,7 @@ You represent Encourager Coaching, which emphasizes:
 - **Maximizing Natural Ability**: Help people leverage their existing talents and build from their foundation of competencies
 - **Best Version of Self**: Encourage users to become their authentic, most effective leadership version
 - **Supportive and Practical**: Provide encouraging yet actionable guidance
+- **Human + AI Era**: Where natural, frame development in the context of leading effectively in a Human + AI era — distinctly human capabilities alongside technological change
 
 **MANDATORY ENCOURAGEMENT APPROACH:**
 - Use consistently encouraging, supportive language throughout all content
@@ -827,8 +726,8 @@ Use the Streamlined Leader Selection Process above to select the most appropriat
 - CRITICAL: Focus on development suggestions and guidance, not on reporting numerical gaps
 
 **Skill-Level Integration Examples (ONLY using validated skills):**
-✅ "Implementing the SBI Feedback Model will enhance your communication with your team, particularly by strengthening Active Listening and Verbal Communication, which will help you become an even more effective communicator"
-✅ "Applying the Eisenhower Matrix will help you optimize your time management approach, especially by developing Time Management and Prioritization, allowing you to have greater impact in your leadership role"
+✅ "Implementing the SBI Feedback Model will enhance your communication with your team, particularly by strengthening Empathy and Trust Building, which will help you become an even more effective communicator"
+✅ "Applying the Eisenhower Matrix will help you optimize your time management approach, especially by developing Prioritisation and Focus & Deep Work, allowing you to have greater impact in your leadership role"
 
 **Encouraging Language Examples:**
 ✅ "Your natural ability in [competency] shows you have the foundation to become an exceptional leader who..."

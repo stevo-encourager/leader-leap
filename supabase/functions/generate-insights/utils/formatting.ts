@@ -134,9 +134,10 @@ export const sanitizeJsonString = (jsonString: string): string => {
       JSON.parse(sanitized);
       return sanitized;
     } catch (secondError) {
-      console.error('JSON sanitization failed:', secondError.message);
+      const secondErrorMessage = secondError instanceof Error ? secondError.message : String(secondError);
+      console.error('JSON sanitization failed:', secondErrorMessage);
       console.error('Problematic JSON sample:', sanitized.substring(0, 1000));
-      throw new Error(`Unable to parse JSON after sanitization: ${secondError.message}`);
+      throw new Error(`Unable to parse JSON after sanitization: ${secondErrorMessage}`);
     }
   }
 };

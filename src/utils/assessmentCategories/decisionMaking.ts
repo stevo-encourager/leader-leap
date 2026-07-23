@@ -7,21 +7,21 @@ export const decisionMakingCategory: Category = {
   description: "The ability to make timely and effective decisions based on available information.",
   skills: [
     {
-      id: "critical-thinking",
-      name: "Critical Thinking",
-      description: "Ability to analyze situations objectively and evaluate options thoroughly.",
+      id: "sound-judgement",
+      name: "Sound Judgement",
+      description: "Makes timely, well-reasoned decisions under uncertainty; knows when to escalate; balances speed with rigour.",
       ratings: { current: 0, desired: 0 }
     },
     {
-      id: "problem-solving",
-      name: "Problem Solving",
-      description: "Ability to identify issues and implement effective solutions.",
+      id: "data-driven-decisions",
+      name: "Data-Driven Decision Making",
+      description: "Uses data to inform decisions and track performance; comfortable with KPIs and dashboards; draws actionable insights rather than relying on instinct alone.",
       ratings: { current: 0, desired: 0 }
     },
     {
-      id: "decisiveness",
-      name: "Decisiveness",
-      description: "Ability to make decisions in a timely manner, even with limited information.",
+      id: "risk-assessment",
+      name: "Risk Assessment",
+      description: "Weighs risk and reward systematically; anticipates second-order consequences; knows which risks are worth taking.",
       ratings: { current: 0, desired: 0 }
     }
   ]

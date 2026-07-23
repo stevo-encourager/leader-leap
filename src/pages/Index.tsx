@@ -90,14 +90,16 @@ const Index = () => {
           "featureList": [
             "Leadership Assessment",
             "Competency Gap Analysis", 
-            "Strategic Thinking Evaluation",
+            "Strategy & Commercial Evaluation",
             "Emotional Intelligence Assessment",
-            "Team Building Analysis",
-            "Change Management Evaluation",
+            "Leading People Analysis",
+            "Execution & Operations Evaluation",
             "Decision Making Assessment",
             "Delegation & Empowerment Analysis",
             "Negotiation & Conflict Resolution",
-            "Self-Leadership Planning",
+            "Leading Yourself Planning",
+            "Stakeholder Relationships Analysis",
+            "Personal Effectiveness Assessment",
             "Results Dashboard & Insights"
           ]
         }}

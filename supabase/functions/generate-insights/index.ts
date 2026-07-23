@@ -237,7 +237,8 @@ serve(async (req) => {
   } catch (error) {
     
     // Provide user-friendly error message without exposing internal details
-    const userMessage = error.message.includes('OpenAI') 
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const userMessage = errorMessage.includes('OpenAI')
       ? 'Unable to generate insights at this time. Please try again later.'
       : 'An unexpected error occurred while generating insights. Please try again.';
     

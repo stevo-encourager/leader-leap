@@ -10,7 +10,7 @@ export const getHighGapCompetencies = (categories: Category[]): HighGapCompetenc
 
   const competenciesWithGaps = categories.map(category => {
     if (!category.skills || category.skills.length === 0) {
-      return { title: category.title, gap: 0, skills: [] };
+      return { title: category.title, description: category.description || '', gap: 0, skills: [] };
     }
 
     const validSkills = category.skills.filter(skill => 
@@ -20,7 +20,7 @@ export const getHighGapCompetencies = (categories: Category[]): HighGapCompetenc
     );
 
     if (validSkills.length === 0) {
-      return { title: category.title, gap: 0, skills: [] };
+      return { title: category.title, description: category.description || '', gap: 0, skills: [] };
     }
 
     const currentSum = validSkills.reduce((sum, skill) => sum + skill.ratings.current, 0);
@@ -32,10 +32,11 @@ export const getHighGapCompetencies = (categories: Category[]): HighGapCompetenc
 
     const skills = validSkills.map(skill => ({
       name: skill.name,
+      description: skill.description || '',
       gap: Math.round((skill.ratings.desired - skill.ratings.current) * 10) / 10
     }));
 
-    return { title: category.title, gap, skills };
+    return { title: category.title, description: category.description || '', gap, skills };
   });
 
   // Sort by gap descending and return top 3
@@ -48,17 +49,20 @@ export const getHighGapCompetencies = (categories: Category[]): HighGapCompetenc
 // Get default resources for a competency
 export const getDefaultResources = (competencyName: string) => {
   const resourceMap: { [key: string]: Array<{ type: 'book' | 'framework' | 'tool'; title: string; description?: string; url?: string }> } = {
-    'Time/Priority Management': [
+    'Personal Effectiveness': [
       { type: 'book', title: 'Getting Things Done', description: 'David Allen\'s productivity system', url: 'https://amazon.com' },
       { type: 'framework', title: 'Eisenhower Matrix', description: 'Priority decision framework' },
       { type: 'tool', title: 'Time Blocking', description: 'Calendar-based time management technique' }
     ],
-    'Strategic Thinking/Vision': [
+    'Strategy & Commercial': [
       { type: 'book', title: 'Good to Great', description: 'Jim Collins on strategic leadership', url: 'https://amazon.com' },
       { type: 'framework', title: 'SWOT Analysis', description: 'Strategic planning framework' },
-      { type: 'tool', title: 'Vision Board', description: 'Visual strategic planning tool' }
+      { type: 'tool', title: 'Vision Board', description: 'Visual strategic planning tool' },
+      { type: 'book', title: 'Financial Intelligence', description: 'Berman & Knight on financial literacy for managers', url: 'https://amzn.to/4fyVTHb' },
+      { type: 'book', title: 'Scaling Up', description: 'Verne Harnish on commercial growth', url: 'https://amzn.to/4b9307D' },
+      { type: 'framework', title: 'Unit Economics / P&L Review Practice', description: 'Regular review of unit economics and P&L drivers' }
     ],
-    'Team Leadership': [
+    'Leading People': [
       { type: 'book', title: 'The Five Dysfunctions of a Team', description: 'Patrick Lencioni on team building', url: 'https://amazon.com' },
       { type: 'framework', title: 'Tuckman Model', description: 'Team development stages' },
       { type: 'tool', title: 'Team Charter', description: 'Team alignment and goal setting' }
@@ -73,27 +77,35 @@ export const getDefaultResources = (competencyName: string) => {
       { type: 'framework', title: 'Decision Matrix', description: 'Structured decision-making framework' },
       { type: 'tool', title: 'Pro-Con Analysis', description: 'Simple decision evaluation tool' }
     ],
-    'Change Management': [
+    'Execution & Operations': [
       { type: 'book', title: 'Leading Change', description: 'John Kotter\'s change model', url: 'https://amazon.com' },
       { type: 'framework', title: 'ADKAR Model', description: 'Change management framework' },
-      { type: 'tool', title: 'Change Readiness Assessment', description: 'Organisational change evaluation' }
+      { type: 'tool', title: 'Change Readiness Assessment', description: 'Organisational change evaluation' },
+      { type: 'book', title: 'High Output Management', description: 'Andy Grove on operational scaling', url: 'https://amzn.to/4bUQLf8' },
+      { type: 'book', title: 'Traction', description: 'Gino Wickman on process & governance (EOS)', url: 'https://amzn.to/3Rkewq9' },
+      { type: 'framework', title: 'Process Documentation and KPI Cadence', description: 'Documented processes with a regular KPI review rhythm' }
     ],
-    'Influencing': [
+    'Stakeholder Relationships': [
       { type: 'book', title: 'Influence: The Psychology of Persuasion', description: 'Robert Cialdini on influence', url: 'https://amazon.com' },
       { type: 'framework', title: 'Cialdini\'s 6 Principles', description: 'Influence and persuasion framework' },
-      { type: 'tool', title: 'Stakeholder Mapping', description: 'Influence network analysis' }
+      { type: 'tool', title: 'Stakeholder Mapping', description: 'Influence network analysis' },
+      { type: 'book', title: 'Never Eat Alone', description: 'Keith Ferrazzi on building a professional network', url: 'https://amzn.to/4vKQQJH' },
+      { type: 'book', title: 'Give and Take', description: 'Adam Grant on reciprocity and relationship building', url: 'https://amzn.to/4yud70N' },
+      { type: 'framework', title: 'Deliberate Network Mapping', description: 'Structured mapping and development of your network' }
     ],
-    'Negotiation/Conflict Resolution': [
+    // NOTE: keys below previously used '/' where the category data uses '&',
+    // so these two never matched and always fell through to the generic set.
+    'Negotiation & Conflict Resolution': [
       { type: 'book', title: 'Getting to Yes', description: 'Roger Fisher on principled negotiation', url: 'https://amazon.com' },
       { type: 'framework', title: 'Interest-Based Negotiation', description: 'Win-win negotiation approach' },
       { type: 'tool', title: 'Conflict Resolution Model', description: 'Structured conflict resolution' }
     ],
-    'Delegation/Empowerment': [
+    'Delegation & Empowerment': [
       { type: 'book', title: 'The One Minute Manager', description: 'Ken Blanchard on delegation', url: 'https://amazon.com' },
       { type: 'framework', title: 'Situational Leadership', description: 'Adaptive leadership framework' },
       { type: 'tool', title: 'Delegation Matrix', description: 'Task delegation planning tool' }
     ],
-    'Self-Leadership': [
+    'Leading Yourself': [
       { type: 'book', title: 'The 7 Habits of Highly Effective People', description: 'Stephen Covey on personal leadership', url: 'https://amazon.com' },
       { type: 'framework', title: 'Personal Development Plan', description: 'Self-leadership framework' },
       { type: 'tool', title: 'Reflection Journal', description: 'Self-awareness and growth tool' }

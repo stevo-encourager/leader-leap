@@ -69,12 +69,14 @@ const CustomTick = (props: CustomTickProps) => {
   
   // Split longer labels onto two lines for PDF only
   const splitLabel = (text: string) => {
-    const longLabels = {
-      'Strategic Thinking/Vision': ['Strategic', 'Thinking/Vision'],
-      'Team Leadership': ['Team Leadership'],
+    // Keys must match the category titles in utils/assessmentCategories.
+    const longLabels: Record<string, string[]> = {
+      'Strategy & Commercial': ['Strategy &', 'Commercial'],
+      'Stakeholder Relationships': ['Stakeholder', 'Relationships'],
+      'Execution & Operations': ['Execution &', 'Operations'],
       'Negotiation & Conflict Resolution': ['Negotiation &', 'Conflict Resolution'],
       'Delegation & Empowerment': ['Delegation &', 'Empowerment'],
-      'Time/Priority Management': ['Time/Priority', 'Management']
+      'Personal Effectiveness': ['Personal', 'Effectiveness']
     };
     
     return longLabels[text] || [text];

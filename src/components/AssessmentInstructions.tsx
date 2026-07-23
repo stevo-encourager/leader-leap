@@ -36,7 +36,7 @@ const AssessmentInstructions: React.FC<AssessmentInstructionsProps> = ({ onConti
                 </div>
                 <div>
                   <h3 className="text-lg font-bold font-quicksand text-encourager-accent mb-2">Think strategically:</h3>
-                  <p className="text-base text-slate-800 leading-relaxed">What human skills will set you apart in an AI-enhanced world?</p>
+                  <p className="text-base text-slate-800 leading-relaxed">What leadership skills will set you apart in an AI-enhanced world?</p>
                 </div>
               </div>
               <div className="flex gap-4 items-start">
@@ -54,7 +54,7 @@ const AssessmentInstructions: React.FC<AssessmentInstructionsProps> = ({ onConti
                 </div>
                 <div>
                   <h3 className="text-lg font-bold font-quicksand text-encourager-accent mb-2">Complete everything:</h3>
-                  <p className="text-base text-slate-800 leading-relaxed">Every human skill counts. Rate all to continue.</p>
+                  <p className="text-base text-slate-800 leading-relaxed">Every skill counts. Rate all to continue.</p>
                 </div>
               </div>
             </div>

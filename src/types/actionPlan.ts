@@ -58,9 +58,11 @@ export interface ActionPlanFormData {
 
 export interface HighGapCompetency {
   title: string;
+  description: string;
   gap: number;
   skills: Array<{
     name: string;
+    description: string;
     gap: number;
   }>;
 } 

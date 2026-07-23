@@ -51,73 +51,10 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
   const { user } = useAuth();
   const isMobile = useIsMobile();
   
-  // Competency descriptions for tooltips
-  const competencyDescriptions: { [key: string]: string } = {
-    'Strategic Thinking/Vision': 'The ability to develop a clear vision and identify opportunities for growth and innovation.',
-    'Influencing': 'Connecting with any audience to inform, persuade, and inspire action',
-    'Team Leadership': 'The ability to build and maintain high-performing teams through effective leadership.',
-    'Decision Making': 'The ability to make timely and effective decisions based on available information.',
-    'Emotional Intelligence': 'The ability to recognize and manage emotions in yourself and others.',
-    'Change Management': 'The ability to effectively lead and support organisational change initiatives.',
-    'Negotiation & Conflict Resolution': 'The ability to resolve conflicts and negotiate effectively with stakeholders.',
-    'Delegation & Empowerment': 'The ability to effectively assign responsibilities and empower team members.',
-    'Time/Priority Management': 'The ability to manage time effectively and prioritize tasks appropriately.',
-    'Self-Leadership': 'The ability to continuously improve skills and knowledge for career growth.'
-  };
-  
-  // Skill descriptions for tooltips
-  const skillDescriptions: { [key: string]: string } = {
-    // Strategic Thinking/Vision
-    'Future Vision': 'Ability to envision and articulate a compelling future state for the organisation.',
-    'Big Picture Thinking': 'Ability to see beyond day-to-day operations and understand broader implications.',
-    'Strategic Planning': 'Ability to create actionable plans that align with the organisation\'s vision.',
-    
-    // Influencing
-    'Persuasive Messaging': 'The ability to craft compelling arguments (verbal, written and visual) that motivate others to adopt new perspectives or take specific actions',
-    'Stakeholder Engagement': 'The ability to identify key decision-makers and tailor communication strategies to gain their support and buy-in',
-    'Executive Presence': 'The ability to project confidence and credibility while delivering messages that inspire trust and drive behavioral change',
-    
-    // Team Leadership
-    'Team Motivation': 'Ability to inspire and drive team members toward common goals.',
-    'Team Development': 'Ability to identify and nurture team member strengths and address weaknesses.',
-    'Collaboration': 'Ability to foster cooperation and effective working relationships.',
-    
-    // Decision Making
-    'Critical Thinking': 'Ability to analyze situations objectively and evaluate options thoroughly.',
-    'Problem Solving': 'Ability to identify issues and implement effective solutions.',
-    'Decisiveness': 'Ability to make decisions in a timely manner, even with limited information.',
-    
-    // Emotional Intelligence
-    'Self-Awareness': 'Ability to recognize your own emotions and their impact on thoughts and behavior.',
-    'Empathy': 'Ability to understand and share the feelings of others.',
-    'Relationship Management': 'Ability to develop and maintain healthy professional relationships, managing up as well as down.',
-    
-    // Change Management
-    'Adaptability': 'Ability to adjust to new conditions and embrace change.',
-    'Change Leadership': 'Ability to guide teams through transitions and transformations.',
-    'Resilience': 'Ability to recover quickly from difficulties and setbacks.',
-    
-    // Negotiation & Conflict Resolution
-    'Conflict Resolution': 'Ability to identify and resolve conflicts effectively.',
-    'Strategic Negotiation': 'Ability to negotiate win-win outcomes in complex situations.',
-    'Facilitation & Mediation': 'Ability to facilitate discussions and mediate disputes between parties.',
-    
-    // Delegation & Empowerment
-    'Task Delegation': 'Ability to assign work appropriately based on skills and development needs.',
-    'Trust Building': 'Ability to create an environment of mutual trust and respect.',
-    'Autonomy Support': 'Ability to provide independence while maintaining appropriate oversight.',
-    
-    // Time/Priority Management
-    'Time Management': 'Ability to organize and prioritize tasks effectively.',
-    'Prioritization': 'Ability to identify and focus on the most important tasks.',
-    'Productivity': 'Ability to maintain high levels of output and efficiency.',
-    
-    // Self-Leadership
-    'Continuous Learning': 'Ability to seek out and absorb new knowledge and skills.',
-    'Feedback Reception': 'Ability to receive and implement constructive feedback effectively.',
-    'Career Planning': 'Ability to set and work toward meaningful professional goals.'
-  };
-  
+  // Competency and skill descriptions are read directly from the assessment
+  // data (see getHighGapCompetencies) rather than duplicated here, so tooltips
+  // always match the live category definitions in utils/assessmentCategories.
+
   // State management
   const [selectedAssessmentId, setSelectedAssessmentId] = useState<string>('');
   const [selectedAssessmentData, setSelectedAssessmentData] = useState<{ categories: Category[], demographics?: any } | null>(null);
@@ -327,7 +264,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
   const updatePlanData = (competencyName: string, updates: Partial<ActionPlanFormData>) => {
     setPlanData(prev => {
       const newMap = new Map(prev);
-      const current = newMap.get(competencyName) || createInitialActionPlanData({ title: competencyName, gap: 0, skills: [] });
+      const current = newMap.get(competencyName) || createInitialActionPlanData({ title: competencyName, description: '', gap: 0, skills: [] });
       newMap.set(competencyName, { ...current, ...updates });
       return newMap;
     });
@@ -851,7 +788,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
                               </CardTitle>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p className="max-w-xs">{competencyDescriptions[competency.title] || 'No description available.'}</p>
+                              <p className="max-w-xs">{competency.description || 'No description available.'}</p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
@@ -878,7 +815,7 @@ const ActionPlanComponent: React.FC<ActionPlanProps> = ({ assessments }) => {
                                       </span>
                                     </TooltipTrigger>
                                     <TooltipContent>
-                                      <p className="max-w-xs">{skillDescriptions[skill.name] || 'No description available.'}</p>
+                                      <p className="max-w-xs">{skill.description || 'No description available.'}</p>
                                     </TooltipContent>
                                   </Tooltip>
                                 </TooltipProvider>

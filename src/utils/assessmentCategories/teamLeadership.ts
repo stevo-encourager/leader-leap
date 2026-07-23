@@ -2,25 +2,25 @@ import { Category } from '../assessmentTypes';
 
 export const teamLeadershipCategory: Category = {
   id: "team-building",
-  title: "Team Leadership",
-  description: "The ability to build and maintain high-performing teams through effective leadership.",
+  title: "Leading People",
+  description: "How effectively you motivate, develop and get the best from the people around you.",
   skills: [
     {
-      id: "team-motivation",
-      name: "Team Motivation",
-      description: "Ability to inspire and drive team members toward common goals.",
+      id: "people-management",
+      name: "People Management",
+      description: "Motivates diverse teams; adapts style to different personalities; gives effective feedback; handles underperformance.",
       ratings: { current: 0, desired: 0 }
     },
     {
-      id: "team-development",
-      name: "Team Development",
-      description: "Ability to identify and nurture team member strengths and address weaknesses.",
+      id: "coaching-development",
+      name: "Coaching & Development",
+      description: "Identifies and grows talent; creates development plans; delegates stretch assignments; invests time in team growth.",
       ratings: { current: 0, desired: 0 }
     },
     {
-      id: "collaboration",
-      name: "Collaboration",
-      description: "Ability to foster cooperation and effective working relationships.",
+      id: "influencing-persuasion",
+      name: "Influencing & Persuasion",
+      description: "Gains buy-in from peers, upward and cross-functionally; builds coalitions; lands ideas without direct authority.",
       ratings: { current: 0, desired: 0 }
     }
   ]

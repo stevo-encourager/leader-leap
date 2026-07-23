@@ -9,7 +9,15 @@ export interface FormattingOptions {
   transitionPhrases?: string[]; // Custom transition phrases to look for
 }
 
+// NOTE: This list is a near-duplicate of the one in
+// supabase/functions/generate-insights/utils/formatting.ts. The two should
+// eventually share a single source; until then, keep them in sync when editing.
+// The mandated closing paragraph is listed first so it wins over the generic
+// transition words and the split lands on the real paragraph boundary. The
+// legacy "Moving forward," opener is retained for summaries saved before the
+// closer was reworded.
 const DEFAULT_TRANSITION_PHRASES = [
+  "Don't try to fix everything at once.", 'Moving forward,',
   'However,', 'At the same time,', 'Additionally,', 'Furthermore,', 'Moreover,',
   'Nevertheless,', 'On the other hand,', 'Meanwhile,', 'In contrast,', 'Similarly,',
   'Consequently,', 'Therefore,', 'Thus,', 'As a result,', 'In addition,',

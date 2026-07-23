@@ -178,8 +178,21 @@ serve(async (req) => {
     if (parsedInsights.summary) {
       // Force add paragraph breaks if they're missing
       if (!parsedInsights.summary.includes('\n\n')) {
-        // Look for the "Moving forward" text to force a paragraph break
-        const movingForwardIndex = parsedInsights.summary.indexOf('Moving forward, it is important to reflect');
+        // Look for the mandated closing paragraph to force a paragraph break.
+        // The legacy "Moving forward" opener is still matched so summaries generated
+        // before the closer was reworded continue to split correctly.
+        const closerStarts = [
+          "Don't try to fix everything at once.",
+          'Moving forward, it is important to reflect'
+        ];
+        let movingForwardIndex = -1;
+        for (const closerStart of closerStarts) {
+          const idx = parsedInsights.summary.indexOf(closerStart);
+          if (idx > 0) {
+            movingForwardIndex = idx;
+            break;
+          }
+        }
         if (movingForwardIndex > 0) {
           const beforeMovingForward = parsedInsights.summary.substring(0, movingForwardIndex).trim();
           const movingForwardPart = parsedInsights.summary.substring(movingForwardIndex).trim();

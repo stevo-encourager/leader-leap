@@ -20,6 +20,7 @@ export const FormattedSummary: React.FC<FormattedSummaryProps> = ({
     
     // Fallback: Look for transition phrases if no double newlines found
     const transitionPhrases = [
+      "Don't try to fix everything at once.",
       'Moving forward,',
       'As you review',
       'However,',
@@ -32,8 +33,11 @@ export const FormattedSummary: React.FC<FormattedSummaryProps> = ({
       'Nevertheless,'
     ];
     
-    // Special handling for the third paragraph pattern
+    // Special handling for the third paragraph pattern.
+    // Legacy openers are retained so summaries saved before the closer was
+    // reworded still split into three paragraphs when rendered.
     const thirdParagraphStarts = [
+      "Don't try to fix everything at once.",
       'Moving forward, it is important to reflect',
       'As you review the detailed development areas'
     ];

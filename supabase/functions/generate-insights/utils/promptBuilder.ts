@@ -589,7 +589,7 @@ ${topCompetencies.map((cat, i) => {
   const fullPrompt = `PROMPT_VERSION: 2026-07-22
 
 CRITICAL: The "summary" field in your JSON response MUST have 3 paragraphs separated by \\n\\n
-The third paragraph MUST be: "Moving forward, it is important to reflect on these development areas and consider how they align with your personal and professional goals. Collaborate with trusted advisors, such as your manager or mentor, to determine which competencies will have the greatest impact on your leadership journey. Remember, you have the agency to shape your development path, and these insights are here to guide you in becoming the best version of yourself as a leader in [their industry]."
+The third paragraph MUST be: "Don't try to fix everything at once. Pick the one area that will move the needle most, work on it with your manager, mentor or coach, and let small, deliberate steps compound. Your development path is yours to shape."
 
 ${assessmentDataSection}
 
@@ -674,6 +674,20 @@ You represent Encourager Coaching, which emphasizes:
 
 ### ENHANCED SUMMARY PERSONALIZATION REQUIREMENTS
 
+**SUMMARY STYLE — CRITICAL:**
+- Maximum 150 words across paragraphs 1 and 2 combined. Shorter is better.
+- Write like an experienced coach talking to the person, not a report describing them. Direct, warm, concrete.
+- Do NOT open with the formula "As a [role] in [industry] with [X] years of experience..." — weave role/industry/experience in naturally or via specifics instead.
+- BANNED words/phrases in the summary: "enhance", "leverage", "foster", "enable you to", "which is crucial for", "which is essential for", "your leadership journey", "exciting opportunities".
+- Short sentences are welcome. Vary rhythm. One vivid, specific claim beats three generic ones.
+
+**STYLE EXEMPLAR (structure and voice to imitate — do not copy content):**
+"Three things stand out. First, self-awareness and executive presence: the more clearly you see your own impact, the more confidently you'll carry the room. Second, stakeholder management and networking: your influence currently runs ahead of your network; closing that gap opens doors. Third, empathy and social awareness — reading people well is what turns a capable team lead into one people want to follow.
+
+You're already strong at delegating and letting your team run — that's a real asset, and the core of your leadership brand. Conflict doesn't rattle you either. Like <a href="URL">Mary Barra</a>, you lead by building rather than commanding."
+
+**RULE PRECEDENCE:** The requirements below (referencing all three demographics, "why" explanations, encouraging language) still apply IN SPIRIT, but must NOT override the 150-word cap or the banned list. Where rules conflict, brevity and natural voice win.
+
 **CRITICAL SUMMARY FORMATTING:**
 - Reference the user's role (${assessmentSummary.demographics.role || 'leadership role'}) naturally throughout the summary
 - Include industry context (${assessmentSummary.demographics.industry || 'your industry'}) where relevant
@@ -695,19 +709,19 @@ You represent Encourager Coaching, which emphasizes:
 - For EVERY priority development area, include a brief, supportive explanation of WHY that competency is important for effective leadership
 - Frame the importance in terms of positive impact and growth potential
 - Connect the competency to leadership effectiveness and personal development
-- Use encouraging language like "This competency is valuable because..." or "Developing this area will enable you to..."
+- Use encouraging language, but keep it plain and brief. In the SUMMARY, the "why" should be implied by a concrete claim rather than spelled out with connective filler — and must respect the banned list above (no "enable you to", "which is crucial for", "which is essential for").
 
 **MANDATORY ENCOURAGEMENT FOR COMPETENCY AREAS:**
 - When discussing competencies where the user is stronger, provide positive reinforcement and encouragement
 - Suggest what type of leader the user might be based on their competencies and skills
 - Use phrases like "Perhaps you're the type of leader who leads with [competency/skill]..." or "Your natural strength in [competency] suggests you may be..."
-- Include messaging about how understanding and leveraging these competencies helps develop personal brand and fosters confidence as a leader
+- Include messaging about how these competencies shape their personal brand and confidence as a leader (in the summary, say this plainly — the words "leverage" and "foster" are banned there)
 - Emphasize how these competencies are foundational to their unique leadership style and potential
 
-**Summary Personalization Examples:**
-- "As a [role] in [industry] with [X] years of experience, your assessment reveals exciting opportunities for growth..."
-- "Your [X] years in [industry] have prepared you with a solid foundation in..."
-- "In your role as [role], these competencies will be particularly valuable for..."
+**Summary Personalization Examples (in the summary, keep these SHORT and avoid the opening formula):**
+- Anchor to the specifics of their world: "Running a team of engineers, you feel this every sprint planning."
+- Let experience show through the claim, not a preamble: "After eight years, the technical calls come easily; the political ones still cost you."
+- Reference role and industry only where it sharpens a point, never as scene-setting.
 
 ### DEMOGRAPHIC CONTEXT FOR TAILORED INSIGHTS
 
@@ -874,7 +888,7 @@ Use the Streamlined Leader Selection Process above to select the most appropriat
 You MUST output ONLY a valid JSON object with this EXACT structure:
 
 {
-  "summary": "Paragraph 1 text\\n\\nParagraph 2 text\\n\\nMoving forward, it is important to reflect on these development areas and consider how they align with your personal and professional goals. Collaborate with trusted advisors, such as your manager or mentor, to determine which competencies will have the greatest impact on your leadership journey. Remember, you have the agency to shape your development path, and these insights are here to guide you in becoming the best version of yourself as a leader in [industry].",
+  "summary": "Paragraph 1 text\\n\\nParagraph 2 text\\n\\nDon't try to fix everything at once. Pick the one area that will move the needle most, work on it with your manager, mentor or coach, and let small, deliberate steps compound. Your development path is yours to shape.",
   "priority_areas": [
     {
       "competency": "string",
@@ -902,7 +916,7 @@ PHASE 1 - DEEP ANALYSIS (Think through this first, don't include in output):
 4. **Coherent Development Story**: What single narrative explains why these competencies need to be developed together and how they connect?
 
 PHASE 2 - INFORMED OUTPUT:
-Use your analysis to write a summary that tells the coherent story of their development needs, explaining WHY these gaps cluster together and what it reveals about their leadership journey.
+Use your analysis to write a summary that tells the coherent story of their development needs, explaining WHY these gaps cluster together and what it reveals about how they lead. Keep it tight — see the SUMMARY STYLE rules above.
 
 ### FIELD REQUIREMENTS
 
@@ -912,7 +926,7 @@ PARAGRAPH 1: Discuss development areas and growth opportunities, referencing spe
 
 PARAGRAPH 2: Discuss existing competencies with inspirational leader reference like "Like <a href="[URL]">Leader Name</a>, who..."
 
-PARAGRAPH 3: Copy this EXACTLY: "Moving forward, it is important to reflect on these development areas and consider how they align with your personal and professional goals. Collaborate with trusted advisors, such as your manager or mentor, to determine which competencies will have the greatest impact on your leadership journey. Remember, you have the agency to shape your development path, and these insights are here to guide you in becoming the best version of yourself as a leader in [their industry]."
+PARAGRAPH 3: Copy this EXACTLY: "Don't try to fix everything at once. Pick the one area that will move the needle most, work on it with your manager, mentor or coach, and let small, deliberate steps compound. Your development path is yours to shape."
 
 Separate each paragraph with a blank line in the JSON (use \\n\\n between paragraphs).
 
@@ -954,7 +968,10 @@ Before generating the JSON response, verify:
 □ **CRITICAL**: Summary references specific individual skills by NAME ONLY (NO numerical values, NO gaps, NO scores, NO decimals, NO parentheses)
 □ **CRITICAL**: Insights reference specific individual skills by name WITHOUT mentioning gap scores or numerical values
 □ **CRITICAL**: At least one insight per priority area addresses specific skills with largest gaps by name only
-□ **CRITICAL**: Summary uses encouraging, personalised language with role/industry/experience context
+□ **CRITICAL**: Summary paragraphs 1 and 2 are 150 words or fewer COMBINED
+□ **CRITICAL**: Summary contains NONE of the banned words/phrases ("enhance", "leverage", "foster", "enable you to", "which is crucial for", "which is essential for", "your leadership journey", "exciting opportunities")
+□ **CRITICAL**: Summary does NOT open with "As a [role] in [industry] with [X] years of experience..."
+□ **CRITICAL**: Summary uses encouraging, personalised language with role/industry/experience context — woven in naturally, never at the cost of the word cap
 □ **CRITICAL**: ALL competency names in sentences use lowercase (e.g., "influencing, delegation & empowerment, strategic thinking" NOT "Influencing, Delegation & Empowerment, Strategic Thinking")
 □ **CRITICAL**: Individual skill ratings are whole numbers (no decimals)
 □ **CRITICAL**: ALL skill references use ONLY validated skills from the skills database
@@ -979,7 +996,8 @@ Before generating the JSON response, verify:
 - NEVER use skills not in the validated skills database - this is critical for assessment accuracy
 - NEVER write generic, obvious statements - every insight must provide genuine value and actionable advice.
 - Use only suggestive language for assessment tools: "consider using a tool such as [tool name]" rather than direct recommendations.
-- **PERSONALIZATION REQUIREMENT**: Use ALL THREE demographic dimensions (role, industry, experience) to tailor insights, examples, and leader selection for maximum relevance to the user's specific context.
+- **PERSONALIZATION REQUIREMENT**: Use ALL THREE demographic dimensions (role, industry, experience) to tailor insights, examples, and leader selection for maximum relevance to the user's specific context. In the SUMMARY specifically, weave these in naturally and briefly — never as an opening formula, and never at the cost of the 150-word cap.
+- **SUMMARY STYLE PRECEDENCE**: The summary must obey the SUMMARY STYLE rules above (150-word cap across paragraphs 1-2, coach voice, banned word list). Where any rule in this prompt conflicts with those, brevity and natural voice win.
 - **SKILL-LEVEL REQUIREMENT**: Reference specific individual skills by name only (NO numbers, NO gaps, NO scores) in summary, and by name only (NO numerical values) in priority area insights (ONLY validated skills from the database)
 - **VALIDATED RESOURCE REQUIREMENT**: Every resource in the resources arrays must be an exact match from the validated database above. NO EXCEPTIONS ALLOWED.
 - **MINIMUM BOOK REQUIREMENT**: Every competency section must include at least one book recommendation from the validated database
@@ -989,7 +1007,7 @@ Before generating the JSON response, verify:
 - **TERMINOLOGY REQUIREMENT**: NEVER use "strength" as synonym for "competency" - always use "competencies" or "leadership competencies"
 - **ENCOURAGER COACHING REQUIREMENT**: All content must reflect Encourager Coaching's positive psychology approach, maximizing natural ability, and helping users become their best leadership version through encouraging, supportive language and framing.
 - **DETERMINISTIC CATEGORY REQUIREMENT**: You MUST use ONLY the 3 priority development areas and 2 key strengths listed above. You CANNOT substitute, replace, or choose different categories.
-- **MANDATORY THREE PARAGRAPH STRUCTURE**: Your summary field MUST contain EXACTLY three paragraphs separated by \\n\\n. First paragraph: development areas. Second paragraph: competencies and leader. Third paragraph: MUST start with "Moving forward, it is important to reflect on these development areas and consider how they align with your personal and professional goals." If this third paragraph is missing or doesn't start with this exact phrase, your response is INVALID.
+- **MANDATORY THREE PARAGRAPH STRUCTURE**: Your summary field MUST contain EXACTLY three paragraphs separated by \\n\\n. First paragraph: development areas. Second paragraph: competencies and leader. Third paragraph: MUST start with "Don't try to fix everything at once." If this third paragraph is missing or doesn't start with this exact phrase, your response is INVALID.
 
 Base your insights on the assessment data provided above and ensure each insight meets the high-quality, actionable standards outlined above while being specifically tailored to the user's role, industry, experience level, AND individual skill gaps by name only (without numerical values). Remember: ONLY use resources, leaders, and skills from the validated databases with exact title matching, ensure minimum book recommendations per section, limit to exactly 3 resources per section, reference skills by name only in summary (NO numbers), reference specific skills by name only in insights sections (NO numerical values - focus on development suggestions), use proper HTML anchor tag formatting for leaders, maintain consistent terminology (competencies, not strengths), embody Encourager Coaching's philosophy of positive psychology, encouragement, and helping people maximize their natural abilities to become the best version of themselves, AND use ONLY the exact categories listed above for priority areas and key strengths.
 

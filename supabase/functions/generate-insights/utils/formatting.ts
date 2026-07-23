@@ -31,7 +31,15 @@ export const formatSummaryIntoParagraphs = (summary: string): string => {
   // Only collapse multiple spaces (not newlines) into single spaces
   let formatted = summary.replace(/ +/g, ' ').trim();
   
+  // NOTE: This list is a near-duplicate of DEFAULT_TRANSITION_PHRASES in
+  // src/utils/summaryFormatter.ts. The two should eventually share a single
+  // source; until then, keep them in sync when editing.
+  // The mandated closing paragraph is listed first so it wins over the generic
+  // transition words and the split lands on the real paragraph boundary. The
+  // legacy "Moving forward," opener is retained for summaries saved before the
+  // closer was reworded.
   const transitionPhrases = [
+    "Don't try to fix everything at once.", 'Moving forward,',
     'However,', 'At the same time,', 'Additionally,', 'Furthermore,', 'Moreover,',
     'Nevertheless,', 'On the other hand,', 'Meanwhile,', 'In contrast,', 'Similarly,',
     'Consequently,', 'Therefore,', 'Thus,', 'As a result,', 'In addition,',

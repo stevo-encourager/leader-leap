@@ -37,3 +37,4 @@ scripts/test-rls.js
 
 # Generated artefact - rebuild with `npm run generate:example-prompt`
 example-ai-prompt.txt
+supabase/.temp/
